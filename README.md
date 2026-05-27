@@ -1,0 +1,2 @@
+# jogoAFD
+Maquina de palavras
