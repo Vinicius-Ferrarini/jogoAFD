@@ -1,0 +1,22 @@
+export const GAME_LEVELS = [
+  { id: 1, label: "L05", formula: "L = { a^n | n > 0 }", desc: "", shortestWord: "a", regex: /^a+$/, alphabet: ['a'] },
+  { id: 2, label: "L06", formula: "L = { a^n | n > 0 e n é ímpar }", desc: "", shortestWord: "a", regex: /^a(aa)*$/, alphabet: ['a'] },
+  { id: 3, label: "L07", formula: "L = { a(b^n)a | n ≥ 0 e n é par }", desc: "", shortestWord: "aa", regex: /^a(bb)*a$/, alphabet: ['a', 'b'] },
+  { id: 4, label: "L08", formula: "L = { a(bc)^n a | n > 0 }", desc: "", shortestWord: "abca", regex: /^a(bc)+a$/, alphabet: ['a', 'b', 'c'] },
+  { id: 5, label: "L09", formula: "L = { a^n b^m c^p | n>0, m≥0, p≥0 }", desc: "", shortestWord: "a", regex: /^a+b*c*$/, alphabet: ['a', 'b', 'c'] },
+  { id: 6, label: "L10", formula: "L = { a^n b b a^m | n,m ≥ 0 e pares }", desc: "", shortestWord: "bb", regex: /^(aa)*bb(aa)*$/, alphabet: ['a', 'b'] },
+  { id: 7, label: "L11", formula: "L = { a^n b^m | (n+m) é par, n,m ≥ 0 }", desc: "", shortestWord: "", regex: /^((aa)*(bb)*|a(aa)*b(bb)*)$/, alphabet: ['a', 'b'] },
+  { id: 8, label: "L12", formula: "L = { a^n b^2m | n > 0, m > 0 }", desc: "", shortestWord: "abb", regex: /^a+(bb)+$/, alphabet: ['a', 'b'] },
+  { id: 9, label: "L13", formula: "L = { (ab)^n (cd)^m | n > 0, m > 0 }", desc: "", shortestWord: "abcd", regex: /^(ab)+(cd)+$/, alphabet: ['a', 'b', 'c', 'd'] },
+  { id: 10, label: "L14", formula: "L = { w ∈ {a,b}* | |w|a = |w|b }", desc: "Mesma qtd de 'a' e 'b'", shortestWord: "", regex: /^(?:a(?:(?=a)|(?=b[ab]*a))(?:a|b(?=.*a))*b|b(?:(?=b)|(?=a[ab]*b))(?:b|a(?=.*b))*a)*$/, alphabet: ['a', 'b'] },
+  { id: 11, label: "L15", formula: "L = { w ∈ {a,b}* | |w|a + |w|b é par }", desc: "", shortestWord: "", regex: /^([ab]{2})*$/, alphabet: ['a', 'b'] },
+  { id: 12, label: "L16", formula: "L = { u a v b x c y | u,v,x,y ∈ {a,b,c}* }", desc: "", shortestWord: "abc", regex: /^[abc]*a[abc]*b[abc]*c[abc]*$/, alphabet: ['a', 'b', 'c'] },
+  { id: 13, label: "L17", formula: "L = { w ∈ {a,b}* | inicia com 'a', tam par }", desc: "", shortestWord: "aa", regex: /^a[ab]([ab]{2})*$/, alphabet: ['a', 'b'] },
+  { id: 14, label: "L18", formula: "L = { w ∈ {a,b}* | sem mais de 2 a's seguidos }", desc: "", shortestWord: "", regex: /^(b|ab|aab)*a?a?$/, alphabet: ['a', 'b'] },
+  { id: 15, label: "L19", formula: "L = { w ∈ {a,b}* | ímpar ocorrências de 'ab' }", desc: "", shortestWord: "ab", regex: /^b*a+(ba+)*b+(a+b+)*(a+b+)?$/, alphabet: ['a', 'b'] },
+  { id: 16, label: "L20", formula: "L = { w ∈ {a,b}* | |w| ≥ 2, a's antes de b's }", desc: "", shortestWord: "aa", regex: /^(aa+|a+b+|bb+)$/, alphabet: ['a', 'b'] },
+  { id: 17, label: "L22", formula: "L = { w ∈ {0,1}* | w é um número par }", desc: "Termina em 0", shortestWord: "0", regex: /^[01]*0$/, alphabet: ['0', '1'] },
+  { id: 18, label: "L23", formula: "L = { w ∈ {0,1}* | w é um número ímpar }", desc: "Termina em 1", shortestWord: "1", regex: /^[01]*1$/, alphabet: ['0', '1'] },
+  { id: 19, label: "L24", formula: "L = { w ∈ {0,1}* | w tem tamanho 3 }", desc: "", shortestWord: "000", regex: /^[01]{3}$/, alphabet: ['0', '1'] },
+  { id: 20, label: "L25", formula: "L = { w ∈ {0,1}* | w tem tamanho menor que 3 }", desc: "", shortestWord: "", regex: /^[01]{0,2}$/, alphabet: ['0', '1'] }
+];

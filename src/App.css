@@ -1,0 +1,168 @@
+/* --- VARIÁVEIS DO TEMA --- */
+:root {
+    --bg-dark: #070b14;
+    --panel-bg: #111827;
+    --card-bg: #1f2937;
+    --border-color: #374151;
+    --accent-green: #10b981;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-red: #ef4444;
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+}
+
+/* --- RESET BÁSICO --- */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
+
+/* --- TELA DE MENU --- */
+.menu-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: var(--bg-dark); }
+.menu-title { font-size: 64px; color: var(--accent-green); margin-bottom: 40px; font-family: monospace; letter-spacing: 2px; }
+.levels-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; max-width: 900px; }
+.menu-btn { padding: 15px; background: var(--panel-bg); border: 2px solid var(--border-color); color: var(--text-main); font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; text-align: center; }
+.menu-btn:hover { border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); transform: scale(1.05); }
+.menu-btn.primary { border-color: var(--accent-green); }
+.menu-btn.primary:hover { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+
+/* --- TELA DO JOGO (WORKSPACE) --- */
+.workspace-wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+/* Header do Jogo */
+.game-header { background: var(--panel-bg); border-bottom: 2px solid var(--accent-green); padding: 12px 30px; display: flex; align-items: center; justify-content: space-between; z-index: 10; }
+.header-left { display: flex; align-items: center; gap: 15px; width: 150px; }
+.sidebar-toggle { background: transparent; border: none; color: var(--accent-green); font-size: 24px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.sidebar-toggle:hover { color: #fff; transform: scale(1.1); }
+.mission-label { color: var(--accent-green); font-weight: 800; font-size: 12px; text-transform: uppercase; margin-right: 15px; }
+.mission-formula { font-family: monospace; font-size: 22px; font-weight: bold; background: #000; padding: 5px 20px; border-radius: 4px; border: 1px solid var(--border-color); color: #fff; }
+.back-btn { background: transparent; border: none; color: var(--text-muted); font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; text-align: left; }
+.back-btn:hover { color: #fff; }
+
+.workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+/* Painel Esquerdo (Matemática) - DRAWER */
+.formal-panel { position: absolute; top: 0; left: 0; bottom: 0; width: 280px; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(5px); border-right: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; z-index: 50; transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
+.formal-panel.open { transform: translateX(0); }
+.section-header { font-size: 11px; color: var(--accent-blue); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+.mt-15 { margin-top: 15px; }
+.math-item { display: flex; justify-content: space-between; font-family: monospace; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #1f2937; }
+.math-val { color: var(--accent-blue); font-weight: bold; }
+.transition-list { font-size: 13px; font-family: monospace; color: var(--text-muted); display: flex; flex-direction: column; gap: 5px; }
+
+/* Painel Central (Tabuleiro) */
+.canvas-area { flex: 1; position: relative; background: radial-gradient(circle, #161b22 1px, transparent 1px); background-size: 30px 30px; overflow: hidden; }
+.canvas-label { position: absolute; top: 15px; left: 15px; font-size: 10px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; z-index: 5; }
+
+/* Overlay de Tabuleiro Bloqueado */
+.locked-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.6); z-index: 10; }
+.locked-message { font-size: 24px; font-weight: bold; color: var(--text-muted); opacity: 0.5; text-align: center; max-width: 60%; line-height: 1.5; }
+
+/* Estilo das Bolinhas (Nodes) */
+.node { position: absolute; width: 65px; height: 65px; background: #0d1117; border: 3px solid var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-family: monospace; box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); font-size: 18px; transition: border-color 0.2s, box-shadow 0.2s; }
+.node.initial::before { content: '▶'; position: absolute; left: -25px; color: #fff; font-size: 18px; }
+.node.final { border-style: double; border-width: 6px; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+
+/* Painel Direito (Testes) */
+.test-panel { width: 300px; background: var(--panel-bg); border-left: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; gap: 12px; z-index: 5; }
+.test-input-area { display: flex; gap: 8px; margin-bottom: 10px; }
+.word-input { flex: 1; background: #000; border: 1px solid var(--border-color); color: #fff; padding: 8px; border-radius: 4px; font-family: monospace; outline: none; }
+.add-test-btn { background: var(--accent-green); border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+.word-row { display: flex; justify-content: space-between; align-items: center; background: #0d1117; padding: 10px; border-radius: 6px; font-family: monospace; border-left: 3px solid #374151; font-size: 14px; }
+.word-row.correct { border-left-color: var(--accent-green); color: var(--accent-green); }
+.word-row.wrong { border-left-color: #ef4444; color: #ef4444; }
+.word-row.shortest { background: rgba(16, 185, 129, 0.1); border-left-color: #fbbf24; }
+.validate-btn { background: var(--accent-green); color: #000; font-weight: bold; font-size: 16px; padding: 15px; border-radius: 8px; border: none; cursor: pointer; text-transform: uppercase; transition: transform 0.2s, box-shadow 0.2s; margin-top: auto; }
+.validate-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+
+/* Rodapé (Cartas) */
+.bottom-hand { height: 180px; background: linear-gradient(to top, #000, var(--panel-bg)); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-start; gap: 15px; padding: 10px 30px; z-index: 20; position: relative; overflow-x: auto; white-space: nowrap; }
+.bottom-hand::-webkit-scrollbar { display: none; }
+
+.card { width: 100px; height: 140px; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; padding: 10px; flex-shrink: 0; }
+.card:hover:not(.disabled) { transform: translateY(-20px); border-color: var(--accent-green); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+.card.disabled { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
+.card-header { font-size: 9px; text-transform: uppercase; font-weight: bold; color: var(--text-muted); border-bottom: 1px solid #374151; padding-bottom: 5px; margin-bottom: 10px; }
+.card-icon { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.card-footer { font-size: 10px; text-align: center; font-weight: bold; white-space: normal; line-height: 1.2; }
+
+.card.initial { border-bottom: 4px solid var(--text-main); }
+.card.state { border-bottom: 4px solid var(--accent-blue); }
+.card.transition { border-bottom: 4px solid var(--accent-purple); }
+.card.final { border-bottom: 4px solid var(--accent-green); }
+.card.erase { border-bottom: 4px solid var(--accent-red); }
+
+.card.selected-card {
+  transform: translateY(-20px) scale(1.05);
+  border-color: var(--accent-green);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+}
+
+/* --- NOVAS ESTILIZAÇÕES DE INTERATIVIDADE --- */
+.connections-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.transition-line { stroke: var(--accent-purple); stroke-width: 3; fill: none; transition: stroke 0.2s; }
+
+.transition-label { position: absolute; transform: translate(-50%, -50%); z-index: 5; }
+.transition-input { width: 24px; height: 24px; text-align: center; background: #000; color: var(--accent-purple); border: 1px solid var(--border-color); border-radius: 4px; outline: none; font-weight: bold; font-family: monospace; transition: 0.2s; }
+.transition-input:focus { border-color: var(--accent-purple); box-shadow: 0 0 5px var(--accent-purple); width: 32px; }
+
+.node { cursor: grab; z-index: 2; transform: translate(-50%, -50%); }
+.node.dragging { cursor: grabbing; z-index: 100; opacity: 0.9; }
+.node.selected-source { border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); }
+
+.connecting-mode, .connecting-mode .node { cursor: crosshair; }
+.erase-mode { cursor: crosshair; }
+
+.node-id-input { background: transparent; border: none; color: inherit; font: inherit; width: 100%; text-align: center; outline: none; cursor: inherit; pointer-events: auto; }
+.node-id-input:focus { cursor: text; }
+
+/* ERASER MODE VISUALS */
+.erasable-node:hover { border-color: var(--accent-red) !important; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important; cursor: pointer !important; }
+.transition-line.erasable:hover { stroke: var(--accent-red) !important; }
+.erasable-target:hover .transition-input { border-color: var(--accent-red) !important; color: var(--accent-red) !important; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6) !important; cursor: pointer !important; }
+
+/* --- CARTAS E DECK (GAMIFICAÇÃO) --- */
+@keyframes slideUpFade {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.slide-up-fade {
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.card-separator {
+  width: 2px;
+  height: 80%;
+  background: var(--border-color);
+  margin: 0 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.symbol-card {
+  border-bottom: 4px solid #fbbf24;
+}
+
+.symbol-card.disabled-letter {
+  opacity: 0.4;
+  filter: grayscale(100%);
+  pointer-events: none;
+}
+
+.transition-label.clickable {
+  cursor: pointer;
+}
+
+.transition-label.clickable .transition-input {
+  cursor: pointer;
+  pointer-events: none; /* Let the div capture the click */
+}
+
+.transition-label.action-target:hover .transition-input {
+  border-color: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+}
+
+.visual-deck {
+  display: none; /* Disabled when scrolling is needed or can be left hidden if we want to show the cards instead */
+}
