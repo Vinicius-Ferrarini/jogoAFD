@@ -1,6 +1,8 @@
-import { useState, useRef } from 'react';
+// Versão: 1.0.1
+import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import { GAME_LEVELS } from './levels';
+import FormalDescriptionModal from './FormalDescriptionModal';
 
 export default function App() {
   // --- ESTADOS DE NAVEGAÇÃO E JOGO ---
@@ -8,6 +10,7 @@ export default function App() {
   const [currentLevel, setCurrentLevel] = useState(null);
   const [isDrawingUnlocked, setIsDrawingUnlocked] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isFormalModalOpen, setIsFormalModalOpen] = useState(false);
   
   const [nodes, setNodes] = useState([]);
   const [transitions, setTransitions] = useState([]);
@@ -18,10 +21,31 @@ export default function App() {
   const [selectedSymbolCard, setSelectedSymbolCard] = useState(null);
 
   // --- ESTADOS DE INTERATIVIDADE ---
-  const [interactionMode, setInteractionMode] = useState('IDLE'); // 'IDLE', 'CONNECTING', 'TOGGLE_FINAL', 'TOGGLE_INITIAL', 'ERASE'
+  const [interactionMode, setInteractionMode] = useState('IDLE'); // 'IDLE', 'CONNECTING', 'TOGGLE_FINAL', 'TOGGLE_INITIAL', 'ERASE', 'ADD_NODE'
   const [connectingSource, setConnectingSource] = useState(null);
   const [dragInfo, setDragInfo] = useState({ nodeId: null });
   const canvasRef = useRef(null);
+
+  const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
+
+  useEffect(() => {
+    if (tela !== 'JOGO') return;
+    let timeoutId;
+    const updateSize = () => {
+      if (canvasRef.current) {
+        setCanvasSize({
+          w: canvasRef.current.clientWidth,
+          h: canvasRef.current.clientHeight
+        });
+      }
+    };
+    window.addEventListener('resize', updateSize);
+    timeoutId = setTimeout(updateSize, 50); 
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      clearTimeout(timeoutId);
+    };
+  }, [tela, isSidebarOpen]);
 
   // --- FUNÇÕES DE TRANSIÇÃO DE TELA E NÍVEL ---
   const loadLevel = (level) => {
@@ -111,13 +135,7 @@ export default function App() {
 
   const addNode = () => {
     if (!isDrawingUnlocked) return;
-    let newIdNum = nodes.length;
-    while (nodes.some(n => n.id === `q${newIdNum}`)) {
-      newIdNum++;
-    }
-    const newId = `q${newIdNum}`;
-    setNodes([...nodes, { id: newId, x: 50, y: 50, isInitial: false, isFinal: false }]);
-    setInteractionMode('IDLE');
+    setInteractionMode('ADD_NODE');
     setConnectingSource(null);
     setSelectedSymbolCard(null);
   };
@@ -209,13 +227,11 @@ export default function App() {
     window.alert("Parabéns! Autômato válido e perfeito! Ele passou em todos os testes da linguagem.");
   };
 
-
   // --- EVENTOS DE INTERAÇÃO (MOUSE/TOUCH) ---
   const handleNodeClick = (e, nodeId) => {
     if (!isDrawingUnlocked) return;
     
     if (interactionMode === 'ERASE') {
-      // Allow erasing any node, but maybe we could keep the check. Removing initial is fine since user can set a new one.
       setNodes(nodes.filter(n => n.id !== nodeId));
       setTransitions(transitions.filter(t => t.from !== nodeId && t.to !== nodeId));
       return;
@@ -245,6 +261,12 @@ export default function App() {
 
   const handlePointerDown = (e, nodeId) => {
     if (!isDrawingUnlocked) return;
+    e.stopPropagation();
+
+    if (interactionMode === 'ADD_NODE') {
+      return;
+    }
+
     if (interactionMode !== 'IDLE' && interactionMode !== 'ERASE') {
       handleNodeClick(e, nodeId);
       return;
@@ -253,8 +275,8 @@ export default function App() {
       handleNodeClick(e, nodeId);
       return;
     }
+    
     // Inicia o arrasto (Drag)
-    e.stopPropagation();
     setDragInfo({ nodeId });
     e.target.setPointerCapture(e.pointerId);
   };
@@ -308,6 +330,53 @@ export default function App() {
       setSelectedSymbolCard(null); // Limpa a seleção após usar
     }
   };
+
+  // --- PRE-CALCULATE TRANSITION PATHS E RÓTULOS ---
+  const transitionRenders = transitions.map((t, idx) => {
+    const src = nodes.find(n => n.id === t.from);
+    const tgt = nodes.find(n => n.id === t.to);
+    if (!src || !tgt) return null;
+
+    const srcPxX = (src.x * canvasSize.w) / 100;
+    const srcPxY = (src.y * canvasSize.h) / 100;
+    const tgtPxX = (tgt.x * canvasSize.w) / 100;
+    const tgtPxY = (tgt.y * canvasSize.h) / 100;
+
+    const isBidirectional = src.id !== tgt.id && transitions.some(otherT => otherT.from === tgt.id && otherT.to === src.id);
+
+    let pathD = "";
+    let labelPxX = 0;
+    let labelPxY = 0;
+
+    if (src.id === tgt.id) {
+      // Loop states depend on percentage via CSS, we pass empty pathD
+    } else {
+      if (isBidirectional) {
+        const dx = tgtPxX - srcPxX;
+        const dy = tgtPxY - srcPxY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const nx = dist === 0 ? 0 : -dy / dist;
+        const ny = dist === 0 ? 0 : dx / dist;
+
+        const offset = 40; 
+        const cx = (srcPxX + tgtPxX) / 2 + nx * offset;
+        const cy = (srcPxY + tgtPxY) / 2 + ny * offset;
+
+        pathD = `M ${srcPxX} ${srcPxY} Q ${cx} ${cy} ${tgtPxX} ${tgtPxY}`;
+        
+        const midX = (srcPxX + tgtPxX) / 2;
+        const midY = (srcPxY + tgtPxY) / 2;
+        labelPxX = (midX + cx) / 2 + nx * 10;
+        labelPxY = (midY + cy) / 2 + ny * 10;
+      } else {
+        pathD = `M ${srcPxX} ${srcPxY} L ${tgtPxX} ${tgtPxY}`;
+        labelPxX = (srcPxX + tgtPxX) / 2;
+        labelPxY = (srcPxY + tgtPxY) / 2;
+      }
+    }
+
+    return { ...t, idx, src, tgt, pathD, labelPxX, labelPxY, isBidirectional };
+  }).filter(Boolean);
 
   // --- RENDERIZAÇÃO: TELA DE MENU ---
   if (tela === 'MENU') {
@@ -378,15 +447,51 @@ export default function App() {
                ))
              )}
           </div>
+          
+          <button 
+            className="validate-btn slide-up-fade" 
+            style={{ marginTop: '20px', padding: '10px', fontSize: '14px' }}
+            onClick={() => setIsFormalModalOpen(true)}
+          >
+            Preencher Tabela e Ganhar 3ª Estrela
+          </button>
         </aside>
+
+        {/* MODAL DE DESCRIÇÃO FORMAL */}
+        <FormalDescriptionModal 
+          isOpen={isFormalModalOpen} 
+          onClose={() => setIsFormalModalOpen(false)}
+          nodes={nodes}
+          transitions={transitions}
+          alphabet={currentLevel?.alphabet}
+          currentLevelId={currentLevel?.id}
+        />
 
         {/* ÁREA CENTRAL: Tabuleiro */}
         <section 
-          className={`canvas-area ${interactionMode !== 'IDLE' ? (interactionMode === 'ERASE' ? 'erase-mode' : 'connecting-mode') : ''}`}
+          className={`canvas-area ${interactionMode !== 'IDLE' ? (interactionMode === 'ERASE' ? 'erase-mode' : (interactionMode === 'ADD_NODE' ? 'add-node-mode' : 'connecting-mode')) : ''}`}
           ref={canvasRef}
+          onPointerDown={(e) => {
+            if (interactionMode === 'ADD_NODE') {
+              if (canvasRef.current) {
+                const canvasRect = canvasRef.current.getBoundingClientRect();
+                let x = ((e.clientX - canvasRect.left) / canvasRect.width) * 100;
+                let y = ((e.clientY - canvasRect.top) / canvasRect.height) * 100;
+                x = Math.max(0, Math.min(100, x));
+                y = Math.max(0, Math.min(100, y));
+
+                let newIdNum = nodes.length;
+                while (nodes.some(n => n.id === `q${newIdNum}`)) {
+                  newIdNum++;
+                }
+                const newId = `q${newIdNum}`;
+                setNodes([...nodes, { id: newId, x, y, isInitial: false, isFinal: false }]);
+                setInteractionMode('IDLE');
+              }
+            }
+          }}
           onClick={() => {
             if (interactionMode === 'ERASE' || selectedSymbolCard) {
-              // Se clicar no vazio com a borracha ou com carta, podemos desselecionar
               if (selectedSymbolCard) setSelectedSymbolCard(null);
             }
           }}
@@ -397,6 +502,7 @@ export default function App() {
             {interactionMode === 'TOGGLE_FINAL' && ' - Definindo Final...'}
             {interactionMode === 'TOGGLE_INITIAL' && ' - Definindo Inicial...'}
             {interactionMode === 'ERASE' && ' - Modo Borracha...'}
+            {interactionMode === 'ADD_NODE' && ' - Clique para adicionar o nó...'}
             {selectedSymbolCard && ' - Clique em uma seta para aplicar o símbolo'}
           </div>
 
@@ -420,29 +526,22 @@ export default function App() {
                     <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
                   </marker>
                 </defs>
-                {transitions.map((t, idx) => {
-                  const src = nodes.find(n => n.id === t.from);
-                  const tgt = nodes.find(n => n.id === t.to);
-                  if (!src || !tgt) return null;
-                  
-                  if (src.id === tgt.id) {
+                {transitionRenders.map((tr) => {
+                  if (tr.src.id === tr.tgt.id) {
                     return (
                       <circle 
-                        key={idx} 
-                        cx={`${src.x}%`} 
-                        cy={`calc(${src.y}% - 35px)`} 
+                        key={tr.idx} 
+                        cx={`${tr.src.x}%`} 
+                        cy={`calc(${tr.src.y}% - 35px)`} 
                         r="20" 
                         className={`transition-line ${interactionMode === 'ERASE' ? 'erasable' : ''}`}
                       />
                     );
                   } else {
                     return (
-                      <line 
-                        key={idx} 
-                        x1={`${src.x}%`} 
-                        y1={`${src.y}%`} 
-                        x2={`${tgt.x}%`} 
-                        y2={`${tgt.y}%`} 
+                      <path 
+                        key={tr.idx} 
+                        d={tr.pathD}
                         className={`transition-line ${interactionMode === 'ERASE' ? 'erasable' : ''}`}
                         markerEnd={`url(#${interactionMode === 'ERASE' ? 'arrowhead-erase' : 'arrowhead'})`}
                       />
@@ -452,38 +551,28 @@ export default function App() {
               </svg>
 
               {/* Rótulos das Transições Editáveis */}
-              {transitions.map((t, idx) => {
-                const src = nodes.find(n => n.id === t.from);
-                const tgt = nodes.find(n => n.id === t.to);
-                if (!src || !tgt) return null;
-                
-                let posX, posY;
-                if (src.id === tgt.id) {
-                  posX = `${src.x}%`;
-                  posY = `calc(${src.y}% - 55px)`;
-                } else {
-                  posX = `${(src.x + tgt.x) / 2}%`;
-                  posY = `${(src.y + tgt.y) / 2}%`;
-                }
-                
+              {transitionRenders.map((tr) => {
                 const isClickableAction = selectedSymbolCard || interactionMode === 'ERASE';
                 
                 return (
                   <div 
-                    key={`label-${idx}`} 
+                    key={`label-${tr.idx}`} 
                     className={`transition-label ${isClickableAction ? 'clickable action-target' : ''} ${interactionMode === 'ERASE' ? 'erasable-target' : ''}`} 
-                    style={{ left: posX, top: posY }}
+                    style={{ 
+                       left: tr.src.id === tr.tgt.id ? `${tr.src.x}%` : `${tr.labelPxX}px`, 
+                       top: tr.src.id === tr.tgt.id ? `calc(${tr.src.y}% - 55px)` : `${tr.labelPxY}px` 
+                    }}
                     onClick={(e) => {
                         e.stopPropagation();
                         if (isClickableAction) {
-                            handleTransitionClick(idx);
+                            handleTransitionClick(tr.idx);
                         }
                     }}
                   >
                     <input 
                       type="text" 
-                      value={t.symbol} 
-                      onChange={(e) => handleSymbolChange(idx, e.target.value)}
+                      value={tr.symbol} 
+                      onChange={(e) => handleSymbolChange(tr.idx, e.target.value)}
                       className="transition-input"
                       maxLength={5}
                       readOnly={!!isClickableAction}
@@ -569,7 +658,7 @@ export default function App() {
                 if (card.action === 'toggleFinal') { cardClass = 'final'; onClick = toggleFinalStateMode; }
                 if (card.action === 'erase') { cardClass = 'erase'; onClick = setEraserMode; }
                 
-                const isSelected = interactionMode === card.action || (card.action === 'toggleInitial' && interactionMode === 'TOGGLE_INITIAL') || (card.action === 'addTransition' && interactionMode === 'CONNECTING') || (card.action === 'toggleFinal' && interactionMode === 'TOGGLE_FINAL') || (card.action === 'erase' && interactionMode === 'ERASE');
+                const isSelected = interactionMode === card.action || (card.action === 'toggleInitial' && interactionMode === 'TOGGLE_INITIAL') || (card.action === 'addTransition' && interactionMode === 'CONNECTING') || (card.action === 'toggleFinal' && interactionMode === 'TOGGLE_FINAL') || (card.action === 'erase' && interactionMode === 'ERASE') || (card.action === 'addNode' && interactionMode === 'ADD_NODE');
 
                 return (
                   <div key={card.id} className={`card ${cardClass} slide-up-fade ${isSelected ? 'selected-card' : ''}`} onClick={onClick}>
