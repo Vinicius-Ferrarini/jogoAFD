@@ -1,16 +1,60 @@
-// Versão: 1.0.1
+// Versão: 1.0.2
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import { GAME_LEVELS } from './levels';
 import FormalDescriptionModal from './FormalDescriptionModal';
 
 export default function App() {
+  // --- ESTADOS DE PROGRESSÃO ---
+  const getProgress = () => {
+    try {
+      const data = localStorage.getItem('autoquest_progress');
+      return data ? JSON.parse(data) : {};
+    } catch {
+      return {};
+    }
+  };
+  const [progress, setProgress] = useState(getProgress());
+
+  const updateStars = (levelId, stars) => {
+    setProgress(prev => {
+      const current = prev[levelId]?.stars || 0;
+      if (stars > current) {
+        const newP = { ...prev, [levelId]: { stars } };
+        localStorage.setItem('autoquest_progress', JSON.stringify(newP));
+        return newP;
+      }
+      return prev;
+    });
+  };
+
+  const renderStars = (count) => {
+    let stars = [];
+    for(let i=1; i<=3; i++) {
+      stars.push(
+        <span key={i} style={{ color: i <= count ? '#fbbf24' : '#4b5563' }}>★</span>
+      );
+    }
+    return <span style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>{stars}</span>;
+  };
+
+  // --- ESTADOS DE TOAST ---
+  const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
+  const toastTimeoutRef = useRef(null);
+
+  const showToast = (message, type = 'info') => {
+    setToastData({ show: true, message, type });
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastData(prev => ({ ...prev, show: false }));
+    }, 4000);
+  };
+
   // --- ESTADOS DE NAVEGAÇÃO E JOGO ---
   const [tela, setTela] = useState('MENU');
   const [currentLevel, setCurrentLevel] = useState(null);
   const [isDrawingUnlocked, setIsDrawingUnlocked] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isFormalModalOpen, setIsFormalModalOpen] = useState(false);
   
   const [nodes, setNodes] = useState([]);
   const [transitions, setTransitions] = useState([]);
@@ -21,7 +65,7 @@ export default function App() {
   const [selectedSymbolCard, setSelectedSymbolCard] = useState(null);
 
   // --- ESTADOS DE INTERATIVIDADE ---
-  const [interactionMode, setInteractionMode] = useState('IDLE'); // 'IDLE', 'CONNECTING', 'TOGGLE_FINAL', 'TOGGLE_INITIAL', 'ERASE', 'ADD_NODE'
+  const [interactionMode, setInteractionMode] = useState('IDLE');
   const [connectingSource, setConnectingSource] = useState(null);
   const [dragInfo, setDragInfo] = useState({ nodeId: null });
   const canvasRef = useRef(null);
@@ -80,7 +124,7 @@ export default function App() {
 
     if (currentLevel.regex) {
       if (target === null && isSpecialNull) {
-         // Não tentamos validar "null" ou "vazio" se a linguagem é vazia, ele é só a resposta pro puzzle.
+         // Não tentamos validar "null" ou "vazio" se a linguagem é vazia
       } else {
          isValid = currentLevel.regex.test(newWord);
       }
@@ -91,7 +135,8 @@ export default function App() {
     if (isShortest) {
       if (!isDrawingUnlocked) {
          setIsDrawingUnlocked(true);
-         window.alert("Sucesso! Tabuleiro liberado.");
+         updateStars(currentLevel.id, 1);
+         showToast("Sucesso! Tabuleiro liberado.", "success");
          
          const initialCards = [
              { id: 'c0', type: 'action', action: 'toggleInitial', icon: '▶', label: 'Estado Inicial' },
@@ -119,7 +164,7 @@ export default function App() {
 
   const toggleSidebar = () => {
     if (!isDrawingUnlocked) {
-      window.alert("A formalização matemática só será liberada após você provar que entendeu a linguagem testando a menor palavra.");
+      showToast("A formalização matemática só será liberada após você provar que entendeu a linguagem testando a menor palavra.", "info");
       return;
     }
     setIsSidebarOpen(!isSidebarOpen);
@@ -163,18 +208,16 @@ export default function App() {
 
   // --- FUNÇÃO DO MOTOR DE SIMULAÇÃO (VALIDAÇÃO DO AFD) ---
   const validateAFD = () => {
-    // 1. Checar Determinismo
     for (let node of nodes) {
       const nodeTransitions = transitions.filter(t => t.from === node.id);
       const symbols = nodeTransitions.map(t => t.symbol);
       const uniqueSymbols = new Set(symbols);
       if (symbols.length !== uniqueSymbols.size) {
-        window.alert(`Grafo não determinístico! O estado ${node.id} tem múltiplas transições com o mesmo símbolo.`);
+        showToast(`Grafo não determinístico! O estado ${node.id} tem múltiplas transições com o mesmo símbolo.`, "error");
         return;
       }
     }
 
-    // Função de simulação do DFA
     const simulateDFA = (word) => {
       let currentState = nodes.find(n => n.isInitial)?.id;
       if (!currentState) return false;
@@ -191,17 +234,15 @@ export default function App() {
       return finalNode ? finalNode.isFinal : false;
     };
 
-    // 3. Checar contra testWords
     for (let tw of testWords) {
       const accepted = simulateDFA(tw.word);
       const shouldAccept = (tw.status === 'shortest' || tw.status === 'correct');
       if (accepted !== shouldAccept) {
-        window.alert(`Erro! O seu autômato falhou para a palavra '${tw.word}'. Ela deveria ser ${shouldAccept ? 'aceita' : 'rejeitada'}, mas foi ${accepted ? 'aceita' : 'rejeitada'}.`);
+        showToast(`Erro! O seu autômato falhou para a palavra '${tw.word}'. Ela deveria ser ${shouldAccept ? 'aceita' : 'rejeitada'}, mas foi ${accepted ? 'aceita' : 'rejeitada'}.`, "error");
         return;
       }
     }
 
-    // 4. Testes Extras Aleatórios baseados no Alfabeto para garantir a robustez
     const alphabet = currentLevel?.alphabet || ['a', 'b'];
     const generateRandomWord = (length) => {
        if (alphabet.length === 0) return '';
@@ -218,13 +259,20 @@ export default function App() {
       const shouldAccept = currentLevel?.regex ? currentLevel.regex.test(ext) : (ext === currentLevel?.shortestWord);
       
       if (accepted !== shouldAccept) {
-        window.alert(`Erro escondido! O seu autômato falhou em uma palavra não testada: '${ext === '' ? 'λ' : ext}'. Corrija a lógica do seu grafo.`);
+        showToast(`Erro escondido! O seu autômato falhou em uma palavra não testada: '${ext === '' ? 'λ' : ext}'. Corrija a lógica do seu grafo.`, "error");
         return;
       }
     }
 
-    // 5. Sucesso
-    window.alert("Parabéns! Autômato válido e perfeito! Ele passou em todos os testes da linguagem.");
+    // Sucesso
+    updateStars(currentLevel.id, 2);
+    showToast("Autômato Validado! Agora preencha a Descrição Formal no menu lateral.", "success");
+    setIsSidebarOpen(true);
+  };
+
+  const handleFormalSuccess = () => {
+    updateStars(currentLevel.id, 3);
+    showToast("Fase Concluída com Perfeição! Você conquistou a 3ª Estrela!", "success");
   };
 
   // --- EVENTOS DE INTERAÇÃO (MOUSE/TOUCH) ---
@@ -276,7 +324,6 @@ export default function App() {
       return;
     }
     
-    // Inicia o arrasto (Drag)
     setDragInfo({ nodeId });
     e.target.setPointerCapture(e.pointerId);
   };
@@ -301,7 +348,6 @@ export default function App() {
     }
   };
 
-  // --- EDIÇÃO INLINE E AÇÕES EM TRANSIÇÕES ---
   const handleNodeIdChange = (oldId, newId) => {
     if (!isDrawingUnlocked || oldId === newId) return;
     
@@ -327,11 +373,10 @@ export default function App() {
       setTransitions(transitions.filter((_, i) => i !== idx));
     } else if (selectedSymbolCard) {
       handleSymbolChange(idx, selectedSymbolCard);
-      setSelectedSymbolCard(null); // Limpa a seleção após usar
+      setSelectedSymbolCard(null); 
     }
   };
 
-  // --- PRE-CALCULATE TRANSITION PATHS E RÓTULOS ---
   const transitionRenders = transitions.map((t, idx) => {
     const src = nodes.find(n => n.id === t.from);
     const tgt = nodes.find(n => n.id === t.to);
@@ -349,7 +394,7 @@ export default function App() {
     let labelPxY = 0;
 
     if (src.id === tgt.id) {
-      // Loop states depend on percentage via CSS, we pass empty pathD
+      // Loop
     } else {
       if (isBidirectional) {
         const dx = tgtPxX - srcPxX;
@@ -380,24 +425,47 @@ export default function App() {
 
   // --- RENDERIZAÇÃO: TELA DE MENU ---
   if (tela === 'MENU') {
+    const maxStars = GAME_LEVELS.length * 3;
+    const totalStars = GAME_LEVELS.reduce((acc, lvl) => acc + (progress[lvl.id]?.stars || 0), 0);
+    const percent = maxStars > 0 ? Math.round((totalStars / maxStars) * 100) : 0;
+
     return (
       <div className="menu-screen">
         <h1 className="menu-title">AutoQuest</h1>
-        <div className="levels-grid">
-          {GAME_LEVELS.map((lvl) => (
-            <button key={lvl.id} className="menu-btn primary" onClick={() => loadLevel(lvl)}>
-              {lvl.label}
-            </button>
-          ))}
+        <div style={{ marginBottom: '30px', color: 'var(--text-main)', fontSize: '18px', fontWeight: 'bold' }}>
+          Progresso: {percent}% ({totalStars}/{maxStars} ★)
         </div>
+        <div className="levels-grid">
+          {GAME_LEVELS.map((lvl) => {
+            const lvlStars = progress[lvl.id]?.stars || 0;
+            return (
+              <button key={lvl.id} className="menu-btn primary" onClick={() => loadLevel(lvl)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                <span>{lvl.label}</span>
+                <span style={{ fontSize: '14px' }}>{renderStars(lvlStars)}</span>
+              </button>
+            );
+          })}
+        </div>
+        {toastData.show && (
+          <div className={`toast-notification ${toastData.type}`}>
+            {toastData.message}
+          </div>
+        )}
       </div>
     );
   }
 
+  const currentStars = currentLevel ? (progress[currentLevel.id]?.stars || 0) : 0;
+
   // --- RENDERIZAÇÃO: TELA DO JOGO ---
   return (
     <div className="workspace-wrapper">
-      
+      {toastData.show && (
+        <div className={`toast-notification ${toastData.type}`}>
+          {toastData.message}
+        </div>
+      )}
+
       {/* HEADER */}
       <header className="game-header">
         <div className="header-left">
@@ -412,60 +480,25 @@ export default function App() {
         </div>
         <div style={{ width: '150px', textAlign: 'right' }}>
            <span className="mission-label">{currentLevel?.label}</span>
+           <div style={{ fontSize: '16px', marginTop: '4px' }}>{renderStars(currentStars)}</div>
         </div>
       </header>
 
       <div className="workspace">
         
-        {/* PAINEL ESQUERDO: Formalização Matemática (DRAWER) */}
+        {/* PAINEL ESQUERDO: Descrição Formal (DRAWER) */}
         <aside className={`formal-panel ${isSidebarOpen ? 'open' : ''}`}>
-          <div className="section-header">Elementos de Q</div>
-          <div className="math-item">
-            <span>Q =</span> 
-            <span className="math-val">{'{'}{nodes.map(n => n.id).join(', ')}{'}'}</span>
-          </div>
-          
-          <div className="section-header mt-15">Alfabeto</div>
-          <div className="math-item"><span>Σ =</span> <span className="math-val">{'{'}{(currentLevel?.alphabet || []).join(', ')}{'}'}</span></div>
-          
-          <div className="section-header mt-15">Estados Especiais</div>
-          <div className="math-item"><span>q₀ =</span> <span className="math-val">{nodes.find(n => n.isInitial)?.id || '∅'}</span></div>
-          <div className="math-item">
-            <span>F =</span> 
-            <span className="math-val">
-              {'{'}{nodes.filter(n => n.isFinal).map(n => n.id).join(', ')}{'}'}
-            </span>
-          </div>
-
-          <div className="section-header mt-15">Função δ</div>
-          <div className="transition-list">
-             {transitions.length === 0 ? (
-               <span style={{ color: '#ef4444', fontStyle: 'italic' }}>Nenhuma transição criada.</span>
-             ) : (
-               transitions.map((t, idx) => (
-                  <div key={idx}>({t.from}, {t.symbol}) → {t.to}</div>
-               ))
-             )}
-          </div>
-          
-          <button 
-            className="validate-btn slide-up-fade" 
-            style={{ marginTop: '20px', padding: '10px', fontSize: '14px' }}
-            onClick={() => setIsFormalModalOpen(true)}
-          >
-            Preencher Tabela e Ganhar 3ª Estrela
-          </button>
+          <FormalDescriptionModal 
+            isOpen={isSidebarOpen} 
+            onClose={() => setIsSidebarOpen(false)}
+            nodes={nodes}
+            transitions={transitions}
+            alphabet={currentLevel?.alphabet}
+            currentLevelId={currentLevel?.id}
+            onSuccess={handleFormalSuccess}
+            showToast={showToast}
+          />
         </aside>
-
-        {/* MODAL DE DESCRIÇÃO FORMAL */}
-        <FormalDescriptionModal 
-          isOpen={isFormalModalOpen} 
-          onClose={() => setIsFormalModalOpen(false)}
-          nodes={nodes}
-          transitions={transitions}
-          alphabet={currentLevel?.alphabet}
-          currentLevelId={currentLevel?.id}
-        />
 
         {/* ÁREA CENTRAL: Tabuleiro */}
         <section 
@@ -550,7 +583,6 @@ export default function App() {
                 })}
               </svg>
 
-              {/* Rótulos das Transições Editáveis */}
               {transitionRenders.map((tr) => {
                 const isClickableAction = selectedSymbolCard || interactionMode === 'ERASE';
                 
@@ -581,7 +613,6 @@ export default function App() {
                 );
               })}
 
-              {/* Nós (Nodes) */}
               {nodes.map(node => (
                 <div 
                   key={node.id} 
@@ -633,7 +664,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* MOTOR DE SIMULAÇÃO */}
           {isDrawingUnlocked && (
              <button className="validate-btn slide-up-fade" onClick={validateAFD}>
                 Validar Desenho do AFD
@@ -687,9 +717,7 @@ export default function App() {
             }
             return null;
         })}
-        
       </footer>
-      
     </div>
   );
 }

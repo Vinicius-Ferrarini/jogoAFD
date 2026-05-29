@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './FormalDescriptionModal.css';
 
-export default function FormalDescriptionModal({ isOpen, onClose, nodes, transitions, alphabet, currentLevelId, onSuccess }) {
+export default function FormalDescriptionModal({ isOpen, onClose, nodes, transitions, alphabet, currentLevelId, onSuccess, showToast }) {
   const [inputQ, setInputQ] = useState('');
   const [inputSigma, setInputSigma] = useState('');
   const [inputInitial, setInputInitial] = useState('');
@@ -11,12 +11,10 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
   const [parsedQ, setParsedQ] = useState([]);
   const [parsedSigma, setParsedSigma] = useState([]);
   
-  // transitionTableData[state][symbol] = destination
   const [transitionTableData, setTransitionTableData] = useState({});
 
   useEffect(() => {
     if (isOpen) {
-      // Reset state when opened
       setInputQ('');
       setInputSigma('');
       setInputInitial('');
@@ -41,43 +39,38 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
     const pInitial = parseInput(inputInitial);
     const pFinal = parseInput(inputFinal);
 
-    // Validate Q
     const canvasQ = nodes.map(n => n.id);
     const isQValid = pQ.length === canvasQ.length && pQ.every(q => canvasQ.includes(q)) && canvasQ.every(q => pQ.includes(q));
 
-    // Validate Sigma
     const canvasSigma = alphabet || [];
     const isSigmaValid = pSigma.length === canvasSigma.length && pSigma.every(s => canvasSigma.includes(s)) && canvasSigma.every(s => pSigma.includes(s));
 
-    // Validate Initial
     const canvasInitial = nodes.find(n => n.isInitial)?.id;
     const isInitialValid = (canvasInitial ? (pInitial.length === 1 && pInitial[0] === canvasInitial) : pInitial.length === 0);
 
-    // Validate Final
     const canvasFinal = nodes.filter(n => n.isFinal).map(n => n.id);
     const isFinalValid = pFinal.length === canvasFinal.length && pFinal.every(f => canvasFinal.includes(f)) && canvasFinal.every(f => pFinal.includes(f));
 
     if (!isQValid) {
-      alert("Erro: O conjunto de estados Q não bate com os estados criados no grafo (Dica: verifique se digitou todos separados por vírgula).");
+      showToast("Erro: O conjunto de estados Q não bate com os estados criados no grafo.", "error");
       return;
     }
     if (!isSigmaValid) {
-      alert("Erro: O alfabeto Σ não bate com o alfabeto da linguagem atual.");
+      showToast("Erro: O alfabeto Σ não bate com o alfabeto da linguagem atual.", "error");
       return;
     }
     if (!isInitialValid) {
-      alert("Erro: O estado inicial não bate com o grafo.");
+      showToast("Erro: O estado inicial não bate com o grafo.", "error");
       return;
     }
     if (!isFinalValid) {
-      alert("Erro: O conjunto de estados finais F não bate com o grafo.");
+      showToast("Erro: O conjunto de estados finais F não bate com o grafo.", "error");
       return;
     }
 
     setParsedQ(pQ);
     setParsedSigma(pSigma);
     
-    // Initialize transition table data
     const initialData = {};
     pQ.forEach(q => {
       initialData[q] = {};
@@ -107,7 +100,6 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
       for (const s of parsedSigma) {
         const userDest = transitionTableData[q][s];
         
-        // Find actual transition in canvas
         const actualTrans = transitions.find(t => t.from === q && t.symbol === s);
         
         if (actualTrans) {
@@ -116,7 +108,6 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
             break;
           }
         } else {
-          // If no transition exists, user input should be empty (or undefined)
           if (userDest && userDest !== '') {
             isAllCorrect = false;
             break;
@@ -127,78 +118,71 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
     }
 
     if (isAllCorrect) {
-      // Save 3rd star
-      if (currentLevelId) {
-        const key = `level_${currentLevelId}_star3`;
-        localStorage.setItem(key, 'true');
-      }
-      
-      alert("Fase Concluída com Perfeição! Você conquistou a 3ª Estrela!");
       if (onSuccess) onSuccess();
       onClose();
     } else {
-      alert("Erro nas transições: A tabela não corresponde às transições desenhadas no grafo. Verifique as células.");
+      showToast("Erro nas transições: A tabela não corresponde às transições desenhadas no grafo. Verifique as células.", "error");
     }
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h2>Descrição Formal do AFD</h2>
-        
-        <div className="form-group">
-          <label>Q (Conjunto de Estados):</label>
-          <input 
-            type="text" 
-            placeholder="ex: q0, q1, q2" 
-            value={inputQ} 
-            onChange={e => setInputQ(e.target.value)} 
-            readOnly={areElementsValid} 
-          />
-        </div>
-        
-        <div className="form-group">
-          <label>Σ (Alfabeto):</label>
-          <input 
-            type="text" 
-            placeholder="ex: a, b" 
-            value={inputSigma} 
-            onChange={e => setInputSigma(e.target.value)} 
-            readOnly={areElementsValid} 
-          />
-        </div>
+    <div className="formal-sidebar-content">
+      <h2 style={{ fontSize: '14px', marginBottom: '20px', color: 'var(--accent-blue)', textTransform: 'uppercase', textAlign: 'center', fontFamily: 'monospace' }}>Descrição Formal</h2>
+      
+      <div className="form-group">
+        <label>Q (Conjunto de Estados):</label>
+        <input 
+          type="text" 
+          placeholder="ex: q0, q1" 
+          value={inputQ} 
+          onChange={e => setInputQ(e.target.value)} 
+          readOnly={areElementsValid} 
+        />
+      </div>
+      
+      <div className="form-group">
+        <label>Σ (Alfabeto):</label>
+        <input 
+          type="text" 
+          placeholder="ex: a, b" 
+          value={inputSigma} 
+          onChange={e => setInputSigma(e.target.value)} 
+          readOnly={areElementsValid} 
+        />
+      </div>
 
-        <div className="form-group">
-          <label>q0 (Estado Inicial):</label>
-          <input 
-            type="text" 
-            placeholder="ex: q0" 
-            value={inputInitial} 
-            onChange={e => setInputInitial(e.target.value)} 
-            readOnly={areElementsValid} 
-          />
-        </div>
+      <div className="form-group">
+        <label>q0 (Inicial):</label>
+        <input 
+          type="text" 
+          placeholder="ex: q0" 
+          value={inputInitial} 
+          onChange={e => setInputInitial(e.target.value)} 
+          readOnly={areElementsValid} 
+        />
+      </div>
 
-        <div className="form-group">
-          <label>F (Conjunto de Estados Finais):</label>
-          <input 
-            type="text" 
-            placeholder="ex: q1, q2" 
-            value={inputFinal} 
-            onChange={e => setInputFinal(e.target.value)} 
-            readOnly={areElementsValid} 
-          />
-        </div>
+      <div className="form-group">
+        <label>F (Finais):</label>
+        <input 
+          type="text" 
+          placeholder="ex: q1" 
+          value={inputFinal} 
+          onChange={e => setInputFinal(e.target.value)} 
+          readOnly={areElementsValid} 
+        />
+      </div>
 
-        {!areElementsValid && (
-          <button className="btn-validate" onClick={validateElements}>
-            Validar Elementos
-          </button>
-        )}
+      {!areElementsValid && (
+        <button className="btn-validate" onClick={validateElements}>
+          Validar Elementos
+        </button>
+      )}
 
-        {areElementsValid && (
-          <div className="table-section">
-            <h3>Tabela de Transição (δ)</h3>
+      {areElementsValid && (
+        <div className="table-section">
+          <h3>Tabela (δ)</h3>
+          <div style={{ overflowX: 'auto' }}>
             <table className="transition-table">
               <thead>
                 <tr>
@@ -223,15 +207,15 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
                 ))}
               </tbody>
             </table>
-
-            <button className="btn-validate success" onClick={validateTransitions}>
-              Validar Transições
-            </button>
           </div>
-        )}
 
-        <button className="btn-close" onClick={onClose}>Fechar</button>
-      </div>
+          <button className="btn-validate success" onClick={validateTransitions}>
+            Validar Transições
+          </button>
+        </div>
+      )}
+
+      <button className="btn-close" onClick={onClose}>Fechar Painel</button>
     </div>
   );
 }

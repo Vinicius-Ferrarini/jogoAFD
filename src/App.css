@@ -166,3 +166,14 @@ body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh;
 .visual-deck {
   display: none; /* Disabled when scrolling is needed or can be left hidden if we want to show the cards instead */
 }
+
+/* --- TOAST NOTIFICATION --- */
+@keyframes slideDown {
+  from { top: -50px; opacity: 0; }
+  to { top: 20px; opacity: 1; }
+}
+
+.toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; border-radius: 8px; color: white; font-weight: bold; z-index: 9999; animation: slideDown 0.3s ease-out; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.toast-notification.error { background-color: var(--accent-red); }
+.toast-notification.success { background-color: var(--accent-green); color: black; }
+.toast-notification.info { background-color: var(--accent-blue); }
