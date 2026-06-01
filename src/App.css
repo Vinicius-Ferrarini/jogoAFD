@@ -1,6 +1,6 @@
 /* --- VARIÁVEIS DO TEMA --- */
 :root {
-    --bg-dark: #fef08a;
+    --bg-dark: #fff9c4;
     --panel-bg: #ffffff;
     --card-bg: #ffffff;
     --border-color: #000000;
@@ -28,9 +28,7 @@ body { color: var(--text-main); }
 
 /* --- TELA DO JOGO (WORKSPACE) --- */
 .workspace-wrapper { display: flex; flex-direction: column; height: 100vh; }
-
-/* Header do Jogo */
-.game-header { background: var(--panel-bg); border-bottom: 3px solid #000; padding: 12px 30px; display: flex; align-items: center; justify-content: space-between; z-index: 10; box-shadow: 0 4px 0px #000; }
+.game-header { background: var(--panel-bg); border-bottom: 3px solid #000; padding: 12px 30px; display: flex; align-items: center; justify-content: space-between; z-index: 10; box-shadow: 0 4px 0px #000; flex-shrink: 0; }
 .header-left { display: flex; align-items: center; gap: 15px; width: 150px; }
 .sidebar-toggle { background: transparent; border: none; color: var(--text-main); font-size: 24px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
 .sidebar-toggle:hover { transform: scale(1.1); }
@@ -39,84 +37,314 @@ body { color: var(--text-main); }
 .back-btn { background: #fff; border: 3px solid #000; padding: 5px 10px; border-radius: 8px; color: var(--text-main); font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; box-shadow: 3px 3px 0px #000; }
 .back-btn:hover { background: var(--accent-red); transform: translate(-2px, -2px); box-shadow: 5px 5px 0px #000; }
 
-.workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
+.workspace { display: flex; flex: 1; overflow: hidden; position: relative; min-height: 0; }
 
-/* Painel Esquerdo (Matemática) - DRAWER */
-.formal-panel { position: absolute; top: 0; left: 0; bottom: 0; width: 280px; background: #fff; border-right: 3px solid #000; padding: 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; z-index: 50; transform: translateX(-100%); transition: transform 0.3s ease-in-out; box-shadow: 4px 0 0px #000; }
+/* Painel Esquerdo (Matemática) */
+.formal-panel { position: absolute; top: 0; left: 0; bottom: 0; width: 300px; background: #fff; border-right: 3px solid #000; padding: 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; z-index: 50; transform: translateX(-100%); transition: transform 0.3s ease-in-out; box-shadow: 4px 0 0px #000; }
 .formal-panel.open { transform: translateX(0); }
 .section-header { font-size: 14px; color: var(--text-main); font-weight: 900; text-transform: uppercase; letter-spacing: 1px; background: var(--accent-blue); padding: 5px; border: 3px solid #000; border-radius: 6px; box-shadow: 2px 2px 0px #000; text-align: center; }
 .mt-15 { margin-top: 15px; }
 .math-item { display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; padding: 8px 0; border-bottom: 3px dashed #000; }
 .math-val { color: var(--text-main); background: var(--bg-dark); padding: 2px 8px; border: 2px solid #000; border-radius: 4px; box-shadow: 2px 2px 0px #000; }
-.transition-list { font-size: 15px; color: var(--text-main); display: flex; flex-direction: column; gap: 5px; font-weight: bold; }
+
+/* FIX TABELA DESCRIÇÃO FORMAL BLINDADA */
+.formal-panel table, .formal-panel th, .formal-panel td, .formal-panel tr { background-color: #ffffff !important; color: #000000 !important; border: 3px solid #000000 !important; border-collapse: collapse; }
+.formal-panel table { width: 100%; box-shadow: 4px 4px 0px #000; margin-top: 10px; }
+.formal-panel thead th { background-color: var(--accent-purple) !important; padding: 8px; font-weight: 900; text-align: center; }
+.formal-panel tbody th { background-color: var(--bg-dark) !important; padding: 8px; font-weight: 900; text-align: center; }
+.formal-panel td { padding: 0; }
+.formal-panel td input { width: 100%; height: 100%; padding: 10px; border: none !important; background-color: #ffffff !important; color: #000000 !important; font-weight: 900; font-size: 16px; text-align: center; outline: none; box-sizing: border-box; }
+.formal-panel td input:focus { background-color: #fef08a !important; }
 
 /* Painel Central (Tabuleiro) */
-.canvas-area { flex: 1; position: relative; background: var(--bg-dark); overflow: hidden; }
-/* Gibi halftones / dots */
+.canvas-area { flex: 1; position: relative; background: var(--bg-dark); overflow: hidden; cursor: default; min-width: 0; }
 .canvas-area::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; background-image: radial-gradient(#000 2px, transparent 2px); background-size: 20px 20px; pointer-events: none; z-index: 0; }
 .canvas-label { position: absolute; top: 15px; left: 15px; font-size: 14px; color: #000; font-weight: 900; text-transform: uppercase; z-index: 5; background: #fff; padding: 5px 10px; border: 3px solid #000; border-radius: 8px; box-shadow: 4px 4px 0px #000; }
-
-/* Overlay de Tabuleiro Bloqueado - No longer mostly used since we replaced it in JSX, but kept just in case */
 .locked-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.5); z-index: 10; }
-.locked-message { background: #fff; padding: 20px; border: 4px solid #000; border-radius: 12px; text-align: center; max-width: 60%; line-height: 1.5; box-shadow: 8px 8px 0px #000; transform: rotate(1deg); }
 
 /* Estilo das Bolinhas (Nodes) */
-.node { position: absolute; width: 65px; height: 65px; background: #cffafe; border: 3px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; box-shadow: 6px 6px 0px #000; font-size: 22px; transition: transform 0.1s, box-shadow 0.1s; z-index: 2; transform: translate(-50%, -50%); cursor: grab; }
-.node:hover { background: #ffffff; transform: translate(-50%, -50%) scale(1.05); }
+.node { position: absolute; width: 65px; height: 65px; background: #ffffff; border: 4px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; box-shadow: 4px 4px 0px #000; font-size: 22px; transition: box-shadow 0.1s; z-index: 2; transform: translate(-50%, -50%); cursor: grab; }
+.node:hover { background: #fde047; }
 .node.initial::before { content: '▶'; position: absolute; left: -30px; color: #000; font-size: 24px; text-shadow: 2px 2px 0px #fff; }
-.node.final { border: 6px double #000; background: #bbf7d0; box-shadow: 8px 8px 0px #000; }
+.node.final { border: 6px double #000; background: #bbf7d0; box-shadow: 6px 6px 0px #000; }
+.node.selected { border-color: #3b82f6; box-shadow: 0 0 0 4px #93c5fd, 6px 6px 0px #000; background: #eff6ff; }
 
-/* Painel Direito (Testes) */
-.test-panel { width: 320px; background: #fff; border-left: 3px solid #000; padding: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 5; box-shadow: -4px 0 0px #000; min-height: 0; }
-.test-input-area { display: flex; gap: 8px; margin-bottom: 10px; }
-.word-input { flex: 1; background: #fff; border: 3px solid #000; color: #000; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 16px; outline: none; box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1); }
+/* =========================================================
+   PAINEL DIREITO (TESTES) — com mais espaço para palavras
+   ========================================================= */
+.test-panel {
+  width: 280px;
+  flex-shrink: 0;
+  background: #fff;
+  border-left: 3px solid #000;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 5;
+  box-shadow: -4px 0 0px #000;
+  min-height: 0;
+  overflow: hidden;
+}
+.test-input-area { display: flex; gap: 6px; flex-shrink: 0; }
+.word-input { flex: 1; background: #fff; border: 3px solid #000; color: #000; padding: 6px 8px; border-radius: 8px; font-weight: bold; font-size: 14px; outline: none; box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1); }
 .word-input:focus { background: #fef08a; }
-.add-test-btn { background: var(--accent-green); border: 3px solid #000; padding: 8px 15px; border-radius: 8px; font-weight: 900; font-size: 18px; cursor: pointer; box-shadow: 3px 3px 0px #000; transition: transform 0.1s; }
+.add-test-btn { background: var(--accent-green); border: 3px solid #000; padding: 6px 12px; border-radius: 8px; font-weight: 900; font-size: 18px; cursor: pointer; box-shadow: 3px 3px 0px #000; transition: transform 0.1s; flex-shrink: 0; }
 .add-test-btn:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px #000; }
 
-.word-row { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 4px 10px; border-radius: 8px; border: 3px solid #000; font-size: 13px; font-weight: bold; box-shadow: 4px 4px 0px #000; margin-bottom: 4px; min-height: 36px; }
+/* Lista de palavras — scroll generoso */
+.words-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+}
+.words-list::-webkit-scrollbar { width: 8px; }
+.words-list::-webkit-scrollbar-track { background: transparent; }
+.words-list::-webkit-scrollbar-thumb { background: #000; border-radius: 4px; }
+
+.word-row { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 4px 8px; border-radius: 6px; border: 2px solid #000; font-size: 12px; font-weight: bold; box-shadow: 3px 3px 0px #000; min-height: 30px; flex-shrink: 0; }
 .word-row.correct { background: #bbf7d0; }
 .word-row.wrong { background: #fecaca; }
-.word-row.shortest { background: #fef08a; border: 4px solid #000; font-size: 14px; padding: 6px 10px; }
+.word-row.shortest { background: #fef08a; border: 3px solid #000; font-size: 13px; }
 
-.validate-btn { background: var(--accent-green); color: #000; font-weight: 900; font-size: 20px; padding: 15px; border-radius: 12px; border: 3px solid #000; cursor: pointer; text-transform: uppercase; transition: transform 0.1s, box-shadow 0.1s; margin-top: auto; box-shadow: 6px 6px 0px #000; }
-.validate-btn:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0px #000; }
+.validate-btn { background: var(--accent-green); color: #000; font-weight: 900; font-size: 16px; padding: 10px 8px; border-radius: 10px; border: 3px solid #000; cursor: pointer; text-transform: uppercase; transition: transform 0.1s, box-shadow 0.1s; flex-shrink: 0; box-shadow: 5px 5px 0px #000; }
+.validate-btn:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0px #000; }
 .validate-btn:hover { background: #22c55e; }
 
-/* Rodapé (Cartas) */
-.bottom-hand { height: 180px; background: #fff; border-top: 3px solid #000; display: flex; align-items: center; justify-content: flex-start; padding: 10px 0 10px 30px; z-index: 20; position: relative; box-shadow: 0 -4px 0px #000; }
-.cards-scroll-wrapper { display: flex; gap: 20px; flex: 1; overflow-x: auto; height: 100%; align-items: center; padding-right: 200px; padding-bottom: 15px; }
-.cards-scroll-wrapper::-webkit-scrollbar { height: 12px; }
-.cards-scroll-wrapper::-webkit-scrollbar-track { background: transparent; border-top: 3px solid #000; }
-.cards-scroll-wrapper::-webkit-scrollbar-thumb { background: #000; border-radius: 6px; }
+/* Botão de simulação passo a passo */
+.simulate-btn {
+  background: var(--accent-blue);
+  color: #000;
+  font-weight: 900;
+  font-size: 13px;
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 3px solid #000;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: transform 0.1s, box-shadow 0.1s;
+  flex-shrink: 0;
+  box-shadow: 4px 4px 0px #000;
+}
+.simulate-btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0px #000; }
+.simulate-btn:hover { background: #38bdf8; }
 
-.card { width: 100px; height: 140px; background: var(--card-bg); border: 3px solid #000; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; padding: 10px; flex-shrink: 0; box-shadow: inset 0 0 0 4px #fff, 4px 4px 0px #000; position: relative; }
-.card:hover:not(.disabled) { transform: translateY(-15px); box-shadow: inset 0 0 0 4px #fff, 8px 8px 0px #000; background: #ffffff; }
-.card.disabled { opacity: 0.6; pointer-events: none; filter: grayscale(100%); box-shadow: 0px 0px 0px #000; transform: translateY(0); }
-.card-header { font-size: 11px; text-transform: uppercase; font-weight: 900; color: #000; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 10px; text-align: center; }
-.card-icon { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #000; text-shadow: 2px 2px 0px var(--accent-green); }
-.card-footer { font-size: 12px; text-align: center; font-weight: 900; white-space: normal; line-height: 1.2; color: #000; }
-
-.card.initial { background: #bae6fd; }
-.card.state { background: #fde047; }
-.card.transition { background: #e879f9; }
-.card.final { background: #86efac; }
-.card.erase { background: #fca5a5; }
-
-.card.selected-card {
-  transform: translateY(-20px) scale(1.05);
+/* Modal de simulação passo a passo */
+.sim-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.6);
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sim-modal {
+  background: #fff;
   border: 4px solid #000;
-  box-shadow: inset 0 0 0 4px #fff, 6px 6px 0px #000;
-  background: #fef08a;
+  border-radius: 16px;
+  box-shadow: 8px 8px 0px #000;
+  padding: 24px;
+  width: 420px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sim-modal h3 {
+  font-size: 20px;
+  font-weight: 900;
+  text-align: center;
+  border-bottom: 3px solid #000;
+  padding-bottom: 10px;
+}
+.sim-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.sim-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 2px 2px 0px #000;
+}
+.sim-step.ok    { background: #bbf7d0; }
+.sim-step.error { background: #fecaca; }
+.sim-step.info  { background: #fff9c4; }
+.sim-step.done  { background: #c4b5fd; }
+.sim-step-icon { font-size: 20px; flex-shrink: 0; }
+.sim-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.sim-nav-btn {
+  background: var(--accent-blue);
+  border: 3px solid #000;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #000;
+  transition: transform 0.1s;
+}
+.sim-nav-btn:disabled { opacity: 0.4; pointer-events: none; }
+.sim-nav-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+.sim-close-btn {
+  background: var(--accent-red);
+  border: 3px solid #000;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #000;
+  transition: transform 0.1s;
+}
+.sim-close-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+.sim-word-display {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 900;
+  background: var(--bg-dark);
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 8px;
+  letter-spacing: 6px;
+  box-shadow: 3px 3px 0px #000;
+}
+.sim-char {
+  display: inline-block;
+  transition: all 0.2s;
+}
+.sim-char.active {
+  background: #fbbf24;
+  border-radius: 4px;
+  padding: 0 3px;
+  color: #000;
+  box-shadow: 2px 2px 0px #000;
+}
+.sim-char.done-ok {
+  color: #16a34a;
+  text-decoration: underline;
+}
+.sim-char.done-err {
+  color: #dc2626;
+  text-decoration: line-through;
 }
 
-/* --- NOVAS ESTILIZAÇÕES DE INTERATIVIDADE --- */
+/* Rodapé (Cartas) */
+.bottom-hand { height: 175px; flex-shrink: 0; background: #fff; border-top: 3px solid #000; display: flex; align-items: center; justify-content: flex-start; padding: 8px 0 8px 20px; z-index: 20; position: relative; box-shadow: 0 -4px 0px #000; }
+.cards-scroll-wrapper { display: flex; gap: 16px; flex: 1; overflow-x: auto; height: 100%; align-items: center; padding-right: 20px; padding-bottom: 12px; }
+.cards-scroll-wrapper::-webkit-scrollbar { height: 10px; }
+.cards-scroll-wrapper::-webkit-scrollbar-track { background: transparent; border-top: 2px solid #000; }
+.cards-scroll-wrapper::-webkit-scrollbar-thumb { background: #000; border-radius: 6px; }
+
+/* =========================================================
+   CARTAS — Estilo Baralho Turma da Mônica
+   Pip somente no canto superior DIREITO
+   ========================================================= */
+.card {
+  width: 90px;
+  height: 140px;
+  background: var(--card-bg);
+  border: 3px solid #000;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  flex-shrink: 0;
+  box-shadow: 4px 4px 0px #000;
+  position: relative;
+  overflow: hidden;
+}
+/* Pip apenas no canto superior direito */
+.card::after {
+  content: attr(data-icon);
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  color: #000;
+}
+/* Remove o pip inferior (sem ::before) */
+.card:hover:not(.disabled) {
+  transform: translateY(-18px) rotate(-2deg);
+  box-shadow: 6px 6px 0px #000;
+}
+.card.disabled { opacity: 0.55; pointer-events: none; filter: grayscale(80%); }
+.card-header {
+  font-size: 9px;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: #000;
+  border-bottom: 2px solid #000;
+  padding-bottom: 3px;
+  margin-bottom: 4px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+.card-icon {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+}
+.card-footer {
+  font-size: 10px;
+  text-align: center;
+  font-weight: 900;
+  white-space: normal;
+  line-height: 1.2;
+  color: #000;
+  border-top: 2px solid #000;
+  padding-top: 3px;
+}
+
+/* Cores vibrantes estilo Mônica */
+.card.initial    { background: #bae6fd; }
+.card.state      { background: #fde68a; }
+.card.transition { background: #f9a8d4; }
+.card.final      { background: #86efac; }
+.card.erase      { background: #fca5a5; }
+.symbol-card     { background: #c4b5fd; }
+
+.card.selected-card {
+  transform: translateY(-22px) rotate(-1deg) scale(1.05);
+  border: 4px solid #1d4ed8;
+  box-shadow: 6px 6px 0px #000;
+}
+
+/* --- NOVAS ESTILIZAÇÕES DE INTERATIVIDADE E ALTO CONTRASTE --- */
 .connections-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .transition-line { stroke: #000; stroke-width: 4; fill: none; transition: stroke 0.2s; }
+.line-error { stroke: #dc2626 !important; stroke-width: 6 !important; }
 
 .transition-label { position: absolute; transform: translate(-50%, -50%); z-index: 5; }
 .transition-input { width: 30px; height: 30px; text-align: center; background: #fff; color: #000; border: 3px solid #000; border-radius: 6px; outline: none; font-weight: 900; font-size: 16px; transition: 0.2s; box-shadow: 3px 3px 0px #000; }
-.transition-input:focus { background: #ffffff; transform: scale(1.2); box-shadow: 4px 4px 0px #000; }
+.transition-input:focus { background: #93c5fd !important; border: 3px solid #1d4ed8 !important; transform: scale(1.2); box-shadow: 4px 4px 0px #000; color: #000; }
+
+/* Nó destacado durante simulação */
+.node.sim-active { background: #fbbf24 !important; border-color: #d97706 !important; box-shadow: 0 0 0 4px #fde68a, 6px 6px 0px #000 !important; }
+.node.sim-error  { background: #fecaca !important; border-color: #dc2626 !important; box-shadow: 0 0 0 4px #fca5a5, 6px 6px 0px #000 !important; }
+.node.sim-done   { background: #bbf7d0 !important; border-color: #16a34a !important; box-shadow: 0 0 0 4px #86efac, 6px 6px 0px #000 !important; }
 
 .node.dragging { cursor: grabbing; z-index: 100; transform: translate(-50%, -50%) scale(1.1); box-shadow: 10px 10px 0px #000; }
 .node.selected-source { border: 4px dashed #000; box-shadow: 0 0 0 4px #fef08a, 6px 6px 0px #000; }
@@ -132,77 +360,79 @@ body { color: var(--text-main); }
 .transition-line.erasable:hover { stroke: #ef4444 !important; stroke-width: 6 !important; }
 .erasable-target:hover .transition-input { background: #fecaca !important; border-color: #ef4444 !important; color: #000 !important; cursor: pointer !important; transform: scale(1.2); }
 
-/* --- CARTAS E DECK (GAMIFICAÇÃO) --- */
-@keyframes slideUpFade {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.slide-up-fade {
-  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.card-separator {
-  width: 4px;
-  height: 80%;
-  background: #000;
-  margin: 0 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-.symbol-card {
-  background: #ffedd5;
-}
-
-.symbol-card.disabled-letter {
-  opacity: 0.5;
-  filter: grayscale(100%);
-  pointer-events: none;
-  box-shadow: 0px 0px 0px #000;
-}
-
-.transition-label.clickable {
-  cursor: pointer;
-}
-
-.transition-label.clickable .transition-input {
-  cursor: pointer;
-  pointer-events: none;
-}
-
-.transition-label.action-target:hover .transition-input {
-  background: var(--accent-green);
-  transform: scale(1.1);
-}
-
-.visual-deck {
-  display: none;
-}
+/* --- ANIMAÇÕES E ESTADOS --- */
+@keyframes slideUpFade { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.slide-up-fade { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.card-separator { width: 4px; height: 80%; background: #000; margin: 0 5px; border-radius: 2px; flex-shrink: 0; }
+.symbol-card.disabled-letter { opacity: 0.5; filter: grayscale(100%); pointer-events: none; box-shadow: 0px 0px 0px #000; }
+.transition-label.clickable { cursor: pointer; }
+.transition-label.clickable .transition-input { cursor: pointer; pointer-events: none; }
+.transition-label.action-target:hover .transition-input { background: var(--accent-green); transform: scale(1.1); }
+.visual-deck { display: none; }
 
 /* --- TOAST NOTIFICATION --- */
-@keyframes slideDown {
-  from { top: -50px; opacity: 0; }
-  to { top: 20px; opacity: 1; }
-}
-
+@keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
 .toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; border-radius: 12px; border: 4px solid #000; color: #000; font-weight: 900; z-index: 9999; animation: slideDown 0.3s ease-out; box-shadow: 6px 6px 0px #000; font-size: 16px; }
 .toast-notification.error { background-color: var(--accent-red); }
 .toast-notification.success { background-color: var(--accent-green); }
 .toast-notification.info { background-color: var(--accent-blue); }
 
-/* --- NOVAS ANIMAÇÕES E ESTADOS (VERSÃO 1.0.5) --- */
-@keyframes errorPulse { 
-  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 
-  70% { box-shadow: 0 0 0 15px rgba(239,68,68,0); } 
-  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } 
+/* ALERTA SEVERO */
+@keyframes severePulse { 
+  0% { box-shadow: 0 0 0 0 rgba(220,38,38,0.8); background-color: #fecaca; transform: scale(1); } 
+  50% { box-shadow: 0 0 0 15px rgba(220,38,38,0); background-color: #f87171; transform: scale(1.05); } 
+  100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); background-color: #fecaca; transform: scale(1); } 
 }
-.error-pulse { 
-  animation: errorPulse 1s infinite; 
-  border-color: #ef4444 !important; 
+.error-pulse-severe { 
+  animation: severePulse 0.8s infinite !important; 
+  border-color: #991b1b !important; 
+  color: #991b1b !important; 
 }
-.locked-letter { 
-  opacity: 0.5; 
-  filter: grayscale(1); 
-  pointer-events: none; 
+.locked-letter { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+
+/* HUD do Professor Maurílio — balão acima, personagem fixo em baixo */
+.professor-hud {
+  position: fixed;
+  right: 20px;
+  bottom: 195px; /* fica acima do rodapé de cartas (175px + margem) */
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.professor-hud .prof-img {
+  pointer-events: auto;
+  cursor: pointer;
+  height: 170px;
+  transform: scaleX(-1);
+  filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.4));
+  display: block;
+}
+.professor-balloon {
+  position: relative;
+  width: 210px;
+  height: 140px;
+  margin-bottom: -8px;
+  pointer-events: none;
+}
+.professor-balloon img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+.professor-balloon-text {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 14px 36px 14px;
+  box-sizing: border-box;
+  color: #000;
+  font-size: 13px;
+  text-align: center;
+  font-weight: bold;
+  z-index: 1;
 }
