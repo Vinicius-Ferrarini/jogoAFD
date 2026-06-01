@@ -1,8 +1,12 @@
-// Versão: 1.0.2
+// Versão: 1.0.9
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import { GAME_LEVELS } from './levels';
 import FormalDescriptionModal from './FormalDescriptionModal';
+import imgMaurilioApontando from './assets/maurilio2_apontando_pro_lado.png';
+import imgMaurilioSerio from './assets/maurilio1_serio.png';
+import imgMaurilioExplicando from './assets/maurilio3_explicando.png';
+import imgBalaoFala from './assets/balao_fala_redondo.png';
 
 export default function App() {
   // --- ESTADOS DE PROGRESSÃO ---
@@ -70,7 +74,18 @@ export default function App() {
   const [dragInfo, setDragInfo] = useState({ nodeId: null });
   const canvasRef = useRef(null);
 
+  const [highlightedError, setHighlightedError] = useState(null);
+  const [professorMessage, setProfessorMessage] = useState('');
+  const speechTimeoutRef = useRef(null);
+  const [showVictoryScreen, setShowVictoryScreen] = useState(false);
+
   const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
+
+  const triggerProfessorSpeech = (msg, duration = 5000) => {
+    setProfessorMessage(msg);
+    if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+    speechTimeoutRef.current = setTimeout(() => setProfessorMessage(''), duration);
+  };
 
   useEffect(() => {
     if (tela !== 'JOGO') return;
@@ -115,7 +130,7 @@ export default function App() {
     const target = currentLevel.shortestWord;
     const testInputLower = newWord.toLowerCase();
     const isSpecialNull = (testInputLower === 'null' || testInputLower === 'vazio');
-    
+
     if (target === null) {
       if (isSpecialNull) isShortest = true;
     } else if (newWord === target) {
@@ -132,8 +147,12 @@ export default function App() {
 
     const wordDisplay = newWord === '' ? 'λ' : newWord;
 
-    if (isShortest) {
-      if (!isDrawingUnlocked) {
+    if (testWords.some(w => w.word === wordDisplay)) { 
+      showToast("Você já testou essa palavra!", "info"); 
+      return; 
+    }
+
+    if (isShortest) {      if (!isDrawingUnlocked) {
          setIsDrawingUnlocked(true);
          updateStars(currentLevel.id, 1);
          showToast("Sucesso! Tabuleiro liberado.", "success");
@@ -208,6 +227,28 @@ export default function App() {
 
   // --- FUNÇÃO DO MOTOR DE SIMULAÇÃO (VALIDAÇÃO DO AFD) ---
   const validateAFD = () => {
+    if (!nodes.some(n => n.isInitial)) {
+      setHighlightedError('toggleInitial');
+      setTimeout(() => setHighlightedError(null), 3000);
+      showToast("Erro: Você esqueceu de definir o Estado Inicial (▶)!", "error");
+      return;
+    }
+
+    if (!nodes.some(n => n.isFinal)) {
+      setHighlightedError('toggleFinal');
+      setTimeout(() => setHighlightedError(null), 3000);
+      showToast("Erro: O autômato precisa de pelo menos um Estado Final (◎) para aceitar palavras!", "error");
+      return;
+    }
+
+    const emptyTransitionIdx = transitions.findIndex(t => t.symbol === '');
+    if (emptyTransitionIdx !== -1) {
+      setHighlightedError(`transition-${emptyTransitionIdx}`);
+      setTimeout(() => setHighlightedError(null), 3000);
+      showToast("Você deixou setas em branco! Preencha todas as transições.", "error");
+      return;
+    }
+
     for (let node of nodes) {
       const nodeTransitions = transitions.filter(t => t.from === node.id);
       const symbols = nodeTransitions.map(t => t.symbol);
@@ -273,6 +314,7 @@ export default function App() {
   const handleFormalSuccess = () => {
     updateStars(currentLevel.id, 3);
     showToast("Fase Concluída com Perfeição! Você conquistou a 3ª Estrela!", "success");
+    setShowVictoryScreen(true);
   };
 
   // --- EVENTOS DE INTERAÇÃO (MOUSE/TOUCH) ---
@@ -299,7 +341,7 @@ export default function App() {
       if (!connectingSource) {
         setConnectingSource(nodeId);
       } else {
-        const symbol = currentLevel?.alphabet?.[0] || 'a';
+        const symbol = '';
         setTransitions([...transitions, { from: connectingSource, symbol, to: nodeId }]);
         setInteractionMode('IDLE');
         setConnectingSource(null);
@@ -485,9 +527,8 @@ export default function App() {
       </header>
 
       <div className="workspace">
-        
-        {/* PAINEL ESQUERDO: Descrição Formal (DRAWER) */}
-        <aside className={`formal-panel ${isSidebarOpen ? 'open' : ''}`}>
+
+        {/* PAINEL ESQUERDO: Descrição Formal (DRAWER) */}        <aside className={`formal-panel ${isSidebarOpen ? 'open' : ''}`}>
           <FormalDescriptionModal 
             isOpen={isSidebarOpen} 
             onClose={() => setIsSidebarOpen(false)}
@@ -541,19 +582,58 @@ export default function App() {
 
           {!isDrawingUnlocked ? (
             <div className="locked-overlay">
-               <div className="locked-message">
-                 🔒 DESCUBRA A MENOR PALAVRA ACEITA PARA LIBERAR O TABULEIRO
-               </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                gap: '10px'
+              }}>
+                <img src={imgMaurilioApontando} alt="Professor Maurílio" style={{ height: '300px', objectFit: 'contain', zIndex: 1 }} />
+                <div style={{
+                  position: 'relative',
+                  width: '240px',
+                  height: '180px',
+                  marginBottom: '180px',
+                  marginLeft: '-40px',
+                  zIndex: 2
+                }}>
+                  <img src={imgBalaoFala} alt="" style={{
+                    position: 'absolute',
+                    top: 0, left: 0,
+                    width: '100%', height: '100%',
+                    transform: 'scaleX(-1)',
+                    zIndex: 1
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px 20px 40px 20px',
+                    color: '#000',
+                    fontWeight: 'bold',
+                    fontSize: '18px',
+                    textAlign: 'center',
+                    fontFamily: "'Comic Sans MS', 'Comic Neue', cursive, sans-serif",
+                    zIndex: 2
+                  }}>
+                    1ª Coisa é a Menor Palavra!
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <>
               <svg className="connections-svg">
                 <defs>
                   <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="40" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-purple)" />
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#000" />
                   </marker>
                   <marker id="arrowhead-hover" markerWidth="10" markerHeight="7" refX="40" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#22c55e" />
                   </marker>
                   <marker id="arrowhead-erase" markerWidth="10" markerHeight="7" refX="40" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
                     <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
@@ -587,12 +667,12 @@ export default function App() {
                 const isClickableAction = selectedSymbolCard || interactionMode === 'ERASE';
                 
                 return (
-                  <div 
-                    key={`label-${tr.idx}`} 
-                    className={`transition-label ${isClickableAction ? 'clickable action-target' : ''} ${interactionMode === 'ERASE' ? 'erasable-target' : ''}`} 
-                    style={{ 
-                       left: tr.src.id === tr.tgt.id ? `${tr.src.x}%` : `${tr.labelPxX}px`, 
-                       top: tr.src.id === tr.tgt.id ? `calc(${tr.src.y}% - 55px)` : `${tr.labelPxY}px` 
+                  <div
+                    key={`label-${tr.idx}`}
+                    className={`transition-label ${isClickableAction ? 'clickable action-target' : ''} ${interactionMode === 'ERASE' ? 'erasable-target' : ''}`}
+                    style={{
+                       left: tr.src.id === tr.tgt.id ? `${tr.src.x}%` : `${tr.labelPxX}px`,
+                       top: tr.src.id === tr.tgt.id ? `calc(${tr.src.y}% - 55px)` : `${tr.labelPxY}px`
                     }}
                     onClick={(e) => {
                         e.stopPropagation();
@@ -601,16 +681,15 @@ export default function App() {
                         }
                     }}
                   >
-                    <input 
-                      type="text" 
-                      value={tr.symbol} 
+                    <input
+                      type="text"
+                      value={tr.symbol}
                       onChange={(e) => handleSymbolChange(tr.idx, e.target.value)}
-                      className="transition-input"
+                      className={`transition-input ${highlightedError === `transition-${tr.idx}` ? 'error-pulse' : ''}`}
                       maxLength={5}
                       readOnly={!!isClickableAction}
                     />
-                  </div>
-                );
+                  </div>                );
               })}
 
               {nodes.map(node => (
@@ -651,7 +730,7 @@ export default function App() {
               <button className="add-test-btn" onClick={handleTestWord}>+</button>
           </div>
           
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', minHeight: '0', marginTop: '10px' }}>
             {testWords.map((item, idx) => (
               <div key={idx} className={`word-row ${item.status}`}>
                   <span>{item.word}</span>
@@ -673,51 +752,102 @@ export default function App() {
       </div>
 
       {/* RODAPÉ: Mão de Cartas */}
-      <footer className="bottom-hand">
-        {drawnCards.map((card) => {
-            if (card.type === 'separator') {
-                return <div key={card.id} className="card-separator slide-up-fade"></div>;
-            }
+      {(() => {
+        const discoveredSymbols = new Set(testWords.filter(w => w.status === 'correct' || w.status === 'shortest').map(w => w.word.split('')).flat());
+        
+        return (
+          <footer className="bottom-hand">
+            <div className="cards-scroll-wrapper">
+              {drawnCards.map((card) => {
+                  if (card.type === 'separator') {
+                      return <div key={card.id} className="card-separator slide-up-fade"></div>;
+                  }
 
-            if (card.type === 'action') {
-                let cardClass = '';
-                let onClick = null;
-                if (card.action === 'toggleInitial') { cardClass = 'initial'; onClick = setInitialMode; }
-                if (card.action === 'addNode') { cardClass = 'state'; onClick = addNode; }
-                if (card.action === 'addTransition') { cardClass = 'transition'; onClick = addTransitionMode; }
-                if (card.action === 'toggleFinal') { cardClass = 'final'; onClick = toggleFinalStateMode; }
-                if (card.action === 'erase') { cardClass = 'erase'; onClick = setEraserMode; }
-                
-                const isSelected = interactionMode === card.action || (card.action === 'toggleInitial' && interactionMode === 'TOGGLE_INITIAL') || (card.action === 'addTransition' && interactionMode === 'CONNECTING') || (card.action === 'toggleFinal' && interactionMode === 'TOGGLE_FINAL') || (card.action === 'erase' && interactionMode === 'ERASE') || (card.action === 'addNode' && interactionMode === 'ADD_NODE');
+                  if (card.type === 'action') {
+                      let cardClass = '';
+                      let onClick = null;
+                      if (card.action === 'toggleInitial') { cardClass = 'initial'; onClick = setInitialMode; }
+                      if (card.action === 'addNode') { cardClass = 'state'; onClick = addNode; }
+                      if (card.action === 'addTransition') { cardClass = 'transition'; onClick = addTransitionMode; }
+                      if (card.action === 'toggleFinal') { cardClass = 'final'; onClick = toggleFinalStateMode; }
+                      if (card.action === 'erase') { cardClass = 'erase'; onClick = setEraserMode; }
+                      
+                      const isSelected = interactionMode === card.action || (card.action === 'toggleInitial' && interactionMode === 'TOGGLE_INITIAL') || (card.action === 'addTransition' && interactionMode === 'CONNECTING') || (card.action === 'toggleFinal' && interactionMode === 'TOGGLE_FINAL') || (card.action === 'erase' && interactionMode === 'ERASE') || (card.action === 'addNode' && interactionMode === 'ADD_NODE');
+                      const isErrorHighlighted = highlightedError === card.action;
 
-                return (
-                  <div key={card.id} className={`card ${cardClass} slide-up-fade ${isSelected ? 'selected-card' : ''}`} onClick={onClick}>
-                    <div className="card-header">Ação</div>
-                    <div className="card-icon">{card.icon}</div>
-                    <div className="card-footer">{card.label}</div>
-                  </div>
-                );
-            } else if (card.type === 'symbol') {
-                const isSelected = selectedSymbolCard === card.symbol;
-                const noTransitions = transitions.length === 0;
-                
-                return (
-                  <div key={card.id} className={`card symbol-card slide-up-fade ${isSelected ? 'selected-card' : ''} ${noTransitions ? 'disabled-letter' : ''}`} 
-                       onClick={() => {
-                          if (noTransitions) return;
-                          setInteractionMode('IDLE');
-                          setConnectingSource(null);
-                          setSelectedSymbolCard(isSelected ? null : card.symbol);
-                       }}>
-                    <div className="card-header">Alfabeto</div>
-                    <div className="card-icon" style={{ fontSize: '40px', color: '#fbbf24' }}>{card.symbol}</div>
-                    <div className="card-footer">Usar Símbolo</div>
-                  </div>
-                );
-            }
-            return null;
-        })}
-      </footer>
+                      return (
+                        <div key={card.id} className={`card ${cardClass} slide-up-fade ${isSelected ? 'selected-card' : ''} ${isErrorHighlighted ? 'error-pulse' : ''}`} onClick={onClick}>
+                          <div className="card-header">Ação</div>
+                          <div className="card-icon">{card.icon}</div>
+                          <div className="card-footer">{card.label}</div>
+                        </div>
+                      );
+                  } else if (card.type === 'symbol') {
+                      const isSelected = selectedSymbolCard === card.symbol;
+                      const noTransitions = transitions.length === 0;
+                      const isLocked = !discoveredSymbols.has(card.symbol);
+                      
+                      return (
+                        <div key={card.id} className={`card symbol-card slide-up-fade ${isSelected ? 'selected-card' : ''} ${noTransitions ? 'disabled-letter' : ''} ${isLocked ? 'locked-letter' : ''}`} 
+                             onClick={() => {
+                                if (noTransitions || isLocked) return;
+                                setInteractionMode('IDLE');
+                                setConnectingSource(null);
+                                setSelectedSymbolCard(isSelected ? null : card.symbol);
+                             }}>
+                          <div className="card-header">Alfabeto</div>
+                          <div className="card-icon" style={{ fontSize: '40px', color: '#fbbf24' }}>{isLocked ? '🔒' : card.symbol}</div>
+                          <div className="card-footer">Usar Símbolo</div>
+                        </div>
+                      );
+                  }
+                  return null;
+              })}
+            </div>
+          </footer>
+        );
+      })()}
+
+      {/* Dicas do Professor Maurílio (HUD Fixo) */}
+      {isDrawingUnlocked && (
+        <div style={{ position: 'fixed', right: '20px', bottom: '0px', zIndex: 9999, display: 'flex', alignItems: 'flex-end', cursor: 'pointer' }}>
+          {professorMessage && (
+            <div style={{ position: 'relative', width: '220px', height: '160px', marginBottom: '130px', marginRight: '-20px', zIndex: 10001 }}>
+              <img src={imgBalaoFala} style={{ width: '100%', height: '100%', position: 'absolute', zIndex: 10002 }} />
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px 15px 40px 15px', color: '#000', fontSize: '15px', textAlign: 'center', fontWeight: 'bold', zIndex: 10003 }}>{professorMessage}</div>
+            </div>
+          )}
+          <img src={imgMaurilioSerio} alt="Professor" onClick={() => triggerProfessorSpeech(currentLevel?.hint || "Continue tentando!")} style={{ height: '220px', zIndex: 10000, transform: 'scaleX(-1)', filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.5))' }} />
+        </div>
+      )}
+
+      {/* TELA DE VITÓRIA DEFINITIVA */}
+      {showVictoryScreen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex',
+          justifyContent: 'center', alignItems: 'center', flexDirection: 'column'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', position: 'relative' }}>
+            <div style={{ position: 'relative', width: '300px', marginRight: '-40px', marginTop: '20px' }}>
+              <img src={imgBalaoFala} alt="Balão de Fala" style={{ width: '100%', position: 'absolute', top: 0, left: 0, transform: 'scaleX(-1)' }} />
+              <div style={{ position: 'relative', zIndex: 10, padding: '30px 40px', color: '#111827', fontSize: '18px', fontWeight: 'bold', textAlign: 'center', minHeight: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {currentLevel?.successMsg || "Parabéns, você dominou esta linguagem!"}
+              </div>
+            </div>
+            <img src={imgMaurilioExplicando} alt="Professor Maurílio Explicando" style={{ height: '350px' }} />
+          </div>
+          <button 
+            style={{ marginTop: '40px', padding: '20px 40px', fontSize: '24px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
+            onClick={() => {
+              setShowVictoryScreen(false);
+              setTela('MENU');
+            }}
+          >
+            Voltar ao Menu
+          </button>
+        </div>
+      )}
     </div>
   );
 }
