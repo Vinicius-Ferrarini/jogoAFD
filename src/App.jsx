@@ -1,4 +1,4 @@
-// Versão: 1.0.9
+// Versão: 1.1.1
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import { GAME_LEVELS } from './levels';
@@ -55,7 +55,8 @@ export default function App() {
   };
 
   // --- ESTADOS DE NAVEGAÇÃO E JOGO ---
-  const [tela, setTela] = useState('MENU');
+  const [tela, setTela] = useState('HOME');
+  const [currentPage, setCurrentPage] = useState(1);
   const [currentLevel, setCurrentLevel] = useState(null);
   const [isDrawingUnlocked, setIsDrawingUnlocked] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -465,11 +466,31 @@ export default function App() {
     return { ...t, idx, src, tgt, pathD, labelPxX, labelPxY, isBidirectional };
   }).filter(Boolean);
 
+  // --- RENDERIZAÇÃO: TELA HOME ---
+  if (tela === 'HOME') {
+    return (
+      <div className="menu-screen">
+        <h1 className="menu-title">AutoQuest</h1>
+        <button className="menu-btn primary" onClick={() => setTela('MENU')}>Fases AFD</button>
+        <button className="menu-btn primary" onClick={() => showToast("Será implementado futuramente!", "info")}>AFD Parte 2</button>
+        {toastData.show && (
+          <div className={`toast-notification ${toastData.type}`}>
+            {toastData.message}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // --- RENDERIZAÇÃO: TELA DE MENU ---
   if (tela === 'MENU') {
     const maxStars = GAME_LEVELS.length * 3;
     const totalStars = GAME_LEVELS.reduce((acc, lvl) => acc + (progress[lvl.id]?.stars || 0), 0);
     const percent = maxStars > 0 ? Math.round((totalStars / maxStars) * 100) : 0;
+
+    const itemsPerPage = 20;
+    const totalPages = Math.ceil(GAME_LEVELS.length / itemsPerPage);
+    const currentLevels = GAME_LEVELS.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
       <div className="menu-screen">
@@ -478,7 +499,7 @@ export default function App() {
           Progresso: {percent}% ({totalStars}/{maxStars} ★)
         </div>
         <div className="levels-grid">
-          {GAME_LEVELS.map((lvl) => {
+          {currentLevels.map((lvl) => {
             const lvlStars = progress[lvl.id]?.stars || 0;
             return (
               <button key={lvl.id} className="menu-btn primary" onClick={() => loadLevel(lvl)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
@@ -487,6 +508,11 @@ export default function App() {
               </button>
             );
           })}
+        </div>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginTop: '30px' }}>
+          <button className="menu-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} style={{ opacity: currentPage === 1 ? 0.5 : 1 }}>⬅ Anterior</button>
+          <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#000', background: '#fff', padding: '5px 15px', border: '3px solid #000', borderRadius: '8px' }}>Página {currentPage} de {totalPages}</span>
+          <button className="menu-btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} style={{ opacity: currentPage === totalPages ? 0.5 : 1 }}>Próxima ➡</button>
         </div>
         {toastData.show && (
           <div className={`toast-notification ${toastData.type}`}>
@@ -810,14 +836,16 @@ export default function App() {
 
       {/* Dicas do Professor Maurílio (HUD Fixo) */}
       {isDrawingUnlocked && (
-        <div style={{ position: 'fixed', right: '20px', bottom: '0px', zIndex: 9999, display: 'flex', alignItems: 'flex-end', cursor: 'pointer' }}>
+        <div style={{ position: 'fixed', right: '30px', bottom: '20px', zIndex: 10000, display: 'flex', alignItems: 'flex-end', cursor: 'pointer' }}>
           {professorMessage && (
-            <div style={{ position: 'relative', width: '220px', height: '160px', marginBottom: '130px', marginRight: '-20px', zIndex: 10001 }}>
-              <img src={imgBalaoFala} style={{ width: '100%', height: '100%', position: 'absolute', zIndex: 10002 }} />
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px 15px 40px 15px', color: '#000', fontSize: '15px', textAlign: 'center', fontWeight: 'bold', zIndex: 10003 }}>{professorMessage}</div>
+            <div style={{ position: 'relative', width: '250px', height: '180px', marginBottom: '160px', marginRight: '5px', zIndex: 10001 }}>
+              <img src={imgBalaoFala} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10002 }} />
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px 25px 40px 25px', boxSizing: 'border-box', color: '#000', fontSize: '15px', textAlign: 'center', fontWeight: '900', zIndex: 10003 }}>
+                {professorMessage}
+              </div>
             </div>
           )}
-          <img src={imgMaurilioSerio} alt="Professor" onClick={() => triggerProfessorSpeech(currentLevel?.hint || "Continue tentando!")} style={{ height: '220px', zIndex: 10000, transform: 'scaleX(-1)', filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.5))' }} />
+          <img src={imgMaurilioSerio} alt="Professor" onClick={() => triggerProfessorSpeech(currentLevel?.hint || "Continue tentando!")} style={{ height: '240px', zIndex: 10000, transform: 'scaleX(-1)', filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.5))' }} />
         </div>
       )}
 
