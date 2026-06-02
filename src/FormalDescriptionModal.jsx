@@ -1,16 +1,27 @@
-import React, { useState, useEffect } from 'react';
+// FormalDescriptionModal.jsx — v2.0
+// Correções: cores tabela, revalidação do grafo antes de aceitar elementos e transições
+import { useState, useEffect } from 'react';
 import './FormalDescriptionModal.css';
 
-export default function FormalDescriptionModal({ isOpen, onClose, nodes, transitions, alphabet, currentLevelId, onSuccess, showToast }) {
-  const [inputQ, setInputQ] = useState('');
-  const [inputSigma, setInputSigma] = useState('');
+export default function FormalDescriptionModal({
+  isOpen,
+  onClose,
+  nodes,
+  transitions,
+  alphabet,
+  currentLevelId,
+  onSuccess,
+  showToast,
+  onValidateGraph,
+}) {
+  const [inputQ, setInputQ]           = useState('');
+  const [inputSigma, setInputSigma]   = useState('');
   const [inputInitial, setInputInitial] = useState('');
-  const [inputFinal, setInputFinal] = useState('');
-  
+  const [inputFinal, setInputFinal]   = useState('');
+
   const [areElementsValid, setAreElementsValid] = useState(false);
-  const [parsedQ, setParsedQ] = useState([]);
+  const [parsedQ, setParsedQ]         = useState([]);
   const [parsedSigma, setParsedSigma] = useState([]);
-  
   const [transitionTableData, setTransitionTableData] = useState({});
 
   useEffect(() => {
@@ -28,90 +39,86 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
 
   if (!isOpen) return null;
 
-  const parseInput = (str) => {
-    if (!str) return [];
-    return str.split(',').map(s => s.trim()).filter(s => s !== '');
-  };
+  const parseInput = (str) =>
+    str ? str.split(',').map(s => s.trim()).filter(s => s !== '') : [];
 
   const validateElements = () => {
-    const pQ = parseInput(inputQ);
-    const pSigma = parseInput(inputSigma);
+    if (onValidateGraph && !onValidateGraph()) return;
+
+    const pQ       = parseInput(inputQ);
+    const pSigma   = parseInput(inputSigma);
     const pInitial = parseInput(inputInitial);
-    const pFinal = parseInput(inputFinal);
+    const pFinal   = parseInput(inputFinal);
 
-    const canvasQ = nodes.map(n => n.id);
-    const isQValid = pQ.length === canvasQ.length && pQ.every(q => canvasQ.includes(q)) && canvasQ.every(q => pQ.includes(q));
+    const canvasQ       = nodes.map(n => n.label ?? n.id);
+    const canvasSigma   = alphabet || [];
+    const canvasInitial = nodes.find(n => n.isInitial)?.label ?? nodes.find(n => n.isInitial)?.id;
+    const canvasFinal   = nodes.filter(n => n.isFinal).map(n => n.label ?? n.id);
 
-    const canvasSigma = alphabet || [];
-    const isSigmaValid = pSigma.length === canvasSigma.length && pSigma.every(s => canvasSigma.includes(s)) && canvasSigma.every(s => pSigma.includes(s));
+    const setsEqual = (a, b) =>
+      a.length === b.length && a.every(x => b.includes(x)) && b.every(x => a.includes(x));
 
-    const canvasInitial = nodes.find(n => n.isInitial)?.id;
-    const isInitialValid = (canvasInitial ? (pInitial.length === 1 && pInitial[0] === canvasInitial) : pInitial.length === 0);
-
-    const canvasFinal = nodes.filter(n => n.isFinal).map(n => n.id);
-    const isFinalValid = pFinal.length === canvasFinal.length && pFinal.every(f => canvasFinal.includes(f)) && canvasFinal.every(f => pFinal.includes(f));
-
-    if (!isQValid) {
-      showToast("Erro: O conjunto de estados Q não bate com os estados criados no grafo.", "error");
+    if (!setsEqual(pQ, canvasQ)) {
+      showToast('Erro: O conjunto de estados Q não bate com os estados criados no grafo.', 'error');
       return;
     }
-    if (!isSigmaValid) {
-      showToast("Erro: O alfabeto Σ não bate com o alfabeto da linguagem atual.", "error");
+    if (!setsEqual(pSigma, canvasSigma)) {
+      showToast('Erro: O alfabeto Σ não bate com o alfabeto da linguagem atual.', 'error');
       return;
     }
-    if (!isInitialValid) {
-      showToast("Erro: O estado inicial não bate com o grafo.", "error");
+    if (canvasInitial ? (pInitial.length !== 1 || pInitial[0] !== canvasInitial) : pInitial.length !== 0) {
+      showToast('Erro: O estado inicial não bate com o grafo.', 'error');
       return;
     }
-    if (!isFinalValid) {
-      showToast("Erro: O conjunto de estados finais F não bate com o grafo.", "error");
+    if (!setsEqual(pFinal, canvasFinal)) {
+      showToast('Erro: O conjunto de estados finais F não bate com o grafo.', 'error');
       return;
     }
 
-    setParsedQ(pQ);
-    setParsedSigma(pSigma);
-    
     const initialData = {};
     pQ.forEach(q => {
       initialData[q] = {};
-      pSigma.forEach(s => {
-        initialData[q][s] = '';
-      });
+      pSigma.forEach(s => { initialData[q][s] = ''; });
     });
-    setTransitionTableData(initialData);
 
+    setParsedQ(pQ);
+    setParsedSigma(pSigma);
+    setTransitionTableData(initialData);
     setAreElementsValid(true);
   };
 
   const handleTableChange = (state, symbol, value) => {
     setTransitionTableData(prev => ({
       ...prev,
-      [state]: {
-        ...prev[state],
-        [symbol]: value.trim()
-      }
+      [state]: { ...prev[state], [symbol]: value.trim() },
     }));
   };
 
   const validateTransitions = () => {
+    if (onValidateGraph && !onValidateGraph()) {
+      setAreElementsValid(false);
+      setParsedQ([]);
+      setParsedSigma([]);
+      setTransitionTableData({});
+      return;
+    }
+
     let isAllCorrect = true;
 
     for (const q of parsedQ) {
       for (const s of parsedSigma) {
-        const userDest = transitionTableData[q][s];
-        
-        const actualTrans = transitions.find(t => t.from === q && t.symbol === s);
-        
-        if (actualTrans) {
-          if (userDest !== actualTrans.to) {
-            isAllCorrect = false;
-            break;
-          }
-        } else {
-          if (userDest && userDest !== '') {
-            isAllCorrect = false;
-            break;
-          }
+        const userDest  = transitionTableData[q]?.[s] ?? '';
+        const actualTrans = transitions.find(t => {
+          const fromLabel = nodes.find(n => n.id === t.from)?.label ?? t.from;
+          return fromLabel === q && t.symbol === s;
+        });
+        const actualDest = actualTrans
+          ? (nodes.find(n => n.id === actualTrans.to)?.label ?? actualTrans.to)
+          : '';
+
+        if (userDest !== actualDest) {
+          isAllCorrect = false;
+          break;
         }
       }
       if (!isAllCorrect) break;
@@ -121,55 +128,78 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
       if (onSuccess) onSuccess();
       onClose();
     } else {
-      showToast("Erro nas transições: A tabela não corresponde às transições desenhadas no grafo. Verifique as células.", "error");
+      showToast(
+        'Erro nas transições: A tabela não corresponde às transições do grafo. Verifique as células.',
+        'error'
+      );
     }
   };
 
   return (
     <div className="formal-sidebar-content">
-      <h2 style={{ fontSize: '14px', marginBottom: '20px', color: 'var(--accent-blue)', textTransform: 'uppercase', textAlign: 'center', fontFamily: 'monospace' }}>Descrição Formal</h2>
-      
+      <h2>Descrição Formal</h2>
+
+      <div className="revalidate-notice">
+        ⚠️ O grafo será revalidado antes de cada etapa
+      </div>
+
       <div className="form-group">
         <label>Q (Conjunto de Estados):</label>
-        <input 
-          type="text" 
-          placeholder="ex: q0, q1" 
-          value={inputQ} 
-          onChange={e => setInputQ(e.target.value)} 
-          readOnly={areElementsValid} 
+        <input
+          type="text"
+          placeholder="ex: q0, q1"
+          value={inputQ}
+          onChange={e => setInputQ(e.target.value)}
+          readOnly={areElementsValid}
+          translate="no"
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
         />
       </div>
-      
+
       <div className="form-group">
         <label>Σ (Alfabeto):</label>
-        <input 
-          type="text" 
-          placeholder="ex: a, b" 
-          value={inputSigma} 
-          onChange={e => setInputSigma(e.target.value)} 
-          readOnly={areElementsValid} 
+        <input
+          type="text"
+          placeholder="ex: a, b"
+          value={inputSigma}
+          onChange={e => setInputSigma(e.target.value)}
+          readOnly={areElementsValid}
+          translate="no"
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
         />
       </div>
 
       <div className="form-group">
-        <label>q0 (Inicial):</label>
-        <input 
-          type="text" 
-          placeholder="ex: q0" 
-          value={inputInitial} 
-          onChange={e => setInputInitial(e.target.value)} 
-          readOnly={areElementsValid} 
+        <label>q₀ (Estado Inicial):</label>
+        <input
+          type="text"
+          placeholder="ex: q0"
+          value={inputInitial}
+          onChange={e => setInputInitial(e.target.value)}
+          readOnly={areElementsValid}
+          translate="no"
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
         />
       </div>
 
       <div className="form-group">
-        <label>F (Finais):</label>
-        <input 
-          type="text" 
-          placeholder="ex: q1" 
-          value={inputFinal} 
-          onChange={e => setInputFinal(e.target.value)} 
-          readOnly={areElementsValid} 
+        <label>F (Estados Finais):</label>
+        <input
+          type="text"
+          placeholder="ex: q1"
+          value={inputFinal}
+          onChange={e => setInputFinal(e.target.value)}
+          readOnly={areElementsValid}
+          translate="no"
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
         />
       </div>
 
@@ -196,10 +226,14 @@ export default function FormalDescriptionModal({ isOpen, onClose, nodes, transit
                     <td className="row-header">{q}</td>
                     {parsedSigma.map(s => (
                       <td key={s}>
-                        <input 
-                          type="text" 
-                          value={transitionTableData[q][s]} 
+                        <input
+                          type="text"
+                          value={transitionTableData[q]?.[s] ?? ''}
                           onChange={e => handleTableChange(q, s, e.target.value)}
+                          translate="no"
+                          spellCheck={false}
+                          autoCorrect="off"
+                          autoCapitalize="off"
                         />
                       </td>
                     ))}

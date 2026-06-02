@@ -1,162 +1,211 @@
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.75);
+/* ═══════════════════════════════════════════════════
+   FormalDescriptionModal.css  — Estilo Gibi/Brutalismo
+   ═══════════════════════════════════════════════════ */
+
+.formal-sidebar-content {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
 }
 
-.modal-content {
-  background: var(--panel-bg);
-  border: 2px solid var(--accent-blue);
-  border-radius: 12px;
-  padding: 30px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  color: var(--text-main);
-}
-
-.modal-content h2 {
-  color: var(--accent-blue);
+.formal-sidebar-content h2 {
+  font-size: 13px;
+  margin-bottom: 16px;
+  color: #000;
+  text-transform: uppercase;
   text-align: center;
-  margin-bottom: 25px;
-  font-family: monospace;
+  font-weight: 900;
+  background: var(--accent-blue);
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 3px 3px 0px #000;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
+  gap: 3px;
 }
 
 .form-group label {
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 900;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .form-group input {
-  padding: 10px;
+  padding: 7px 10px;
   border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background: #000;
-  color: #fff;
-  font-family: monospace;
-  font-size: 16px;
+  border: 3px solid #000;
+  background: #fff;
+  color: #000;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
   outline: none;
-  transition: border-color 0.2s;
+  box-shadow: 2px 2px 0px #000;
+  transition: background 0.15s;
 }
 
 .form-group input:focus {
-  border-color: var(--accent-blue);
+  background: #fef08a;
 }
 
 .form-group input[readOnly] {
-  opacity: 0.7;
+  opacity: 0.75;
   cursor: not-allowed;
-  border-color: var(--accent-green);
+  background: #f0fdf4;
+  border-color: #16a34a;
 }
 
 .btn-validate {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   background: var(--accent-blue);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 16px;
+  color: #000;
+  border: 3px solid #000;
+  border-radius: 8px;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-weight: 900;
+  font-size: 14px;
   cursor: pointer;
-  margin-top: 10px;
-  transition: background 0.2s;
+  margin-top: 6px;
+  box-shadow: 4px 4px 0px #000;
+  transition: transform 0.1s, box-shadow 0.1s;
+  text-transform: uppercase;
 }
 
 .btn-validate:hover {
-  background: #2563eb;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000;
+}
+
+.btn-validate:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0px #000;
 }
 
 .btn-validate.success {
   background: var(--accent-green);
   color: #000;
-  margin-top: 20px;
+  margin-top: 12px;
 }
 
 .btn-validate.success:hover {
-  background: #059669;
+  background: #22c55e;
 }
 
 .table-section {
-  margin-top: 30px;
-  border-top: 1px solid var(--border-color);
-  padding-top: 20px;
+  margin-top: 16px;
+  border-top: 3px dashed #000;
+  padding-top: 14px;
 }
 
 .table-section h3 {
   text-align: center;
-  color: var(--accent-purple);
-  margin-bottom: 15px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #000;
+  margin-bottom: 10px;
+  background: var(--accent-purple);
+  border: 3px solid #000;
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow: 2px 2px 0px #000;
 }
 
 .transition-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+  box-shadow: 4px 4px 0px #000;
 }
 
-.transition-table th, .transition-table td {
-  border: 1px solid var(--border-color);
-  padding: 10px;
+.transition-table th,
+.transition-table td {
+  border: 3px solid #000;
+  padding: 6px 4px;
   text-align: center;
 }
 
-.transition-table th {
-  background: #0d1117;
-  color: var(--accent-purple);
+.transition-table thead th {
+  background: var(--accent-purple);
+  color: #000;
+  font-weight: 900;
+  font-size: 14px;
 }
 
 .transition-table .row-header {
-  background: #0d1117;
-  font-weight: bold;
+  background: var(--bg-dark);
+  color: #000;
+  font-weight: 900;
+  font-size: 13px;
 }
 
-.transition-table input {
+.transition-table td {
+  background: #ffffff;
+  color: #000;
+}
+
+.transition-table td input {
   width: 100%;
-  padding: 8px;
+  padding: 5px 2px;
   background: transparent;
   border: none;
-  color: #fff;
+  color: #000;
   text-align: center;
-  font-family: monospace;
-  font-size: 16px;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
   outline: none;
 }
 
-.transition-table input:focus {
-  background: rgba(139, 92, 246, 0.1);
+.transition-table td input:focus {
+  background: #fef08a;
+  border-radius: 3px;
 }
 
 .btn-close {
   width: 100%;
-  padding: 10px;
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  margin-top: 20px;
+  padding: 8px;
+  background: #fff;
+  color: #000;
+  border: 3px solid #000;
+  border-radius: 8px;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  margin-top: 12px;
   cursor: pointer;
-  transition: 0.2s;
+  box-shadow: 3px 3px 0px #000;
+  transition: transform 0.1s, box-shadow 0.1s;
 }
 
 .btn-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--accent-red);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000;
+}
+
+.btn-close:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #000;
+}
+
+.revalidate-notice {
+  background: #fef08a;
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #000;
+  box-shadow: 2px 2px 0px #000;
+  text-align: center;
+  margin-bottom: 8px;
 }
