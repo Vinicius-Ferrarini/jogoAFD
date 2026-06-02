@@ -1,0 +1,835 @@
+/* ═══════════════════════════════════════════════════════
+   App.css — AutoQuest v2.0  |  Estilo Gibi / Neo-Brutalismo
+   ═══════════════════════════════════════════════════════ */
+
+/* --- VARIÁVEIS DO TEMA --- */
+:root {
+  --bg-dark:       #fff9c4;
+  --panel-bg:      #ffffff;
+  --card-bg:       #ffffff;
+  --border-color:  #000000;
+  --accent-green:  #4ade80;
+  --accent-blue:   #60a5fa;
+  --accent-purple: #c084fc;
+  --accent-red:    #f87171;
+  --text-main:     #000000;
+  --text-muted:    #333333;
+}
+
+/* --- RESET BÁSICO --- */
+*,
+*::before,
+*::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif; }
+
+html, body, #root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  /* Impede tradução automática do navegador de quebrar inputs React */
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* Re-habilita seleção de texto nos inputs e textos de leitura */
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+body { color: var(--text-main); }
+
+/* --- TELA DE MENU --- */
+.menu-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--bg-dark);
+}
+
+.menu-title {
+  font-size: 64px;
+  color: var(--text-main);
+  text-shadow: 4px 4px 0 var(--accent-green);
+  margin-bottom: 40px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  border: 3px solid #000;
+  padding: 10px 30px;
+  background: #fff;
+  box-shadow: 8px 8px 0px #000;
+  border-radius: 12px;
+  transform: rotate(-2deg);
+}
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+  max-width: 900px;
+}
+
+.menu-btn {
+  padding: 15px;
+  background: var(--panel-bg);
+  border: 3px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  /* will-change reduz repintura em PCs fracos */
+  will-change: transform;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  text-align: center;
+  box-shadow: 4px 4px 0px #000;
+}
+.menu-btn:hover {
+  background: var(--accent-blue);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000;
+}
+.menu-btn.primary { background: var(--accent-green); }
+.menu-btn.primary:hover {
+  background: var(--accent-green);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000;
+}
+
+/* --- WORKSPACE (TELA DO JOGO) --- */
+.workspace-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* Evita relayouts custosos em PCs lentos */
+  contain: layout;
+}
+
+.game-header {
+  background: var(--panel-bg);
+  border-bottom: 3px solid #000;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  box-shadow: 0 4px 0px #000;
+  flex-shrink: 0;
+}
+
+.header-left { display: flex; align-items: center; gap: 12px; width: 150px; }
+
+.sidebar-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-toggle:hover { transform: scale(1.1); }
+
+.mission-label {
+  color: var(--text-main);
+  font-weight: 800;
+  font-size: 13px;
+  text-transform: uppercase;
+  margin-right: 12px;
+  background: var(--accent-green);
+  padding: 4px 8px;
+  border: 3px solid #000;
+  border-radius: 8px;
+  box-shadow: 2px 2px 0px #000;
+  transform: rotate(-2deg);
+  white-space: nowrap;
+}
+
+.mission-formula {
+  font-size: 20px;
+  font-weight: bold;
+  background: #fff;
+  padding: 4px 16px;
+  border-radius: 8px;
+  border: 3px solid #000;
+  color: #000;
+  box-shadow: 4px 4px 0px #000;
+}
+
+.back-btn {
+  background: #fff;
+  border: 3px solid #000;
+  padding: 5px 10px;
+  border-radius: 8px;
+  color: var(--text-main);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+  box-shadow: 3px 3px 0px #000;
+}
+.back-btn:hover {
+  background: var(--accent-red);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #000;
+}
+
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+}
+
+/* ── Painel Esquerdo (Descrição Formal) ── */
+.formal-panel {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 280px;
+  background: #fff;
+  border-right: 3px solid #000;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  z-index: 50;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease-in-out;
+  box-shadow: 4px 0 0px #000;
+}
+.formal-panel.open { transform: translateX(0); }
+
+.section-header {
+  font-size: 12px;
+  color: var(--text-main);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--accent-blue);
+  padding: 5px;
+  border: 3px solid #000;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0px #000;
+  text-align: center;
+}
+
+.math-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 6px 0;
+  border-bottom: 2px dashed #000;
+}
+
+.math-val {
+  color: var(--text-main);
+  background: var(--bg-dark);
+  padding: 2px 8px;
+  border: 2px solid #000;
+  border-radius: 4px;
+  box-shadow: 2px 2px 0px #000;
+}
+
+/* ── Canvas Central ── */
+.canvas-area {
+  flex: 1;
+  position: relative;
+  background: var(--bg-dark);
+  overflow: hidden;
+  cursor: default;
+  min-width: 0;
+  /* Isola a camada de composição — melhora perf em GPUs fracas */
+  will-change: transform;
+  contain: strict;
+}
+
+/* Pontilhado de fundo — feito via CSS (sem canvas extra) */
+.canvas-area::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: radial-gradient(#000 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.canvas-label {
+  position: absolute;
+  top: 12px; left: 12px;
+  font-size: 12px;
+  color: #000;
+  font-weight: 900;
+  text-transform: uppercase;
+  z-index: 5;
+  background: #fff;
+  padding: 4px 10px;
+  border: 3px solid #000;
+  border-radius: 8px;
+  box-shadow: 4px 4px 0px #000;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.locked-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+/* ── Nós (States) ── */
+.node {
+  position: absolute;
+  width: 65px; height: 65px;
+  background: #ffffff;
+  border: 4px solid #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #000;
+  box-shadow: 4px 4px 0px #000;
+  font-size: 20px;
+  /* transition leve — evita janks em PCs fracos */
+  transition: background 0.1s, box-shadow 0.1s;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  /* Promove à própria camada de composição */
+  will-change: transform;
+}
+.node:hover { background: #fde047; }
+.node.initial::before {
+  content: '▶';
+  position: absolute;
+  left: -28px;
+  color: #000;
+  font-size: 22px;
+  text-shadow: 2px 2px 0px #fff;
+}
+.node.final {
+  border: 6px double #000;
+  background: #bbf7d0;
+  box-shadow: 6px 6px 0px #000;
+}
+.node.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px #93c5fd, 6px 6px 0px #000;
+  background: #eff6ff;
+}
+
+/* Estados de simulação */
+.node.sim-active {
+  background: #fbbf24 !important;
+  border-color: #d97706 !important;
+  box-shadow: 0 0 0 4px #fde68a, 6px 6px 0px #000 !important;
+}
+.node.sim-error {
+  background: #fecaca !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 4px #fca5a5, 6px 6px 0px #000 !important;
+}
+.node.sim-done {
+  background: #bbf7d0 !important;
+  border-color: #16a34a !important;
+  box-shadow: 0 0 0 4px #86efac, 6px 6px 0px #000 !important;
+}
+
+/* ── Painel Direito (Testes) ── */
+.test-panel {
+  width: 270px;
+  flex-shrink: 0;
+  background: #fff;
+  border-left: 3px solid #000;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  z-index: 5;
+  box-shadow: -4px 0 0px #000;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.test-input-area { display: flex; gap: 6px; flex-shrink: 0; }
+
+.word-input {
+  flex: 1;
+  background: #fff;
+  border: 3px solid #000;
+  color: #000;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+  outline: none;
+  box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1);
+  transition: background 0.1s;
+}
+.word-input:focus { background: #fef08a; }
+
+.add-test-btn {
+  background: var(--accent-green);
+  border: 3px solid #000;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #000;
+  transition: transform 0.1s, box-shadow 0.1s;
+  flex-shrink: 0;
+}
+.add-test-btn:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px #000; }
+
+/* Lista de palavras */
+.words-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  /* Melhora scroll em PCs lentos */
+  -webkit-overflow-scrolling: touch;
+}
+.words-list::-webkit-scrollbar { width: 7px; }
+.words-list::-webkit-scrollbar-track { background: transparent; }
+.words-list::-webkit-scrollbar-thumb { background: #000; border-radius: 4px; }
+
+.word-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 2px solid #000;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 3px 3px 0px #000;
+  min-height: 30px;
+  flex-shrink: 0;
+}
+.word-row.correct  { background: #bbf7d0; }
+.word-row.wrong    { background: #fecaca; }
+.word-row.shortest { background: #fef08a; border: 3px solid #000; font-size: 13px; }
+
+.validate-btn {
+  background: var(--accent-green);
+  color: #000;
+  font-weight: 900;
+  font-size: 15px;
+  padding: 9px 6px;
+  border-radius: 10px;
+  border: 3px solid #000;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: transform 0.1s, box-shadow 0.1s;
+  flex-shrink: 0;
+  box-shadow: 5px 5px 0px #000;
+}
+.validate-btn:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0px #000; }
+.validate-btn:hover  { background: #22c55e; }
+
+/* Botão simulação */
+.simulate-btn {
+  background: var(--accent-blue);
+  color: #000;
+  font-weight: 900;
+  font-size: 12px;
+  padding: 7px 6px;
+  border-radius: 8px;
+  border: 3px solid #000;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: transform 0.1s, box-shadow 0.1s;
+  flex-shrink: 0;
+  box-shadow: 4px 4px 0px #000;
+}
+.simulate-btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0px #000; }
+.simulate-btn:hover  { background: #38bdf8; }
+
+/* ── Modal Simulação Passo a Passo ── */
+.sim-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sim-modal {
+  background: #fff;
+  border: 4px solid #000;
+  border-radius: 16px;
+  box-shadow: 8px 8px 0px #000;
+  padding: 20px;
+  width: 400px;
+  max-width: 94vw;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sim-modal h3 {
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+  border-bottom: 3px solid #000;
+  padding-bottom: 8px;
+}
+.sim-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.sim-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: bold;
+  box-shadow: 2px 2px 0px #000;
+}
+.sim-step.ok    { background: #bbf7d0; }
+.sim-step.error { background: #fecaca; }
+.sim-step.info  { background: #fff9c4; }
+.sim-step.done  { background: #c4b5fd; }
+.sim-step-icon  { font-size: 18px; flex-shrink: 0; }
+.sim-controls   { display: flex; gap: 10px; justify-content: center; }
+.sim-nav-btn {
+  background: var(--accent-blue);
+  border: 3px solid #000;
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #000;
+  transition: transform 0.1s;
+}
+.sim-nav-btn:disabled { opacity: 0.4; pointer-events: none; }
+.sim-nav-btn:active   { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+.sim-close-btn {
+  background: var(--accent-red);
+  border: 3px solid #000;
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #000;
+  transition: transform 0.1s;
+}
+.sim-close-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+.sim-word-display {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 900;
+  background: var(--bg-dark);
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 8px;
+  letter-spacing: 8px;
+  box-shadow: 3px 3px 0px #000;
+}
+.sim-char         { display: inline-block; transition: all 0.15s; }
+.sim-char.active  { background: #fbbf24; border-radius: 4px; padding: 0 3px; color: #000; box-shadow: 2px 2px 0px #000; }
+.sim-char.done-ok { color: #16a34a; text-decoration: underline; }
+.sim-char.done-err{ color: #dc2626; text-decoration: line-through; }
+
+/* ── Rodapé (Cartas) ── */
+.bottom-hand {
+  height: 168px;
+  flex-shrink: 0;
+  background: #fff;
+  border-top: 3px solid #000;
+  display: flex;
+  align-items: center;
+  padding: 6px 0 6px 16px;
+  z-index: 20;
+  box-shadow: 0 -4px 0px #000;
+}
+.cards-scroll-wrapper {
+  display: flex;
+  gap: 14px;
+  flex: 1;
+  overflow-x: auto;
+  height: 100%;
+  align-items: center;
+  padding-right: 16px;
+  padding-bottom: 10px;
+  /* Scroll suave em PCs lentos */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+.cards-scroll-wrapper::-webkit-scrollbar { height: 9px; }
+.cards-scroll-wrapper::-webkit-scrollbar-track { background: transparent; }
+.cards-scroll-wrapper::-webkit-scrollbar-thumb { background: #000; border-radius: 6px; }
+
+/* ── Cartas — Estilo Baralho Turma da Mônica ── */
+.card {
+  width: 88px;
+  height: 136px;
+  background: var(--card-bg);
+  border: 3px solid #000;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  flex-shrink: 0;
+  box-shadow: 4px 4px 0px #000;
+  position: relative;
+  overflow: hidden;
+  /* Compositor próprio */
+  will-change: transform;
+}
+/* Pip único — canto superior direito */
+.card::after {
+  content: attr(data-icon);
+  position: absolute;
+  top: 5px; right: 7px;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  color: #000;
+  pointer-events: none;
+}
+.card:hover:not(.disabled) {
+  transform: translateY(-16px) rotate(-2deg);
+  box-shadow: 6px 6px 0px #000;
+}
+.card.disabled { opacity: 0.55; pointer-events: none; filter: grayscale(80%); }
+
+.card-header {
+  font-size: 8px;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: #000;
+  border-bottom: 2px solid #000;
+  padding-bottom: 3px;
+  margin-bottom: 3px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+.card-icon {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+.card-footer {
+  font-size: 9px;
+  text-align: center;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #000;
+  border-top: 2px solid #000;
+  padding-top: 3px;
+}
+
+/* Cores das cartas */
+.card.initial    { background: #bae6fd; }
+.card.state      { background: #fde68a; }
+.card.transition { background: #f9a8d4; }
+.card.final      { background: #86efac; }
+.card.erase      { background: #fca5a5; }
+.symbol-card     { background: #c4b5fd; }
+
+.card.selected-card {
+  transform: translateY(-20px) rotate(-1deg) scale(1.04);
+  border: 4px solid #1d4ed8;
+  box-shadow: 6px 6px 0px #000;
+}
+
+/* ── Conexões (SVG) ── */
+.connections-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.transition-line { stroke: #000; stroke-width: 4; fill: none; }
+.line-error      { stroke: #dc2626 !important; stroke-width: 6 !important; }
+
+.transition-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+.transition-input {
+  width: 30px; height: 30px;
+  text-align: center;
+  background: #fff;
+  color: #000;
+  border: 3px solid #000;
+  border-radius: 6px;
+  outline: none;
+  font-weight: 900;
+  font-size: 15px;
+  transition: transform 0.1s, background 0.1s;
+  box-shadow: 3px 3px 0px #000;
+}
+.transition-input:focus {
+  background: #93c5fd !important;
+  border-color: #1d4ed8 !important;
+  transform: scale(1.2);
+  box-shadow: 4px 4px 0px #000;
+}
+
+/* Modos de cursor */
+.node.dragging { cursor: grabbing; z-index: 100; transform: translate(-50%, -50%) scale(1.1); box-shadow: 10px 10px 0px #000; }
+.node.selected-source { border: 4px dashed #000; box-shadow: 0 0 0 4px #fef08a, 6px 6px 0px #000; }
+.connecting-mode, .connecting-mode .node { cursor: crosshair; }
+.erase-mode { cursor: crosshair; }
+
+/* Input dentro do nó */
+.node-id-input {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+  text-align: center;
+  outline: none;
+  cursor: inherit;
+  pointer-events: auto;
+}
+.node-id-input:focus { cursor: text; background: rgba(255,255,255,0.5); border-radius: 4px; }
+
+/* Modo borracha */
+.erasable-node:hover { background: #fecaca !important; border: 4px dashed #000 !important; cursor: pointer !important; }
+.transition-line.erasable:hover { stroke: #ef4444 !important; stroke-width: 6 !important; }
+.erasable-target:hover .transition-input { background: #fecaca !important; border-color: #ef4444 !important; cursor: pointer !important; transform: scale(1.2); }
+
+/* ── Animações ── */
+@keyframes slideUpFade {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.slide-up-fade { animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.card-separator {
+  width: 3px; height: 75%;
+  background: #000;
+  margin: 0 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.transition-label.clickable { cursor: pointer; }
+.transition-label.clickable .transition-input { cursor: pointer; pointer-events: none; }
+.transition-label.action-target:hover .transition-input { background: var(--accent-green); transform: scale(1.1); }
+
+/* ── Toast ── */
+@keyframes slideDown {
+  from { top: -50px; opacity: 0; }
+  to   { top: 20px;  opacity: 1; }
+}
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 4px solid #000;
+  color: #000;
+  font-weight: 900;
+  z-index: 99999;
+  animation: slideDown 0.3s ease-out;
+  box-shadow: 6px 6px 0px #000;
+  font-size: 15px;
+  /* Toast nunca bloqueia a UI */
+  pointer-events: none;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast-notification.error   { background-color: var(--accent-red); }
+.toast-notification.success { background-color: var(--accent-green); }
+.toast-notification.info    { background-color: var(--accent-blue); }
+
+/* ── Pulso de erro severo ── */
+@keyframes severePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(220,38,38,0.8);  background-color: #fecaca; transform: scale(1); }
+  50%  { box-shadow: 0 0 0 12px rgba(220,38,38,0); background-color: #f87171; transform: scale(1.05); }
+  100% { box-shadow: 0 0 0 0 rgba(220,38,38,0);   background-color: #fecaca; transform: scale(1); }
+}
+.error-pulse-severe {
+  animation: severePulse 0.8s infinite !important;
+  border-color: #991b1b !important;
+  color: #991b1b !important;
+}
+
+.locked-letter { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+
+/* ── HUD Professor Maurílio ── */
+.professor-hud {
+  position: fixed;
+  right: 18px;
+  /* Fica exatamente acima do rodapé de cartas (168px) + margem */
+  bottom: 178px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.professor-hud .prof-img {
+  pointer-events: auto;
+  cursor: pointer;
+  height: 160px;
+  transform: scaleX(-1);
+  filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.4));
+  display: block;
+  /* Evita repintura ao aparecer */
+  will-change: transform;
+}
+.professor-balloon {
+  position: relative;
+  width: 200px;
+  height: 135px;
+  margin-bottom: -6px;
+  pointer-events: none;
+}
+.professor-balloon img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+}
+.professor-balloon-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 14px 36px;
+  box-sizing: border-box;
+  color: #000;
+  font-size: 12px;
+  text-align: center;
+  font-weight: bold;
+  z-index: 1;
+}
