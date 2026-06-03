@@ -1,0 +1,355 @@
+/* AFDPart2.css – Análise de Grafo para Linguagem */
+
+.afd-p2-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-dark);
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+
+.afd-p2-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 40px;
+  gap: 40px;
+  overflow-y: auto;
+}
+
+.intro-card {
+  background: #fff;
+  border: 4px solid #000;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 500px;
+  box-shadow: 8px 8px 0 #000;
+}
+
+.intro-card h3 {
+  font-size: 18px;
+  font-weight: 900;
+  color: #000;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+}
+
+.intro-card p {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.intro-card strong {
+  color: #60a5fa;
+  font-weight: 900;
+}
+
+.intro-options {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.intro-btn {
+  padding: 16px 32px;
+  border: 3px solid #000;
+  border-radius: 10px;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 6px 6px 0 #000;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-transform: uppercase;
+  background: #fff;
+  color: #000;
+}
+
+.intro-btn:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0 #000;
+}
+
+.intro-btn.primary {
+  background: #60a5fa;
+  color: #000;
+}
+
+.examples-section h4 {
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  max-width: 700px;
+}
+
+.example-card {
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 4px 4px 0 #000;
+  text-align: center;
+}
+
+.example-card code {
+  display: block;
+  background: var(--bg-dark);
+  border-radius: 6px;
+  padding: 8px;
+  font-weight: bold;
+  color: #c084fc;
+  font-size: 14px;
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+
+.example-card p {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.afd-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-dark);
+}
+
+.editor-workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.canvas-area {
+  flex: 1;
+  position: relative;
+  background: var(--bg-dark);
+  border-right: 3px solid #000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.canvas-label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 900;
+  z-index: 10;
+  box-shadow: 4px 4px 0 #000;
+}
+
+.control-panel {
+  width: 240px;
+  background: #fff;
+  border-left: 3px solid #000;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.control-panel h3 {
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.control-panel h4 {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 8px 0 0 0;
+}
+
+.tool-btn {
+  padding: 10px;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+  transition: transform 0.1s;
+}
+
+.tool-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 #000;
+}
+
+.summary {
+  background: var(--bg-dark);
+  border: 2px solid #000;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.summary p {
+  margin: 4px 0;
+}
+
+.analyze-btn {
+  padding: 12px;
+  background: #4ade80;
+  border: 3px solid #000;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #000;
+  transition: transform 0.1s;
+  text-transform: uppercase;
+  margin-top: 12px;
+}
+
+.analyze-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #000;
+}
+
+.afd-result-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-dark);
+}
+
+.result-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 40px;
+  gap: 30px;
+  overflow-y: auto;
+}
+
+.analysis-box,
+.user-answer-box {
+  background: #fff;
+  border: 4px solid #000;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 8px 8px 0 #000;
+}
+
+.analysis-box h3,
+.user-answer-box h3 {
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0 0 12px 0;
+}
+
+.language-display {
+  background: var(--bg-dark);
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  color: #c084fc;
+  margin-bottom: 12px;
+  word-break: break-all;
+}
+
+.language-display code {
+  font-size: 16px;
+}
+
+.confidence {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin: 0;
+}
+
+.answer-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border: 3px solid #000;
+  border-radius: 8px;
+  font-family: 'Comic Sans MS', cursive;
+  font-size: 14px;
+  font-weight: bold;
+  resize: vertical;
+  margin-bottom: 12px;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.answer-input:focus {
+  outline: none;
+  background: #fef08a;
+  border-color: #1d4ed8;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #4ade80;
+  border: 3px solid #000;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #000;
+  transition: transform 0.1s;
+  text-transform: uppercase;
+}
+
+.submit-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #000;
+}
+
+.retry-btn {
+  padding: 12px 24px;
+  background: #60a5fa;
+  border: 3px solid #000;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #000;
+  transition: transform 0.1s;
+  text-transform: uppercase;
+}
+
+.retry-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #000;
+}
