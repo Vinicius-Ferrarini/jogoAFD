@@ -13,29 +13,109 @@ import imgBalaoFala          from '../../assets/balao_fala_redondo.png';
 let _uidCounter = 0;
 const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6)}`;
 
-// ─── Modal de Simulação Passo a Passo (adaptado para rodapé) ────────────────
+// ─── TransitionLabel: chips verticais com edição inline ─────────────────────
+function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, isError, style, className, onAdd, onEdit, onErase, onAppendCard }) {
+  const [mode, setMode] = useState(null); // null | 'adding' | { type:'editing', chipIdx:number }
+  const [inputVal, setInputVal] = useState('');
+  const inputRef = useRef(null);
+
+  const symList = symbol ? symbol.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  // Auto-abre input em setas recém-criadas (sem símbolo)
+  useEffect(() => {
+    if (!symbol || symbol === '') { setMode('adding'); setInputVal(''); }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (mode !== null) { const t = setTimeout(() => inputRef.current?.focus(), 20); return () => clearTimeout(t); }
+  }, [mode]);
+
+  const commitAdd = () => {
+    const v = inputVal.trim();
+    if (v) onAdd(idx, v);
+    setMode(null); setInputVal('');
+  };
+
+  const commitEdit = () => {
+    const v = inputVal.trim();
+    if (typeof mode?.chipIdx === 'number' && v) onEdit(idx, mode.chipIdx, v);
+    setMode(null); setInputVal('');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); mode === 'adding' ? commitAdd() : commitEdit(); }
+    if (e.key === 'Escape') { setMode(null); setInputVal(''); }
+  };
+
+  const handleContainerClick = (e) => {
+    e.stopPropagation();
+    if (!isDrawingUnlocked) return;
+    if (interactionMode === 'ERASE') { onErase(idx); return; }
+    if (selectedSymbolCard) { onAppendCard(idx); return; }
+    if (mode === null) { setMode('adding'); setInputVal(''); }
+  };
+
+  const handleChipClick = (e, chipIdx) => {
+    e.stopPropagation();
+    if (!isDrawingUnlocked) return;
+    if (interactionMode === 'ERASE') { onErase(idx); return; }
+    if (selectedSymbolCard) { onAppendCard(idx); return; }
+    setMode({ type: 'editing', chipIdx });
+    setInputVal(symList[chipIdx]);
+  };
+
+  return (
+    <div
+      className={`transition-label${interactionMode === 'ERASE' ? ' erasable-target' : ''}${selectedSymbolCard ? ' clickable action-target' : ''}${isError ? ' error-pulse-severe' : ''}${className ? ' ' + className : ''}`}
+      style={style}
+      onClick={handleContainerClick}
+    >
+      <div className="transition-chips">
+        {symList.map((sym, i) =>
+          mode?.type === 'editing' && mode.chipIdx === i ? (
+            <input key={i} ref={inputRef} className="transition-chip-input"
+              value={inputVal} onChange={e => setInputVal(e.target.value)}
+              onBlur={commitEdit} onKeyDown={handleKeyDown}
+              onClick={e => e.stopPropagation()} maxLength={4}
+              autoComplete="off" spellCheck={false} />
+          ) : (
+            <span key={i} className="transition-chip" onClick={e => handleChipClick(e, i)}>{sym}</span>
+          )
+        )}
+        {mode === 'adding' ? (
+          <input ref={inputRef} className="transition-chip-input"
+            value={inputVal} onChange={e => setInputVal(e.target.value)}
+            onBlur={commitAdd} onKeyDown={handleKeyDown}
+            onClick={e => e.stopPropagation()} maxLength={4}
+            autoComplete="off" spellCheck={false} />
+        ) : symList.length === 0 ? (
+          <span className="transition-chip empty">?</span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// ─── SimPanel: layout compacto no rodapé ─────────────────────────────────────
 function SimPanel({ word, nodes, transitions, onClose, onHighlightNode }) {
   const initState = nodes.find(n => n.isInitial)?.id ?? null;
 
   const buildSteps = () => {
     const steps = [];
     const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
-
     if (!initState) {
-      steps.push({ type: 'error', icon: '❌', text: 'Nenhum estado inicial definido!', charIdx: -1 });
+      steps.push({ type: 'error', icon: '❌', text: 'Nenhum estado inicial definido!', state: null, charIdx: -1 });
       return steps;
     }
-
     const initLabel = nodes.find(n => n.id === initState)?.label ?? initState;
-    steps.push({ type: 'info', icon: '▶', text: `Início no estado "${initLabel}"`, state: initState, charIdx: -1 });
-
+    steps.push({ type: 'info', icon: '▶', text: `Início em "${initLabel}"`, state: initState, charIdx: -1 });
     let current = initState;
     for (let i = 0; i < w.length; i++) {
       const ch = w[i];
-      const tr = transitions.find(t => t.from === current && t.symbol === ch);
+      const tr = transitions.find(t => t.from === current && t.symbol.split(',').map(s => s.trim()).includes(ch));
       if (!tr) {
         const curLabel = nodes.find(n => n.id === current)?.label ?? current;
-        steps.push({ type: 'error', icon: '❌', text: `"${curLabel}": sem transição para '${ch}'. Palavra REJEITADA.`, state: current, charIdx: i });
+        steps.push({ type: 'error', icon: '❌', text: `"${curLabel}" sem transição com '${ch}' — REJEITADA`, state: current, charIdx: i });
         return steps;
       }
       const fromLabel = nodes.find(n => n.id === tr.from)?.label ?? tr.from;
@@ -43,13 +123,12 @@ function SimPanel({ word, nodes, transitions, onClose, onHighlightNode }) {
       steps.push({ type: 'ok', icon: '➡', text: `"${fromLabel}" —[${ch}]→ "${toLabel}"`, state: tr.to, charIdx: i });
       current = tr.to;
     }
-
     const finalNode  = nodes.find(n => n.id === current);
     const finalLabel = finalNode?.label ?? current;
     if (finalNode?.isFinal) {
-      steps.push({ type: 'done', icon: '✅', text: `"${finalLabel}" é final. Palavra ACEITA! 🎉`, state: current, charIdx: w.length });
+      steps.push({ type: 'done', icon: '✅', text: `"${finalLabel}" é estado final`, state: current, charIdx: w.length });
     } else {
-      steps.push({ type: 'error', icon: '❌', text: `"${finalLabel}" não é final. Palavra REJEITADA.`, state: current, charIdx: w.length });
+      steps.push({ type: 'error', icon: '❌', text: `"${finalLabel}" não é estado final`, state: current, charIdx: w.length });
     }
     return steps;
   };
@@ -58,31 +137,25 @@ function SimPanel({ word, nodes, transitions, onClose, onHighlightNode }) {
   const [stepIdx, setStepIdx] = useState(0);
   const currentStep = steps[stepIdx];
   const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
+  const isFinished = stepIdx === steps.length - 1;
+  const accepted   = isFinished && currentStep?.type === 'done';
 
   useEffect(() => {
     onHighlightNode(currentStep?.state ?? null, currentStep?.type ?? null);
     return () => onHighlightNode(null, null);
   }, [stepIdx, currentStep, onHighlightNode]);
 
-  // Auto-fecha ao terminar
   useEffect(() => {
-    if (stepIdx === steps.length - 1) {
-      const timer = setTimeout(() => onClose(), 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [stepIdx, steps.length, onClose]);
+    if (isFinished) { const t = setTimeout(() => onClose(), 6000); return () => clearTimeout(t); }
+  }, [isFinished, onClose]);
 
   return (
     <div className="sim-panel-container">
       <div className="sim-panel-header">
-        <h3>🔬 Simulação: {w.length === 0 ? 'λ' : w}</h3>
-        <button className="sim-panel-close" onClick={onClose}>✕</button>
-      </div>
-
-      <div className="sim-panel-content">
+        <span className="sim-panel-title">🔬 <b>{w || 'λ'}</b></span>
         <div className="sim-word-display">
           {w.length === 0
-            ? <span className="sim-char" style={{ letterSpacing: 0 }}>λ (vazia)</span>
+            ? <span className="sim-char">λ</span>
             : w.split('').map((ch, i) => {
                 const ci = currentStep?.charIdx ?? -1;
                 let cls = 'sim-char';
@@ -92,28 +165,32 @@ function SimPanel({ word, nodes, transitions, onClose, onHighlightNode }) {
               })
           }
         </div>
+        {isFinished && (
+          <span className={`sim-result-badge ${accepted ? 'accepted' : 'rejected'}`}>
+            {accepted ? '✅ ACEITA' : '❌ REJEITADA'}
+          </span>
+        )}
+        <button className="sim-panel-close" onClick={onClose}>✕</button>
+      </div>
 
-        <div className="sim-step-list">
-          {steps.slice(0, stepIdx + 1).map((s, i) => (
-            <div key={i} className={`sim-step ${s.type}`}>
-              <span className="sim-step-icon">{s.icon}</span>
-              <span>{s.text}</span>
-            </div>
-          ))}
+      <div className="sim-panel-body">
+        <div className={`sim-current-step ${currentStep?.type || ''}`}>
+          <span className="sim-step-icon">{currentStep?.icon}</span>
+          <span>{currentStep?.text}</span>
         </div>
+      </div>
 
-        <div className="sim-controls">
-          <button className="sim-nav-btn" onClick={() => setStepIdx(i => Math.max(0, i - 1))} disabled={stepIdx === 0}>◀</button>
-          <span className="sim-progress">{stepIdx + 1} / {steps.length}</span>
-          <button className="sim-nav-btn" onClick={() => setStepIdx(i => Math.min(steps.length - 1, i + 1))} disabled={stepIdx === steps.length - 1}>▶</button>
-        </div>
+      <div className="sim-panel-nav">
+        <button className="sim-nav-btn" onClick={() => setStepIdx(i => Math.max(0, i-1))} disabled={stepIdx === 0}>◀</button>
+        <span className="sim-progress">{stepIdx + 1} / {steps.length}</span>
+        <button className="sim-nav-btn" onClick={() => setStepIdx(i => Math.min(steps.length-1, i+1))} disabled={isFinished}>▶</button>
       </div>
     </div>
   );
 }
 
 // ─── App Principal ────────────────────────────────────────────────────────────
-export default function App() {
+export default function App({ onBack }) {
 
   // ── Progresso persistente ──────────────────────────────────────────────────
   const getProgress = () => {
@@ -195,7 +272,7 @@ export default function App() {
   }, [undo, redo]);
 
   // ── Estado geral ───────────────────────────────────────────────────────────
-  const [tela, setTela]             = useState('HOME');
+  const [tela, setTela]             = useState('MENU');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentLevel, setCurrentLevel] = useState(null);
   const [isDrawingUnlocked, setIsDrawingUnlocked] = useState(false);
@@ -332,6 +409,8 @@ export default function App() {
           { id: 'c2', type: 'action', action: 'addTransition', icon: '↗', label: 'Criar Seta' },
           { id: 'c3', type: 'action', action: 'toggleFinal',   icon: '◎', label: 'Definir Final' },
           { id: 'c4', type: 'action', action: 'erase',         icon: '🗑', label: 'Apagar' },
+          { id: 'cu', type: 'action', action: 'undo',          icon: '↶', label: 'Desfazer' },
+          { id: 'cr', type: 'action', action: 'redo',          icon: '↷', label: 'Refazer' },
         ];
         const symbolCards = (currentLevel.alphabet || []).map((sym, i) => ({
           id: `s${i}`, type: 'symbol', symbol: sym, label: `Símbolo ${sym}`,
@@ -384,10 +463,24 @@ export default function App() {
       return false;
     }
     for (const node of nodes) {
-      const syms = transitions.filter(t => t.from === node.id).map(t => t.symbol);
-      if (syms.length !== new Set(syms).size) {
-        if (showErrors) showToast(`Não determinístico! "${node.id}" tem setas duplicadas.`, 'error');
+      const allSyms = transitions
+        .filter(t => t.from === node.id)
+        .flatMap(t => t.symbol.split(',').map(s => s.trim()).filter(Boolean));
+      if (allSyms.length !== new Set(allSyms).size) {
+        if (showErrors) showToast(`Não determinístico! "${node.label || node.id}" tem símbolo duplicado nas setas.`, 'error');
         return false;
+      }
+    }
+
+    const alphabetSet = new Set(currentLevel?.alphabet || []);
+    if (alphabetSet.size > 0) {
+      for (const t of transitions) {
+        for (const sym of t.symbol.split(',').map(s => s.trim()).filter(Boolean)) {
+          if (!alphabetSet.has(sym)) {
+            if (showErrors) showToast(`Símbolo "${sym}" não pertence ao alfabeto { ${[...alphabetSet].join(', ')} }!`, 'error');
+            return false;
+          }
+        }
       }
     }
 
@@ -396,7 +489,7 @@ export default function App() {
       if (!cur) return false;
       const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
       for (const ch of w) {
-        const tr = transitions.find(t => t.from === cur && t.symbol === ch);
+        const tr = transitions.find(t => t.from === cur && t.symbol.split(',').map(s => s.trim()).includes(ch));
         if (!tr) return false;
         cur = tr.to;
       }
@@ -412,8 +505,32 @@ export default function App() {
         return false;
       }
     }
+
+    // Auto-testa palavras geradas do alfabeto para pegar DFAs incompletos/incorretos
+    if (currentLevel?.regex && (currentLevel?.alphabet || []).length > 0) {
+      const alph = currentLevel.alphabet;
+      const shortLen = typeof currentLevel.shortestWord === 'string' ? currentLevel.shortestWord.length : 1;
+      const maxLen = Math.min(6, Math.max(3, shortLen + 3));
+      const toTest = [''];
+      for (let len = 1; len <= maxLen; len++) {
+        const base = toTest.filter(w => w.length === len - 1);
+        for (const w of base) for (const sym of alph) toTest.push(w + sym);
+      }
+      for (const word of toTest) {
+        const regexAccepts = currentLevel.regex.test(word);
+        const dfaAccepts   = simulateDFA(word);
+        if (regexAccepts !== dfaAccepts) {
+          if (showErrors) {
+            const display = word === '' ? 'λ (palavra vazia)' : `"${word}"`;
+            showToast(`Autômato incorreto! ${display} deveria ser ${regexAccepts ? 'aceita' : 'rejeitada'}.`, 'error');
+          }
+          return false;
+        }
+      }
+    }
+
     return true;
-  }, [nodes, transitions, testWords, showToast]);
+  }, [nodes, transitions, testWords, showToast, currentLevel]);
 
   const validateAFD = useCallback(() => {
     if (!validateAFDSilent(true)) return;
@@ -506,9 +623,14 @@ export default function App() {
       } else {
         const srcNode = nodes.find(n => n.uid === connectingSource);
         const tgtNode = nodes.find(n => n.uid === uid);
-        const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
-        setTransitions(newTrans);
-        recordHistory(nodes, newTrans);
+        const exists = transitions.some(t => t.from === srcNode.id && t.to === tgtNode.id);
+        if (exists) {
+          showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
+        } else {
+          const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
+          setTransitions(newTrans);
+          recordHistory(nodes, newTrans);
+        }
         setInteractionMode('IDLE');
         setConnectingSource(null);
       }
@@ -590,7 +712,8 @@ export default function App() {
   }, []);
 
   const handleNodeLabelChange = useCallback((uid, value) => {
-    setNodes(prev => prev.map(n => n.uid === uid ? { ...n, label: value, id: value } : n));
+    // Only update the display label; keep id unchanged until blur so edges stay visible
+    setNodes(prev => prev.map(n => n.uid === uid ? { ...n, label: value } : n));
   }, []);
 
   const handleNodeLabelBlur = useCallback((uid, currentLabel) => {
@@ -631,28 +754,44 @@ export default function App() {
     setEditingNodeLabel(null);
   }, [nodes, editingNodeLabel, showToast, transitions, recordHistory]);
 
-  // ── Símbolo nas transições ────────────────────────────────────────────────
-  const handleSymbolChange = useCallback((idx, val) => {
+  // ── Handlers de transição (chips inline) ─────────────────────────────────
+  const handleAddSymbol = useCallback((idx, sym) => {
     const newTrans = [...transitions];
-    newTrans[idx] = { ...newTrans[idx], symbol: val };
+    const existing = newTrans[idx].symbol.split(',').map(s => s.trim()).filter(Boolean);
+    if (!existing.includes(sym)) {
+      newTrans[idx] = { ...newTrans[idx], symbol: [...existing, sym].join(',') };
+      setTransitions(newTrans);
+      recordHistory(nodes, newTrans);
+    }
+  }, [transitions, nodes, recordHistory]);
+
+  const handleEditSymbol = useCallback((idx, chipIdx, newSym) => {
+    const newTrans = [...transitions];
+    const existing = newTrans[idx].symbol.split(',').map(s => s.trim()).filter(Boolean);
+    existing[chipIdx] = newSym;
+    newTrans[idx] = { ...newTrans[idx], symbol: existing.join(',') };
     setTransitions(newTrans);
     recordHistory(nodes, newTrans);
   }, [transitions, nodes, recordHistory]);
 
-  const handleTransitionClick = useCallback((idx) => {
-    if (!isDrawingUnlocked) return;
-    if (interactionMode === 'ERASE') {
-      const newTrans = transitions.filter((_, i) => i !== idx);
+  const handleEraseTransition = useCallback((idx) => {
+    const newTrans = transitions.filter((_, i) => i !== idx);
+    setTransitions(newTrans);
+    recordHistory(nodes, newTrans);
+  }, [transitions, nodes, recordHistory]);
+
+  const handleAppendCardToTransition = useCallback((idx) => {
+    if (!selectedSymbolCard) return;
+    const newTrans = [...transitions];
+    const existing = newTrans[idx].symbol.split(',').map(s => s.trim()).filter(Boolean);
+    const sym = selectedSymbolCard;
+    if (!existing.includes(sym)) {
+      newTrans[idx] = { ...newTrans[idx], symbol: [...existing, sym].join(',') };
       setTransitions(newTrans);
       recordHistory(nodes, newTrans);
-    } else if (selectedSymbolCard) {
-      const newTrans = [...transitions];
-      newTrans[idx] = { ...newTrans[idx], symbol: selectedSymbolCard };
-      setTransitions(newTrans);
-      recordHistory(nodes, newTrans);
-      setSelectedSymbolCard(null);
     }
-  }, [isDrawingUnlocked, interactionMode, selectedSymbolCard, transitions, nodes, recordHistory]);
+    setSelectedSymbolCard(null);
+  }, [selectedSymbolCard, transitions, nodes, recordHistory]);
 
   // ── Renderização de transições (memoizada) ────────────────────────────────
   const transitionRenders = useMemo(() => {
@@ -728,7 +867,7 @@ export default function App() {
           </span>
           <button className="menu-btn" disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={{ opacity: currentPage===totalPages?.5:1 }}>Próxima ➡</button>
         </div>
-        <button className="menu-btn" style={{ marginTop: 20 }} onClick={() => setTela('HOME')}>Voltar</button>
+        <button className="menu-btn" style={{ marginTop: 20 }} onClick={() => onBack?.()}>← Voltar ao Menu</button>
       </div>
     );
   }
@@ -860,31 +999,31 @@ export default function App() {
                 )}
               </svg>
 
-              {/* Labels das transições */}
-              {transitionRenders.map(tr => {
-                const clickable = selectedSymbolCard || interactionMode === 'ERASE';
-                const isErr = highlightedError === `transition-${tr.idx}`;
-                return (
-                  <div key={`lbl-${tr.idx}`}
-                    className={`transition-label ${clickable?'clickable action-target':''} ${interactionMode==='ERASE'?'erasable-target':''}`}
-                    style={{
-                      left: tr.src.uid===tr.tgt.uid ? `${tr.src.x}%` : `${tr.labelPxX}px`,
-                      top:  tr.src.uid===tr.tgt.uid ? `calc(${tr.src.y}% - 55px)` : `${tr.labelPxY}px`,
-                    }}
-                    onClick={e => { e.stopPropagation(); if (clickable) handleTransitionClick(tr.idx); }}>
-                    <input type="text" value={tr.symbol}
-                      onChange={e => handleSymbolChange(tr.idx, e.target.value)}
-                      className={`transition-input ${isErr?'error-pulse-severe':''}`}
-                      maxLength={5} readOnly={!!clickable}
-                      translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
-                  </div>
-                );
-              })}
+              {/* Labels das transições (chips inline) */}
+              {transitionRenders.map(tr => (
+                <TransitionLabel
+                  key={`lbl-${tr.from}-${tr.to}`}
+                  idx={tr.idx}
+                  symbol={tr.symbol}
+                  interactionMode={interactionMode}
+                  selectedSymbolCard={selectedSymbolCard}
+                  isDrawingUnlocked={isDrawingUnlocked}
+                  isError={highlightedError === `transition-${tr.idx}`}
+                  style={{
+                    left: tr.src.uid===tr.tgt.uid ? `${tr.src.x}%` : `${tr.labelPxX}px`,
+                    top:  tr.src.uid===tr.tgt.uid ? `calc(${tr.src.y}% - 55px)` : `${tr.labelPxY}px`,
+                  }}
+                  onAdd={handleAddSymbol}
+                  onEdit={handleEditSymbol}
+                  onErase={handleEraseTransition}
+                  onAppendCard={handleAppendCardToTransition}
+                />
+              ))}
 
               {/* Nós */}
               {nodes.map(node => {
                 const simCls =
-                  simHighlight.nodeId === node.uid
+                  simHighlight.nodeId === node.id
                     ? simHighlight.type === 'ok'    ? 'sim-active'
                     : simHighlight.type === 'done'  ? 'sim-done'
                     : simHighlight.type === 'error' ? 'sim-error'
@@ -971,6 +1110,21 @@ export default function App() {
               if (card.type === 'separator') return <div key={card.id} className="card-separator slide-up-fade" />;
 
               if (card.type === 'action') {
+                if (card.action === 'undo' || card.action === 'redo') {
+                  const isUndo = card.action === 'undo';
+                  const disabled = isUndo ? historyIndex <= 0 : historyIndex >= history.length - 1;
+                  return (
+                    <div key={card.id}
+                      data-icon={card.icon}
+                      className={`card state slide-up-fade`}
+                      style={{ opacity: disabled ? 0.35 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+                      onClick={() => !disabled && (isUndo ? undo() : redo())}>
+                      <div className="card-header">Histórico</div>
+                      <div className="card-icon">{card.icon}</div>
+                      <div className="card-footer">{card.label}</div>
+                    </div>
+                  );
+                }
                 const classMap = { toggleInitial:'initial', addNode:'state', addTransition:'transition', toggleFinal:'final', erase:'erase' };
                 const clickMap = { toggleInitial: setInitialMode, addNode: addNodeMode, addTransition: addTransitionMode, toggleFinal: toggleFinalStateMode, erase: setEraserMode };
                 const modeMap  = { toggleInitial:'TOGGLE_INITIAL', addNode:'ADD_NODE', addTransition:'CONNECTING', toggleFinal:'TOGGLE_FINAL', erase:'ERASE' };

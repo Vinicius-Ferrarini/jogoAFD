@@ -33,14 +33,15 @@ export default function MainMenu({ onStart, progress }) {
           <div className="progress-badge">
             <div className="progress-circle">
               <svg width="100" height="100" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="50" cy="50" r="40" className="progress-bg" />
+                <circle cx="50" cy="50" r="38" className="progress-bg" />
                 <circle
                   cx="50"
                   cy="50"
-                  r="40"
+                  r="38"
                   className="progress-fill"
                   style={{
-                    strokeDashoffset: 251 * (1 - totalStars / maxStars),
+                    strokeDashoffset: 239 * (1 - totalStars / maxStars),
+                    strokeDasharray: 239,
                   }}
                 />
               </svg>

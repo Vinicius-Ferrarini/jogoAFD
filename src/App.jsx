@@ -84,11 +84,11 @@ export default function App() {
 
     switch (currentModule) {
       case 'afd-p1':
-        return <AFDPart1 {...moduleProps} />;
+        return <AFDPart1 {...moduleProps} onBack={() => goSubmodule('afd')} />;
       case 'afd-p2':
-        return <AFDPart2 {...moduleProps} />;
+        return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
       case 'afd-min':
-        return <AFDMinimizer {...moduleProps} />;
+        return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
       default:
         return <div>Módulo não encontrado</div>;
     }
