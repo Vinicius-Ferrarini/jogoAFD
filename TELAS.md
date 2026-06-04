@@ -1,4 +1,4 @@
-# Mapa de Telas — Laboratório das Linguagens
+# Mapa de Telas — TuringLab
 
 > Use este documento como referência quando falarmos sobre uma tela específica do jogo. Cada seção descreve o nome, o que aparece visualmente e como chegar nela.
 
@@ -30,7 +30,7 @@ Tela Inicial (HOME)
 
 **O que aparece:**
 - Maurílio na pose "explicando" com balão de fala de boas-vindas
-- Título grande **Laboratório das Linguagens**
+- Título grande **TuringLab**
 - Círculo de progresso global (% das estrelas conquistadas)
 - Botão azul grande **"🚀 Começar Aventura"**
 
@@ -82,7 +82,7 @@ Tela Inicial (HOME)
 **Nome no código:** `tela === 'MENU'` dentro de `AFDPart1.jsx`
 
 **O que aparece:**
-- Título "Laboratório das Linguagens" + barra de progresso (X/Y ★)
+- Título "TuringLab" + barra de progresso (X/Y ★)
 - Grade de botões, cada um sendo uma **fase** (ex: "Fase 1", "Fase 2"...) com estrelinhas embaixo
 - Paginação: botões "⬅ Anterior" / "Próxima ➡"
 - Botão "← Voltar ao Menu" no final
@@ -139,7 +139,7 @@ Abre ao clicar em `☰` no header. Ocupa a lateral esquerda. O usuário preenche
 **Nome no código:** `selectedLevel === null` → componente `LevelList` dentro de `AFDPart2.jsx`
 
 **O que aparece:**
-- Título "Laboratório das Linguagens" + badge azul "📊 Grafo → Linguagem"
+- Título "TuringLab" + badge azul "📊 Grafo → Linguagem"
 - Barra de progresso geral
 - Grade de botões de fase com estrelinhas
 - Paginação

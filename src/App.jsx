@@ -1,4 +1,4 @@
-// Laboratório das Linguagens – App.jsx v3.0 (ROUTER CENTRAL)
+// TuringLab – App.jsx v3.0 (ROUTER CENTRAL)
 import { useState, useCallback } from 'react';
 import './App.css';
 
@@ -16,7 +16,7 @@ export default function App() {
   // ✨ Progresso Persistente
   const getProgress = () => {
     try {
-      return JSON.parse(localStorage.getItem('lab_linguagens_progress') || '{}');
+      return JSON.parse(localStorage.getItem('turinglab_progress') || '{}');
     } catch {
       return {};
     }
@@ -29,7 +29,7 @@ export default function App() {
       const cur = prev[moduleId]?.stars || 0;
       if (stars <= cur) return prev;
       const next = { ...prev, [moduleId]: { stars, timestamp: Date.now() } };
-      localStorage.setItem('lab_linguagens_progress', JSON.stringify(next));
+      localStorage.setItem('turinglab_progress', JSON.stringify(next));
       return next;
     });
   }, []);
@@ -112,7 +112,7 @@ function ModuleSelection({ onSelectModule, onBack }) {
     <div className="nav-screen">
       <div className="nav-header">
         <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
-        <h1 className="menu-title" style={{ margin: 0 }}>Laboratório das Linguagens</h1>
+        <h1 className="menu-title" style={{ margin: 0 }}>TuringLab</h1>
         <div style={{ flex: 1 }} />
       </div>
       <div className="nav-section-label">Escolha um Módulo</div>
