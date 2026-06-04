@@ -39,6 +39,9 @@ html, body, #root {
   -webkit-user-select: none;
   user-select: none;
 }
+@media (max-height: 640px) {
+  html, body, #root { height: auto; min-height: 100vh; overflow-y: auto; }
+}
 input, textarea, [contenteditable] {
   -webkit-user-select: text;
   user-select: text;

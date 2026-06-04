@@ -1,12 +1,12 @@
 // TuringLab – App.jsx v3.0 (ROUTER CENTRAL)
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import './App.css';
 
 // Importar páginas e módulos
 import MainMenu from './pages/MainMenu';
-import AFDPart1 from './modules/afd/AFDPart1';
-import AFDPart2 from './modules/afd/AFDPart2';
-import AFDMinimizer from './modules/afd/AFDMinimizer';
+const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
+const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
+const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
 
 export default function App() {
   const [screen, setScreen] = useState('HOME');
@@ -82,16 +82,20 @@ export default function App() {
       showToast,
     };
 
-    switch (currentModule) {
-      case 'afd-p1':
-        return <AFDPart1 {...moduleProps} onBack={() => goSubmodule('afd')} />;
-      case 'afd-p2':
-        return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
-      case 'afd-min':
-        return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
-      default:
-        return <div>Módulo não encontrado</div>;
-    }
+    const gameNode = (() => {
+      switch (currentModule) {
+        case 'afd-p1':  return <AFDPart1 {...moduleProps} onBack={() => goSubmodule('afd')} />;
+        case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
+        case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
+        default:        return <div>Módulo não encontrado</div>;
+      }
+    })();
+
+    return (
+      <Suspense fallback={<div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', fontFamily:'Comic Sans MS, cursive' }}>Carregando...</div>}>
+        {gameNode}
+      </Suspense>
+    );
   }
 
   return <div>Carregando...</div>;

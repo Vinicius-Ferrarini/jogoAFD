@@ -13,6 +13,12 @@ import imgBalaoFala          from '../../assets/balao_fala_redondo.png';
 let _uidCounter = 0;
 const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6)}`;
 
+// ─── Aceita palavra contra regex ou função validate do nível ─────────────────
+function lvlAccepts(level, word) {
+  if (typeof level.validate === 'function') return level.validate(word);
+  return level.regex?.test(word) ?? false;
+}
+
 const DRAW_COLORS = [
   { hex: '#FF0000', label: 'Vermelho' },
   { hex: '#1a1a1a', label: 'Grafite' },
@@ -490,8 +496,8 @@ export default function App({ onBack }) {
     if (target === null) { if (isSpecialNull) isShortest = true; }
     else if (newWord === target) isShortest = true;
 
-    if (currentLevel.regex && !(target === null && isSpecialNull))
-      isValid = currentLevel.regex.test(newWord);
+    if ((currentLevel.regex || currentLevel.validate) && !(target === null && isSpecialNull))
+      isValid = lvlAccepts(currentLevel, newWord);
 
     const wordDisplay = newWord === '' ? 'λ' : newWord;
     if (testWords.some(w => w.word === wordDisplay)) {
@@ -616,7 +622,7 @@ export default function App({ onBack }) {
     }
 
     // Auto-testa palavras geradas do alfabeto para pegar DFAs incompletos/incorretos
-    if (currentLevel?.regex && (currentLevel?.alphabet || []).length > 0) {
+    if ((currentLevel?.regex || currentLevel?.validate) && (currentLevel?.alphabet || []).length > 0) {
       const alph = currentLevel.alphabet;
       const shortLen = typeof currentLevel.shortestWord === 'string' ? currentLevel.shortestWord.length : 1;
       const maxLen = Math.min(6, Math.max(3, shortLen + 3));
@@ -626,7 +632,7 @@ export default function App({ onBack }) {
         for (const w of base) for (const sym of alph) toTest.push(w + sym);
       }
       for (const word of toTest) {
-        const regexAccepts = currentLevel.regex.test(word);
+        const regexAccepts = lvlAccepts(currentLevel, word);
         const dfaAccepts   = simulateDFA(word);
         if (regexAccepts !== dfaAccepts) {
           if (showErrors) {
