@@ -4,10 +4,10 @@ import { useState, useRef, useEffect, useCallback, useMemo, forwardRef, useImper
 import './AFDPart1.css';
 import { GAME_LEVELS } from '../../levels';
 import FormalDescriptionModal from './FormalDescriptionModal';
-import imgMaurilioApontando  from '../../assets/maurilio2_apontando_pro_lado.png';
-import imgMaurilioSerio      from '../../assets/maurilio1_serio.png';
-import imgMaurilioExplicando from '../../assets/maurilio3_explicando.png';
-import imgBalaoFala          from '../../assets/balao_fala_redondo.png';
+import imgMaurilioApontando  from '../../assets/maurilio2_apontando_pro_lado.webp';
+import imgMaurilioSerio      from '../../assets/maurilio1_serio.webp';
+import imgMaurilioExplicando from '../../assets/maurilio3_explicando.webp';
+import imgBalaoFala          from '../../assets/balao_fala_redondo.webp';
 
 // ─── Utilitário: gera um UID curto ───────────────────────────────────────────
 let _uidCounter = 0;

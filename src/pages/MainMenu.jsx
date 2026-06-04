@@ -1,6 +1,6 @@
 // MainMenu.jsx – Tela inicial com branding TuringLab
 import './MainMenu.css';
-import imgMaurilioExplicando from '../assets/maurilio3_explicando.png';
+import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
 
 export default function MainMenu({ onStart, progress }) {
   const totalStars = Object.values(progress).reduce((sum, p) => sum + (p.stars || 0), 0);

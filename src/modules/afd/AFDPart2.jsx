@@ -4,9 +4,9 @@ import './AFDPart1.css';
 import './AFDPart2.css';
 import { GAME_LEVELS } from '../../levels';
 import { LEVEL_GRAPHS } from '../../levels_graphs';
-import imgMaurilioSerio      from '../../assets/maurilio1_serio.png';
-import imgMaurilioExplicando from '../../assets/maurilio3_explicando.png';
-import imgBalaoFala          from '../../assets/balao_fala_redondo.png';
+import imgMaurilioSerio      from '../../assets/maurilio1_serio.webp';
+import imgMaurilioExplicando from '../../assets/maurilio3_explicando.webp';
+import imgBalaoFala          from '../../assets/balao_fala_redondo.webp';
 
 // ── P2 Progress (localStorage, separate from P1) ──────────────────────────────
 function getP2Progress() {
