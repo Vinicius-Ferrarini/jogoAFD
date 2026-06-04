@@ -10,18 +10,16 @@ export default function MainMenu({ onStart, progress }) {
     <div className="main-menu-wrapper">
       <div className="main-menu-bg"></div>
 
-      <div className="main-menu-content">
-        {/* Maurílio + Mensagem de Boas-vindas */}
-        <div className="welcome-section">
-          <div className="maurilio-container">
-            <img src={imgMaurilioExplicando} alt="Maurílio" className="maurilio-img" />
-            <div className="speech-bubble">
-              <p>E aí, pessoal! Bem-vindos ao AutoQuest!</p>
-              <p className="small">Vamos dominar autômatos juntos? 🤖</p>
-            </div>
-          </div>
+      {/* Maurílio no lado esquerdo */}
+      <div className="main-menu-left">
+        <div className="speech-bubble">
+          <p>E aí, pessoal! Bem-vindos ao AutoQuest!</p>
+          <p className="small">Vamos dominar autômatos juntos? 🤖</p>
         </div>
+        <img src={imgMaurilioExplicando} alt="Maurílio" className="maurilio-img" />
+      </div>
 
+      <div className="main-menu-content">
         {/* Logo e Título */}
         <div className="menu-logo-section">
           <h1 className="main-title">AutoQuest</h1>
@@ -67,7 +65,7 @@ export default function MainMenu({ onStart, progress }) {
         <div className="menu-footer">
           <p>🔬 Iniciação Científica | Teoria da Computação</p>
         </div>
-      </div>
+      </div> {/* fim main-menu-content */}
     </div>
   );
 }

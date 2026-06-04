@@ -5,11 +5,15 @@
   width: 100vw;
   min-height: 100vh;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  gap: 48px;
+  padding: 30px 60px;
   overflow-y: auto;
   background: linear-gradient(135deg, #fff9c4 0%, #fef3c7 50%, #fde68a 100%);
   font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  box-sizing: border-box;
 }
 
 .main-menu-bg {
@@ -34,24 +38,22 @@
   text-align: center;
 }
 
-/* Maurílio + Speech Bubble */
-.welcome-section {
+/* Maurílio — coluna esquerda */
+.main-menu-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
   animation: slideDownFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.maurilio-container {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
 .maurilio-img {
-  max-width: 140px;
+  width: 190px;
   height: auto;
   filter: drop-shadow(4px 4px 0 #000);
   animation: float 3s ease-in-out infinite;
+  margin-top: -10px;
 }
 
 @keyframes float {
@@ -72,25 +74,25 @@
 .speech-bubble::after {
   content: '';
   position: absolute;
-  bottom: -8px;
-  left: 30px;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 0;
   height: 0;
   border: 8px solid transparent;
-  border-top-color: #000;
-  border-right-color: #000;
+  border-top: 9px solid #000;
 }
 
 .speech-bubble::before {
   content: '';
   position: absolute;
-  bottom: -3px;
-  left: 35px;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 0;
   height: 0;
   border: 5px solid transparent;
-  border-top-color: #fff;
-  border-right-color: #fff;
+  border-top: 6px solid #fff;
 }
 
 .speech-bubble p {
@@ -310,6 +312,24 @@ svg circle.progress-fill {
 }
 
 @media (max-width: 768px) {
+  .main-menu-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 16px;
+  }
+
+  .main-menu-left {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .maurilio-img {
+    width: 120px;
+  }
+
   .main-title {
     font-size: 48px;
     text-shadow: 4px 4px 0 #60a5fa;

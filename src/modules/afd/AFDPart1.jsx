@@ -1,6 +1,6 @@
 // AutoQuest — App.jsx v3.0
 // v3.0: Undo/Redo, Simulação no Rodapé, Cores Zoom Corrigidas, Validação Duplicata Aprimorada
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import './AFDPart1.css';
 import { GAME_LEVELS } from '../../levels';
 import FormalDescriptionModal from './FormalDescriptionModal';
@@ -14,7 +14,7 @@ let _uidCounter = 0;
 const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6)}`;
 
 // ─── TransitionLabel: chips verticais com edição inline ─────────────────────
-function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, isError, style, className, onAdd, onEdit, onErase, onAppendCard }) {
+const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, isError, style, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
   const [mode, setMode] = useState(null); // null | 'adding' | { type:'editing', chipIdx:number }
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef(null);
@@ -29,6 +29,10 @@ function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isD
   useEffect(() => {
     if (mode !== null) { const t = setTimeout(() => inputRef.current?.focus(), 20); return () => clearTimeout(t); }
   }, [mode]);
+
+  useImperativeHandle(ref, () => ({
+    triggerAdd() { if (mode === null) { setMode('adding'); setInputVal(''); } }
+  }), [mode]);
 
   const commitAdd = () => {
     const v = inputVal.trim();
@@ -94,7 +98,7 @@ function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isD
       </div>
     </div>
   );
-}
+});
 
 // ─── SimPanel: layout compacto no rodapé ─────────────────────────────────────
 function SimPanel({ word, nodes, transitions, onClose, onHighlightNode }) {
@@ -793,6 +797,16 @@ export default function App({ onBack }) {
     setSelectedSymbolCard(null);
   }, [selectedSymbolCard, transitions, nodes, recordHistory]);
 
+  const transitionLabelRefs = useRef({});
+
+  const handleTransitionLineClick = useCallback((e, idx) => {
+    e.stopPropagation();
+    if (!isDrawingUnlocked) return;
+    if (interactionMode === 'ERASE') { handleEraseTransition(idx); return; }
+    if (selectedSymbolCard) { handleAppendCardToTransition(idx); return; }
+    transitionLabelRefs.current[idx]?.triggerAdd();
+  }, [isDrawingUnlocked, interactionMode, selectedSymbolCard, handleEraseTransition, handleAppendCardToTransition]);
+
   // ── Renderização de transições (memoizada) ────────────────────────────────
   const transitionRenders = useMemo(() => {
     return transitions.map((t, idx) => {
@@ -806,19 +820,22 @@ export default function App({ onBack }) {
       const bidir = src.uid !== tgt.uid && transitions.some(o => o.from === tgt.id && o.to === src.id);
 
       let pathD = '', lx = 0, ly = 0;
-      if (src.uid !== tgt.uid) {
-        if (bidir) {
-          const dx = tx - sx, dy = ty - sy, dist = Math.sqrt(dx*dx + dy*dy);
-          const nx = dist ? -dy/dist : 0, ny = dist ? dx/dist : 0;
-          const off = 40;
-          const cx = (sx+tx)/2 + nx*off, cy = (sy+ty)/2 + ny*off;
-          pathD = `M ${sx} ${sy} Q ${cx} ${cy} ${tx} ${ty}`;
-          lx = ((sx+tx)/2 + cx)/2 + nx*10;
-          ly = ((sy+ty)/2 + cy)/2 + ny*10;
-        } else {
-          pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
-          lx = (sx+tx)/2; ly = (sy+ty)/2;
-        }
+      if (src.uid === tgt.uid) {
+        const cx = (src.x * sw) / 100;
+        const cy = (src.y * sh) / 100;
+        pathD = `M ${cx - 16} ${cy - 29} C ${cx - 58} ${cy - 96} ${cx + 58} ${cy - 96} ${cx + 16} ${cy - 29}`;
+        lx = cx; ly = cy - 82;
+      } else if (bidir) {
+        const dx = tx - sx, dy = ty - sy, dist = Math.sqrt(dx*dx + dy*dy);
+        const nx = dist ? -dy/dist : 0, ny = dist ? dx/dist : 0;
+        const off = 40;
+        const qcx = (sx+tx)/2 + nx*off, qcy = (sy+ty)/2 + ny*off;
+        pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${tx} ${ty}`;
+        lx = ((sx+tx)/2 + qcx)/2 + nx*10;
+        ly = ((sy+ty)/2 + qcy)/2 + ny*10;
+      } else {
+        pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+        lx = (sx+tx)/2; ly = (sy+ty)/2;
       }
       return { ...t, idx, src, tgt, pathD, labelPxX: lx, labelPxY: ly, bidir };
     }).filter(Boolean);
@@ -846,8 +863,11 @@ export default function App({ onBack }) {
     const totalPages  = Math.ceil(GAME_LEVELS.length / perPage);
     const pageItems   = GAME_LEVELS.slice((currentPage-1)*perPage, currentPage*perPage);
     return (
-      <div className="menu-screen" style={{ justifyContent: 'flex-start', paddingTop: 40 }}>
-        <h1 className="menu-title" style={{ marginBottom: 10 }}>AutoQuest</h1>
+      <div className="menu-screen" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14, alignSelf:'flex-start' }}>
+          <button className="back-btn" onClick={() => onBack?.()}>⬅ Voltar</button>
+          <h1 className="menu-title" style={{ margin:0 }}>AutoQuest</h1>
+        </div>
         <div style={{ marginBottom: 30, fontWeight: 'bold', fontSize: 18 }}>
           Progresso: {maxStars > 0 ? Math.round((totalStars/maxStars)*100) : 0}% ({totalStars}/{maxStars} ★)
         </div>
@@ -867,7 +887,6 @@ export default function App({ onBack }) {
           </span>
           <button className="menu-btn" disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={{ opacity: currentPage===totalPages?.5:1 }}>Próxima ➡</button>
         </div>
-        <button className="menu-btn" style={{ marginTop: 20 }} onClick={() => onBack?.()}>← Voltar ao Menu</button>
       </div>
     );
   }
@@ -888,7 +907,7 @@ export default function App({ onBack }) {
       <header className="game-header">
         <div className="header-left">
           <button className="sidebar-toggle" onClick={toggleSidebar} title="Abrir Descrição Formal">☰</button>
-          <button className="back-btn" onClick={() => setTela('MENU')}>⬅ Voltar</button>
+          <button className="back-btn" onClick={() => onBack?.()}>⬅ Voltar</button>
         </div>
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
           <span className="mission-label">Objetivo</span>
@@ -983,26 +1002,30 @@ export default function App({ onBack }) {
               {/* SVG transições */}
               <svg className="connections-svg">
                 <defs>
-                  <marker id="ah"  markerWidth="10" markerHeight="7" refX="40" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,10 3.5,0 7" fill="#000"/></marker>
-                  <marker id="ahe" markerWidth="10" markerHeight="7" refX="40" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,10 3.5,0 7" fill="#ef4444"/></marker>
-                  <marker id="ahr" markerWidth="10" markerHeight="7" refX="40" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,10 3.5,0 7" fill="#dc2626"/></marker>
+                  <marker id="ah"    markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000"/></marker>
+                  <marker id="ahe"   markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#ef4444"/></marker>
+                  <marker id="ahr"   markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#dc2626"/></marker>
+                  <marker id="ahsl"  markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000"/></marker>
+                  <marker id="ahsle" markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#ef4444"/></marker>
                 </defs>
-                {transitionRenders.map(tr =>
-                  tr.src.uid === tr.tgt.uid ? (
-                    <circle key={tr.idx} cx={`${tr.src.x}%`} cy={`calc(${tr.src.y}% - 35px)`} r="20"
-                      className={`transition-line ${interactionMode==='ERASE'?'erasable':''}`} />
-                  ) : (
-                    <path key={tr.idx} d={tr.pathD}
-                      className={`transition-line ${interactionMode==='ERASE'?'erasable':''} ${highlightedError===`transition-${tr.idx}`?'line-error':''}`}
-                      markerEnd={`url(#${interactionMode==='ERASE'?'ahe':highlightedError===`transition-${tr.idx}`?'ahr':'ah'})`} />
-                  )
-                )}
+                {transitionRenders.map(tr => (
+                  <path key={tr.idx} d={tr.pathD}
+                    className={`transition-line ${interactionMode==='ERASE'?'erasable':''} ${highlightedError===`transition-${tr.idx}`?'line-error':''}`}
+                    markerEnd={`url(#${
+                      tr.src.uid === tr.tgt.uid
+                        ? (interactionMode === 'ERASE' ? 'ahsle' : 'ahsl')
+                        : (interactionMode === 'ERASE' ? 'ahe' : highlightedError === `transition-${tr.idx}` ? 'ahr' : 'ah')
+                    })`}
+                    style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                    onClick={e => handleTransitionLineClick(e, tr.idx)} />
+                ))}
               </svg>
 
               {/* Labels das transições (chips inline) */}
               {transitionRenders.map(tr => (
                 <TransitionLabel
                   key={`lbl-${tr.from}-${tr.to}`}
+                  ref={el => { transitionLabelRefs.current[tr.idx] = el; }}
                   idx={tr.idx}
                   symbol={tr.symbol}
                   interactionMode={interactionMode}
@@ -1010,8 +1033,8 @@ export default function App({ onBack }) {
                   isDrawingUnlocked={isDrawingUnlocked}
                   isError={highlightedError === `transition-${tr.idx}`}
                   style={{
-                    left: tr.src.uid===tr.tgt.uid ? `${tr.src.x}%` : `${tr.labelPxX}px`,
-                    top:  tr.src.uid===tr.tgt.uid ? `calc(${tr.src.y}% - 55px)` : `${tr.labelPxY}px`,
+                    left: `${tr.labelPxX}px`,
+                    top:  `${tr.labelPxY}px`,
                   }}
                   onAdd={handleAddSymbol}
                   onEdit={handleEditSymbol}
@@ -1119,9 +1142,8 @@ export default function App({ onBack }) {
                       className={`card state slide-up-fade`}
                       style={{ opacity: disabled ? 0.35 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
                       onClick={() => !disabled && (isUndo ? undo() : redo())}>
-                      <div className="card-header">Histórico</div>
+                      <div className="card-header">{card.label}</div>
                       <div className="card-icon">{card.icon}</div>
-                      <div className="card-footer">{card.label}</div>
                     </div>
                   );
                 }
@@ -1136,9 +1158,8 @@ export default function App({ onBack }) {
                     data-icon={iconMap[card.action] || ''}
                     className={`card ${classMap[card.action]} slide-up-fade ${isSelected?'selected-card':''} ${isErr?'error-pulse-severe':''}`}
                     onClick={clickMap[card.action]}>
-                    <div className="card-header">Ação</div>
+                    <div className="card-header">{card.label}</div>
                     <div className="card-icon">{card.icon}</div>
-                    <div className="card-footer">{card.label}</div>
                   </div>
                 );
               }
@@ -1155,9 +1176,8 @@ export default function App({ onBack }) {
                       setInteractionMode('IDLE'); setConnectingSource(null);
                       setSelectedSymbolCard(isSel ? null : card.symbol);
                     }}>
-                    <div className="card-header">Alfabeto</div>
+                    <div className="card-header">Usar Símbolo</div>
                     <div className="card-icon" style={{ fontSize:34, color:'#7c3aed' }}>{isLocked?'🔒':card.symbol}</div>
-                    <div className="card-footer">Usar Símbolo</div>
                   </div>
                 );
               }
@@ -1165,21 +1185,20 @@ export default function App({ onBack }) {
             })}
           </div>
         )}
+        {/* ── HUD Maurílio ── */}
+        {isDrawingUnlocked && (
+          <div className="professor-hud">
+            {professorMessage && (
+              <div className="professor-balloon">
+                <img src={imgBalaoFala} alt="" />
+                <div className="professor-balloon-text">{professorMessage}</div>
+              </div>
+            )}
+            <img src={imgMaurilioSerio} alt="Professor Maurílio" className="prof-img"
+              onClick={() => triggerProfessorSpeech(currentLevel?.hint || 'Continue tentando!')} />
+          </div>
+        )}
       </footer>
-
-      {/* ── HUD Maurílio ── */}
-      {isDrawingUnlocked && (
-        <div className="professor-hud">
-          {professorMessage && (
-            <div className="professor-balloon">
-              <img src={imgBalaoFala} alt="" />
-              <div className="professor-balloon-text">{professorMessage}</div>
-            </div>
-          )}
-          <img src={imgMaurilioSerio} alt="Professor Maurílio" className="prof-img"
-            onClick={() => triggerProfessorSpeech(currentLevel?.hint || 'Continue tentando!')} />
-        </div>
-      )}
 
       {/* ── Tela de Vitória ── */}
       {showVictoryScreen && (() => {

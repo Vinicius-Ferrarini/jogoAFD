@@ -1,4 +1,5 @@
 /* AFDPart2.css — styles specific to Grafo → Linguagem (game styles from AFDPart1.css) */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap');
 
 /* ── SVG graph panel ── */
 .p2-svg-box {
@@ -62,38 +63,143 @@
 }
 .p2-legend-dot.final { background: #bbf7d0; }
 
-/* ── Cheat sheet ── */
-.p2-cheatsheet {
-  background: #fff9c4;
-  border: 2px solid #000;
-  border-radius: 8px;
-  padding: 6px 8px;
-  box-shadow: 2px 2px 0 #000;
+/* ── Quadro-negro de notações (dentro do canvas) ── */
+.p2-blackboard-wrapper {
+  position: absolute;
+  bottom: 44px;
+  left: 10px;
+  z-index: 10;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  flex-direction: column-reverse;
+  gap: 6px;
 }
 
-.p2-cs-row {
+.p2-blackboard-btn {
+  background: #1a3329;
+  color: #d4f5e2;
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+  transition: transform 0.1s, box-shadow 0.1s;
+  white-space: nowrap;
+}
+.p2-blackboard-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 #000;
+}
+.p2-blackboard-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #000;
+}
+
+.p2-blackboard {
+  background: #1a3329;
+  border: 4px solid #2d6a4f;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 6px 6px 0 #000;
+  min-width: 240px;
+  max-width: 290px;
+}
+
+.p2-bb-title {
+  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d4f5e2;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+/* ── Seções por cor ── */
+.p2-bb-section { margin-top: 5px; }
+.p2-bb-section:first-child { margin-top: 0; }
+
+.p2-bb-section-label {
+  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.75;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 3px;
+  margin-bottom: 0;
+  line-height: 1.1;
+}
+.p2-bb-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+/* ── Cores do giz ── */
+.p2-chalk-white  { color: #efefef; }
+.p2-chalk-blue   { color: #93c5fd; }
+.p2-chalk-pink   { color: #f9a8d4; }
+.p2-chalk-yellow { color: #fde68a; }
+.p2-chalk-orange { color: #fdba74; }
+.p2-chalk-dim    { opacity: 0.65; }
+.p2-chalk-ul     {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: currentColor;
+}
+
+/* ── Linhas do quadro ── */
+.p2-bb-row {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 11px;
+  padding: 0 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+  line-height: 1.15;
+  -webkit-user-select: text;
+  user-select: text;
 }
-.p2-cs-row code {
-  font-size: 11px;
-  font-weight: 900;
-  color: #7c3aed;
-  background: #ede9fe;
-  border-radius: 3px;
-  padding: 1px 4px;
+.p2-bb-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.p2-bb-row code {
+  font-family: 'Caveat', monospace;
+  font-size: 16px;
+  font-weight: 700;
   flex-shrink: 0;
-  font-family: monospace;
+  background: transparent;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+  border-bottom: 2px solid currentColor;
+  padding-bottom: 1px;
+  -webkit-user-select: text;
+  user-select: text;
 }
-.p2-cs-row span {
-  color: #555;
-  font-size: 10px;
-  font-weight: bold;
+
+.p2-bb-row > span.p2-chalk-dim {
+  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  flex: 1;
+}
+
+.p2-bb-copy {
+  font-size: 11px;
+  min-width: 12px;
+  flex-shrink: 0;
+  color: #74c69d;
+  font-weight: 900;
 }
 
 /* ── Alphabet badge ── */

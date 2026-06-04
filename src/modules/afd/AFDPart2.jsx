@@ -233,8 +233,11 @@ function LevelList({ progress, onSelect, onBack }) {
   const totalStars = GAME_LEVELS.reduce((sum, l) => sum + (progress[l.id]?.stars || 0), 0);
 
   return (
-    <div className="menu-screen" style={{ justifyContent: 'flex-start', paddingTop: 28 }}>
-      <h1 className="menu-title" style={{ marginBottom: 4 }}>AutoQuest</h1>
+    <div className="menu-screen" style={{ justifyContent: 'flex-start', paddingTop: 16 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:12, alignSelf:'flex-start' }}>
+        <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
+        <h1 className="menu-title" style={{ margin:0 }}>AutoQuest</h1>
+      </div>
       <p style={{ fontWeight: 900, fontSize: 16, color: '#555', marginBottom: 12,
         background: '#60a5fa', border: '3px solid #000', borderRadius: 8,
         padding: '4px 16px', boxShadow: '3px 3px 0 #000' }}>
@@ -278,9 +281,6 @@ function LevelList({ progress, onSelect, onBack }) {
         </button>
       </div>
 
-      <button className="menu-btn" style={{ marginTop: 16 }} onClick={onBack}>
-        ← Voltar
-      </button>
     </div>
   );
 }
@@ -296,6 +296,8 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   const [earnedStars, setEarnedStars] = useState(0);
   const [profMsg,     setProfMsg]     = useState('');
   const speechRef = useRef(null);
+  const [showCheatsheet, setShowCheatsheet] = useState(true);
+  const [copiedIdx, setCopiedIdx] = useState(null);
 
   const stars = progress[level.id]?.stars || 0;
 
@@ -332,6 +334,56 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
     setAnswer(''); setAttempts(0); setResult(null);
     setShowExpected(false); setShowVictory(false); setEarnedStars(0);
   };
+
+  const copyRow = (text, key) => {
+    navigator.clipboard?.writeText(text).then(() => {
+      setCopiedIdx(key);
+      setTimeout(() => setCopiedIdx(null), 1500);
+    });
+  };
+
+  const cheatSections = [
+    {
+      label: 'Estrutura',
+      color: 'white',
+      items: [
+        { code: '{ a^n | n > 0 e n é ímpar }', desc: 'duas condições com e' },
+      ],
+    },
+    {
+      label: 'Expoentes',
+      color: 'blue',
+      items: [
+        { code: 'a^n',              desc: '"a" repetido n vezes', underline: true },
+        { code: 'n ≥ 0  /  n > 0', desc: 'zero-ou-mais / um-ou-mais' },
+      ],
+    },
+    {
+      label: 'Variável w',
+      color: 'pink',
+      items: [
+        { code: 'w',               desc: 'qualquer palavra' },
+        { code: '|w|',             desc: 'comprimento de w' },
+        { code: '|w| mod 2 = 1',   desc: 'comprimento ímpar' },
+      ],
+    },
+    {
+      label: 'Especiais',
+      color: 'yellow',
+      items: [
+        { code: 'λ',     desc: 'palavra vazia (lambda)' },
+        { code: '{ λ }', desc: 'conjunto só com vazia' },
+      ],
+    },
+    {
+      label: 'Prontos',
+      color: 'orange',
+      items: [
+        { code: '{ a^n | n > 0 }',         desc: 'a, aa, aaa…', underline: true },
+        { code: '{ a^n b^m | n,m ≥ 0 }',  desc: 'λ, a, ab, aabb…' },
+      ],
+    },
+  ];
 
   return (
     <div className="workspace-wrapper">
@@ -370,35 +422,48 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
             <span><span className="p2-legend-dot final" /> Estado Final (duplo anel)</span>
             <span>▶ Estado Inicial (seta de entrada)</span>
           </div>
+
+          {/* Quadro-negro de notações */}
+          <div className="p2-blackboard-wrapper">
+            <button className="p2-blackboard-btn" onClick={() => setShowCheatsheet(s => !s)}>
+              🖊 {showCheatsheet ? '▲ Fechar' : '📋 Como Escrever'}
+            </button>
+            {showCheatsheet && (
+              <div className="p2-blackboard">
+                <div className="p2-bb-title">✦ Notações — clique para copiar</div>
+                {cheatSections.map((section) => (
+                  <div key={section.label} className="p2-bb-section">
+                    <div className={`p2-bb-section-label p2-chalk-${section.color}`}>
+                      {section.label}
+                    </div>
+                    {section.items.map((item, i) => {
+                      const key = `${section.label}-${i}`;
+                      return (
+                        <div
+                          key={key}
+                          className="p2-bb-row"
+                          onClick={() => copyRow(item.code, key)}
+                          title="Clique para copiar"
+                        >
+                          <code className={`p2-chalk-${section.color}`}>
+                            {item.code}
+                          </code>
+                          <span className={`p2-chalk-${section.color} p2-chalk-dim`}>
+                            {item.desc}
+                          </span>
+                          <span className="p2-bb-copy">{copiedIdx === key ? '✓' : ''}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Right panel */}
         <aside className="test-panel">
-          {/* How-to-write cheat sheet */}
-          <div className="section-header" style={{ fontSize: 10 }}>Como escrever</div>
-          <div className="p2-cheatsheet">
-            <div className="p2-cs-row">
-              <code>{'{ a^n | n > 0 }'}</code>
-              <span>→ um ou mais 'a's</span>
-            </div>
-            <div className="p2-cs-row">
-              <code>{'{ a^n b^m | n,m ≥ 0 }'}</code>
-              <span>→ blocos de letras</span>
-            </div>
-            <div className="p2-cs-row">
-              <code>{'{ w | |w| é par }'}</code>
-              <span>→ restrição sobre w</span>
-            </div>
-            <div className="p2-cs-row">
-              <code>∅</code>
-              <span>→ linguagem vazia</span>
-            </div>
-            <div className="p2-cs-row">
-              <code>{'{ λ }'}</code>
-              <span>→ só a palavra vazia</span>
-            </div>
-          </div>
-
           {/* Alphabet */}
           <div className="section-header" style={{ fontSize: 10, marginTop: 2 }}>Alfabeto</div>
           <div className="p2-alphabet">
