@@ -1,5 +1,5 @@
 // AFDPart2.jsx – Grafo → Linguagem  (v2 – comic/gibi style matching AFDPart1)
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import './AFDPart1.css';
 import './AFDPart2.css';
 import { GAME_LEVELS } from '../../levels';
@@ -82,6 +82,62 @@ function normalize(s) {
     .replace(/[≥]/g, '>=')
     .replace(/[≤]/g, '<=')
     .replace(/[^a-z0-9^*+|(),_.=><!]/g, '');
+}
+
+// ── Drawing helpers ───────────────────────────────────────────────────────────
+const DRAW_COLORS = [
+  { hex: '#FF0000', label: 'Vermelho' },
+  { hex: '#1a1a1a', label: 'Grafite' },
+  { hex: '#3b82f6', label: 'Azul' },
+  { hex: '#22c55e', label: 'Verde' },
+  { hex: '#f59e0b', label: 'Laranja' },
+  { hex: '#a855f7', label: 'Roxo' },
+  { hex: '#f8f8f8', label: 'Branco' },
+];
+
+function pointsToPath(pts) {
+  if (pts.length < 2) return '';
+  if (pts.length === 2) return `M${pts[0].x} ${pts[0].y} L${pts[1].x} ${pts[1].y}`;
+  let d = `M${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mx = (pts[i].x + pts[i+1].x) / 2, my = (pts[i].y + pts[i+1].y) / 2;
+    d += ` Q${pts[i].x} ${pts[i].y} ${mx} ${my}`;
+  }
+  const l = pts[pts.length - 1];
+  return d + ` L${l.x} ${l.y}`;
+}
+
+function arrowHeadPoints(x1, y1, x2, y2, sw) {
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const len = Math.max(14, sw * 5);
+  const sp = Math.PI / 6;
+  return [
+    x2 - len * Math.cos(angle - sp), y2 - len * Math.sin(angle - sp),
+    x2, y2,
+    x2 - len * Math.cos(angle + sp), y2 - len * Math.sin(angle + sp),
+  ].map(v => +v.toFixed(2)).join(' ');
+}
+
+function DrawStroke({ stroke, idx }) {
+  const c = { stroke: stroke.color, strokeWidth: stroke.width, fill: 'none', opacity: 0.88 };
+  if (stroke.type === 'pencil' || !stroke.type)
+    return <path key={idx} d={pointsToPath(stroke.points)} {...c} strokeLinecap="round" strokeLinejoin="round" />;
+  if (stroke.type === 'line')
+    return <line key={idx} x1={stroke.x1} y1={stroke.y1} x2={stroke.x2} y2={stroke.y2} {...c} strokeLinecap="round" />;
+  if (stroke.type === 'arrow') {
+    const head = arrowHeadPoints(stroke.x1, stroke.y1, stroke.x2, stroke.y2, stroke.width);
+    return <g key={idx} opacity={0.88}>
+      <line x1={stroke.x1} y1={stroke.y1} x2={stroke.x2} y2={stroke.y2}
+        stroke={stroke.color} strokeWidth={stroke.width} strokeLinecap="round" />
+      <polygon points={head} fill={stroke.color} stroke={stroke.color} strokeWidth={1} />
+    </g>;
+  }
+  if (stroke.type === 'rect') {
+    const x = Math.min(stroke.x1, stroke.x2), y = Math.min(stroke.y1, stroke.y2);
+    return <rect key={idx} x={x} y={y} width={Math.abs(stroke.x2-stroke.x1)} height={Math.abs(stroke.y2-stroke.y1)}
+      {...c} strokeLinejoin="round" rx={2} />;
+  }
+  return null;
 }
 
 // ── Stars ─────────────────────────────────────────────────────────────────────
@@ -299,6 +355,118 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   const [showCheatsheet, setShowCheatsheet] = useState(true);
   const [copiedIdx, setCopiedIdx] = useState(null);
 
+  // ── Drawing state ──────────────────────────────────────────────────────────
+  const [drawings, setDrawings]           = useState([]);
+  const [drawingStack, setDrawingStack]   = useState([]);
+  const [currentStroke, setCurrentStroke] = useState(null);
+  const [drawColor, setDrawColor]         = useState('#FF0000');
+  const [drawSize, setDrawSize]           = useState(3);
+  const [isErasing, setIsErasing]         = useState(false);
+  const [drawTool, setDrawTool]           = useState('pencil');
+  const [isDrawMode, setIsDrawMode]       = useState(false);
+  const isDrawingRef    = useRef(false);
+  const currentStrokeRef = useRef(null);
+  const drawingsRef      = useRef([]);
+  const overlayRef       = useRef(null);
+
+  const drawUndo = useCallback(() => {
+    setDrawingStack(prev => {
+      if (prev.length === 0) return prev;
+      const snap = prev[prev.length - 1];
+      setDrawings(snap);
+      drawingsRef.current = snap;
+      return prev.slice(0, -1);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isDrawMode) return;
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        drawUndo();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isDrawMode, drawUndo]);
+
+  const getSVGCoords = (e) => {
+    const svg = overlayRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    try {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX; pt.y = e.clientY;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return { x: 0, y: 0 };
+      const p = pt.matrixTransform(ctm.inverse());
+      return { x: p.x, y: p.y };
+    } catch { return { x: 0, y: 0 }; }
+  };
+
+  const handleOverlayDown = (e) => {
+    const { x, y } = getSVGCoords(e);
+    if (isErasing) {
+      setDrawingStack(prev => [...prev, drawingsRef.current]);
+    } else if (drawTool === 'pencil') {
+      const s = { type: 'pencil', color: drawColor, width: drawSize, points: [{ x, y }] };
+      currentStrokeRef.current = s;
+      setCurrentStroke(s);
+    } else {
+      const s = { type: drawTool, color: drawColor, width: drawSize, x1: x, y1: y, x2: x, y2: y };
+      currentStrokeRef.current = s;
+      setCurrentStroke(s);
+    }
+    isDrawingRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handleOverlayMove = (e) => {
+    if (!isDrawingRef.current) return;
+    const { x, y } = getSVGCoords(e);
+    if (isErasing) {
+      const R = 20;
+      setDrawings(prev => {
+        const next = prev.filter(s => {
+          if (s.type === 'pencil' || !s.type)
+            return !s.points.some(p => Math.hypot(p.x - x, p.y - y) < R);
+          const mx = (s.x1 + s.x2) / 2, my = (s.y1 + s.y2) / 2;
+          return !(Math.hypot(s.x1-x, s.y1-y) < R || Math.hypot(s.x2-x, s.y2-y) < R || Math.hypot(mx-x, my-y) < R);
+        });
+        drawingsRef.current = next;
+        return next;
+      });
+    } else if (drawTool === 'pencil' && currentStrokeRef.current) {
+      const pts = currentStrokeRef.current.points;
+      const last = pts[pts.length - 1];
+      if (Math.hypot(x - last.x, y - last.y) < 3) return;
+      const updated = { ...currentStrokeRef.current, points: [...pts, { x, y }] };
+      currentStrokeRef.current = updated;
+      setCurrentStroke({ ...updated });
+    } else if (currentStrokeRef.current) {
+      const updated = { ...currentStrokeRef.current, x2: x, y2: y };
+      currentStrokeRef.current = updated;
+      setCurrentStroke({ ...updated });
+    }
+  };
+
+  const handleOverlayUp = (e) => {
+    if (!isDrawingRef.current) return;
+    isDrawingRef.current = false;
+    const stroke = currentStrokeRef.current;
+    const isShape = stroke && stroke.type !== 'pencil';
+    const valid = stroke && (isShape
+      ? Math.hypot(stroke.x2 - stroke.x1, stroke.y2 - stroke.y1) > 4
+      : stroke.points && stroke.points.length > 1);
+    if (!isErasing && valid) {
+      setDrawingStack(prev => [...prev, drawingsRef.current]);
+      setDrawings(prev => { const next = [...prev, stroke]; drawingsRef.current = next; return next; });
+    }
+    currentStrokeRef.current = null;
+    setCurrentStroke(null);
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+
   const stars = progress[level.id]?.stars || 0;
 
   const levelIdx = GAME_LEVELS.findIndex(l => l.id === level.id);
@@ -404,12 +572,98 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
       {/* Workspace */}
       <div className="workspace">
         {/* Canvas — fixed graph */}
-        <section className="canvas-area" style={{ cursor: 'default' }}>
+        <section className="canvas-area" style={{
+          cursor: isDrawMode ? (isErasing ? 'cell' : 'crosshair') : 'default' }}>
           <div className="canvas-label">Autômato Finito Determinístico</div>
+
+          {/* ── Draw toolbar ── */}
+          {isDrawMode && (
+            <div className="draw-toolbar">
+              {[
+                { id: 'pencil', title: 'Lápis', icon: (
+                  <svg width="15" height="15" viewBox="0 0 15 15">
+                    <path d="M2 13 Q4 8 7 7.5 Q10 7 13 2" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                  </svg>) },
+                { id: 'line', title: 'Linha reta', icon: (
+                  <svg width="15" height="15" viewBox="0 0 15 15">
+                    <line x1="2" y1="7.5" x2="13" y2="7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+                  </svg>) },
+                { id: 'arrow', title: 'Seta', icon: (
+                  <svg width="15" height="15" viewBox="0 0 15 15">
+                    <line x1="2" y1="7.5" x2="11" y2="7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+                    <polygon points="11,4.5 15,7.5 11,10.5" fill="currentColor"/>
+                  </svg>) },
+                { id: 'rect', title: 'Retângulo', icon: (
+                  <svg width="14" height="14" viewBox="0 0 14 14">
+                    <rect x="2" y="3" width="10" height="8" fill="none" stroke="currentColor" strokeWidth="2" rx="1"/>
+                  </svg>) },
+              ].map(({ id, icon, title }) => (
+                <button key={id}
+                  className={`draw-tool-btn draw-type-btn${drawTool === id && !isErasing ? ' active' : ''}`}
+                  title={title}
+                  onClick={() => { setDrawTool(id); setIsErasing(false); }}>
+                  {icon}
+                </button>
+              ))}
+              <div className="draw-toolbar-sep" />
+              {DRAW_COLORS.map(({ hex, label }) => (
+                <button key={hex}
+                  className={`draw-color-btn${drawColor === hex && !isErasing ? ' active' : ''}`}
+                  style={{ background: hex, border: hex === '#f8f8f8' ? '2.5px solid #aaa' : '2.5px solid #000' }}
+                  title={label}
+                  onClick={() => { setDrawColor(hex); setIsErasing(false); }} />
+              ))}
+              <div className="draw-toolbar-sep" />
+              <div className="draw-stroke-size">
+                {[2, 4, 7].map(sz => (
+                  <button key={sz} className={drawSize === sz ? 'active' : ''}
+                    style={{ width: 8 + sz * 3, height: 8 + sz * 3 }}
+                    title={`Espessura ${sz}`}
+                    onClick={() => { setDrawSize(sz); setIsErasing(false); }}>
+                    <span style={{ display:'block', width: sz*1.5, height: sz*1.5, background:'#000', borderRadius:'50%' }} />
+                  </button>
+                ))}
+              </div>
+              <div className="draw-toolbar-sep" />
+              <button className={`draw-tool-btn${isErasing ? ' active' : ''}`} title="Borracha"
+                onClick={() => setIsErasing(v => !v)}>⌫</button>
+              <button className="draw-tool-btn" title="Apagar todos os rabiscos"
+                onClick={() => {
+                  setDrawingStack(prev => [...prev, drawingsRef.current]);
+                  setDrawings([]); drawingsRef.current = [];
+                }}>🗑</button>
+              <button className="draw-tool-btn" title="Desfazer (Ctrl+Z)"
+                onClick={drawUndo}>↶</button>
+              <div className="draw-toolbar-sep" />
+              <button className="draw-tool-btn" title="Fechar ferramenta"
+                style={{ fontSize: 11, fontWeight: 900 }}
+                onClick={() => setIsDrawMode(false)}>✕</button>
+            </div>
+          )}
+
+          {/* ── Toggle button (top-right) ── */}
+          <button
+            className={`p2-draw-toggle${isDrawMode ? ' active' : ''}`}
+            title={isDrawMode ? 'Fechar ferramenta de desenho' : 'Abrir ferramenta de desenho'}
+            onClick={() => setIsDrawMode(m => !m)}>
+            ✏
+          </button>
 
           {graph ? (
             <div className="p2-svg-box">
               <AFDGraphView nodes={graph.nodes} transitions={graph.transitions} />
+              {/* Drawing overlay */}
+              <svg ref={overlayRef}
+                viewBox={`0 0 ${VW} ${VH}`}
+                preserveAspectRatio="xMidYMid meet"
+                style={{ position:'absolute', inset:0, width:'100%', height:'100%',
+                  pointerEvents: isDrawMode ? 'auto' : 'none' }}
+                onPointerDown={handleOverlayDown}
+                onPointerMove={handleOverlayMove}
+                onPointerUp={handleOverlayUp}>
+                {drawings.map((s, i) => <DrawStroke key={i} stroke={s} idx={i} />)}
+                {currentStroke && <DrawStroke stroke={currentStroke} idx="cur" />}
+              </svg>
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',

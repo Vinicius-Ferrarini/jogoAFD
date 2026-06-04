@@ -1,6 +1,28 @@
 /* AFDPart2.css — styles specific to Grafo → Linguagem (game styles from AFDPart1.css) */
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap');
 
+/* ── Draw toggle button (top-right of canvas) ── */
+.p2-draw-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+  background: #fef08a;
+  border: 2.5px solid #000;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.p2-draw-toggle:hover  { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 #000; }
+.p2-draw-toggle.active { background: #bfdbfe; border-color: #3b82f6; box-shadow: 2px 2px 0 #1d4ed8; }
+
 /* ── SVG graph panel ── */
 .p2-svg-box {
   position: absolute;
