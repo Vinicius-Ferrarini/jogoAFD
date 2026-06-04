@@ -370,7 +370,7 @@ body { color: var(--text-main); }
   font-weight: 900;
   letter-spacing: 2px;
   border: 3px solid #000;
-  padding: 10px 30px;
+  padding: 8px 30px 24px 30px;
   background: #fff;
   box-shadow: 8px 8px 0px #000;
   border-radius: 12px;
@@ -1201,10 +1201,11 @@ body { color: var(--text-main); }
 
 /* ── Header das telas de navegação ── */
 .nav-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: 100%;
-  max-width: 860px;
+  max-width: 960px;
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -1256,7 +1257,7 @@ body { color: var(--text-main); }
   gap: 22px;
   justify-content: center;
   flex-wrap: wrap;
-  max-width: 860px;
+  max-width: 1020px;
   width: 100%;
 }
 
@@ -1308,6 +1309,23 @@ body { color: var(--text-main); }
   font-weight: 900;
   color: #000;
   line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.module-badge-tag {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: var(--mc, #60a5fa);
+  color: #000;
+  border: 3px solid #000;
+  border-radius: 6px;
+  padding: 2px 12px;
+  box-shadow: 3px 3px 0 #000;
+  display: inline-block;
 }
 
 .module-card-desc {

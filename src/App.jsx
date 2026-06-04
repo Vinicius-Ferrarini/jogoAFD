@@ -104,12 +104,14 @@ export default function App() {
 // ✨ Seleção de Módulos Principais
 function ModuleSelection({ onSelectModule, onBack }) {
   const modules = [
-    { id: 'afd', label: 'Autômatos Finitos',    icon: '🤖', color: '#60a5fa',
+    { id: 'afd',     badge: 'AFD',   label: 'Autômatos Finitos',    icon: '🤖', color: '#60a5fa',
       desc: 'Desenhe, analise e minimize AFDs' },
-    { id: 'ap',  label: 'Autômatos com Pilha',  icon: '📚', color: '#a78bfa',
+    { id: 'ap',      badge: 'AP',    label: 'Autômatos com Pilha',  icon: '📚', color: '#a78bfa',
       desc: 'Reconhecimento com memória (pilha)', locked: true },
-    { id: 'mt',  label: 'Máquinas de Turing',   icon: '⚙️', color: '#f97316',
+    { id: 'mt',      badge: 'MT',    label: 'Máquinas de Turing',   icon: '⚙️', color: '#f97316',
       desc: 'Modelos Reconhecedora e Transdutora', locked: true },
+    { id: 'desafio', badge: 'BOSS',  label: 'Desafio de Prova',     icon: '🏆', color: '#f87171',
+      desc: 'Enfrente questões da última prova como desafio final', locked: true },
   ];
 
   return (
@@ -131,7 +133,10 @@ function ModuleSelection({ onSelectModule, onBack }) {
           >
             {mod.locked && <span className="nav-ribbon">Em breve!</span>}
             <div className="module-card-icon">{mod.icon}</div>
-            <div className="module-card-name">{mod.label}</div>
+            <div className="module-card-name">
+              <span className="module-badge-tag">{mod.badge}</span>
+              {mod.label}
+            </div>
             <div className="module-card-desc">{mod.desc}</div>
             {!mod.locked && (
               <div className="module-card-cta" style={{ background: mod.color }}>

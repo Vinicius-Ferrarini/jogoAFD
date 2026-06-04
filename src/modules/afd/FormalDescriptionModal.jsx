@@ -139,10 +139,6 @@ export default function FormalDescriptionModal({
     <div className="formal-sidebar-content">
       <h2>Descrição Formal</h2>
 
-      <div className="revalidate-notice">
-        ⚠️ O grafo será revalidado antes de cada etapa
-      </div>
-
       <div className="form-group">
         <label>Q (Conjunto de Estados):</label>
         <input

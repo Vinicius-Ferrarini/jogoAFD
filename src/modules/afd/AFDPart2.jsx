@@ -185,13 +185,20 @@ function AFDGraphView({ nodes, transitions }) {
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>
-        <marker id="p2a" markerWidth="9" markerHeight="7" refX="38" refY="3.5"
+        {/* Seta regular — igual ao #ah do AFDPart1 */}
+        <marker id="p2a" markerWidth="18" markerHeight="14" refX="48" refY="7"
           orient="auto" markerUnits="userSpaceOnUse">
-          <polygon points="0 0,9 3.5,0 7" fill="#1e40af" />
+          <polygon points="0 0,18 7,0 14" fill="#000" />
         </marker>
-        <marker id="p2ai" markerWidth="9" markerHeight="7" refX="9" refY="3.5"
+        {/* Seta self-loop — igual ao #ahsl do AFDPart1 */}
+        <marker id="p2asl" markerWidth="18" markerHeight="14" refX="18" refY="7"
           orient="auto" markerUnits="userSpaceOnUse">
-          <polygon points="0 0,9 3.5,0 7" fill="#000" />
+          <polygon points="0 0,18 7,0 14" fill="#000" />
+        </marker>
+        {/* Seta do estado inicial */}
+        <marker id="p2ai" markerWidth="18" markerHeight="14" refX="18" refY="7"
+          orient="auto" markerUnits="userSpaceOnUse">
+          <polygon points="0 0,18 7,0 14" fill="#000" />
         </marker>
       </defs>
 
@@ -207,7 +214,7 @@ function AFDGraphView({ nodes, transitions }) {
             <g key={i}>
               <path
                 d={`M ${sp.x - 13} ${sp.y - NR + 5} C ${sp.x - 46} ${sp.y - NR - 58} ${sp.x + 46} ${sp.y - NR - 58} ${sp.x + 13} ${sp.y - NR + 5}`}
-                fill="none" stroke="#1e40af" strokeWidth="2.5" markerEnd="url(#p2a)"
+                fill="none" stroke="#000" strokeWidth="4" markerEnd="url(#p2asl)"
               />
               <text x={sp.x} y={sp.y - NR - 32}
                 textAnchor="middle" dominantBaseline="middle" className="p2-edge-label">
@@ -238,7 +245,7 @@ function AFDGraphView({ nodes, transitions }) {
 
         return (
           <g key={i}>
-            <path d={pathD} fill="none" stroke="#1e40af" strokeWidth="2.5" markerEnd="url(#p2a)" />
+            <path d={pathD} fill="none" stroke="#000" strokeWidth="4" markerEnd="url(#p2a)" />
             <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" className="p2-edge-label">
               {label}
             </text>
@@ -250,31 +257,34 @@ function AFDGraphView({ nodes, transitions }) {
       {nodes.map(nd => {
         const p = positions[nd.id];
         if (!p) return null;
+        const label = nd.label ?? nd.id;
+        const fontSize = label.length > 3 ? 9 : label.length > 2 ? 11 : 13;
         return (
           <g key={nd.id}>
             {nd.isInitial && (
-              <line
-                x1={p.x - NR - 32} y1={p.y}
-                x2={p.x - NR - 1} y2={p.y}
-                stroke="#000" strokeWidth="2.5"
-                markerEnd="url(#p2ai)"
-              />
+              <text
+                x={p.x - NR - 5} y={p.y}
+                textAnchor="end" dominantBaseline="middle"
+                style={{ fontSize: 22, fontWeight: 'bold', fill: '#000',
+                  paintOrder: 'stroke', stroke: '#fff', strokeWidth: 3,
+                  userSelect: 'none', pointerEvents: 'none' }}
+              >▶</text>
             )}
             {nd.isFinal && (
-              <circle cx={p.x} cy={p.y} r={NR + 7} fill="none" stroke="#000" strokeWidth="2.5" />
+              <circle cx={p.x} cy={p.y} r={NR + 7} fill="none" stroke="#000" strokeWidth="3" />
             )}
             <circle
               cx={p.x} cy={p.y} r={NR}
-              fill={nd.isFinal ? '#bbf7d0' : '#fff'}
+              fill={nd.isInitial ? '#bae6fd' : nd.isFinal ? '#bbf7d0' : '#fff'}
               stroke="#000" strokeWidth="3"
             />
             <text
               x={p.x} y={p.y}
               textAnchor="middle" dominantBaseline="middle"
               className="p2-node-label"
-              style={{ fontSize: nd.id.length > 3 ? 9 : nd.id.length > 2 ? 11 : 13 }}
+              style={{ fontSize }}
             >
-              {nd.id}
+              {label}
             </text>
           </g>
         );
@@ -677,8 +687,8 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
           )}
 
           <div className="p2-legend">
-            <span><span className="p2-legend-dot final" /> Estado Final (duplo anel)</span>
-            <span>▶ Estado Inicial (seta de entrada)</span>
+            <span><span className="p2-legend-dot initial" /> Estado Inicial</span>
+            <span><span className="p2-legend-dot final" /> Estado Final</span>
           </div>
 
           {/* Quadro-negro de notações */}

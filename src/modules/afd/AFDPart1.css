@@ -54,7 +54,7 @@ body { color: var(--text-main); }
   font-weight: 900;
   letter-spacing: 2px;
   border: 3px solid #000;
-  padding: 10px 30px;
+  padding: 8px 30px 24px 30px;
   background: #fff;
   box-shadow: 8px 8px 0px #000;
   border-radius: 12px;
@@ -98,8 +98,15 @@ body { color: var(--text-main); }
 .workspace-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh / 0.9);
+  zoom: 0.9;
   contain: layout;
+}
+
+/* --- MENU DE FASES (zoom para caber em 100% do navegador) --- */
+.menu-screen-fases {
+  zoom: 0.9;
+  height: calc(100vh / 0.9);
 }
 
 /* ── Barra de exemplos de palavras ── */
@@ -778,7 +785,8 @@ body { color: var(--text-main); }
   color: #000;
   border-bottom: 2px solid #000;
   padding-bottom: 3px;
-  margin-bottom: 3px;
+  padding-right: 18px;
+  margin-bottom: 6px;
   text-align: center;
   letter-spacing: 0;
   white-space: nowrap;
@@ -1023,11 +1031,11 @@ body { color: var(--text-main); }
 
 .professor-balloon {
   position: absolute;
-  bottom: 100%;    /* flutua acima do sprite sem deslocá-lo */
+  bottom: 78%;
   right: 0;
   width: 200px;
   height: 135px;
-  margin-bottom: 4px;
+  margin-bottom: 0;
   pointer-events: none;
 }
 
@@ -1035,6 +1043,7 @@ body { color: var(--text-main); }
   position: absolute;
   inset: 0;
   width: 100%; height: 100%;
+  transform: scaleX(-1);
 }
 
 .professor-balloon-text {
@@ -1043,7 +1052,7 @@ body { color: var(--text-main); }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 14px 36px;
+  padding: 22px 14px 28px;
   box-sizing: border-box;
   color: #000;
   font-size: 12px;

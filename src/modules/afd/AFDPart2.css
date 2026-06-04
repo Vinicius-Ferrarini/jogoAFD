@@ -45,11 +45,11 @@
   font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
   font-size: 12px;
   font-weight: bold;
-  fill: #1e3a8a;
+  fill: #000;
   pointer-events: none;
   user-select: none;
   paint-order: stroke;
-  stroke: #f8fafc;
+  stroke: #fff;
   stroke-width: 3px;
 }
 
@@ -83,7 +83,8 @@
   outline-offset: 2px;
   flex-shrink: 0;
 }
-.p2-legend-dot.final { background: #bbf7d0; }
+.p2-legend-dot.initial { background: #bae6fd; }
+.p2-legend-dot.final   { background: #bbf7d0; }
 
 /* ── Quadro-negro de notações (dentro do canvas) ── */
 .p2-blackboard-wrapper {

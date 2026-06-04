@@ -342,14 +342,12 @@ export default function App({ onBack }) {
 
   // Undo para traços de desenho
   const drawUndo = useCallback(() => {
-    setDrawingStack(prev => {
-      if (prev.length === 0) return prev;
-      const snapshot = prev[prev.length - 1];
-      setDrawings(snapshot);
-      drawingsRef.current = snapshot;
-      return prev.slice(0, -1);
-    });
-  }, []);
+    if (drawingStack.length === 0) return;
+    const snapshot = drawingStack[drawingStack.length - 1];
+    setDrawingStack(prev => prev.slice(0, -1));
+    setDrawings(snapshot);
+    drawingsRef.current = snapshot;
+  }, [drawingStack]);
 
   // Atalhos de teclado: Ctrl+Z, Ctrl+Y
   useEffect(() => {
@@ -1044,7 +1042,7 @@ export default function App({ onBack }) {
     const totalPages  = Math.ceil(GAME_LEVELS.length / perPage);
     const pageItems   = GAME_LEVELS.slice((currentPage-1)*perPage, currentPage*perPage);
     return (
-      <div className="menu-screen" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
+      <div className="menu-screen menu-screen-fases" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
         <div style={{ display:'flex', alignItems:'center', marginBottom:14, width:'100%' }}>
           <div style={{ flex:1 }}>
             <button className="back-btn" onClick={() => onBack?.()}>⬅ Voltar</button>
@@ -1182,8 +1180,8 @@ export default function App({ onBack }) {
             <div className="locked-overlay">
               <div style={{ display:'flex', alignItems:'center', justifyContent:'center', marginTop:80 }}>
                 <img src={imgMaurilioApontando} alt="Professor" style={{ height:320, zIndex:1 }} />
-                <div style={{ position:'relative', width:210, height:140, marginLeft:10, alignSelf:'flex-start', marginTop:-20 }}>
-                  <img src={imgBalaoFala} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', transform:'scaleX(-1)', zIndex:1 }} />
+                <div style={{ position:'relative', width:210, height:140, marginLeft:-80, alignSelf:'flex-start', marginTop:-80 }}>
+                  <img src={imgBalaoFala} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:1 }} />
                   <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center',
                     padding:'14px 22px 34px 14px', boxSizing:'border-box', color:'#000', fontWeight:'bold', fontSize:16, textAlign:'center', zIndex:2 }}>
                     1ª Coisa: Descubra a Menor Palavra!
@@ -1506,8 +1504,8 @@ export default function App({ onBack }) {
           <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:9999,
             display:'flex', justifyContent:'center', alignItems:'center', flexDirection:'column' }}>
             <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'center' }}>
-              <img src={imgMaurilioExplicando} alt="Professor" style={{ height:320, zIndex:2, marginRight:-25 }} />
-              <div style={{ position:'relative', width:300, height:210, marginTop:-45, zIndex:1 }}>
+              <img src={imgMaurilioExplicando} alt="Professor" style={{ height:320, zIndex:2, marginRight:-55 }} />
+              <div style={{ position:'relative', width:300, height:210, marginTop:-140, zIndex:1 }}>
                 <img src={imgBalaoFala} style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:1 }} />
                 <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center',
                   padding:'18px 18px 48px', boxSizing:'border-box', color:'#000', fontSize:17, fontWeight:900, textAlign:'center', zIndex:2 }}>
