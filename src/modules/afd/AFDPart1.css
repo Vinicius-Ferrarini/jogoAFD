@@ -102,6 +102,54 @@ body { color: var(--text-main); }
   contain: layout;
 }
 
+/* ── Barra de exemplos de palavras ── */
+.words-hint-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #fffbea;
+  border-bottom: 2px solid #000;
+  flex-wrap: wrap;
+  min-height: 26px;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  flex-shrink: 0;
+}
+.words-hint-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.words-hint-label {
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.words-hint-label.accept { color: #166534; }
+.words-hint-label.reject { color: #991b1b; }
+.words-hint-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 2px solid #000;
+  box-shadow: 1px 1px 0 #000;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+.words-hint-chip.accept { background: #bbf7d0; color: #14532d; }
+.words-hint-chip.reject { background: #fecaca; color: #7f1d1d; }
+.words-hint-sep {
+  width: 1px;
+  height: 14px;
+  background: #000;
+  opacity: 0.25;
+  flex-shrink: 0;
+}
+
 .game-header {
   background: var(--panel-bg);
   border-bottom: 3px solid #000;
@@ -762,6 +810,78 @@ body { color: var(--text-main); }
 .card.final      { background: #86efac; }
 .card.erase      { background: #fca5a5; }
 .symbol-card     { background: #c4b5fd; }
+.card.draw       { background: #fef08a; }
+
+/* ── Toolbar de desenho ── */
+.draw-toolbar {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #fff9c4;
+  border: 3px solid #000;
+  border-radius: 12px;
+  padding: 5px 10px;
+  box-shadow: 4px 4px 0 #000;
+  z-index: 20;
+  user-select: none;
+}
+.draw-color-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid #000;
+  cursor: pointer;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+  transition: transform 0.1s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.draw-color-btn:hover  { transform: scale(1.25); }
+.draw-color-btn.active { outline: 3px solid #000; outline-offset: 2px; transform: scale(1.1); }
+.draw-tool-btn {
+  background: #fff;
+  border: 2.5px solid #000;
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 13px;
+  box-shadow: 2px 2px 0 #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, box-shadow 0.1s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.draw-tool-btn:hover   { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 #000; }
+.draw-tool-btn.active  { background: #fecaca; border-color: #ef4444; }
+.draw-type-btn         { color: #000; }
+.draw-type-btn.active  { background: #bfdbfe; border-color: #3b82f6; }
+.draw-type-btn svg     { display: block; }
+.draw-toolbar-sep      { width: 1px; height: 20px; background: #000; opacity: 0.2; flex-shrink: 0; margin: 0 2px; }
+.draw-stroke-size      { display: flex; align-items: center; gap: 3px; }
+.draw-stroke-size button {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.draw-stroke-size button.active { background: #e0e7ff; border-color: #4f46e5; }
+.draw-stroke-size button:hover  { transform: scale(1.15); }
+
+/* Modos de cursor para desenho */
+.canvas-area.draw-mode       { cursor: crosshair; }
+.canvas-area.draw-erase-mode { cursor: cell; }
 
 .card.selected-card {
   transform: translateY(-20px) rotate(-1deg) scale(1.04);

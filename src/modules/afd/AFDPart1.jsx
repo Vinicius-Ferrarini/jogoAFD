@@ -13,6 +13,69 @@ import imgBalaoFala          from '../../assets/balao_fala_redondo.png';
 let _uidCounter = 0;
 const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6)}`;
 
+const DRAW_COLORS = [
+  { hex: '#FF0000', label: 'Vermelho' },
+  { hex: '#1a1a1a', label: 'Grafite' },
+  { hex: '#3b82f6', label: 'Azul' },
+  { hex: '#22c55e', label: 'Verde' },
+  { hex: '#f59e0b', label: 'Laranja' },
+  { hex: '#a855f7', label: 'Roxo' },
+  { hex: '#f8f8f8', label: 'Branco' },
+];
+
+// Converte array de pontos em path SVG suavizado com Bézier quadrático (midpoint smoothing)
+function pointsToPath(pts) {
+  if (pts.length < 2) return '';
+  if (pts.length === 2) return `M${pts[0].x} ${pts[0].y} L${pts[1].x} ${pts[1].y}`;
+  let d = `M${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mx = (pts[i].x + pts[i + 1].x) / 2;
+    const my = (pts[i].y + pts[i + 1].y) / 2;
+    d += ` Q${pts[i].x} ${pts[i].y} ${mx} ${my}`;
+  }
+  const last = pts[pts.length - 1];
+  d += ` L${last.x} ${last.y}`;
+  return d;
+}
+
+function arrowHeadPoints(x1, y1, x2, y2, sw) {
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const len = Math.max(14, sw * 5);
+  const spread = Math.PI / 6;
+  return [
+    x2 - len * Math.cos(angle - spread), y2 - len * Math.sin(angle - spread),
+    x2, y2,
+    x2 - len * Math.cos(angle + spread), y2 - len * Math.sin(angle + spread),
+  ].map(v => +v.toFixed(2)).join(' ');
+}
+
+function StrokeEl({ stroke, idx }) {
+  const common = { stroke: stroke.color, strokeWidth: stroke.width, fill: 'none', opacity: 0.88 };
+  if (stroke.type === 'pencil' || !stroke.type) {
+    return <path key={idx} d={pointsToPath(stroke.points)} {...common}
+      strokeLinecap="round" strokeLinejoin="round" />;
+  }
+  if (stroke.type === 'line') {
+    return <line key={idx} x1={stroke.x1} y1={stroke.y1} x2={stroke.x2} y2={stroke.y2}
+      {...common} strokeLinecap="round" />;
+  }
+  if (stroke.type === 'arrow') {
+    const head = arrowHeadPoints(stroke.x1, stroke.y1, stroke.x2, stroke.y2, stroke.width);
+    return <g key={idx} opacity={0.88}>
+      <line x1={stroke.x1} y1={stroke.y1} x2={stroke.x2} y2={stroke.y2}
+        stroke={stroke.color} strokeWidth={stroke.width} strokeLinecap="round" />
+      <polygon points={head} fill={stroke.color} stroke={stroke.color} strokeWidth={1} />
+    </g>;
+  }
+  if (stroke.type === 'rect') {
+    const x = Math.min(stroke.x1, stroke.x2), y = Math.min(stroke.y1, stroke.y2);
+    const w = Math.abs(stroke.x2 - stroke.x1), h = Math.abs(stroke.y2 - stroke.y1);
+    return <rect key={idx} x={x} y={y} width={w} height={h}
+      {...common} strokeLinejoin="round" rx={2} />;
+  }
+  return null;
+}
+
 // ─── TransitionLabel: chips verticais com edição inline ─────────────────────
 const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, isError, style, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
   const [mode, setMode] = useState(null); // null | 'adding' | { type:'editing', chipIdx:number }
@@ -228,6 +291,18 @@ export default function App({ onBack }) {
     toastRef.current = setTimeout(() => setToastData(d => ({ ...d, show: false })), 4000);
   }, []);
 
+  // ── Drawing state (deve vir antes de UNDO/REDO por causa do useEffect de teclado) ──
+  const [drawings, setDrawings]           = useState([]);
+  const [drawingStack, setDrawingStack]   = useState([]);
+  const [currentStroke, setCurrentStroke] = useState(null);
+  const [drawColor, setDrawColor]         = useState('#FF0000');
+  const [drawSize, setDrawSize]           = useState(3);
+  const [isErasing, setIsErasing]         = useState(false);
+  const [drawTool, setDrawTool]           = useState('pencil'); // 'pencil'|'line'|'arrow'|'rect'
+  const isDrawingRef    = useRef(false);
+  const currentStrokeRef = useRef(null);
+  const drawingsRef      = useRef([]);
+
   // ── UNDO/REDO ──────────────────────────────────────────────────────────────
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -259,12 +334,24 @@ export default function App({ onBack }) {
     }
   }, [historyIndex, history, showToast]);
 
+  // Undo para traços de desenho
+  const drawUndo = useCallback(() => {
+    setDrawingStack(prev => {
+      if (prev.length === 0) return prev;
+      const snapshot = prev[prev.length - 1];
+      setDrawings(snapshot);
+      drawingsRef.current = snapshot;
+      return prev.slice(0, -1);
+    });
+  }, []);
+
   // Atalhos de teclado: Ctrl+Z, Ctrl+Y
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
-        undo();
+        if (drawingStack.length > 0) drawUndo();
+        else undo();
       }
       if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
         e.preventDefault();
@@ -273,7 +360,7 @@ export default function App({ onBack }) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, drawUndo, drawingStack]);
 
   // ── Estado geral ───────────────────────────────────────────────────────────
   const [tela, setTela]             = useState('MENU');
@@ -301,6 +388,7 @@ export default function App({ onBack }) {
   const [dragInfo, setDragInfo] = useState({ isDragging: false, initialNodes: [], startX: 0, startY: 0 });
 
   const canvasRef = useRef(null);
+
   const [highlightedError, setHighlightedError] = useState(null);
   const [professorMessage, setProfessorMessage] = useState('');
   const speechRef = useRef(null);
@@ -379,8 +467,16 @@ export default function App({ onBack }) {
     setSelectedNodes([]);
     setShowSimPanel(false);
     setSimHighlight({ nodeId: null, type: null });
-    setHistory([]);
-    setHistoryIndex(-1);
+    setHistory([{ nodes: [], transitions: [] }]);
+    setHistoryIndex(0);
+    setDrawings([]);
+    setDrawingStack([]);
+    setCurrentStroke(null);
+    setIsErasing(false);
+    setDrawTool('pencil');
+    drawingsRef.current = [];
+    isDrawingRef.current = false;
+    currentStrokeRef.current = null;
   }, []);
 
   // ── Teste de palavra ───────────────────────────────────────────────────────
@@ -413,6 +509,7 @@ export default function App({ onBack }) {
           { id: 'c2', type: 'action', action: 'addTransition', icon: '↗', label: 'Criar Seta' },
           { id: 'c3', type: 'action', action: 'toggleFinal',   icon: '◎', label: 'Definir Final' },
           { id: 'c4', type: 'action', action: 'erase',         icon: '🗑', label: 'Apagar' },
+          { id: 'cd', type: 'action', action: 'draw',          icon: '✏', label: 'Riscar' },
           { id: 'cu', type: 'action', action: 'undo',          icon: '↶', label: 'Desfazer' },
           { id: 'cr', type: 'action', action: 'redo',          icon: '↷', label: 'Refazer' },
         ];
@@ -431,12 +528,20 @@ export default function App({ onBack }) {
   }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateStars]);
 
   // ── Helpers de modo ───────────────────────────────────────────────────────
-  const resetMode = () => { setConnectingSource(null); setSelectedSymbolCard(null); setSelectedNodes([]); };
+  const resetMode = () => {
+    setConnectingSource(null);
+    setSelectedSymbolCard(null);
+    setSelectedNodes([]);
+    isDrawingRef.current = false;
+    currentStrokeRef.current = null;
+    setCurrentStroke(null);
+  };
   const setInitialMode       = () => { if (!isDrawingUnlocked) return; setInteractionMode('TOGGLE_INITIAL'); resetMode(); };
   const addNodeMode          = () => { if (!isDrawingUnlocked) return; setInteractionMode('ADD_NODE');        resetMode(); };
   const addTransitionMode    = () => { if (!isDrawingUnlocked) return; setInteractionMode('CONNECTING');      resetMode(); };
   const toggleFinalStateMode = () => { if (!isDrawingUnlocked) return; setInteractionMode('TOGGLE_FINAL');    resetMode(); };
   const setEraserMode        = () => { if (!isDrawingUnlocked) return; setInteractionMode('ERASE');           resetMode(); };
+  const setDrawMode          = () => { if (!isDrawingUnlocked) return; setInteractionMode('DRAW');            resetMode(); };
   const toggleSidebar        = () => setIsSidebarOpen(o => !o);
 
   // ── Validação do grafo ─────────────────────────────────────────────────────
@@ -562,6 +667,26 @@ export default function App({ onBack }) {
   const handlePointerDownCanvas = useCallback((e) => {
     if (!isDrawingUnlocked) return;
 
+    if (interactionMode === 'DRAW') {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left - pan.x) / zoom;
+      const y = (e.clientY - rect.top  - pan.y) / zoom;
+      if (isErasing) {
+        setDrawingStack(prev => [...prev, drawingsRef.current]);
+      } else if (drawTool === 'pencil') {
+        const stroke = { type: 'pencil', color: drawColor, width: drawSize, points: [{ x, y }] };
+        currentStrokeRef.current = stroke;
+        setCurrentStroke(stroke);
+      } else {
+        const stroke = { type: drawTool, color: drawColor, width: drawSize, x1: x, y1: y, x2: x, y2: y };
+        currentStrokeRef.current = stroke;
+        setCurrentStroke(stroke);
+      }
+      isDrawingRef.current = true;
+      e.target.setPointerCapture(e.pointerId);
+      return;
+    }
+
     if (e.button === 1 || e.shiftKey) {
       setIsPanning(true);
       setDragInfo({ isDragging: false, startX: e.clientX, startY: e.clientY });
@@ -594,7 +719,7 @@ export default function App({ onBack }) {
     } else {
       setSelectedNodes([]);
     }
-  }, [isDrawingUnlocked, interactionMode, pan, zoom, nodes, transitions, recordHistory]);
+  }, [isDrawingUnlocked, interactionMode, pan, zoom, nodes, transitions, recordHistory, drawColor, drawSize, isErasing, drawTool]);
 
   // ── Pointer: nó ───────────────────────────────────────────────────────────
   const handlePointerDownNode = useCallback((e, uid) => {
@@ -669,6 +794,33 @@ export default function App({ onBack }) {
     const ix = (e.clientX - rect.left - pan.x) / zoom;
     const iy = (e.clientY - rect.top  - pan.y) / zoom;
 
+    if (interactionMode === 'DRAW' && isDrawingRef.current) {
+      if (isErasing) {
+        const ERASE_R = 20;
+        setDrawings(prev => {
+          const next = prev.filter(s =>
+            !s.points.some(p => Math.hypot(p.x - ix, p.y - iy) < ERASE_R)
+          );
+          drawingsRef.current = next;
+          return next;
+        });
+      } else if (currentStrokeRef.current) {
+        if (drawTool === 'pencil') {
+          const pts = currentStrokeRef.current.points;
+          const last = pts[pts.length - 1];
+          if (Math.hypot(ix - last.x, iy - last.y) < 3) return;
+          const updated = { ...currentStrokeRef.current, points: [...pts, { x: ix, y: iy }] };
+          currentStrokeRef.current = updated;
+          setCurrentStroke({ ...updated });
+        } else {
+          const updated = { ...currentStrokeRef.current, x2: ix, y2: iy };
+          currentStrokeRef.current = updated;
+          setCurrentStroke({ ...updated });
+        }
+      }
+      return;
+    }
+
     if (selectionBox) {
       setSelectionBox(s => ({ ...s, currentX: ix, currentY: iy }));
     } else if (dragInfo.isDragging) {
@@ -681,11 +833,34 @@ export default function App({ onBack }) {
         return { ...n, x: init.x + dxPct, y: init.y + dyPct };
       }));
     }
-  }, [isDrawingUnlocked, isPanning, pan, zoom, selectionBox, dragInfo, selectedNodes]);
+  }, [isDrawingUnlocked, isPanning, pan, zoom, selectionBox, dragInfo, selectedNodes, interactionMode, isErasing, drawTool]);
 
   // ── Pointer: up ───────────────────────────────────────────────────────────
   const handlePointerUp = useCallback((e) => {
     try { e.target.releasePointerCapture(e.pointerId); } catch (_) {}
+
+    if (interactionMode === 'DRAW' && isDrawingRef.current) {
+      isDrawingRef.current = false;
+      const stroke = currentStrokeRef.current;
+      const isShape = stroke && stroke.type && stroke.type !== 'pencil';
+      const valid = stroke && (
+        isShape
+          ? Math.hypot(stroke.x2 - stroke.x1, stroke.y2 - stroke.y1) > 4
+          : stroke.points && stroke.points.length > 1
+      );
+      if (!isErasing && valid) {
+        setDrawingStack(prev => [...prev, drawingsRef.current]);
+        setDrawings(prev => {
+          const next = [...prev, stroke];
+          drawingsRef.current = next;
+          return next;
+        });
+      }
+      currentStrokeRef.current = null;
+      setCurrentStroke(null);
+      return;
+    }
+
     if (isPanning) setIsPanning(false);
     
     if (dragInfo.isDragging) {
@@ -706,7 +881,7 @@ export default function App({ onBack }) {
       setSelectedNodes(e.ctrlKey ? [...new Set([...selectedNodes, ...sel])] : sel);
       setSelectionBox(null);
     }
-  }, [isPanning, dragInfo, selectionBox, nodes, transitions, selectedNodes, recordHistory]);
+  }, [isPanning, dragInfo, selectionBox, nodes, transitions, selectedNodes, recordHistory, interactionMode, isErasing]);
 
   // ── Renomear nó — previne duplicatas ──────────────────────────────────────
   const [editingNodeLabel, setEditingNodeLabel] = useState(null);
@@ -864,9 +1039,12 @@ export default function App({ onBack }) {
     const pageItems   = GAME_LEVELS.slice((currentPage-1)*perPage, currentPage*perPage);
     return (
       <div className="menu-screen" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14, alignSelf:'flex-start' }}>
-          <button className="back-btn" onClick={() => onBack?.()}>⬅ Voltar</button>
+        <div style={{ display:'flex', alignItems:'center', marginBottom:14, width:'100%' }}>
+          <div style={{ flex:1 }}>
+            <button className="back-btn" onClick={() => onBack?.()}>⬅ Voltar</button>
+          </div>
           <h1 className="menu-title" style={{ margin:0 }}>AutoQuest</h1>
+          <div style={{ flex:1 }} />
         </div>
         <div style={{ marginBottom: 30, fontWeight: 'bold', fontSize: 18 }}>
           Progresso: {maxStars > 0 ? Math.round((totalStars/maxStars)*100) : 0}% ({totalStars}/{maxStars} ★)
@@ -919,6 +1097,27 @@ export default function App({ onBack }) {
         </div>
       </header>
 
+      {/* ── Barra de exemplos de palavras ── */}
+      {currentLevel && (
+        <div className="words-hint-bar">
+          <div className="words-hint-group">
+            <span className="words-hint-label accept">✓ Aceita</span>
+            {currentLevel.acceptedWords.length === 0
+              ? <span className="words-hint-chip reject">nenhuma</span>
+              : currentLevel.acceptedWords.map((w, i) => (
+                  <span key={i} className="words-hint-chip accept">{w === '' ? 'λ' : w}</span>
+                ))}
+          </div>
+          <div className="words-hint-sep" />
+          <div className="words-hint-group">
+            <span className="words-hint-label reject">✗ Rejeita</span>
+            {currentLevel.rejectedWords.map((w, i) => (
+              <span key={i} className="words-hint-chip reject">{w === '' ? 'λ' : w}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="workspace">
         {/* ── Sidebar Esquerda ── */}
         <aside className={`formal-panel ${isSidebarOpen ? 'open' : ''}`}>
@@ -940,6 +1139,7 @@ export default function App({ onBack }) {
           className={`canvas-area ${
             interactionMode === 'ERASE'    ? 'erase-mode' :
             interactionMode === 'ADD_NODE' ? 'add-node-mode' :
+            interactionMode === 'DRAW'     ? (isErasing ? 'draw-erase-mode' : 'draw-mode') :
             interactionMode !== 'IDLE'     ? 'connecting-mode' : ''}`}
           ref={canvasRef}
           onPointerDown={handlePointerDownCanvas}
@@ -968,6 +1168,8 @@ export default function App({ onBack }) {
             {interactionMode === 'TOGGLE_INITIAL' && ' — Definindo Inicial...'}
             {interactionMode === 'ERASE'          && ' — Borracha...'}
             {interactionMode === 'ADD_NODE'       && ' — Clique para adicionar nó...'}
+            {interactionMode === 'DRAW' && !isErasing && ' — Desenhando...'}
+            {interactionMode === 'DRAW' &&  isErasing && ' — Apagando rabiscos...'}
           </div>
 
           {!isDrawingUnlocked ? (
@@ -984,6 +1186,82 @@ export default function App({ onBack }) {
               </div>
             </div>
           ) : (
+            <>
+            {/* ── Toolbar de desenho (fora do transform, posição fixa no canvas) ── */}
+            {interactionMode === 'DRAW' && (
+              <div className="draw-toolbar">
+                {/* Ferramentas */}
+                {[
+                  { id: 'pencil', icon: (
+                    <svg width="15" height="15" viewBox="0 0 15 15">
+                      <path d="M2 13 Q4 8 7 7.5 Q10 7 13 2" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                    </svg>), title: 'Lápis (rabisco livre)' },
+                  { id: 'line', icon: (
+                    <svg width="15" height="15" viewBox="0 0 15 15">
+                      <line x1="2" y1="7.5" x2="13" y2="7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+                    </svg>), title: 'Linha reta' },
+                  { id: 'arrow', icon: (
+                    <svg width="15" height="15" viewBox="0 0 15 15">
+                      <line x1="2" y1="7.5" x2="11" y2="7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+                      <polygon points="11,4.5 15,7.5 11,10.5" fill="currentColor"/>
+                    </svg>), title: 'Seta' },
+                  { id: 'rect', icon: (
+                    <svg width="14" height="14" viewBox="0 0 14 14">
+                      <rect x="2" y="3" width="10" height="8" fill="none" stroke="currentColor" strokeWidth="2" rx="1"/>
+                    </svg>), title: 'Retângulo' },
+                ].map(({ id, icon, title }) => (
+                  <button key={id}
+                    className={`draw-tool-btn draw-type-btn${drawTool === id && !isErasing ? ' active' : ''}`}
+                    title={title}
+                    onClick={() => { setDrawTool(id); setIsErasing(false); }}>
+                    {icon}
+                  </button>
+                ))}
+                <div className="draw-toolbar-sep" />
+                {/* Cores */}
+                {DRAW_COLORS.map(({ hex, label }) => (
+                  <button key={hex}
+                    className={`draw-color-btn${drawColor === hex && !isErasing ? ' active' : ''}`}
+                    style={{ background: hex === '#f8f8f8' ? '#f8f8f8' : hex,
+                      border: hex === '#f8f8f8' ? '2.5px solid #aaa' : '2.5px solid #000' }}
+                    title={label}
+                    onClick={() => { setDrawColor(hex); setIsErasing(false); }}
+                  />
+                ))}
+                <div className="draw-toolbar-sep" />
+                {/* Espessura */}
+                <div className="draw-stroke-size">
+                  {[2, 4, 7].map(sz => (
+                    <button key={sz}
+                      className={drawSize === sz ? 'active' : ''}
+                      style={{ width: 8 + sz * 3, height: 8 + sz * 3 }}
+                      title={`Espessura ${sz}`}
+                      onClick={() => { setDrawSize(sz); setIsErasing(false); }}
+                    >
+                      <span style={{ display:'block', width: sz * 1.5, height: sz * 1.5,
+                        background: '#000', borderRadius: '50%' }} />
+                    </button>
+                  ))}
+                </div>
+                <div className="draw-toolbar-sep" />
+                {/* Borracha / limpar / fechar */}
+                <button className={`draw-tool-btn${isErasing ? ' active' : ''}`}
+                  title="Borracha"
+                  onClick={() => setIsErasing(e => !e)}>⌫</button>
+                <button className="draw-tool-btn"
+                  title="Apagar todos os rabiscos"
+                  onClick={() => {
+                    setDrawingStack(prev => [...prev, drawingsRef.current]);
+                    setDrawings([]);
+                    drawingsRef.current = [];
+                  }}>🗑</button>
+                <div className="draw-toolbar-sep" />
+                <button className="draw-tool-btn" title="Fechar ferramenta"
+                  style={{ fontSize: 11, fontWeight: 900 }}
+                  onClick={() => setInteractionMode('IDLE')}>✕</button>
+              </div>
+            )}
+
             <div style={{ width:'100%', height:'100%',
               transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`,
               transformOrigin:'0 0', position:'absolute', top:0, left:0 }}>
@@ -1043,6 +1321,13 @@ export default function App({ onBack }) {
                 />
               ))}
 
+              {/* ── Camada de rabiscos (acima das transições, abaixo dos nós) ── */}
+              <svg style={{ position:'absolute', inset:0, width:'100%', height:'100%',
+                pointerEvents:'none', overflow:'visible' }}>
+                {drawings.map((stroke, i) => <StrokeEl key={i} stroke={stroke} idx={i} />)}
+                {currentStroke && <StrokeEl stroke={currentStroke} idx="cur" />}
+              </svg>
+
               {/* Nós */}
               {nodes.map(node => {
                 const simCls =
@@ -1073,6 +1358,7 @@ export default function App({ onBack }) {
                 );
               })}
             </div>
+            </>
           )}
         </section>
 
@@ -1135,22 +1421,28 @@ export default function App({ onBack }) {
               if (card.type === 'action') {
                 if (card.action === 'undo' || card.action === 'redo') {
                   const isUndo = card.action === 'undo';
-                  const disabled = isUndo ? historyIndex <= 0 : historyIndex >= history.length - 1;
+                  const disabled = isUndo
+                    ? drawingStack.length === 0 && historyIndex <= 0
+                    : historyIndex >= history.length - 1;
                   return (
                     <div key={card.id}
                       data-icon={card.icon}
                       className={`card state slide-up-fade`}
                       style={{ opacity: disabled ? 0.35 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
-                      onClick={() => !disabled && (isUndo ? undo() : redo())}>
+                      onClick={() => {
+                        if (disabled) return;
+                        if (isUndo) { drawingStack.length > 0 ? drawUndo() : undo(); }
+                        else redo();
+                      }}>
                       <div className="card-header">{card.label}</div>
                       <div className="card-icon">{card.icon}</div>
                     </div>
                   );
                 }
-                const classMap = { toggleInitial:'initial', addNode:'state', addTransition:'transition', toggleFinal:'final', erase:'erase' };
-                const clickMap = { toggleInitial: setInitialMode, addNode: addNodeMode, addTransition: addTransitionMode, toggleFinal: toggleFinalStateMode, erase: setEraserMode };
-                const modeMap  = { toggleInitial:'TOGGLE_INITIAL', addNode:'ADD_NODE', addTransition:'CONNECTING', toggleFinal:'TOGGLE_FINAL', erase:'ERASE' };
-                const iconMap  = { toggleInitial:'▶', addNode:'◯', addTransition:'↗', toggleFinal:'◎', erase:'🗑' };
+                const classMap = { toggleInitial:'initial', addNode:'state', addTransition:'transition', toggleFinal:'final', erase:'erase', draw:'draw' };
+                const clickMap = { toggleInitial: setInitialMode, addNode: addNodeMode, addTransition: addTransitionMode, toggleFinal: toggleFinalStateMode, erase: setEraserMode, draw: setDrawMode };
+                const modeMap  = { toggleInitial:'TOGGLE_INITIAL', addNode:'ADD_NODE', addTransition:'CONNECTING', toggleFinal:'TOGGLE_FINAL', erase:'ERASE', draw:'DRAW' };
+                const iconMap  = { toggleInitial:'▶', addNode:'◯', addTransition:'↗', toggleFinal:'◎', erase:'🗑', draw:'✏' };
                 const isSelected = interactionMode === modeMap[card.action];
                 const isErr      = highlightedError === card.action;
                 return (

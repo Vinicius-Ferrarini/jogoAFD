@@ -472,6 +472,25 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
               : '{ } (vazio)'}
           </div>
 
+          {/* Words examples */}
+          <div className="section-header" style={{ fontSize: 10, marginTop: 2 }}>Exemplos</div>
+          <div className="p2-words-examples">
+            <div className="p2-words-group">
+              <span className="p2-words-label accept">✓</span>
+              {level.acceptedWords.length === 0
+                ? <span className="p2-words-chip reject">∅</span>
+                : level.acceptedWords.map((w, i) => (
+                    <span key={i} className="p2-words-chip accept">{w === '' ? 'λ' : w}</span>
+                  ))}
+            </div>
+            <div className="p2-words-group">
+              <span className="p2-words-label reject">✗</span>
+              {level.rejectedWords.map((w, i) => (
+                <span key={i} className="p2-words-chip reject">{w === '' ? 'λ' : w}</span>
+              ))}
+            </div>
+          </div>
+
           {/* Answer */}
           <div className="section-header" style={{ fontSize: 10, marginTop: 2 }}>Sua Resposta</div>
           <div className="test-input-area">
