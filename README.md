@@ -1,4 +1,4 @@
-# AutoQuest — Simulador de Autômatos Finitos
+# Laboratório das Linguagens — Simulador de Autômatos Finitos
 
 > Transformando a Teoria da Computação em uma experiência gamificada, visual e interativa.
 
@@ -17,9 +17,9 @@
 
 ---
 
-## O que é o AutoQuest?
+## O que é o Laboratório das Linguagens?
 
-O **AutoQuest** é uma plataforma educacional construída como projeto de **Iniciação Científica**. O objetivo é tornar o aprendizado de **Autômatos Finitos Determinísticos (AFD)** concreto e acessível por meio de mecânicas de jogo — cartas, canvas interativo e validação em tempo real.
+O **Laboratório das Linguagens** é uma plataforma educacional construída como projeto de **Iniciação Científica**. O objetivo é tornar o aprendizado de **Autômatos Finitos Determinísticos (AFD)** concreto e acessível por meio de mecânicas de jogo — cartas, canvas interativo e validação em tempo real.
 
 O visual segue o estilo neo-brutalismo / gibi (inspirado na Turma da Mônica), com o professor **Maurílio** guiando o jogador em cada fase.
 
@@ -42,7 +42,7 @@ O visual segue o estilo neo-brutalismo / gibi (inspirado na Turma da Mônica), c
 ## Módulos
 
 ```
-AutoQuest
+Laboratório das Linguagens
 ├── AFD Parte 1 — Desenhar o autômato a partir da linguagem
 ├── AFD Parte 2 — Identificar a linguagem a partir do grafo
 ├── AFD Minimização — (em breve)

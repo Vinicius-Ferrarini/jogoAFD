@@ -1,4 +1,4 @@
-// AutoQuest – App.jsx v3.0 (ROUTER CENTRAL)
+// Laboratório das Linguagens – App.jsx v3.0 (ROUTER CENTRAL)
 import { useState, useCallback } from 'react';
 import './App.css';
 
@@ -16,7 +16,7 @@ export default function App() {
   // ✨ Progresso Persistente
   const getProgress = () => {
     try {
-      return JSON.parse(localStorage.getItem('autoquest_progress') || '{}');
+      return JSON.parse(localStorage.getItem('lab_linguagens_progress') || '{}');
     } catch {
       return {};
     }
@@ -29,7 +29,7 @@ export default function App() {
       const cur = prev[moduleId]?.stars || 0;
       if (stars <= cur) return prev;
       const next = { ...prev, [moduleId]: { stars, timestamp: Date.now() } };
-      localStorage.setItem('autoquest_progress', JSON.stringify(next));
+      localStorage.setItem('lab_linguagens_progress', JSON.stringify(next));
       return next;
     });
   }, []);
@@ -98,50 +98,42 @@ export default function App() {
 }
 
 // ✨ Seleção de Módulos Principais
-function ModuleSelection({ progress, onSelectModule, onBack }) {
+function ModuleSelection({ onSelectModule, onBack }) {
   const modules = [
-    {
-      id: 'afd',
-      label: 'Autômatos Finitos',
-      icon: '🤖',
-      color: '#60a5fa',
-      desc: 'Desenhe, analise e minimize AFDs',
-    },
-    {
-      id: 'ap',
-      label: 'Autômatos com Pilha',
-      icon: '📚',
-      color: '#a78bfa',
-      desc: 'Reconhecimento com memória (pilha)',
-    },
-    {
-      id: 'mt',
-      label: 'Máquinas de Turing',
-      icon: '⚙️',
-      color: '#f97316',
-      desc: 'Modelos Reconhecedora e Transdutora',
-    },
+    { id: 'afd', label: 'Autômatos Finitos',    icon: '🤖', color: '#60a5fa',
+      desc: 'Desenhe, analise e minimize AFDs' },
+    { id: 'ap',  label: 'Autômatos com Pilha',  icon: '📚', color: '#a78bfa',
+      desc: 'Reconhecimento com memória (pilha)', locked: true },
+    { id: 'mt',  label: 'Máquinas de Turing',   icon: '⚙️', color: '#f97316',
+      desc: 'Modelos Reconhecedora e Transdutora', locked: true },
   ];
 
   return (
-    <div className="module-selection-screen">
-      <div className="header-with-back">
-        <button className="back-btn-large" onClick={onBack}>← Voltar</button>
-        <h1>Escolha um Módulo</h1>
+    <div className="nav-screen">
+      <div className="nav-header">
+        <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
+        <h1 className="menu-title" style={{ margin: 0 }}>Laboratório das Linguagens</h1>
+        <div style={{ flex: 1 }} />
       </div>
-
-      <div className="modules-grid-large">
+      <div className="nav-section-label">Escolha um Módulo</div>
+      <div className="module-cards">
         {modules.map(mod => (
           <button
             key={mod.id}
-            className="module-btn-large"
-            style={{ borderColor: mod.color, backgroundColor: mod.color + '15' }}
-            onClick={() => onSelectModule(mod.id)}
+            className="module-card-neo"
+            style={{ '--mc': mod.color }}
+            onClick={() => !mod.locked && onSelectModule(mod.id)}
+            disabled={!!mod.locked}
           >
-            <div className="module-icon-large">{mod.icon}</div>
-            <h3>{mod.label}</h3>
-            <p>{mod.desc}</p>
-            <div className="arrow">→</div>
+            {mod.locked && <span className="nav-ribbon">Em breve!</span>}
+            <div className="module-card-icon">{mod.icon}</div>
+            <div className="module-card-name">{mod.label}</div>
+            <div className="module-card-desc">{mod.desc}</div>
+            {!mod.locked && (
+              <div className="module-card-cta" style={{ background: mod.color }}>
+                Entrar →
+              </div>
+            )}
           </button>
         ))}
       </div>
@@ -150,43 +142,57 @@ function ModuleSelection({ progress, onSelectModule, onBack }) {
 }
 
 // ✨ Seleção de Submódulos
-function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
+function SubmoduleSelection({ moduleId, onSelectGame, onBack }) {
   const submodules = {
     afd: [
-      { id: 'afd-p1', label: '🎨 Desenhar & Formalizar', desc: 'Desenhe autômatos no canvas' },
-      { id: 'afd-p2', label: '📊 Grafo → Linguagem', desc: 'Analise e extraia a linguagem' },
-      { id: 'afd-min', label: '⚡ Minimização', desc: '5 exercícios de otimização' },
+      { id: 'afd-p1',  icon: '🎨', label: 'Desenhar & Formalizar',
+        desc: 'Construa autômatos do zero no canvas interativo', color: '#fde68a' },
+      { id: 'afd-p2',  icon: '📊', label: 'Grafo → Linguagem',
+        desc: 'Analise um grafo pronto e identifique a linguagem', color: '#bfdbfe' },
+      { id: 'afd-min', icon: '⚡', label: 'Minimização',
+        desc: '5 exercícios de otimização de autômatos', color: '#bbf7d0' },
     ],
     ap: [
-      { id: 'ap-pilha', label: '📚 Autômato com Pilha', desc: 'Em breve!' },
-      { id: 'ap-formal', label: '📝 Descrição Formal', desc: 'Em breve!' },
+      { id: 'ap-pilha',  icon: '📚', label: 'Autômato com Pilha',  desc: 'Em breve!', locked: true },
+      { id: 'ap-formal', icon: '📝', label: 'Descrição Formal',     desc: 'Em breve!', locked: true },
     ],
     mt: [
-      { id: 'mt-recon', label: '🔍 Reconhecedora', desc: 'Em breve!' },
-      { id: 'mt-trans', label: '🔄 Transdutora', desc: 'Em breve!' },
+      { id: 'mt-recon', icon: '🔍', label: 'Reconhecedora', desc: 'Em breve!', locked: true },
+      { id: 'mt-trans', icon: '🔄', label: 'Transdutora',   desc: 'Em breve!', locked: true },
     ],
   };
 
+  const MOD_META = {
+    afd: { label: 'Autômatos Finitos',   icon: '🤖', color: '#60a5fa' },
+    ap:  { label: 'Autômatos com Pilha', icon: '📚', color: '#a78bfa' },
+    mt:  { label: 'Máquinas de Turing',  icon: '⚙️', color: '#f97316' },
+  };
+  const meta    = MOD_META[moduleId] || { label: moduleId, icon: '❓', color: '#ccc' };
   const current = submodules[moduleId] || [];
-  const moduleNames = { afd: 'Autômatos Finitos', ap: 'Autômatos com Pilha', mt: 'Máquinas de Turing' };
 
   return (
-    <div className="submodule-selection-screen">
-      <div className="header-with-back">
-        <button className="back-btn-large" onClick={onBack}>← Voltar</button>
-        <h1>{moduleNames[moduleId]}</h1>
+    <div className="nav-screen">
+      <div className="nav-header">
+        <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
+        <span className="nav-title-badge" style={{ background: meta.color }}>
+          {meta.icon} {meta.label}
+        </span>
+        <div style={{ flex: 1 }} />
       </div>
-
-      <div className="submodules-grid">
+      <div className="nav-section-label">Escolha uma Atividade</div>
+      <div className="submodule-cards">
         {current.map(sub => (
           <button
             key={sub.id}
-            className="submodule-btn"
-            onClick={() => onSelectGame(sub.id)}
-            disabled={sub.id.includes('breve')}
+            className="submodule-card-neo"
+            style={{ '--sc': sub.color || '#f3f4f6' }}
+            onClick={() => !sub.locked && onSelectGame(sub.id)}
+            disabled={!!sub.locked}
           >
-            <h3>{sub.label}</h3>
-            <p>{sub.desc}</p>
+            {sub.locked && <span className="nav-ribbon">Em breve!</span>}
+            <div className="submodule-card-icon">{sub.icon}</div>
+            <div className="submodule-card-name">{sub.label}</div>
+            <div className="submodule-card-desc">{sub.desc}</div>
           </button>
         ))}
       </div>

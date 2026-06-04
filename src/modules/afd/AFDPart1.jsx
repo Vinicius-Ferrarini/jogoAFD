@@ -1,4 +1,4 @@
-// AutoQuest — App.jsx v3.0
+// Laboratório das Linguagens — App.jsx v3.0
 // v3.0: Undo/Redo, Simulação no Rodapé, Cores Zoom Corrigidas, Validação Duplicata Aprimorada
 import { useState, useRef, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import './AFDPart1.css';
@@ -261,7 +261,7 @@ export default function App({ onBack }) {
 
   // ── Progresso persistente ──────────────────────────────────────────────────
   const getProgress = () => {
-    try { return JSON.parse(localStorage.getItem('autoquest_progress') || '{}'); }
+    try { return JSON.parse(localStorage.getItem('lab_linguagens_progress') || '{}'); }
     catch { return {}; }
   };
   const [progress, setProgress] = useState(getProgress);
@@ -271,7 +271,7 @@ export default function App({ onBack }) {
       const cur = prev[levelId]?.stars || 0;
       if (stars <= cur) return prev;
       const next = { ...prev, [levelId]: { stars } };
-      localStorage.setItem('autoquest_progress', JSON.stringify(next));
+      localStorage.setItem('lab_linguagens_progress', JSON.stringify(next));
       return next;
     });
   }, []);
@@ -1021,7 +1021,7 @@ export default function App({ onBack }) {
   // ══════════════════════════════════════════════════════════════
   if (tela === 'HOME') return (
     <div className="menu-screen">
-      <h1 className="menu-title">AutoQuest</h1>
+      <h1 className="menu-title">Laboratório das Linguagens</h1>
       <button className="menu-btn primary" onClick={() => setTela('MENU')} style={{ marginBottom: 15 }}>Fases AFD</button>
       <button className="menu-btn" onClick={() => showToast('A Parte 2 chega em breve!', 'info')}>AFD Parte 2</button>
       {toastData.show && <div className={`toast-notification ${toastData.type}`}>{toastData.message}</div>}
@@ -1043,7 +1043,7 @@ export default function App({ onBack }) {
           <div style={{ flex:1 }}>
             <button className="back-btn" onClick={() => onBack?.()}>⬅ Voltar</button>
           </div>
-          <h1 className="menu-title" style={{ margin:0 }}>AutoQuest</h1>
+          <h1 className="menu-title" style={{ margin:0 }}>Laboratório das Linguagens</h1>
           <div style={{ flex:1 }} />
         </div>
         <div style={{ marginBottom: 30, fontWeight: 'bold', fontSize: 18 }}>

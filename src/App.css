@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   App.css — AutoQuest v3.0  |  Estilo Gibi / Neo-Brutalismo
+   App.css — Laboratório das Linguagens v3.0  |  Estilo Gibi / Neo-Brutalismo
    ═══════════════════════════════════════════════════════ */
 
 /* --- VARIÁVEIS DO TEMA --- */
@@ -1180,4 +1180,211 @@ body { color: var(--text-main); }
   text-align: center;
   font-weight: bold;
   z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════
+   Telas de Navegação: Módulos e Submódulos
+   ══════════════════════════════════════════════════════ */
+
+.nav-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #fff9c4;
+  padding: 28px 32px 40px;
+  overflow-y: auto;
+}
+
+/* ── Header das telas de navegação ── */
+.nav-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 860px;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.nav-title-badge {
+  font-size: 18px;
+  font-weight: 900;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 10px;
+  padding: 6px 20px;
+  box-shadow: 4px 4px 0 #000;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.nav-section-label {
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: #fbbf24;
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 5px 18px;
+  box-shadow: 3px 3px 0 #000;
+  margin-bottom: 28px;
+  transform: rotate(-1deg);
+}
+
+/* ── Faixa "Em breve" (ribbon) ── */
+.nav-ribbon {
+  position: absolute;
+  top: 12px; right: -26px;
+  background: #f87171;
+  color: #000;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 30px;
+  transform: rotate(35deg);
+  border: 1.5px solid #000;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
+/* ══ Cards de Módulo ══ */
+.module-cards {
+  display: flex;
+  gap: 22px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 860px;
+  width: 100%;
+}
+
+.module-card-neo {
+  width: 230px;
+  min-height: 260px;
+  background: #fff;
+  border: 4px solid #000;
+  border-radius: 14px;
+  box-shadow: 6px 6px 0 #000;
+  padding: 32px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  transition: transform 0.13s, box-shadow 0.13s;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Faixa colorida no topo */
+.module-card-neo::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 8px;
+  background: var(--mc, #60a5fa);
+  border-bottom: 2px solid #000;
+}
+
+.module-card-neo:hover:not(:disabled) {
+  transform: translate(-4px, -4px);
+  box-shadow: 10px 10px 0 #000;
+}
+
+.module-card-neo:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(25%);
+}
+
+.module-card-icon { font-size: 52px; line-height: 1; }
+
+.module-card-name {
+  font-size: 15px;
+  font-weight: 900;
+  color: #000;
+  line-height: 1.25;
+}
+
+.module-card-desc {
+  font-size: 11px;
+  color: #444;
+  line-height: 1.45;
+  flex: 1;
+}
+
+.module-card-cta {
+  border: 3px solid #000;
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #000;
+  box-shadow: 3px 3px 0 #000;
+  margin-top: 4px;
+  transition: transform 0.1s, box-shadow 0.1s;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+
+.module-card-neo:hover:not(:disabled) .module-card-cta {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #000;
+}
+
+/* ══ Cards de Submódulo ══ */
+.submodule-cards {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 860px;
+  width: 100%;
+}
+
+.submodule-card-neo {
+  width: 210px;
+  min-height: 210px;
+  background: var(--sc, #fff);
+  border: 4px solid #000;
+  border-radius: 14px;
+  box-shadow: 6px 6px 0 #000;
+  padding: 26px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  transition: transform 0.13s, box-shadow 0.13s;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.submodule-card-neo:hover:not(:disabled) {
+  transform: translate(-4px, -4px);
+  box-shadow: 10px 10px 0 #000;
+}
+
+.submodule-card-neo:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(35%);
+  background: #e5e7eb !important;
+}
+
+.submodule-card-icon { font-size: 44px; line-height: 1; }
+
+.submodule-card-name {
+  font-size: 14px;
+  font-weight: 900;
+  color: #000;
+  line-height: 1.25;
+}
+
+.submodule-card-desc {
+  font-size: 11px;
+  color: #444;
+  line-height: 1.45;
 }

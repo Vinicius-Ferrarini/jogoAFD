@@ -10,11 +10,11 @@ import imgBalaoFala          from '../../assets/balao_fala_redondo.png';
 
 // ── P2 Progress (localStorage, separate from P1) ──────────────────────────────
 function getP2Progress() {
-  try { return JSON.parse(localStorage.getItem('autoquest_progress_p2') || '{}'); }
+  try { return JSON.parse(localStorage.getItem('lab_linguagens_progress_p2') || '{}'); }
   catch { return {}; }
 }
 function saveP2Progress(d) {
-  localStorage.setItem('autoquest_progress_p2', JSON.stringify(d));
+  localStorage.setItem('lab_linguagens_progress_p2', JSON.stringify(d));
 }
 
 // ── BFS horizontal layout ─────────────────────────────────────────────────────
@@ -292,7 +292,7 @@ function LevelList({ progress, onSelect, onBack }) {
     <div className="menu-screen" style={{ justifyContent: 'flex-start', paddingTop: 16 }}>
       <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:12, alignSelf:'flex-start' }}>
         <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
-        <h1 className="menu-title" style={{ margin:0 }}>AutoQuest</h1>
+        <h1 className="menu-title" style={{ margin:0 }}>Laboratório das Linguagens</h1>
       </div>
       <p style={{ fontWeight: 900, fontSize: 16, color: '#555', marginBottom: 12,
         background: '#60a5fa', border: '3px solid #000', borderRadius: 8,

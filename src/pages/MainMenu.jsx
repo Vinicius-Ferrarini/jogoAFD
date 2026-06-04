@@ -1,4 +1,4 @@
-// MainMenu.jsx – Tela inicial com branding AutoQuest
+// MainMenu.jsx – Tela inicial com branding Laboratório das Linguagens
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.png';
 
@@ -13,7 +13,7 @@ export default function MainMenu({ onStart, progress }) {
       {/* Maurílio no lado esquerdo */}
       <div className="main-menu-left">
         <div className="speech-bubble">
-          <p>E aí, pessoal! Bem-vindos ao AutoQuest!</p>
+          <p>E aí, pessoal! Bem-vindos ao Laboratório das Linguagens!</p>
           <p className="small">Vamos dominar autômatos juntos? 🤖</p>
         </div>
         <img src={imgMaurilioExplicando} alt="Maurílio" className="maurilio-img" />
@@ -22,7 +22,7 @@ export default function MainMenu({ onStart, progress }) {
       <div className="main-menu-content">
         {/* Logo e Título */}
         <div className="menu-logo-section">
-          <h1 className="main-title">AutoQuest</h1>
+          <h1 className="menu-title" style={{ margin: 0 }}>Laboratório das Linguagens</h1>
           <p className="main-subtitle">Domine Autômatos & Linguagens Formais</p>
         </div>
 
