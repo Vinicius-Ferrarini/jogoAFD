@@ -1,0 +1,1 @@
+var e=`/jogoAFD/assets/balao_fala_redondo-CzwHnzS8.webp`;export{e as t};
