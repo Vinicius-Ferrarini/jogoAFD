@@ -75,9 +75,13 @@ function normalize(s) {
     .replace(/^L\s*=\s*/, '')
     .trim()
     .toLowerCase()
+    .replace(/é/g, '\x01')                              // protege 'é' (verbo) do NFD
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // ímpar→impar, ã→a, etc.
+    .replace(/\x01/g, '\xe9')                           // restaura 'é' (será stripado depois)
     .replace(/\s+/g, '')
     .replace(/[{}\[\]]/g, '')
-    .replace(/λ|ε|epsilon|\\lambda/gi, 'lambda')
+    .replace(/[\\\/]/g, '|')                           // \ e / equivalem a |
+    .replace(/λ|ε|epsilon/gi, 'lambda')
     .replace(/∅|\\emptyset|vazio|empty/gi, 'emptyset')
     .replace(/[≥]/g, '>=')
     .replace(/[≤]/g, '<=')
