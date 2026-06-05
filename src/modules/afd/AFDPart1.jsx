@@ -513,7 +513,6 @@ export default function App({ onBack }) {
           { id: 'c2', type: 'action', action: 'addTransition', icon: '↗', label: 'Criar Seta' },
           { id: 'c3', type: 'action', action: 'toggleFinal',   icon: '◎', label: 'Definir Final' },
           { id: 'c4', type: 'action', action: 'erase',         icon: '🗑', label: 'Apagar' },
-          { id: 'cd', type: 'action', action: 'draw',          icon: '✏', label: 'Riscar' },
           { id: 'cu', type: 'action', action: 'undo',          icon: '↶', label: 'Desfazer' },
           { id: 'cr', type: 'action', action: 'redo',          icon: '↷', label: 'Refazer' },
         ];
@@ -1101,22 +1100,20 @@ export default function App({ onBack }) {
         </div>
       </header>
 
-      {/* ── Barra de exemplos de palavras ── */}
+      {/* ── Barra de palavras testadas (dinâmica) ── */}
       {currentLevel && (
         <div className="words-hint-bar">
           <div className="words-hint-group">
             <span className="words-hint-label accept">✓ Aceita</span>
-            {currentLevel.acceptedWords.length === 0
-              ? <span className="words-hint-chip reject">nenhuma</span>
-              : currentLevel.acceptedWords.map((w, i) => (
-                  <span key={i} className="words-hint-chip accept">{w === '' ? 'λ' : w}</span>
-                ))}
+            {testWords.filter(w => w.status === 'correct' || w.status === 'shortest').map((w, i) => (
+              <span key={i} className="words-hint-chip accept">{w.word}</span>
+            ))}
           </div>
           <div className="words-hint-sep" />
           <div className="words-hint-group">
             <span className="words-hint-label reject">✗ Rejeita</span>
-            {currentLevel.rejectedWords.map((w, i) => (
-              <span key={i} className="words-hint-chip reject">{w === '' ? 'λ' : w}</span>
+            {testWords.filter(w => w.status === 'wrong').map((w, i) => (
+              <span key={i} className="words-hint-chip reject">{w.word}</span>
             ))}
           </div>
         </div>
@@ -1151,30 +1148,40 @@ export default function App({ onBack }) {
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          {/* HUD Zoom */}
+          {/* HUD Zoom + Riscar */}
           {isDrawingUnlocked && (
-            <div style={{ position:'absolute', top:12, right:12, display:'flex', gap:4, zIndex:10,
-              background:'#fff', padding:'4px 8px', border:'3px solid #000', borderRadius:8, boxShadow:'4px 4px 0 #000' }}>
-              <button onClick={() => setZoom(z => Math.max(0.15, z-0.25))}
-                style={{ fontWeight:'bold', width:26, cursor:'pointer', border:'none', background:'transparent', fontSize:18, color:'#000' }}>−</button>
-              <span style={{ fontWeight:'bold', width:50, textAlign:'center', fontSize:12, alignSelf:'center' }}>{Math.round(zoom*100)}%</span>
-              <button onClick={() => setZoom(z => Math.min(6, z+0.25))}
-                style={{ fontWeight:'bold', width:26, cursor:'pointer', border:'none', background:'transparent', fontSize:18, color:'#000' }}>+</button>
-              <button onClick={() => { setZoom(1); setPan({x:0,y:0}); }}
-                style={{ fontWeight:'bold', marginLeft:4, cursor:'pointer', border:'none', background:'transparent', color:'var(--accent-blue)', fontSize:11 }}>Reset</button>
+            <div style={{ position:'absolute', top:10, right:10, display:'flex', gap:4, zIndex:10, alignItems:'center' }}>
+              <button onClick={setDrawMode} title="Riscar"
+                style={{ width:30, height:30, background: interactionMode==='DRAW' ? '#bfdbfe' : '#fef08a',
+                  border: interactionMode==='DRAW' ? '2.5px solid #3b82f6' : '2.5px solid #000',
+                  borderRadius:8, fontSize:15, cursor:'pointer',
+                  boxShadow: interactionMode==='DRAW' ? '2px 2px 0 #1d4ed8' : '2px 2px 0 #000',
+                  display:'flex', alignItems:'center', justifyContent:'center' }}>✏</button>
+              <div style={{ display:'flex', gap:2, background:'#fff', padding:'3px 6px', border:'2.5px solid #000', borderRadius:8, boxShadow:'3px 3px 0 #000', alignItems:'center' }}>
+                <button onClick={() => setZoom(z => Math.max(0.15, z-0.25))}
+                  style={{ fontWeight:'bold', width:20, height:22, cursor:'pointer', border:'none', background:'transparent', fontSize:16, color:'#000', display:'flex', alignItems:'center', justifyContent:'center' }}>−</button>
+                <span style={{ fontWeight:'bold', width:38, textAlign:'center', fontSize:11 }}>{Math.round(zoom*100)}%</span>
+                <button onClick={() => setZoom(z => Math.min(6, z+0.25))}
+                  style={{ fontWeight:'bold', width:20, height:22, cursor:'pointer', border:'none', background:'transparent', fontSize:16, color:'#000', display:'flex', alignItems:'center', justifyContent:'center' }}>+</button>
+                <button onClick={() => { setZoom(1); setPan({x:0,y:0}); }}
+                  style={{ fontWeight:'bold', marginLeft:2, cursor:'pointer', border:'none', background:'transparent', color:'var(--accent-blue)', fontSize:11 }}>↺</button>
+              </div>
             </div>
           )}
 
-          <div className="canvas-label">
-            Área de Montagem
-            {interactionMode === 'CONNECTING'     && ' — Conectando...'}
-            {interactionMode === 'TOGGLE_FINAL'   && ' — Definindo Final...'}
-            {interactionMode === 'TOGGLE_INITIAL' && ' — Definindo Inicial...'}
-            {interactionMode === 'ERASE'          && ' — Borracha...'}
-            {interactionMode === 'ADD_NODE'       && ' — Clique para adicionar nó...'}
-            {interactionMode === 'DRAW' && !isErasing && ' — Desenhando...'}
-            {interactionMode === 'DRAW' &&  isErasing && ' — Apagando rabiscos...'}
-          </div>
+          <div className="canvas-label">Área de Montagem</div>
+          {isDrawingUnlocked && (interactionMode !== 'IDLE' || selectedSymbolCard) && (
+            <div className="canvas-action-label">
+              {selectedSymbolCard                                       && `Usar Símbolo: ${selectedSymbolCard}`}
+              {!selectedSymbolCard && interactionMode === 'CONNECTING'     && '↗ Criar Seta'}
+              {!selectedSymbolCard && interactionMode === 'TOGGLE_FINAL'   && '◎ Definir Final'}
+              {!selectedSymbolCard && interactionMode === 'TOGGLE_INITIAL' && '▶ Estado Inicial'}
+              {!selectedSymbolCard && interactionMode === 'ERASE'          && '🗑 Apagar'}
+              {!selectedSymbolCard && interactionMode === 'ADD_NODE'       && '◯ Novo Estado'}
+              {!selectedSymbolCard && interactionMode === 'DRAW' && !isErasing && '✏ Riscar'}
+              {!selectedSymbolCard && interactionMode === 'DRAW' &&  isErasing && '⌫ Apagando Rabiscos'}
+            </div>
+          )}
 
           {!isDrawingUnlocked ? (
             <div className="locked-overlay">
