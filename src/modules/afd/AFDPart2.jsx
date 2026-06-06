@@ -1113,9 +1113,9 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
             <img
               src={imgMaurilioExplicando}
               alt="Professor"
-              style={{ height: 280, zIndex: 2, marginRight: -20, filter: 'drop-shadow(4px 4px 0 #000)' }}
+              style={{ height: 320, zIndex: 2, marginRight: -55 }}
             />
-            <div style={{ position: 'relative', width: 260, height: 195, marginTop: -30, zIndex: 1 }}>
+            <div style={{ position: 'relative', width: 300, height: 210, marginTop: -140, zIndex: 1 }}>
               <img
                 src={imgBalaoFala}
                 alt=""
@@ -1125,7 +1125,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
                 position: 'absolute', inset: 0,
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                padding: '16px 16px 48px', boxSizing: 'border-box',
+                padding: '18px 18px 48px', boxSizing: 'border-box',
                 color: '#000', textAlign: 'center', zIndex: 2
               }}>
                 <div style={{ fontWeight: 900, fontSize: 15, lineHeight: 1.4 }}>
@@ -1142,15 +1142,15 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 16, marginTop: 24 }}>
-            <button className="menu-btn" onClick={onBack} style={{ padding: '12px 22px', fontSize: 17 }}>
+          <div style={{ display: 'flex', gap: 20, marginTop: 36 }}>
+            <button className="menu-btn" onClick={onBack} style={{ padding: '14px 28px', fontSize: 20 }}>
               Voltar ao Menu
             </button>
             {nextLevel && (
               <button
                 className="menu-btn primary"
                 onClick={() => onNext(nextLevel)}
-                style={{ padding: '12px 22px', fontSize: 17 }}
+                style={{ padding: '14px 28px', fontSize: 20 }}
               >
                 Próxima: {nextLevel.label} →
               </button>
