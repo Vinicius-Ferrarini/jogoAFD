@@ -25,7 +25,6 @@ export default function FormalDescriptionModal({
 
   const [fieldErrors, setFieldErrors] = useState({ Q: null, Sigma: null, initial: null, final: null });
   const [tableErrors, setTableErrors] = useState({});
-  const [formatBanner, setFormatBanner] = useState(null); // mensagem no topo da tela
 
   useEffect(() => {
     if (isOpen) {
@@ -34,7 +33,6 @@ export default function FormalDescriptionModal({
       setParsedQ([]); setParsedSigma([]); setTransitionTableData({});
       setFieldErrors({ Q: null, Sigma: null, initial: null, final: null });
       setTableErrors({});
-      setFormatBanner(null);
     }
   }, [isOpen]);
 
@@ -76,29 +74,31 @@ export default function FormalDescriptionModal({
     const hasMissing = [fmtQ, fmtSigma, fmtInitial, fmtFinal].includes('multi_needs_braces');
     const hasExtra   = [fmtQ, fmtSigma, fmtInitial, fmtFinal].includes('single_no_braces');
 
+    const braceMsg = (fmt) => {
+      if (!fmt) return null;
+      return fmt === 'multi_needs_braces'
+        ? 'Tem mais de 1 elemento, use { }'
+        : 'Tem somente 1 elemento, Retire{ }';
+    };
+
     if (hasMissing || hasExtra) {
       setFieldErrors({
-        Q:       fmtQ       ? 'formato' : null,
-        Sigma:   fmtSigma   ? 'formato' : null,
-        initial: fmtInitial ? 'formato' : null,
-        final:   fmtFinal   ? 'formato' : null,
+        Q:       braceMsg(fmtQ),
+        Sigma:   braceMsg(fmtSigma),
+        initial: braceMsg(fmtInitial),
+        final:   braceMsg(fmtFinal),
       });
 
-      let msg;
-      if (hasMissing && hasExtra) {
-        msg = 'Formato inválido — com mais de 1 elemento use { }, com 1 elemento não use { }';
-      } else if (hasMissing) {
-        msg = 'Com mais de 1 elemento, envolva com { }  —  ex: {q0, q1}';
-      } else {
-        msg = 'Com 1 elemento, não use { }  —  ex: q0';
-      }
-      setFormatBanner(msg);
+      const msg = hasMissing && hasExtra
+        ? 'Use { } com mais de 1 elemento — sem { } com 1 só'
+        : hasMissing
+        ? 'Com mais de 1 elemento, adicione { } — ex: {q0, q1}'
+        : 'Com 1 elemento, retire as { } — ex: q0';
+      showToast(msg, 'error');
       return;
     }
 
-    setFormatBanner(null);
-
-    // ── Passo 2: validar contra o canvas (sem revelar resposta) ─────────────────
+    // ── Passo 2: validar contra o canvas ──────────────────────────────────────
     const pQ       = parseInput(inputQ);
     const pSigma   = parseInput(inputSigma);
     const pInitial = parseInput(inputInitial);
@@ -111,17 +111,44 @@ export default function FormalDescriptionModal({
 
     const errors = { Q: null, Sigma: null, initial: null, final: null };
 
-    if (!setsEqual(pQ, canvasQ))
-      errors.Q = 'Valor incorreto';
+    // Q — estados
+    const extraQ   = pQ.filter(x => !canvasQ.includes(x));
+    const missingQ = canvasQ.filter(x => !pQ.includes(x));
+    if (extraQ.length > 0 && missingQ.length > 0)
+      errors.Q = `${extraQ.join(', ')} não pertence${extraQ.length > 1 ? 'm' : ''} — e ainda faltam estados`;
+    else if (extraQ.length > 0)
+      errors.Q = `${extraQ.join(', ')} não pertence${extraQ.length > 1 ? 'm' : ''} ao conjunto de estados`;
+    else if (missingQ.length > 0)
+      errors.Q = `Faltam estados no conjunto — verifique se há outros erros`;
 
-    if (!setsEqual(pSigma, canvasSigma))
-      errors.Sigma = 'Valor incorreto';
+    // Σ — alfabeto
+    const extraSigma   = pSigma.filter(x => !canvasSigma.includes(x));
+    const missingSigma = canvasSigma.filter(x => !pSigma.includes(x));
+    if (extraSigma.length > 0 && missingSigma.length > 0)
+      errors.Sigma = `${extraSigma.join(', ')} não pertence${extraSigma.length > 1 ? 'm' : ''} ao alfabeto — e ainda faltam símbolos`;
+    else if (extraSigma.length > 0)
+      errors.Sigma = `${extraSigma.join(', ')} não pertence${extraSigma.length > 1 ? 'm' : ''} ao alfabeto`;
+    else if (missingSigma.length > 0)
+      errors.Sigma = `Faltam símbolos no alfabeto`;
 
-    if (canvasInitial ? (pInitial.length !== 1 || pInitial[0] !== canvasInitial) : pInitial.length !== 0)
-      errors.initial = 'Valor incorreto';
+    // q₀ — estado inicial
+    const wrongInitial = canvasInitial
+      ? (pInitial.length !== 1 || pInitial[0] !== canvasInitial)
+      : pInitial.length !== 0;
+    if (wrongInitial)
+      errors.initial = pInitial.length === 0
+        ? 'Informe o estado inicial'
+        : `${pInitial[0]} não é o estado inicial`;
 
-    if (!setsEqual(pFinal, canvasFinal))
-      errors.final = 'Valor incorreto';
+    // F — estados finais
+    const extraF   = pFinal.filter(x => !canvasFinal.includes(x));
+    const missingF = canvasFinal.filter(x => !pFinal.includes(x));
+    if (extraF.length > 0 && missingF.length > 0)
+      errors.final = `${extraF.join(', ')} não é${extraF.length > 1 ? 'o' : ''} estado${extraF.length > 1 ? 's' : ''} final${extraF.length > 1 ? 'is' : ''} — e ainda faltam outros`;
+    else if (extraF.length > 0)
+      errors.final = `${extraF.join(', ')} não é${extraF.length > 1 ? 'o' : ''} estado${extraF.length > 1 ? 's' : ''} final${extraF.length > 1 ? 'is' : ''}`;
+    else if (missingF.length > 0)
+      errors.final = `Faltam estados finais`;
 
     setFieldErrors(errors);
 
@@ -178,23 +205,10 @@ export default function FormalDescriptionModal({
 
   const clearFieldError = (key) => {
     setFieldErrors(prev => ({ ...prev, [key]: null }));
-    // dismiss banner only when all format errors are gone
-    setFormatBanner(prev => {
-      const remaining = { Q: fieldErrors.Q, Sigma: fieldErrors.Sigma, initial: fieldErrors.initial, final: fieldErrors.final, [key]: null };
-      return Object.values(remaining).some(v => v === 'formato') ? prev : null;
-    });
   };
 
   return (
     <>
-      {/* Banner fixo no topo da tela */}
-      {formatBanner && (
-        <div className="format-banner">
-          <span>⚠ {formatBanner}</span>
-          <button className="format-banner-close" onClick={() => setFormatBanner(null)}>✕</button>
-        </div>
-      )}
-
       <div className="formal-sidebar-content">
         <h2>Descrição Formal</h2>
 

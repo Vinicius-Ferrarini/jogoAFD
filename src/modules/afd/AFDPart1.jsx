@@ -328,22 +328,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     drawingsRef.current = snapshot;
   }, [drawingStack]);
 
-  // Atalhos de teclado: Ctrl+Z, Ctrl+Y
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        if (drawingStack.length > 0) drawUndo();
-        else undo();
-      }
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-        e.preventDefault();
-        redo();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, drawUndo, drawingStack]);
 
   // ── Estado geral ───────────────────────────────────────────────────────────
   const [tela, setTela]             = useState('MENU');
@@ -524,6 +508,45 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     currentStrokeRef.current = null;
     setCurrentStroke(null);
   };
+
+  const deleteSelected = useCallback(() => {
+    if (!isDrawingUnlocked || selectedNodes.length === 0) return;
+    const selectedIds = new Set(
+      nodes.filter(n => selectedNodes.includes(n.uid)).map(n => n.label ?? n.id)
+    );
+    const newNodes = nodes.filter(n => !selectedNodes.includes(n.uid));
+    const newTrans = transitions.filter(t => !selectedIds.has(t.from) && !selectedIds.has(t.to));
+    setNodes(newNodes);
+    setTransitions(newTrans);
+    setSelectedNodes([]);
+    recordHistory(newNodes, newTrans);
+  }, [isDrawingUnlocked, selectedNodes, nodes, transitions, recordHistory]);
+
+  // Atalhos de teclado: Ctrl+Z, Ctrl+Y, Esc, Delete
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isInput = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (drawingStack.length > 0) drawUndo();
+        else undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        redo();
+      }
+      if (e.key === 'Escape') {
+        setInteractionMode('IDLE');
+        resetMode();
+      }
+      if (e.key === 'Delete' && !isInput) {
+        deleteSelected();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo, drawUndo, drawingStack, resetMode, deleteSelected]);
+
   const setInitialMode       = () => { if (!isDrawingUnlocked) return; setInteractionMode('TOGGLE_INITIAL'); resetMode(); };
   const addNodeMode          = () => { if (!isDrawingUnlocked) return; setInteractionMode('ADD_NODE');        resetMode(); };
   const addTransitionMode    = () => { if (!isDrawingUnlocked) return; setInteractionMode('CONNECTING');      resetMode(); };
@@ -603,23 +626,80 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       }
     }
 
-    // Auto-testa palavras geradas do alfabeto para pegar DFAs incompletos/incorretos
+    // BFS sobre estados alcançáveis do AFD do usuário — testa a palavra mais curta que alcança
+    // cada estado, depois explora dead-states (transições ausentes) até profundidade 3.
+    // Garante cobertura completa independente do tamanho das palavras críticas.
     if ((currentLevel?.regex || currentLevel?.validate) && (currentLevel?.alphabet || []).length > 0) {
       const alph = currentLevel.alphabet;
-      const shortLen = typeof currentLevel.shortestWord === 'string' ? currentLevel.shortestWord.length : 1;
-      const maxLen = Math.min(6, Math.max(3, shortLen + 3));
-      const toTest = [''];
-      for (let len = 1; len <= maxLen; len++) {
-        const base = toTest.filter(w => w.length === len - 1);
-        for (const w of base) for (const sym of alph) toTest.push(w + sym);
+
+      const getDelta = (sid, sym) => {
+        const tr = transitions.find(t =>
+          t.from === sid && t.symbol.split(',').map(s => s.trim()).includes(sym)
+        );
+        return tr?.to ?? null;
+      };
+
+      const initialId = nodes.find(n => n.isInitial).id;
+
+      // Fase 1: BFS — um representante por estado alcançável
+      const stateWord = new Map([[initialId, '']]);
+      const bfsQ = [initialId];
+      while (bfsQ.length > 0) {
+        const sid = bfsQ.shift();
+        for (const sym of alph) {
+          const nxt = getDelta(sid, sym);
+          if (nxt !== null && !stateWord.has(nxt)) {
+            stateWord.set(nxt, stateWord.get(sid) + sym);
+            bfsQ.push(nxt);
+          }
+        }
       }
-      for (const word of toTest) {
-        const regexAccepts = lvlAccepts(currentLevel, word);
-        const dfaAccepts   = simulateDFA(word);
-        if (regexAccepts !== dfaAccepts) {
+      for (const [sid, word] of stateWord) {
+        const ua = !!nodes.find(n => n.id === sid)?.isFinal;
+        const ra = lvlAccepts(currentLevel, word);
+        if (ua !== ra) {
           if (showErrors) {
-            const display = word === '' ? 'λ (palavra vazia)' : `"${word}"`;
-            showToast(`Autômato incorreto! ${display} deveria ser ${regexAccepts ? 'aceita' : 'rejeitada'}.`, 'error');
+            const d = word === '' ? 'λ (palavra vazia)' : `"${word}"`;
+            showToast(`Autômato incorreto! ${d} deveria ser ${ra ? 'aceita' : 'rejeitada'}.`, 'error');
+          }
+          return false;
+        }
+      }
+
+      // Fase 2: exploração de dead states (transições ausentes) — profundidade 3
+      const deadSeen = new Set();
+      const deadQ = [];
+      for (const [sid, word] of stateWord) {
+        for (const sym of alph) {
+          if (getDelta(sid, sym) === null) {
+            const dw = word + sym;
+            if (!deadSeen.has(dw)) { deadSeen.add(dw); deadQ.push([dw, 0]); }
+          }
+        }
+      }
+      while (deadQ.length > 0) {
+        const [dw, depth] = deadQ.shift();
+        if (lvlAccepts(currentLevel, dw)) {
+          if (showErrors) showToast(`Autômato incorreto! "${dw}" deveria ser aceita.`, 'error');
+          return false;
+        }
+        if (depth < 3) {
+          for (const sym of alph) {
+            const ext = dw + sym;
+            if (!deadSeen.has(ext)) { deadSeen.add(ext); deadQ.push([ext, depth + 1]); }
+          }
+        }
+      }
+
+      // Fase 3: palavras explícitas do nível (belt-and-suspenders)
+      for (const w of [...(currentLevel.acceptedWords || []), ...(currentLevel.rejectedWords || [])]) {
+        const word = w === 'λ' ? '' : w;
+        const ra = lvlAccepts(currentLevel, word);
+        const ua = simulateDFA(word);
+        if (ra !== ua) {
+          if (showErrors) {
+            const d = word === '' ? 'λ (palavra vazia)' : `"${word}"`;
+            showToast(`Autômato incorreto! ${d} deveria ser ${ra ? 'aceita' : 'rejeitada'}.`, 'error');
           }
           return false;
         }
@@ -695,7 +775,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       const newNodes = [...nodes, { uid: genUid(), id: newLabel, label: newLabel, x: ix, y: iy, isInitial: false, isFinal: false }];
       setNodes(newNodes);
       recordHistory(newNodes, transitions);
-      setInteractionMode('IDLE');
       return;
     }
 
@@ -731,13 +810,13 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       const newNodes = nodes.map(n => ({ ...n, isInitial: n.uid === uid }));
       setNodes(newNodes);
       recordHistory(newNodes, transitions);
-      setInteractionMode('IDLE'); return;
+      return;
     }
     if (interactionMode === 'TOGGLE_FINAL') {
       const newNodes = nodes.map(n => n.uid === uid ? { ...n, isFinal: !n.isFinal } : n);
       setNodes(newNodes);
       recordHistory(newNodes, transitions);
-      setInteractionMode('IDLE'); return;
+      return;
     }
     if (interactionMode === 'CONNECTING') {
       if (!connectingSource) {
@@ -753,7 +832,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           setTransitions(newTrans);
           recordHistory(nodes, newTrans);
         }
-        setInteractionMode('IDLE');
         setConnectingSource(null);
       }
       return;
@@ -1017,7 +1095,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   // TELA MENU (FASES)
   // ══════════════════════════════════════════════════════════════
   if (tela === 'MENU') {
-    const maxStars    = GAME_LEVELS.length * 3;
+    const maxStars    = GAME_LEVELS.reduce((a, l) => a + (l.impossible ? 1 : 3), 0);
     const totalStars  = GAME_LEVELS.reduce((a, l) => a + (progress[l.id]?.stars || 0), 0);
     const perPage     = 20;
     const totalPages  = Math.ceil(GAME_LEVELS.length / perPage);
@@ -1048,7 +1126,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                   background: bg }}>
                 <span>{lvl.label}</span>
-                <SvgStars count={progress[lvl.id]?.stars || 0} size={14} />
+                <SvgStars count={progress[lvl.id]?.stars || 0} size={14} max={lvl.impossible ? 1 : 3} />
               </button>
             );
           })}
@@ -1089,7 +1167,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         </div>
         <div style={{ width: 150, textAlign: 'right' }}>
           <span className="mission-label">{currentLevel?.label}</span>
-          <div style={{ marginTop: 4 }}><SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} /></div>
+          <div style={{ marginTop: 4 }}><SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} max={currentLevel?.impossible ? 1 : 3} /></div>
         </div>
       </header>
 
@@ -1454,7 +1532,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                   <div key={card.id}
                     data-icon={iconMap[card.action] || ''}
                     className={`card ${classMap[card.action]} slide-up-fade ${isSelected?'selected-card':''} ${isErr?'error-pulse-severe':''}`}
-                    onClick={clickMap[card.action]}>
+                    onClick={() => { if (isSelected) { setInteractionMode('IDLE'); resetMode(); } else { clickMap[card.action](); } }}>
                     <div className="card-header">{card.label}</div>
                     <div className="card-icon">{card.icon}</div>
                   </div>
@@ -1519,7 +1597,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                 style={{ padding:'14px 28px', fontSize:20 }}>Voltar ao Menu</button>
               {next && (
                 <button className="menu-btn primary"
-                  onClick={() => { updateProgress(currentLevel.id, 2); setShowImpossibleScreen(false); loadLevel(next); }}
+                  onClick={() => { setShowImpossibleScreen(false); loadLevel(next); }}
                   style={{ padding:'14px 28px', fontSize:20 }}>
                   Entendido! Próxima: {next.label}
                 </button>

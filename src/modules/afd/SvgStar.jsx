@@ -29,10 +29,10 @@ export function SvgStar({ filled, size = 13 }) {
   );
 }
 
-export function SvgStars({ count, size = 13 }) {
+export function SvgStars({ count, size = 13, max = 3 }) {
   return (
     <span style={{ display:'inline-flex', gap:2, alignItems:'center', verticalAlign:'middle' }}>
-      {[1,2,3].map(n => <SvgStar key={n} filled={n <= count} size={size} />)}
+      {Array.from({ length: max }, (_, i) => i + 1).map(n => <SvgStar key={n} filled={n <= count} size={size} />)}
     </span>
   );
 }
