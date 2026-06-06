@@ -375,7 +375,8 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const [highlightedError, setHighlightedError] = useState(null);
   const [professorMessage, setProfessorMessage] = useState('');
   const speechRef = useRef(null);
-  const [showVictoryScreen, setShowVictoryScreen] = useState(false);
+  const [showVictoryScreen, setShowVictoryScreen]     = useState(false);
+  const [showImpossibleScreen, setShowImpossibleScreen] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
 
   // Simulação no rodapé (não modal)
@@ -444,6 +445,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     setDrawnCards([]);
     setSelectedSymbolCard(null);
     setShowVictoryScreen(false);
+    setShowImpossibleScreen(false);
     setProfessorMessage('');
     setZoom(1);
     setPan({ x: 0, y: 0 });
@@ -483,8 +485,11 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
 
     if (isShortest) {
       if (!isDrawingUnlocked) {
-        setIsDrawingUnlocked(true);
         updateProgress(currentLevel.id, 1);
+        if (currentLevel.impossible) {
+          setShowImpossibleScreen(true);
+        } else {
+        setIsDrawingUnlocked(true);
         showToast('Sucesso! Tabuleiro liberado.', 'success');
         const initialCards = [
           { id: 'c0', type: 'action', action: 'toggleInitial', icon: '▶', label: 'Estado Inicial' },
@@ -499,6 +504,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           id: `s${i}`, type: 'symbol', symbol: sym, label: `Símbolo ${sym}`,
         }));
         setDrawnCards([...initialCards, { type: 'separator', id: 'sep1' }, ...symbolCards]);
+        }
       }
       setTestWords(prev => [{ word: wordDisplay, status: 'shortest' }, ...prev]);
     } else if (isValid) {
@@ -709,8 +715,11 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     e.stopPropagation();
 
     if (interactionMode === 'ERASE') {
+      const targetNode = nodes.find(n => n.uid === uid);
       const newNodes = nodes.filter(n => n.uid !== uid);
-      const newTrans = transitions.filter(t => t.from !== uid && t.to !== uid);
+      const newTrans = targetNode
+        ? transitions.filter(t => t.from !== targetNode.id && t.to !== targetNode.id)
+        : transitions;
       setNodes(newNodes);
       setTransitions(newTrans);
       recordHistory(newNodes, newTrans);
@@ -1480,6 +1489,38 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           </div>
         )}
       </footer>
+
+      {/* ── Tela Impossível ── */}
+      {showImpossibleScreen && (() => {
+        const idx  = GAME_LEVELS.findIndex(l => l.id === currentLevel?.id);
+        const next = idx >= 0 && idx < GAME_LEVELS.length - 1 ? GAME_LEVELS[idx + 1] : null;
+        return (
+          <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:9999,
+            display:'flex', justifyContent:'center', alignItems:'center', flexDirection:'column' }}>
+            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'center' }}>
+              <img src={imgMaurilioExplicando} alt="Professor" style={{ height:320, zIndex:2, marginRight:-55 }} />
+              <div style={{ position:'relative', width:320, height:220, marginTop:-150, zIndex:1 }}>
+                <img src={imgBalaoFala} style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:1 }} />
+                <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center',
+                  padding:'20px 20px 52px', boxSizing:'border-box', color:'#000', fontSize:15, fontWeight:900, textAlign:'center', zIndex:2 }}>
+                  Este exercício é impossível de resolver com AFD! Com AP nós vamos resolvê-lo! 🚫🔄
+                </div>
+              </div>
+            </div>
+            <div style={{ display:'flex', gap:20, marginTop:36 }}>
+              <button className="menu-btn" onClick={() => { setShowImpossibleScreen(false); setTela('MENU'); }}
+                style={{ padding:'14px 28px', fontSize:20 }}>Voltar ao Menu</button>
+              {next && (
+                <button className="menu-btn primary"
+                  onClick={() => { updateProgress(currentLevel.id, 2); setShowImpossibleScreen(false); loadLevel(next); }}
+                  style={{ padding:'14px 28px', fontSize:20 }}>
+                  Entendido! Próxima: {next.label}
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Tela de Vitória ── */}
       {showVictoryScreen && (() => {
