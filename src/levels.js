@@ -53,3 +53,17 @@ export const GAME_LEVELS = [
   { id: 52, label: "L52", formula: "L = { a^n b^m c^p | n > 0 (par), m (ímpar), p (par) }",            desc: "",                                                                 shortestWord: "aab",      regex: /^(aa)+(bb)*b(cc)*$/,                                        alphabet: ['a', 'b', 'c'],        acceptedWords: ["aab","aabcc","aaaabbb"],  rejectedWords: ["ab","aabb","b"],        hint: "É um trem de paridade. Vá de vagão em vagão cuidando da regra de cada letra.",                                     successMsg: "Combo triplo de paridades concluído." },
   { id: 53, label: "L53", formula: "L = { w ∈ {a,b,c}* | cada b é seguido de pelo menos um c }",       desc: "",                                                                 shortestWord: "",         regex: /^(a|c|bc+)*$/,                                              alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","a","bc","abc"],       rejectedWords: ["b","ab","bcb"],         hint: "Leu um 'b'? A próxima letra TEM que ser 'c'. Depois tudo fica livre.",                                              successMsg: "Condicional restrita dominada. Zerou a lista!" },
 ];
+
+export const LEVEL_DIFFICULTY = {
+   1:'easy',  2:'easy',  3:'easy',  4:'easy',  5:'easy',
+   6:'easy',  7:'easy',  8:'easy',  9:'easy', 10:'medium',
+  11:'easy', 12:'easy', 13:'medium',14:'hard', 15:'easy',
+  16:'easy', 17:'medium',18:'medium',19:'hard',20:'easy',
+  21:'easy', 22:'easy', 23:'easy', 24:'easy', 25:'easy',
+  26:'easy', 27:'easy', 28:'medium',29:'hard',30:'medium',
+  31:'hard', 32:'hard', 33:'easy', 34:'medium',35:'medium',
+  36:'easy', 37:'medium',38:'hard', 39:'hard', 40:'hard',
+  41:'medium',42:'medium',43:'medium',44:'hard',45:'hard',
+  46:'hard', 47:'hard', 48:'medium',49:'hard', 50:'hard',
+  51:'hard', 52:'medium',53:'easy',
+};

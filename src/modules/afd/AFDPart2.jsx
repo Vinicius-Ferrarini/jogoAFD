@@ -2,7 +2,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import './AFDPart1.css';
 import './AFDPart2.css';
-import { GAME_LEVELS } from '../../levels';
+import { SvgStars } from './SvgStar';
+import { GAME_LEVELS, LEVEL_DIFFICULTY } from '../../levels';
 import { LEVEL_GRAPHS } from '../../levels_graphs';
 import imgMaurilioSerio      from '../../assets/maurilio1_serio.webp';
 import imgMaurilioExplicando from '../../assets/maurilio3_explicando.webp';
@@ -145,15 +146,6 @@ function DrawStroke({ stroke, idx }) {
 }
 
 // ── Stars ─────────────────────────────────────────────────────────────────────
-function Stars({ count, size = 16 }) {
-  return (
-    <span style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-      {[1, 2, 3].map(i => (
-        <span key={i} style={{ color: i <= count ? '#fbbf24' : '#6b7280', fontSize: size }}>★</span>
-      ))}
-    </span>
-  );
-}
 
 // ── SVG Graph ─────────────────────────────────────────────────────────────────
 function AFDGraphView({ nodes, transitions }) {
@@ -303,10 +295,13 @@ function LevelList({ progress, onSelect, onBack }) {
   const totalStars = GAME_LEVELS.reduce((sum, l) => sum + (progress[l.id]?.stars || 0), 0);
 
   return (
-    <div className="menu-screen" style={{ justifyContent: 'flex-start', paddingTop: 16 }}>
-      <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:12, alignSelf:'flex-start' }}>
-        <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
+    <div className="menu-screen menu-screen-fases" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
+      <div style={{ display:'flex', alignItems:'center', marginBottom:14, width:'100%' }}>
+        <div style={{ flex:1 }}>
+          <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
+        </div>
         <h1 className="menu-title" style={{ margin:0 }}>TuringLab</h1>
+        <div style={{ flex:1 }} />
       </div>
       <p style={{ fontWeight: 900, fontSize: 16, color: '#555', marginBottom: 12,
         background: '#60a5fa', border: '3px solid #000', borderRadius: 8,
@@ -319,17 +314,22 @@ function LevelList({ progress, onSelect, onBack }) {
       </div>
 
       <div className="levels-grid">
-        {pageItems.map(lvl => (
-          <button
-            key={lvl.id}
-            className="menu-btn primary"
-            onClick={() => onSelect(lvl)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
-          >
-            <span>{lvl.label}</span>
-            <Stars count={progress[lvl.id]?.stars || 0} size={14} />
-          </button>
-        ))}
+        {pageItems.map(lvl => {
+          const diff = LEVEL_DIFFICULTY[lvl.id] || 'easy';
+          const bg   = diff === 'easy' ? '#bbf7d0' : diff === 'medium' ? '#fde68a' : '#fca5a5';
+          return (
+            <button
+              key={lvl.id}
+              className="menu-btn primary"
+              onClick={() => onSelect(lvl)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                background: bg, border: '3px solid #000', boxShadow: 'none' }}
+            >
+              <span>{lvl.label}</span>
+              <SvgStars count={progress[lvl.id]?.stars || 0} size={14} />
+            </button>
+          );
+        })}
       </div>
 
       <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginTop: 20 }}>
@@ -351,6 +351,16 @@ function LevelList({ progress, onSelect, onBack }) {
         </button>
       </div>
 
+      <div style={{ position:'fixed', bottom:16, right:16, background:'#fff', border:'3px solid #000',
+        borderRadius:8, boxShadow:'3px 3px 0 #000', padding:'8px 12px', zIndex:100,
+        display:'flex', flexDirection:'column', gap:4, fontSize:12, fontWeight:'bold' }}>
+        {[['#bbf7d0','Easy'],['#fde68a','Medium'],['#fca5a5','Hard']].map(([bg, label]) => (
+          <div key={label} style={{ display:'flex', alignItems:'center', gap:6 }}>
+            <span style={{ width:14, height:14, background:bg, border:'2px solid #000', borderRadius:3, display:'inline-block', flexShrink:0 }} />
+            {label}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -579,7 +589,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
           <div className="mission-formula">{level.label}</div>
         </div>
         <div style={{ width: 150, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
-          <Stars count={stars} size={20} />
+          <SvgStars count={stars} size={20} />
         </div>
       </header>
 
@@ -820,7 +830,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
           )}
 
           <div style={{ fontSize: 11, color: '#666', fontWeight: 'bold', marginTop: 4 }}>
-            Tentativas: {attempts} | Recorde: <Stars count={stars} size={12} />
+            Tentativas: {attempts} | Recorde: <SvgStars count={stars} size={12} />
           </div>
         </aside>
       </div>
@@ -875,7 +885,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
                     : '✅ Parabéns! Vai treinando!'}
                 </div>
                 <div style={{ marginTop: 10 }}>
-                  <Stars count={earnedStars} size={26} />
+                  <SvgStars count={earnedStars} size={26} />
                 </div>
               </div>
             </div>

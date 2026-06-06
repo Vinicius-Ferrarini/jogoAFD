@@ -2,7 +2,8 @@
 // v3.0: Undo/Redo, Simulação no Rodapé, Cores Zoom Corrigidas, Validação Duplicata Aprimorada
 import { useState, useRef, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import './AFDPart1.css';
-import { GAME_LEVELS } from '../../levels';
+import { SvgStars } from './SvgStar';
+import { GAME_LEVELS, LEVEL_DIFFICULTY } from '../../levels';
 import FormalDescriptionModal from './FormalDescriptionModal';
 import imgMaurilioApontando  from '../../assets/maurilio2_apontando_pro_lado.webp';
 import imgMaurilioSerio      from '../../assets/maurilio1_serio.webp';
@@ -282,11 +283,6 @@ export default function App({ onBack }) {
     });
   }, []);
 
-  const renderStars = (count) => (
-    <span style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-      {[1,2,3].map(i => <span key={i} style={{ color: i <= count ? '#fbbf24' : '#4b5563' }}>★</span>)}
-    </span>
-  );
 
   // ── Toast ──────────────────────────────────────────────────────────────────
   const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
@@ -1049,24 +1045,44 @@ export default function App({ onBack }) {
           <h1 className="menu-title" style={{ margin:0 }}>TuringLab</h1>
           <div style={{ flex:1 }} />
         </div>
-        <div style={{ marginBottom: 30, fontWeight: 'bold', fontSize: 18 }}>
+        <p style={{ fontWeight: 900, fontSize: 16, color: '#555', marginBottom: 12,
+          background: '#fde68a', border: '3px solid #000', borderRadius: 8,
+          padding: '4px 16px', boxShadow: '3px 3px 0 #000' }}>
+          🎨 Desenhar &amp; Formalizar
+        </p>
+        <div style={{ marginBottom: 18, fontWeight: 'bold', fontSize: 16 }}>
           Progresso: {maxStars > 0 ? Math.round((totalStars/maxStars)*100) : 0}% ({totalStars}/{maxStars} ★)
         </div>
         <div className="levels-grid">
-          {pageItems.map(lvl => (
-            <button key={lvl.id} className="menu-btn primary" onClick={() => loadLevel(lvl)}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <span>{lvl.label}</span>
-              {renderStars(progress[lvl.id]?.stars || 0)}
-            </button>
-          ))}
+          {pageItems.map(lvl => {
+            const diff = LEVEL_DIFFICULTY[lvl.id] || 'easy';
+            const bg   = diff === 'easy' ? '#bbf7d0' : diff === 'medium' ? '#fde68a' : '#fca5a5';
+            return (
+              <button key={lvl.id} className="menu-btn primary" onClick={() => loadLevel(lvl)}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  background: bg, border: '3px solid #000', boxShadow: 'none' }}>
+                <span>{lvl.label}</span>
+                <SvgStars count={progress[lvl.id]?.stars || 0} size={14} />
+              </button>
+            );
+          })}
         </div>
-        <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginTop: 30 }}>
-          <button className="menu-btn" disabled={currentPage===1} onClick={() => setCurrentPage(p=>p-1)} style={{ opacity: currentPage===1?.5:1 }}>⬅ Anterior</button>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginTop: 20 }}>
+          <button className="menu-btn" disabled={currentPage===1} onClick={() => setCurrentPage(p=>p-1)} style={{ opacity: currentPage===1 ? 0.5 : 1 }}>⬅ Anterior</button>
           <span style={{ fontWeight:'bold', fontSize:18, background:'#fff', padding:'5px 15px', border:'3px solid #000', borderRadius:8 }}>
             {currentPage} / {totalPages}
           </span>
-          <button className="menu-btn" disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={{ opacity: currentPage===totalPages?.5:1 }}>Próxima ➡</button>
+          <button className="menu-btn" disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={{ opacity: currentPage===totalPages ? 0.5 : 1 }}>Próxima ➡</button>
+        </div>
+        <div style={{ position:'fixed', bottom:16, right:16, background:'#fff', border:'3px solid #000',
+          borderRadius:8, boxShadow:'3px 3px 0 #000', padding:'8px 12px', zIndex:100,
+          display:'flex', flexDirection:'column', gap:4, fontSize:12, fontWeight:'bold' }}>
+          {[['#bbf7d0','Easy'],['#fde68a','Medium'],['#fca5a5','Hard']].map(([bg, label]) => (
+            <div key={label} style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <span style={{ width:14, height:14, background:bg, border:'2px solid #000', borderRadius:3, display:'inline-block', flexShrink:0 }} />
+              {label}
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -1096,7 +1112,7 @@ export default function App({ onBack }) {
         </div>
         <div style={{ width: 150, textAlign: 'right' }}>
           <span className="mission-label">{currentLevel?.label}</span>
-          <div style={{ fontSize: 15, marginTop: 4 }}>{renderStars(progress[currentLevel?.id]?.stars || 0)}</div>
+          <div style={{ marginTop: 4 }}><SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} /></div>
         </div>
       </header>
 

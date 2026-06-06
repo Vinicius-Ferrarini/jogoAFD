@@ -2,6 +2,7 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import './AFDPart1.css';
 import './AFDMinimizer.css';
+import { SvgStar, SvgStars } from './SvgStar';
 import imgMaurilioSerio from '../../assets/maurilio1_serio.webp';
 import imgBalaoFala     from '../../assets/balao_fala_redondo.webp';
 
@@ -541,32 +542,58 @@ function TriangularTable({ states, userTable, onToggle, correctTable, showErrors
 }
 
 // ─── Level List ───────────────────────────────────────────────────────────────
+const LEVEL_ORDER = { easy: 0, medium: 1, hard: 2 };
+const LEVEL_COLOR = { easy: '#bbf7d0', medium: '#fde68a', hard: '#fca5a5' };
+const SORTED_EXERCISES = [...EXERCISES].sort((a, b) => LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level]);
+
+
 function LevelList({ progress, onSelect, onBack }) {
-  const LEVEL_COLOR = { easy: '#bbf7d0', medium: '#fde68a', hard: '#fca5a5' };
+  const maxStars   = EXERCISES.length * 3;
+  const totalStars = EXERCISES.reduce((s, ex) => s + (progress[`afd-min-${ex.id}`]?.stars || 0), 0);
   return (
-    <div className="menu-screen menu-screen-fases" style={{ justifyContent:'flex-start', paddingTop:16 }}>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center',
-        width:'100%', maxWidth:800, gap:14, marginBottom:16 }}>
-        <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
-        <h1 className="menu-title" style={{ margin:0 }}>Minimização</h1>
-        <div />
+    <div className="menu-screen menu-screen-fases" style={{ justifyContent:'flex-start', paddingTop:20 }}>
+      <div style={{ display:'flex', alignItems:'center', marginBottom:14, width:'100%' }}>
+        <div style={{ flex:1 }}>
+          <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
+        </div>
+        <h1 className="menu-title" style={{ margin:0 }}>TuringLab</h1>
+        <div style={{ flex:1 }} />
       </div>
-      <div className="levels-grid" style={{ maxWidth:800, gridTemplateColumns:'repeat(3,1fr)' }}>
-        {EXERCISES.map(ex => {
+      <p style={{ fontWeight:900, fontSize:16, color:'#555', marginBottom:12,
+        background:'#bbf7d0', border:'3px solid #000', borderRadius:8,
+        padding:'4px 16px', boxShadow:'3px 3px 0 #000' }}>
+        ⚡ Minimização
+      </p>
+      <div style={{ marginBottom:18, fontWeight:'bold', fontSize:16 }}>
+        Progresso: {maxStars > 0 ? Math.round((totalStars/maxStars)*100) : 0}% ({totalStars}/{maxStars} ★)
+      </div>
+      <div className="levels-grid">
+        {SORTED_EXERCISES.map((ex, i) => {
           const stars = progress[`afd-min-${ex.id}`]?.stars || 0;
           return (
             <button key={ex.id} className="menu-btn primary"
               onClick={() => onSelect(ex)}
-              style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6,
-                borderLeft:`6px solid ${LEVEL_COLOR[ex.level]}` }}>
-              <span style={{ fontWeight:'900', fontSize:13 }}>{ex.title}</span>
-              <span style={{ fontSize:10, opacity:0.7, textTransform:'uppercase' }}>{ex.level}</span>
-              <span style={{ color:'#fbbf24', fontSize:16 }}>
-                {'★'.repeat(stars)}{'☆'.repeat(3 - stars)}
+              style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:8,
+                background: LEVEL_COLOR[ex.level],
+                border: '3px solid #000',
+                boxShadow: 'none' }}>
+              <span>Ex. {i + 1}</span>
+              <span style={{ display:'flex', gap:2 }}>
+                {[1,2,3].map(n => <SvgStar key={n} filled={n <= stars} />)}
               </span>
             </button>
           );
         })}
+      </div>
+      <div style={{ position:'fixed', bottom:16, right:16, background:'#fff', border:'3px solid #000',
+        borderRadius:8, boxShadow:'3px 3px 0 #000', padding:'8px 12px', zIndex:100,
+        display:'flex', flexDirection:'column', gap:4, fontSize:12, fontWeight:'bold' }}>
+        {[['#bbf7d0','Easy'],['#fde68a','Medium'],['#fca5a5','Hard']].map(([bg, label]) => (
+          <div key={label} style={{ display:'flex', alignItems:'center', gap:6 }}>
+            <span style={{ width:14, height:14, background:bg, border:'2px solid #000', borderRadius:3, display:'inline-block', flexShrink:0 }} />
+            {label}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -971,9 +998,7 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
               <div style={{ display:'flex', alignItems:'center', gap:6,
                 background:'#fff', border:'3px solid #000', borderRadius:8,
                 padding:'8px 14px', boxShadow:'4px 4px 0 #000' }}>
-                <span style={{ fontSize:22, color:'#fbbf24' }}>
-                  {'★'.repeat(stars)}{'☆'.repeat(3 - stars)}
-                </span>
+                <SvgStars count={stars} size={22} />
                 <span style={{ fontWeight:'bold', fontSize:13 }}>
                   {stars === 3 ? 'Perfeito!' : stars === 2 ? 'Ótimo!' : 'Continue!'}
                 </span>

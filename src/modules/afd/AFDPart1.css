@@ -1041,7 +1041,7 @@ body { color: var(--text-main); }
 .professor-balloon {
   position: absolute;
   bottom: 78%;
-  right: 0;
+  right: 0px;
   width: 233px;
   height: 158px;
   margin-bottom: 0;
