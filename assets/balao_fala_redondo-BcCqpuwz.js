@@ -1,1 +1,0 @@
-var e=`/jogoAFD/assets/maurilio1_serio-Ck23QF1K.webp`,t=`/jogoAFD/assets/balao_fala_redondo-CzwHnzS8.webp`;export{e as n,t};
