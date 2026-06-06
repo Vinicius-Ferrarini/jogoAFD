@@ -72,10 +72,11 @@ function computeLayout(nodes, transitions) {
 
 // ── Normalize for comparison ──────────────────────────────────────────────────
 function normalize(s) {
-  return s
+  let r = s
     .replace(/^L\s*=\s*/, '')
     .trim()
     .toLowerCase()
+    .replace(/\s+e\s+/g, ',')                           // "e" (e lógico pt-BR) equivale a ","
     .replace(/é/g, '\x01')                              // protege 'é' (verbo) do NFD
     .normalize('NFD').replace(/[̀-ͯ]/g, '')   // ímpar→impar, ã→a, etc.
     .replace(/\x01/g, '\xe9')                           // restaura 'é' (será stripado depois)
@@ -85,9 +86,71 @@ function normalize(s) {
     .replace(/λ|ε|epsilon/gi, 'lambda')
     .replace(/∅|\\emptyset|vazio|empty/gi, 'emptyset')
     .replace(/[≥]/g, '>=')
-    .replace(/[≤]/g, '<=')
-    .replace(/[^a-z0-9^*+|(),_.=><!]/g, '');
+    .replace(/[≤]/g, '<=');
+  // Absorb prefix literal: aa^n → a^n; adjust constraint n>=0 → n>0
+  const absorbed = new Set();
+  r = r.replace(/([a-z])\1\^([a-z]+)/g, (_, ch, v) => { absorbed.add(v); return `${ch}^${v}`; });
+  for (const v of absorbed)
+    r = r.replace(new RegExp(`([,|])${v}>=0`, 'g'), (_, sep) => `${sep}${v}>0`);
+  // Universal: n>=1 → n>0 (equivalent for integer-valued exponents)
+  r = r.replace(/([a-z]+)>=1(?![0-9])/g, '$1>0');
+  // Alpha-equivalence: rename bound exponent variables to canonical names (n,m,p,k,…)
+  // so {a^x | x>0} matches {a^n | n>0}, etc.
+  const pipePos = r.indexOf('|');
+  if (pipePos !== -1) {
+    const cano = ['n','m','p','k','j','i'];
+    let wPart = r.slice(0, pipePos);
+    let cPart = r.slice(pipePos + 1);
+    // Detect variable names from the constraint part (letters that precede an operator)
+    const varSet = new Set();
+    for (const [, v] of cPart.matchAll(/([a-z]+)(?=[><=])/g)) varSet.add(v);
+    // Order vars by their first appearance (as ^var) in the word part
+    const order = [...varSet].sort((a, b) => {
+      const ia = wPart.indexOf(`^${a}`);
+      const ib = wPart.indexOf(`^${b}`);
+      return (ia < 0 ? Infinity : ia) - (ib < 0 ? Infinity : ib);
+    });
+    // Two-pass rename: process longer names first to prevent substring collisions
+    const byLen = [...order].sort((a, b) => b.length - a.length);
+    byLen.forEach(v => {
+      const i = order.indexOf(v);
+      wPart = wPart.replace(new RegExp(`\\^${v}`, 'g'), `^@@${i}`);
+      cPart = cPart.replace(new RegExp(`(?<![a-z0-9])${v}(?![a-z0-9])`, 'g'), `@@${i}`);
+    });
+    order.forEach((v, i) => {
+      const c = cano[i] ?? `v${i + 1}`;
+      wPart = wPart.replace(new RegExp(`\\^@@${i}`, 'g'), `^${c}`);
+      cPart = cPart.replace(new RegExp(`@@${i}`, 'g'), c);
+    });
+    r = wPart + '|' + cPart;
+  }
+  return r.replace(/[^a-z0-9^*+|(),_.=><!]/g, '');
 }
+
+// ── Grupos de inserção rápida do quadro de notações ──────────────────────────
+const INSERT_GROUPS = [
+  { chips: [
+    { text: '∅',    display: '∅',    title: 'Conjunto vazio' },
+    { text: 'w',    display: 'w',    title: 'Palavra w' },
+    { text: '|w|',  display: '|w|',  title: 'Comprimento de w' },
+    { text: '∈',    display: '∈',    title: 'Pertence (∈)' },
+  ]},
+  { label: 'Expoentes', chips: [
+    { text: '^n',   display: '^n',   title: 'Expoente n' },
+    { text: '^m',   display: '^m',   title: 'Expoente m' },
+    { text: '^2',   display: '^2',   title: 'Ao quadrado' },
+    { text: '≥',    display: '≥',    title: 'Maior ou igual (≥)' },
+    { text: '>',    display: '>',    title: 'Maior que (>)' },
+  ]},
+  { label: 'Estrutura', chips: [
+    { text: '{ ',   display: '{',    title: 'Abre chave' },
+    { text: ' | ',  display: '|',    title: 'Tal que' },
+    { text: ' }',   display: '}',    title: 'Fecha chave' },
+    { text: ', ',   display: ',',    title: 'Vírgula' },
+    { text: ' e ',  display: 'e',    title: '"e" lógico' },
+    { text: 'λ',    display: 'λ',    title: 'Palavra vazia (λ)' },
+  ]},
+];
 
 // ── Drawing helpers ───────────────────────────────────────────────────────────
 const DRAW_COLORS = [
@@ -145,10 +208,99 @@ function DrawStroke({ stroke, idx }) {
   return null;
 }
 
-// ── Stars ─────────────────────────────────────────────────────────────────────
+// ── SimPanel (step-by-step simulation) ───────────────────────────────────────
+function SimPanel({ word, nodes, transitions, onClose, onHighlightNode }) {
+  const initState = nodes.find(n => n.isInitial)?.id ?? null;
+
+  const buildSteps = () => {
+    const steps = [];
+    const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
+    if (!initState) {
+      steps.push({ type: 'error', icon: '❌', text: 'Nenhum estado inicial!', state: null, charIdx: -1 });
+      return steps;
+    }
+    const initLabel = nodes.find(n => n.id === initState)?.label ?? initState;
+    steps.push({ type: 'info', icon: '▶', text: `Início em "${initLabel}"`, state: initState, charIdx: -1 });
+    let current = initState;
+    for (let i = 0; i < w.length; i++) {
+      const ch = w[i];
+      const tr = transitions.find(t => t.from === current && t.symbol.split(',').map(s => s.trim()).includes(ch));
+      if (!tr) {
+        const curLabel = nodes.find(n => n.id === current)?.label ?? current;
+        steps.push({ type: 'error', icon: '❌', text: `"${curLabel}" sem transição com '${ch}' — REJEITADA`, state: current, charIdx: i });
+        return steps;
+      }
+      const fromLabel = nodes.find(n => n.id === tr.from)?.label ?? tr.from;
+      const toLabel   = nodes.find(n => n.id === tr.to)?.label   ?? tr.to;
+      steps.push({ type: 'ok', icon: '➡', text: `"${fromLabel}" —[${ch}]→ "${toLabel}"`, state: tr.to, charIdx: i });
+      current = tr.to;
+    }
+    const finalNode  = nodes.find(n => n.id === current);
+    const finalLabel = finalNode?.label ?? current;
+    if (finalNode?.isFinal) {
+      steps.push({ type: 'done', icon: '✅', text: `"${finalLabel}" é estado final`, state: current, charIdx: w.length });
+    } else {
+      steps.push({ type: 'error', icon: '❌', text: `"${finalLabel}" não é estado final`, state: current, charIdx: w.length });
+    }
+    return steps;
+  };
+
+  const steps = useMemo(buildSteps, []);
+  const [stepIdx, setStepIdx] = useState(0);
+  const currentStep = steps[stepIdx];
+  const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
+  const isFinished = stepIdx === steps.length - 1;
+  const accepted   = isFinished && currentStep?.type === 'done';
+
+  useEffect(() => {
+    onHighlightNode(currentStep?.state ?? null, currentStep?.type ?? null);
+    return () => onHighlightNode(null, null);
+  }, [stepIdx]);
+
+  useEffect(() => {
+    if (isFinished) { const t = setTimeout(() => onClose(), 6000); return () => clearTimeout(t); }
+  }, [isFinished]);
+
+  return (
+    <div className="sim-panel-container">
+      <div className="sim-panel-header">
+        <span className="sim-panel-title">🔬 <b>{w || 'λ'}</b></span>
+        <div className="sim-word-display">
+          {w.length === 0
+            ? <span className="sim-char">λ</span>
+            : w.split('').map((ch, i) => {
+                const ci = currentStep?.charIdx ?? -1;
+                let cls = 'sim-char';
+                if (i === ci) cls += ' active';
+                else if (i < ci) cls += ' done-ok';
+                return <span key={i} className={cls}>{ch}</span>;
+              })
+          }
+        </div>
+        {isFinished && (
+          <span className={`sim-result-badge ${accepted ? 'accepted' : 'rejected'}`}>
+            {accepted ? '✅ ACEITA' : '❌ REJEITADA'}
+          </span>
+        )}
+        <button className="sim-panel-close" onClick={onClose}>✕</button>
+      </div>
+      <div className="sim-panel-body">
+        <div className={`sim-current-step ${currentStep?.type || ''}`}>
+          <span className="sim-step-icon">{currentStep?.icon}</span>
+          <span>{currentStep?.text}</span>
+        </div>
+      </div>
+      <div className="sim-panel-nav">
+        <button className="sim-nav-btn" onClick={() => setStepIdx(i => Math.max(0, i-1))} disabled={stepIdx === 0}>◀</button>
+        <span className="sim-progress">{stepIdx + 1} / {steps.length}</span>
+        <button className="sim-nav-btn" onClick={() => setStepIdx(i => Math.min(steps.length-1, i+1))} disabled={isFinished}>▶</button>
+      </div>
+    </div>
+  );
+}
 
 // ── SVG Graph ─────────────────────────────────────────────────────────────────
-function AFDGraphView({ nodes, transitions }) {
+function AFDGraphView({ nodes, transitions, highlightNodeId = null, highlightType = null }) {
   const positions = useMemo(() => computeLayout(nodes, transitions), [nodes, transitions]);
 
   // Merge multi-symbol edges into single edge with combined label
@@ -267,7 +419,11 @@ function AFDGraphView({ nodes, transitions }) {
             )}
             <circle
               cx={p.x} cy={p.y} r={NR}
-              fill={nd.isInitial ? '#bae6fd' : nd.isFinal ? '#bbf7d0' : '#fff'}
+              fill={
+                highlightNodeId === nd.id
+                  ? (highlightType === 'ok' ? '#fef08a' : highlightType === 'done' ? '#86efac' : '#fca5a5')
+                  : nd.isInitial ? '#bae6fd' : nd.isFinal ? '#bbf7d0' : '#fff'
+              }
               stroke="#000" strokeWidth="3"
             />
             <text
@@ -366,15 +522,24 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   const [showVictory, setShowVictory] = useState(false);
   const [earnedStars, setEarnedStars] = useState(0);
   const [profMsg,     setProfMsg]     = useState('');
-  const speechRef = useRef(null);
+  const speechRef      = useRef(null);
+  const answerInputRef = useRef(null);
+  const savedCursor    = useRef(null);
   const [showCheatsheet, setShowCheatsheet] = useState(true);
   const [copiedIdx, setCopiedIdx] = useState(null);
+
+  // ── Word simulation ────────────────────────────────────────────────────────
+  const [simWords,     setSimWords]     = useState([]);
+  const [newSimWord,   setNewSimWord]   = useState('');
+  const [simWord,      setSimWord]      = useState('');
+  const [showSimPanel, setShowSimPanel] = useState(false);
+  const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null });
 
   // ── Drawing state ──────────────────────────────────────────────────────────
   const [drawings, setDrawings]           = useState([]);
   const [drawingStack, setDrawingStack]   = useState([]);
   const [currentStroke, setCurrentStroke] = useState(null);
-  const [drawColor, setDrawColor]         = useState('#FF0000');
+  const [drawColor, setDrawColor]         = useState('#1a1a1a');
   const [drawSize, setDrawSize]           = useState(3);
   const [isErasing, setIsErasing]         = useState(false);
   const [drawTool, setDrawTool]           = useState('pencil');
@@ -393,6 +558,21 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
       return prev.slice(0, -1);
     });
   }, []);
+
+  const insertAtCursor = (text) => {
+    const start  = savedCursor.current?.start ?? answer.length;
+    const end    = savedCursor.current?.end   ?? answer.length;
+    const newVal = answer.slice(0, start) + text + answer.slice(end);
+    setAnswer(newVal);
+    setResult(null);
+    requestAnimationFrame(() => {
+      if (!answerInputRef.current) return;
+      answerInputRef.current.focus();
+      const pos = start + text.length;
+      answerInputRef.current.setSelectionRange(pos, pos);
+      savedCursor.current = { start: pos, end: pos };
+    });
+  };
 
   useEffect(() => {
     if (!isDrawMode) return;
@@ -531,14 +711,37 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
     });
   };
 
+  const handleAddSimWord = () => {
+    if (!graph) { showToast('Grafo não disponível.', 'error'); return; }
+    const wordDisplay = newSimWord === '' ? 'λ' : newSimWord;
+    if (simWords.some(w => w.word === wordDisplay)) {
+      showToast('Já testou essa palavra!', 'info'); return;
+    }
+    const w = wordDisplay === 'λ' ? '' : wordDisplay;
+    let cur = graph.nodes.find(n => n.isInitial)?.id ?? null;
+    let accepted = false;
+    if (cur !== null) {
+      let ok = true;
+      for (const ch of w) {
+        const tr = graph.transitions.find(t => t.from === cur && t.symbol.split(',').map(s => s.trim()).includes(ch));
+        if (!tr) { ok = false; break; }
+        cur = tr.to;
+      }
+      if (ok) accepted = !!graph.nodes.find(n => n.id === cur)?.isFinal;
+    }
+    setSimWords(prev => [{ word: wordDisplay, status: accepted ? 'correct' : 'wrong' }, ...prev]);
+    setNewSimWord('');
+  };
+
+  const openSimulation = () => {
+    if (!graph) { showToast('Grafo não disponível.', 'error'); return; }
+    if (!graph.nodes.some(n => n.isInitial)) { showToast('Grafo sem estado inicial.', 'error'); return; }
+    if (!newSimWord && newSimWord !== '') { showToast('Digite uma palavra para simular.', 'info'); return; }
+    setSimWord(newSimWord);
+    setShowSimPanel(true);
+  };
+
   const cheatSections = [
-    {
-      label: 'Estrutura',
-      color: 'white',
-      items: [
-        { code: '{ a^n | n > 0 e n é ímpar }', desc: 'duas condições com e' },
-      ],
-    },
     {
       label: 'Expoentes',
       color: 'blue',
@@ -548,28 +751,12 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
       ],
     },
     {
-      label: 'Variável w',
-      color: 'pink',
-      items: [
-        { code: 'w',               desc: 'qualquer palavra' },
-        { code: '|w|',             desc: 'comprimento de w' },
-        { code: '|w| mod 2 = 1',   desc: 'comprimento ímpar' },
-      ],
-    },
-    {
-      label: 'Especiais',
-      color: 'yellow',
-      items: [
-        { code: 'λ',     desc: 'palavra vazia (lambda)' },
-        { code: '{ λ }', desc: 'conjunto só com vazia' },
-      ],
-    },
-    {
       label: 'Prontos',
       color: 'orange',
       items: [
-        { code: '{ a^n | n > 0 }',         desc: 'a, aa, aaa…', underline: true },
-        { code: '{ a^n b^m | n,m ≥ 0 }',  desc: 'λ, a, ab, aabb…' },
+        { code: '{ a^n | n > 0 }',                    desc: 'a, aa, aaa…', underline: true },
+        { code: '{ a^n b^m | n,m ≥ 0 }',             desc: 'λ, a, ab, aabb…' },
+        { code: '{ a^n | n > 0 e n é ímpar }',        desc: 'duas condições com e' },
       ],
     },
   ];
@@ -589,6 +776,23 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
           <SvgStars count={stars} size={20} />
         </div>
       </header>
+
+      {/* Words hint bar */}
+      <div className="words-hint-bar">
+        <div className="words-hint-group">
+          <span className="words-hint-label accept">✓ Aceita</span>
+          {simWords.filter(w => w.status === 'correct').map((w, i) => (
+            <span key={i} className="words-hint-chip accept">{w.word}</span>
+          ))}
+        </div>
+        <div className="words-hint-sep" />
+        <div className="words-hint-group">
+          <span className="words-hint-label reject">✗ Rejeita</span>
+          {simWords.filter(w => w.status === 'wrong').map((w, i) => (
+            <span key={i} className="words-hint-chip reject">{w.word}</span>
+          ))}
+        </div>
+      </div>
 
       {/* Workspace */}
       <div className="workspace">
@@ -668,12 +872,21 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
             className={`p2-draw-toggle${isDrawMode ? ' active' : ''}`}
             title={isDrawMode ? 'Fechar ferramenta de desenho' : 'Abrir ferramenta de desenho'}
             onClick={() => setIsDrawMode(m => !m)}>
-            ✏
+            <svg width="16" height="16" viewBox="0 0 16 16">
+              <path d="M3 12 L10 5 L12 7 L5 14 Z" fill="#fbbf24" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
+              <path d="M10 5 L12 3 L14 5 L12 7 Z" fill="#fb923c" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
+              <path d="M3 12 L1.5 14.5 L5 14 Z" fill="#374151" stroke="#000" strokeWidth="1.2" strokeLinejoin="round"/>
+            </svg>
           </button>
 
           {graph ? (
             <div className="p2-svg-box">
-              <AFDGraphView nodes={graph.nodes} transitions={graph.transitions} />
+              <AFDGraphView
+                nodes={graph.nodes}
+                transitions={graph.transitions}
+                highlightNodeId={simHighlight.nodeId}
+                highlightType={simHighlight.type}
+              />
               {/* Drawing overlay */}
               <svg ref={overlayRef}
                 viewBox={`0 0 ${VW} ${VH}`}
@@ -695,8 +908,15 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
           )}
 
           <div className="p2-legend">
-            <span><span className="p2-legend-dot initial" /> Estado Inicial</span>
-            <span><span className="p2-legend-dot final" /> Estado Final</span>
+            <span>
+              <span style={{ fontWeight:'bold', fontSize:11, marginRight:3 }}>▶</span>
+              <span className="p2-legend-dot initial" />
+              {' '}Inicial
+            </span>
+            <span>
+              <span className="p2-legend-dot final" style={{ outline:'2px solid #000', outlineOffset:2 }} />
+              {' '}Final
+            </span>
           </div>
 
           {/* Quadro-negro de notações */}
@@ -706,7 +926,24 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
             </button>
             {showCheatsheet && (
               <div className="p2-blackboard">
-                <div className="p2-bb-title">✦ Notações — clique para copiar</div>
+                <div className="p2-bb-title">✦ Clique para inserir na resposta</div>
+                <div className="p2-bb-insert-bar">
+                  {INSERT_GROUPS.map((group, gi) => (
+                    <div key={gi} className="p2-bb-group">
+                      {group.label && <span className="p2-bb-group-label">{group.label}:</span>}
+                      {group.chips.map((chip, ci) => (
+                        <button
+                          key={ci}
+                          className={`p2-bb-chip${chip.wide ? ' wide' : ''}`}
+                          title={chip.title}
+                          onClick={() => { insertAtCursor(chip.text); navigator.clipboard?.writeText(chip.text); }}
+                        >
+                          {chip.display}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
                 {cheatSections.map((section) => (
                   <div key={section.label} className="p2-bb-section">
                     <div className={`p2-bb-section-label p2-chalk-${section.color}`}>
@@ -740,47 +977,50 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
 
         {/* Right panel */}
         <aside className="test-panel">
-          {/* Alphabet */}
-          <div className="section-header" style={{ fontSize: 10, marginTop: 2 }}>Alfabeto</div>
-          <div className="p2-alphabet">
-            Σ = {level.alphabet.length > 0
-              ? `{ ${level.alphabet.join(', ')} }`
-              : '{ } (vazio)'}
-          </div>
-
-          {/* Words examples */}
-          <div className="section-header" style={{ fontSize: 10, marginTop: 2 }}>Exemplos</div>
-          <div className="p2-words-examples">
-            <div className="p2-words-group">
-              <span className="p2-words-label accept">✓</span>
-              {level.acceptedWords.length === 0
-                ? <span className="p2-words-chip reject">∅</span>
-                : level.acceptedWords.map((w, i) => (
-                    <span key={i} className="p2-words-chip accept">{w === '' ? 'λ' : w}</span>
-                  ))}
-            </div>
-            <div className="p2-words-group">
-              <span className="p2-words-label reject">✗</span>
-              {level.rejectedWords.map((w, i) => (
-                <span key={i} className="p2-words-chip reject">{w === '' ? 'λ' : w}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Answer */}
-          <div className="section-header" style={{ fontSize: 10, marginTop: 2 }}>Sua Resposta</div>
+          {/* Word tester */}
+          <div className="section-header" style={{ fontSize: 10, marginTop: 2 }}>Testar Palavra</div>
           <div className="test-input-area">
             <input
               type="text"
-              className={`word-input ${result === 'correct' ? 'p2-ok' : result === 'wrong' ? 'p2-err' : ''}`}
+              className="word-input"
+              placeholder="Ex: aab  (vazia = λ)"
+              value={newSimWord}
+              onChange={e => setNewSimWord(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddSimWord()}
+              spellCheck={false}
+              autoCorrect="off"
+              autoCapitalize="off"
+            />
+            <button className="add-test-btn" onClick={handleAddSimWord}>+</button>
+          </div>
+          <button className="simulate-btn" onClick={openSimulation}>🔬 Simular</button>
+          <div className="words-list">
+            {simWords.map((item, idx) => (
+              <div key={idx} className={`word-row ${item.status}`}>
+                <span>{item.word}</span>
+                <span>{item.status === 'correct' ? '✓' : '✕'}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Answer */}
+          <div className="p2-answer-sep" />
+          <div className="section-header" style={{ fontSize: 10, marginTop: 0 }}>Sua Resposta</div>
+          <div className="test-input-area">
+            <textarea
+              ref={answerInputRef}
+              className={`word-input p2-answer-textarea ${result === 'correct' ? 'p2-ok' : result === 'wrong' ? 'p2-err' : ''}`}
               placeholder="Ex: { a^n | n > 0 }"
               value={answer}
               onChange={e => { setAnswer(e.target.value); setResult(null); }}
-              onKeyDown={e => e.key === 'Enter' && result !== 'correct' && handleCheck()}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (result !== 'correct') handleCheck(); } }}
+              onSelect={e => { savedCursor.current = { start: e.target.selectionStart, end: e.target.selectionEnd }; }}
+              onBlur={e => { savedCursor.current = { start: e.target.selectionStart, end: e.target.selectionEnd }; }}
               disabled={result === 'correct'}
               spellCheck={false}
               autoCorrect="off"
               autoCapitalize="off"
+              rows={2}
             />
           </div>
 
@@ -833,8 +1073,21 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
         </aside>
       </div>
 
-      {/* Professor HUD — no card footer so bottom is lower */}
-      <div className="professor-hud" style={{ bottom: 18 }}>
+      {/* SimPanel footer — same layout as AFDPart1 */}
+      {showSimPanel && graph && (
+        <footer className="bottom-hand">
+          <SimPanel
+            word={simWord}
+            nodes={graph.nodes}
+            transitions={graph.transitions}
+            onClose={() => { setShowSimPanel(false); setSimHighlight({ nodeId: null, type: null }); }}
+            onHighlightNode={(nid, type) => setSimHighlight({ nodeId: nid, type })}
+          />
+        </footer>
+      )}
+
+      {/* Professor HUD */}
+      <div className="professor-hud" style={{ bottom: showSimPanel ? 186 : 18 }}>
         {profMsg && (
           <div className="professor-balloon">
             <img src={imgBalaoFala} alt="" />

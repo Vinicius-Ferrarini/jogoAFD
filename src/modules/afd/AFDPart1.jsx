@@ -280,7 +280,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const [drawings, setDrawings]           = useState([]);
   const [drawingStack, setDrawingStack]   = useState([]);
   const [currentStroke, setCurrentStroke] = useState(null);
-  const [drawColor, setDrawColor]         = useState('#FF0000');
+  const [drawColor, setDrawColor]         = useState('#1a1a1a');
   const [drawSize, setDrawSize]           = useState(3);
   const [isErasing, setIsErasing]         = useState(false);
   const [drawTool, setDrawTool]           = useState('pencil'); // 'pencil'|'line'|'arrow'|'rect'
@@ -457,7 +457,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     let isShortest = false, isValid = false;
 
     if (target === null) { if (isSpecialNull) isShortest = true; }
-    else if (newWord === target) isShortest = true;
+    else if (newWord.length === target.length && lvlAccepts(currentLevel, newWord)) isShortest = true;
 
     if ((currentLevel.regex || currentLevel.validate) && !(target === null && isSpecialNull))
       isValid = lvlAccepts(currentLevel, newWord);
@@ -1227,7 +1227,13 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                   border: interactionMode==='DRAW' ? '2.5px solid #3b82f6' : '2.5px solid #000',
                   borderRadius:8, fontSize:15, cursor:'pointer',
                   boxShadow: interactionMode==='DRAW' ? '2px 2px 0 #1d4ed8' : '2px 2px 0 #000',
-                  display:'flex', alignItems:'center', justifyContent:'center' }}>✏</button>
+                  display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16">
+                    <path d="M3 12 L10 5 L12 7 L5 14 Z" fill="#fbbf24" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
+                    <path d="M10 5 L12 3 L14 5 L12 7 Z" fill="#fb923c" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
+                    <path d="M3 12 L1.5 14.5 L5 14 Z" fill="#374151" stroke="#000" strokeWidth="1.2" strokeLinejoin="round"/>
+                  </svg>
+                </button>
               <div style={{ display:'flex', gap:2, background:'#fff', padding:'3px 6px', border:'2.5px solid #000', borderRadius:8, boxShadow:'3px 3px 0 #000', alignItems:'center' }}>
                 <button onClick={() => setZoom(z => Math.max(0.15, z-0.25))}
                   style={{ fontWeight:'bold', width:20, height:22, cursor:'pointer', border:'none', background:'transparent', fontSize:16, color:'#000', display:'flex', alignItems:'center', justifyContent:'center' }}>−</button>

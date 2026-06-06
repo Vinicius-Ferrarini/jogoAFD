@@ -71,17 +71,13 @@
   white-space: nowrap;
   pointer-events: none;
 }
-.p2-legend span { display: flex; align-items: center; gap: 6px; }
+.p2-legend span { display: flex; align-items: center; gap: 5px; }
 .p2-legend-dot {
   display: inline-block;
-  width: 14px; height: 14px;
+  width: 13px; height: 13px;
   border-radius: 50%;
   border: 2px solid #000;
   background: #fff;
-  box-shadow: 0 0 0 3px #000;
-  outline: 2px solid #000;
-  outline-offset: 2px;
-  flex-shrink: 0;
 }
 .p2-legend-dot.initial { background: #bae6fd; }
 .p2-legend-dot.final   { background: #bbf7d0; }
@@ -127,7 +123,65 @@
   padding: 10px 12px;
   box-shadow: 6px 6px 0 #000;
   min-width: 240px;
-  max-width: 290px;
+  max-width: 360px;
+}
+
+/* ── Barra de inserção rápida ── */
+.p2-bb-insert-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.p2-bb-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.p2-bb-group-label {
+  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(212, 245, 226, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  margin-right: 1px;
+}
+
+.p2-bb-chip {
+  background: rgba(255, 255, 255, 0.1);
+  color: #d4f5e2;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.3;
+  flex-shrink: 0;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.p2-bb-chip:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.p2-bb-chip:active {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.p2-bb-chip.wide {
+  color: #fde68a;
+  font-size: 13px;
 }
 
 .p2-bb-title {
@@ -274,6 +328,16 @@
   box-shadow: 2px 2px 0 #000;
 }
 
+/* ── Answer textarea ── */
+.p2-answer-textarea {
+  resize: none;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.4;
+  overflow-y: auto;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+
 /* ── Input states ── */
 .word-input.p2-ok {
   background: #bbf7d0 !important;
@@ -304,6 +368,22 @@
   font-weight: 900;
   word-break: break-all;
   font-family: monospace;
+  color: #000;
+}
+
+/* ── Test-panel bottom padding (keeps answer section above professor HUD) ── */
+.test-panel {
+  padding-bottom: 172px;
+}
+
+/* ── Separator between simulate section and answer section ── */
+.p2-answer-sep {
+  flex-shrink: 0;
+  height: 2px;
+  background: #000;
+  border-radius: 1px;
+  margin: 2px 0;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.15);
 }
 
 /* ── Victory overlay ── */
