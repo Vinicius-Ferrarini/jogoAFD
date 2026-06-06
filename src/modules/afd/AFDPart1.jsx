@@ -2,8 +2,8 @@
 // v3.0: Undo/Redo, Simulação no Rodapé, Cores Zoom Corrigidas, Validação Duplicata Aprimorada
 import { useState, useRef, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import './AFDPart1.css';
-import { SvgStars } from './SvgStar';
-import { GAME_LEVELS, LEVEL_DIFFICULTY } from '../../levels';
+import { SvgStars, DifficultyLegend } from './SvgStar';
+import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 import FormalDescriptionModal from './FormalDescriptionModal';
 import imgMaurilioApontando  from '../../assets/maurilio2_apontando_pro_lado.webp';
 import imgMaurilioSerio      from '../../assets/maurilio1_serio.webp';
@@ -264,24 +264,7 @@ function SimPanel({ word, nodes, transitions, onClose, onHighlightNode }) {
 }
 
 // ─── App Principal ────────────────────────────────────────────────────────────
-export default function App({ onBack }) {
-
-  // ── Progresso persistente ──────────────────────────────────────────────────
-  const getProgress = () => {
-    try { return JSON.parse(localStorage.getItem('turinglab_progress') || '{}'); }
-    catch { return {}; }
-  };
-  const [progress, setProgress] = useState(getProgress);
-
-  const updateStars = useCallback((levelId, stars) => {
-    setProgress(prev => {
-      const cur = prev[levelId]?.stars || 0;
-      if (stars <= cur) return prev;
-      const next = { ...prev, [levelId]: { stars } };
-      localStorage.setItem('turinglab_progress', JSON.stringify(next));
-      return next;
-    });
-  }, []);
+export default function AFDPart1({ onBack, progress, updateProgress }) {
 
 
   // ── Toast ──────────────────────────────────────────────────────────────────
@@ -501,7 +484,7 @@ export default function App({ onBack }) {
     if (isShortest) {
       if (!isDrawingUnlocked) {
         setIsDrawingUnlocked(true);
-        updateStars(currentLevel.id, 1);
+        updateProgress(currentLevel.id, 1);
         showToast('Sucesso! Tabuleiro liberado.', 'success');
         const initialCards = [
           { id: 'c0', type: 'action', action: 'toggleInitial', icon: '▶', label: 'Estado Inicial' },
@@ -524,7 +507,7 @@ export default function App({ onBack }) {
       setTestWords(prev => [{ word: wordDisplay, status: 'wrong' }, ...prev]);
     }
     setNewWord('');
-  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateStars]);
+  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress]);
 
   // ── Helpers de modo ───────────────────────────────────────────────────────
   const resetMode = () => {
@@ -642,16 +625,16 @@ export default function App({ onBack }) {
 
   const validateAFD = useCallback(() => {
     if (!validateAFDSilent(true)) return;
-    updateStars(currentLevel.id, 2);
+    updateProgress(currentLevel.id, 2);
     showToast('Autômato Validado! Preencha a Tabela Formal.', 'success');
     setIsSidebarOpen(true);
-  }, [validateAFDSilent, currentLevel, updateStars, showToast]);
+  }, [validateAFDSilent, currentLevel, updateProgress, showToast]);
 
   const handleFormalSuccess = useCallback(() => {
-    updateStars(currentLevel.id, 3);
+    updateProgress(currentLevel.id, 3);
     showToast('Fase Concluída com Perfeição! 3ª Estrela conquistada!', 'success');
     setShowVictoryScreen(true);
-  }, [currentLevel, updateStars, showToast]);
+  }, [currentLevel, updateProgress, showToast]);
 
   // ── Simulação no Rodapé ────────────────────────────────────────────────────
   const openSimulation = useCallback(() => {
@@ -1016,18 +999,6 @@ export default function App({ onBack }) {
   }, [transitions, nodes, canvasSize]);
 
   // ══════════════════════════════════════════════════════════════
-  // TELA HOME
-  // ══════════════════════════════════════════════════════════════
-  if (tela === 'HOME') return (
-    <div className="menu-screen">
-      <h1 className="menu-title">TuringLab</h1>
-      <button className="menu-btn primary" onClick={() => setTela('MENU')} style={{ marginBottom: 15 }}>Fases AFD</button>
-      <button className="menu-btn" onClick={() => showToast('A Parte 2 chega em breve!', 'info')}>AFD Parte 2</button>
-      {toastData.show && <div className={`toast-notification ${toastData.type}`}>{toastData.message}</div>}
-    </div>
-  );
-
-  // ══════════════════════════════════════════════════════════════
   // TELA MENU (FASES)
   // ══════════════════════════════════════════════════════════════
   if (tela === 'MENU') {
@@ -1056,7 +1027,7 @@ export default function App({ onBack }) {
         <div className="levels-grid">
           {pageItems.map(lvl => {
             const diff = LEVEL_DIFFICULTY[lvl.id] || 'easy';
-            const bg   = diff === 'easy' ? '#bbf7d0' : diff === 'medium' ? '#fde68a' : '#fca5a5';
+            const bg   = DIFF_COLOR[diff];
             return (
               <button key={lvl.id} className="menu-btn primary" onClick={() => loadLevel(lvl)}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
@@ -1074,16 +1045,7 @@ export default function App({ onBack }) {
           </span>
           <button className="menu-btn" disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={{ opacity: currentPage===totalPages ? 0.5 : 1 }}>Próxima ➡</button>
         </div>
-        <div style={{ position:'fixed', bottom:16, right:16, background:'#fff', border:'3px solid #000',
-          borderRadius:8, boxShadow:'3px 3px 0 #000', padding:'8px 12px', zIndex:100,
-          display:'flex', flexDirection:'column', gap:4, fontSize:12, fontWeight:'bold' }}>
-          {[['#bbf7d0','Easy'],['#fde68a','Medium'],['#fca5a5','Hard']].map(([bg, label]) => (
-            <div key={label} style={{ display:'flex', alignItems:'center', gap:6 }}>
-              <span style={{ width:14, height:14, background:bg, border:'2px solid #000', borderRadius:3, display:'inline-block', flexShrink:0 }} />
-              {label}
-            </div>
-          ))}
-        </div>
+        <DifficultyLegend />
       </div>
     );
   }

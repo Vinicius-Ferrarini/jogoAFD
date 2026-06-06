@@ -2,7 +2,8 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import './AFDPart1.css';
 import './AFDMinimizer.css';
-import { SvgStar, SvgStars } from './SvgStar';
+import { SvgStar, SvgStars, DifficultyLegend } from './SvgStar';
+import { DIFF_COLOR } from '../../levels';
 import imgMaurilioSerio from '../../assets/maurilio1_serio.webp';
 import imgBalaoFala     from '../../assets/balao_fala_redondo.webp';
 
@@ -543,7 +544,6 @@ function TriangularTable({ states, userTable, onToggle, correctTable, showErrors
 
 // ─── Level List ───────────────────────────────────────────────────────────────
 const LEVEL_ORDER = { easy: 0, medium: 1, hard: 2 };
-const LEVEL_COLOR = { easy: '#bbf7d0', medium: '#fde68a', hard: '#fca5a5' };
 const SORTED_EXERCISES = [...EXERCISES].sort((a, b) => LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level]);
 
 
@@ -574,7 +574,7 @@ function LevelList({ progress, onSelect, onBack }) {
             <button key={ex.id} className="menu-btn primary"
               onClick={() => onSelect(ex)}
               style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:8,
-                background: LEVEL_COLOR[ex.level],
+                background: DIFF_COLOR[ex.level],
                 border: '3px solid #000',
                 boxShadow: 'none' }}>
               <span>Ex. {i + 1}</span>
@@ -585,16 +585,7 @@ function LevelList({ progress, onSelect, onBack }) {
           );
         })}
       </div>
-      <div style={{ position:'fixed', bottom:16, right:16, background:'#fff', border:'3px solid #000',
-        borderRadius:8, boxShadow:'3px 3px 0 #000', padding:'8px 12px', zIndex:100,
-        display:'flex', flexDirection:'column', gap:4, fontSize:12, fontWeight:'bold' }}>
-        {[['#bbf7d0','Easy'],['#fde68a','Medium'],['#fca5a5','Hard']].map(([bg, label]) => (
-          <div key={label} style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <span style={{ width:14, height:14, background:bg, border:'2px solid #000', borderRadius:3, display:'inline-block', flexShrink:0 }} />
-            {label}
-          </div>
-        ))}
-      </div>
+      <DifficultyLegend />
     </div>
   );
 }

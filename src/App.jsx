@@ -159,7 +159,7 @@ function SubmoduleSelection({ moduleId, onSelectGame, onBack }) {
       { id: 'afd-p2',  icon: '📊', label: 'Grafo → Linguagem',
         desc: 'Analise um grafo pronto e identifique a linguagem', color: '#bfdbfe' },
       { id: 'afd-min', icon: '⚡', label: 'Minimização',
-        desc: '5 exercícios de otimização de autômatos', color: '#bbf7d0' },
+        desc: '14 exercícios de otimização de autômatos', color: '#bbf7d0' },
     ],
     ap: [
       { id: 'ap-pilha',  icon: '📚', label: 'Autômato com Pilha',  desc: 'Em breve!', locked: true },

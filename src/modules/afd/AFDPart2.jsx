@@ -2,8 +2,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import './AFDPart1.css';
 import './AFDPart2.css';
-import { SvgStars } from './SvgStar';
-import { GAME_LEVELS, LEVEL_DIFFICULTY } from '../../levels';
+import { SvgStars, DifficultyLegend } from './SvgStar';
+import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 import { LEVEL_GRAPHS } from '../../levels_graphs';
 import imgMaurilioSerio      from '../../assets/maurilio1_serio.webp';
 import imgMaurilioExplicando from '../../assets/maurilio3_explicando.webp';
@@ -316,7 +316,7 @@ function LevelList({ progress, onSelect, onBack }) {
       <div className="levels-grid">
         {pageItems.map(lvl => {
           const diff = LEVEL_DIFFICULTY[lvl.id] || 'easy';
-          const bg   = diff === 'easy' ? '#bbf7d0' : diff === 'medium' ? '#fde68a' : '#fca5a5';
+          const bg   = DIFF_COLOR[diff];
           return (
             <button
               key={lvl.id}
@@ -351,16 +351,7 @@ function LevelList({ progress, onSelect, onBack }) {
         </button>
       </div>
 
-      <div style={{ position:'fixed', bottom:16, right:16, background:'#fff', border:'3px solid #000',
-        borderRadius:8, boxShadow:'3px 3px 0 #000', padding:'8px 12px', zIndex:100,
-        display:'flex', flexDirection:'column', gap:4, fontSize:12, fontWeight:'bold' }}>
-        {[['#bbf7d0','Easy'],['#fde68a','Medium'],['#fca5a5','Hard']].map(([bg, label]) => (
-          <div key={label} style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <span style={{ width:14, height:14, background:bg, border:'2px solid #000', borderRadius:3, display:'inline-block', flexShrink:0 }} />
-            {label}
-          </div>
-        ))}
-      </div>
+      <DifficultyLegend />
     </div>
   );
 }

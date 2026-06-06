@@ -54,6 +54,8 @@ export const GAME_LEVELS = [
   { id: 53, label: "L53", formula: "L = { w ∈ {a,b,c}* | cada b é seguido de pelo menos um c }",       desc: "",                                                                 shortestWord: "",         regex: /^(a|c|bc+)*$/,                                              alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","a","bc","abc"],       rejectedWords: ["b","ab","bcb"],         hint: "Leu um 'b'? A próxima letra TEM que ser 'c'. Depois tudo fica livre.",                                              successMsg: "Condicional restrita dominada. Zerou a lista!" },
 ];
 
+export const DIFF_COLOR = { easy: '#bbf7d0', medium: '#fde68a', hard: '#fca5a5' };
+
 export const LEVEL_DIFFICULTY = {
    1:'easy',  2:'easy',  3:'easy',  4:'easy',  5:'easy',
    6:'easy',  7:'easy',  8:'easy',  9:'easy', 10:'medium',
