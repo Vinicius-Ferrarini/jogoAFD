@@ -411,7 +411,11 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
     if (!svg) return { x: 0, y: 0 };
     try {
       const pt = svg.createSVGPoint();
-      pt.x = e.clientX; pt.y = e.clientY;
+      // getScreenCTM() ignora CSS zoom de ancestrais; compensar dividindo pelas coords visuais
+      const svgRect = svg.getBoundingClientRect();
+      const cssZoom = svgRect.width / svg.offsetWidth;
+      pt.x = e.clientX / cssZoom;
+      pt.y = e.clientY / cssZoom;
       const ctm = svg.getScreenCTM();
       if (!ctm) return { x: 0, y: 0 };
       const p = pt.matrixTransform(ctm.inverse());
@@ -422,7 +426,8 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   const handleOverlayDown = (e) => {
     const { x, y } = getSVGCoords(e);
     if (isErasing) {
-      setDrawingStack(prev => [...prev, drawingsRef.current]);
+      const snapshot = [...drawingsRef.current];
+      setDrawingStack(prev => [...prev, snapshot]);
     } else if (drawTool === 'pencil') {
       const s = { type: 'pencil', color: drawColor, width: drawSize, points: [{ x, y }] };
       currentStrokeRef.current = s;
@@ -474,7 +479,8 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
       ? Math.hypot(stroke.x2 - stroke.x1, stroke.y2 - stroke.y1) > 4
       : stroke.points && stroke.points.length > 1);
     if (!isErasing && valid) {
-      setDrawingStack(prev => [...prev, drawingsRef.current]);
+      const snapshot = [...drawingsRef.current];
+      setDrawingStack(prev => [...prev, snapshot]);
       setDrawings(prev => { const next = [...prev, stroke]; drawingsRef.current = next; return next; });
     }
     currentStrokeRef.current = null;
@@ -644,7 +650,8 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
                 onClick={() => setIsErasing(v => !v)}>⌫</button>
               <button className="draw-tool-btn" title="Apagar todos os rabiscos"
                 onClick={() => {
-                  setDrawingStack(prev => [...prev, drawingsRef.current]);
+                  const snapshot = [...drawingsRef.current];
+                  setDrawingStack(prev => [...prev, snapshot]);
                   setDrawings([]); drawingsRef.current = [];
                 }}>🗑</button>
               <button className="draw-tool-btn" title="Desfazer (Ctrl+Z)"

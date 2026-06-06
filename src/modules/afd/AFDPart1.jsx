@@ -657,10 +657,12 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
 
     if (interactionMode === 'DRAW') {
       const rect = canvasRef.current.getBoundingClientRect();
-      const x = (e.clientX - rect.left - pan.x) / zoom;
-      const y = (e.clientY - rect.top  - pan.y) / zoom;
+      const cssZoom = rect.width / canvasRef.current.offsetWidth;
+      const x = ((e.clientX - rect.left) / cssZoom - pan.x) / zoom;
+      const y = ((e.clientY - rect.top)  / cssZoom - pan.y) / zoom;
       if (isErasing) {
-        setDrawingStack(prev => [...prev, drawingsRef.current]);
+        const snapshot = [...drawingsRef.current];
+        setDrawingStack(prev => [...prev, snapshot]);
       } else if (drawTool === 'pencil') {
         const stroke = { type: 'pencil', color: drawColor, width: drawSize, points: [{ x, y }] };
         currentStrokeRef.current = stroke;
@@ -786,11 +788,14 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     const iy = (e.clientY - rect.top  - pan.y) / zoom;
 
     if (interactionMode === 'DRAW' && isDrawingRef.current) {
+      const cssZoom = rect.width / canvasRef.current.offsetWidth;
+      const dx = ((e.clientX - rect.left) / cssZoom - pan.x) / zoom;
+      const dy = ((e.clientY - rect.top)  / cssZoom - pan.y) / zoom;
       if (isErasing) {
         const ERASE_R = 20;
         setDrawings(prev => {
           const next = prev.filter(s =>
-            !s.points.some(p => Math.hypot(p.x - ix, p.y - iy) < ERASE_R)
+            !s.points.some(p => Math.hypot(p.x - dx, p.y - dy) < ERASE_R)
           );
           drawingsRef.current = next;
           return next;
@@ -799,12 +804,12 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         if (drawTool === 'pencil') {
           const pts = currentStrokeRef.current.points;
           const last = pts[pts.length - 1];
-          if (Math.hypot(ix - last.x, iy - last.y) < 3) return;
-          const updated = { ...currentStrokeRef.current, points: [...pts, { x: ix, y: iy }] };
+          if (Math.hypot(dx - last.x, dy - last.y) < 3) return;
+          const updated = { ...currentStrokeRef.current, points: [...pts, { x: dx, y: dy }] };
           currentStrokeRef.current = updated;
           setCurrentStroke({ ...updated });
         } else {
-          const updated = { ...currentStrokeRef.current, x2: ix, y2: iy };
+          const updated = { ...currentStrokeRef.current, x2: dx, y2: dy };
           currentStrokeRef.current = updated;
           setCurrentStroke({ ...updated });
         }
@@ -840,7 +845,8 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           : stroke.points && stroke.points.length > 1
       );
       if (!isErasing && valid) {
-        setDrawingStack(prev => [...prev, drawingsRef.current]);
+        const snapshot = [...drawingsRef.current];
+        setDrawingStack(prev => [...prev, snapshot]);
         setDrawings(prev => {
           const next = [...prev, stroke];
           drawingsRef.current = next;
@@ -1249,7 +1255,8 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                 <button className="draw-tool-btn"
                   title="Apagar todos os rabiscos"
                   onClick={() => {
-                    setDrawingStack(prev => [...prev, drawingsRef.current]);
+                    const snapshot = [...drawingsRef.current];
+                    setDrawingStack(prev => [...prev, snapshot]);
                     setDrawings([]);
                     drawingsRef.current = [];
                   }}>🗑</button>
