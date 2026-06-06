@@ -1040,7 +1040,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
             return (
               <button key={lvl.id} className="menu-btn primary" onClick={() => loadLevel(lvl)}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                  background: bg, border: '3px solid #000', boxShadow: 'none' }}>
+                  background: bg }}>
                 <span>{lvl.label}</span>
                 <SvgStars count={progress[lvl.id]?.stars || 0} size={14} />
               </button>

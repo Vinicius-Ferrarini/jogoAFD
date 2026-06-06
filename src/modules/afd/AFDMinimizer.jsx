@@ -574,9 +574,7 @@ function LevelList({ progress, onSelect, onBack }) {
             <button key={ex.id} className="menu-btn primary"
               onClick={() => onSelect(ex)}
               style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:8,
-                background: DIFF_COLOR[ex.level],
-                border: '3px solid #000',
-                boxShadow: 'none' }}>
+                background: DIFF_COLOR[ex.level] }}>
               <span>Ex. {i + 1}</span>
               <span style={{ display:'flex', gap:2 }}>
                 {[1,2,3].map(n => <SvgStar key={n} filled={n <= stars} />)}
