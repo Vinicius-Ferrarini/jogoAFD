@@ -8,7 +8,7 @@ import imgMaurilioSerio from '../../assets/maurilio1_serio.webp';
 import imgBalaoFala     from '../../assets/balao_fala_redondo.webp';
 
 // ─── Exercises ────────────────────────────────────────────────────────────────
-const EXERCISES = [
+export const EXERCISES = [
   {
     id: 1, level: 'easy', title: 'Lista Ex. 15',
     desc: 'AFD com 6 estados e alfabeto {a,b}. Estados finais: q2, q3 e q4. Encontre o AFD mínimo.',
@@ -590,9 +590,17 @@ function LevelList({ progress, onSelect, onBack }) {
 
 // ─── Main Game ────────────────────────────────────────────────────────────────
 function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
-  const [phase, setPhase]           = useState('BUILD');
-  const [userTable, setUserTable]   = useState({});
-  const [showErrors, setShowErrors] = useState(false);
+  const [phase, setPhase]           = useState('REQUISITOS');
+  const [reqChecks, setReqChecks]   = useState({ isDFA: false, unreachable: false, isTotal: false });
+  const [reqRows,      setReqRows]      = useState(['', '']);
+  const [reqCols,      setReqCols]      = useState(['']);
+  const [reqCells,     setReqCells]     = useState({});
+  const [reqInitRow,   setReqInitRow]   = useState(0);
+  const [reqFinalRows, setReqFinalRows] = useState(new Set());
+  const [reqErrors,    setReqErrors]    = useState(new Set());
+  const [reqResults,   setReqResults]   = useState({ isDFA: null, unreachableList: null, isTotal: null });
+  const [buildCells, setBuildCells]           = useState({});
+  const [buildWrongCells, setBuildWrongCells] = useState(new Set());
   const [profMsg,   setProfMsg]     = useState('');
   const [buildAxisX, setBuildAxisX] = useState(['']);
   const [buildAxisY, setBuildAxisY] = useState(['']);
@@ -616,6 +624,114 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
 
   const { states, alphabet, initialState, finalStates, transitions } = exercise.initial;
 
+  const transTable = useMemo(() => {
+    const map = {};
+    for (const st of states) {
+      map[st] = {};
+      for (const sym of alphabet) {
+        const t = transitions.find(tr => tr.from === st && tr.symbol === sym);
+        map[st][sym] = t?.to ?? null;
+      }
+    }
+    return map;
+  }, [states, alphabet, transitions]);
+
+  const clearReqChecks = () => {
+    setReqChecks({ isDFA: false, unreachable: false, isTotal: false });
+    setReqResults({ isDFA: null, unreachableList: null, isTotal: null });
+    setReqErrors(new Set());
+  };
+
+  const handleVerifyReq = (checkName) => {
+    const rNames = reqRows.map(s => s.trim());
+    const cNames = reqCols.map(s => s.trim());
+
+    if (checkName === 'isDFA') {
+      const names = rNames.filter(Boolean);
+      const result = names.length === new Set(names).size;
+      setReqResults(p => ({ ...p, isDFA: result }));
+      setReqChecks(p => ({ ...p, isDFA: true }));
+
+    } else if (checkName === 'unreachable') {
+      const initName = rNames[reqInitRow] || '';
+      const allStates = [...new Set(rNames.filter(Boolean))];
+      const userTrans = [];
+      rNames.forEach((rn, ri) => {
+        cNames.forEach((cn, ci) => {
+          const dest = (reqCells[`${ri},${ci}`] || '').trim();
+          if (rn && cn && dest) userTrans.push({ from: rn, to: dest });
+        });
+      });
+      const reachable = new Set([initName]);
+      const queue = [initName];
+      while (queue.length) {
+        const s = queue.shift();
+        userTrans.filter(t => t.from === s).forEach(t => {
+          if (!reachable.has(t.to)) { reachable.add(t.to); queue.push(t.to); }
+        });
+      }
+      const unreachable = allStates.filter(s => !reachable.has(s));
+      setReqResults(p => ({ ...p, unreachableList: unreachable }));
+      setReqChecks(p => ({ ...p, unreachable: true }));
+
+    } else if (checkName === 'isTotal') {
+      let total = true;
+      outer: for (let ri = 0; ri < reqRows.length; ri++)
+        for (let ci = 0; ci < reqCols.length; ci++)
+          if (!(reqCells[`${ri},${ci}`] || '').trim()) { total = false; break outer; }
+      setReqResults(p => ({ ...p, isTotal: total }));
+      setReqChecks(p => ({ ...p, isTotal: true }));
+    }
+  };
+
+  const handleAdvanceFromReq = () => {
+    if (!reqAllDone) return;
+    const rNames = reqRows.map(s => s.trim());
+    const cNames = reqCols.map(s => s.trim());
+    const errors = new Set();
+
+    if (reqRows.length !== states.length) {
+      showBanner(`A tabela deve ter ${states.length} linha${states.length !== 1 ? 's' : ''} (uma por estado).`, 'error');
+      return;
+    }
+    if (reqCols.length !== alphabet.length) {
+      showBanner(`A tabela deve ter ${alphabet.length} coluna${alphabet.length !== 1 ? 's' : ''} (uma por símbolo).`, 'error');
+      return;
+    }
+
+    const stateSet = new Set(states);
+    const symSet   = new Set(alphabet);
+    rNames.forEach((rn, ri) => { if (!stateSet.has(rn)) errors.add(`row-${ri}`); });
+    cNames.forEach((cn, ci) => { if (!symSet.has(cn))   errors.add(`col-${ci}`); });
+
+    if (rNames[reqInitRow] !== initialState) errors.add('init');
+    rNames.forEach((rn, ri) => {
+      const userFinal   = reqFinalRows.has(ri);
+      const shouldFinal = finalStates.includes(rn);
+      if (userFinal !== shouldFinal) errors.add(`final-${ri}`);
+    });
+
+    rNames.forEach((rn, ri) => {
+      if (!stateSet.has(rn)) return;
+      cNames.forEach((cn, ci) => {
+        if (!symSet.has(cn)) return;
+        const cellVal = (reqCells[`${ri},${ci}`] || '').trim();
+        const expected = transTable[rn]?.[cn] ?? '';
+        if (cellVal !== (expected ?? '')) errors.add(`${ri},${ci}`);
+      });
+    });
+
+    if (errors.size > 0) {
+      setReqErrors(errors);
+      showBanner('Tabela incorreta — corrija os campos em vermelho.', 'error');
+      return;
+    }
+    setReqErrors(new Set());
+    setPhase('BUILD');
+  };
+
+  const reqAllDone = reqChecks.isDFA && reqChecks.unreachable && reqChecks.isTotal;
+
   const origNodes = useMemo(() => states.map(s => ({
     id: s, label: s,
     isInitial: s === initialState,
@@ -625,22 +741,6 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
   const correctTable = useMemo(
     () => computeDistTable(states, finalStates, transitions, alphabet),
     [states, finalStates, transitions, alphabet]
-  );
-
-  const firstPassTable = useMemo(() => {
-    const table = {};
-    for (let i = 0; i < states.length; i++)
-      for (let j = i + 1; j < states.length; j++) {
-        const [p, q] = [states[i], states[j]];
-        table[pairKey(p, q)] = finalStates.includes(p) !== finalStates.includes(q);
-      }
-    return table;
-  }, [states, finalStates]);
-
-  // Pre-computed Set of valid pair keys — O(1) lookup in handleValidate
-  const firstPassKeySet = useMemo(
-    () => new Set(Object.keys(firstPassTable)),
-    [firstPassTable]
   );
 
   const minimized = useMemo(
@@ -687,65 +787,57 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
       return;
     }
 
-    // Self-pair check: collect all (ri,ci) where yT[ri] === xT[ci]
-    const pairs = new Set();
+    // Self-pair check
+    const selfPairs = new Set();
     for (let ri = 0; ri < yT.length; ri++)
       for (let ci = 0; ci <= ri; ci++)
-        if (yT[ri] === xT[ci]) pairs.add(`${ri},${ci}`);
+        if (yT[ri] === xT[ci]) selfPairs.add(`${ri},${ci}`);
 
-    if (pairs.size > 0) {
-      setBuildSelfPairs(pairs);
+    if (selfPairs.size > 0) {
+      setBuildSelfPairs(selfPairs);
       showBanner(
-        `Autopar: ${[...pairs].map(k => { const [r,c]=k.split(','); return `${yT[r]}↔${xT[c]}`; }).join(', ')} — a tabela triangular só compara estados DIFERENTES.`,
+        `Autopar: ${[...selfPairs].map(k => { const [r,c]=k.split(','); return `${yT[r]}↔${xT[c]}`; }).join(', ')} — a tabela triangular só compara estados DIFERENTES.`,
         'error'
       );
       return;
     }
-
     setBuildSelfPairs(new Set());
     setBuildInvalidInputs(new Set());
-    setPhase('TABLE');
-    showBanner('Eixos corretos! Agora marque os pares Final × não-Final.', 'success');
-  };
 
-  const handleToggle = useCallback(key => {
-    const [a, b] = key.split(',');
-    if (a === b) return; // never mark a state against itself
-    setUserTable(prev => ({ ...prev, [key]: !prev[key] }));
-    setShowErrors(false);
-  }, []);
-
-  const handleValidate = () => {
-    let extras = 0, missing = 0;
-
-    // Single pass: check every valid pair
-    for (const [key, shouldBe] of Object.entries(firstPassTable)) {
-      const is = !!userTable[key];
-      if (shouldBe && !is) missing++;
-      else if (!shouldBe && is) extras++;
+    // Validate internal cells against correctTable
+    const wrong = new Set();
+    for (let ri = 0; ri < yT.length; ri++) {
+      for (let ci = 0; ci <= ri; ci++) {
+        const cellKey = `${ri},${ci}`;
+        if (yT[ri] === xT[ci]) continue; // skip self-pairs
+        const pair = pairKey(yT[ri], xT[ci]);
+        const shouldBe = !!correctTable[pair];
+        const is = !!buildCells[cellKey];
+        if (shouldBe !== is) wrong.add(cellKey);
+      }
     }
 
-    // Catch any marks outside valid pairs (self-pairs qi,qi or phantom keys)
-    for (const [key, marked] of Object.entries(userTable)) {
-      if (marked && !firstPassKeySet.has(key)) extras++;
-    }
-
-    if (extras === 0 && missing === 0) {
-      updateProgress(`afd-min-${exercise.id}`, 3);
-      setPhase('RESULT');
-      showBanner('Correto! 3 estrelas!', 'success');
-    } else {
-      setShowErrors(true);
+    if (wrong.size > 0) {
+      setBuildWrongCells(wrong);
+      const extras  = [...wrong].filter(k => !!buildCells[k]).length;
+      const missing = wrong.size - extras;
       const parts = [];
-      if (extras  > 0) parts.push(`${extras} marcação${extras>1?'ões':''} indevida${extras>1?'s':''} — pares do mesmo tipo (ambos finais ou ambos não-finais) não se distinguem nesta etapa`);
-      if (missing > 0) parts.push(`${missing} par${missing>1?'es':''} Final×não-Final sem marcação`);
+      if (extras  > 0) parts.push(`${extras} marcação${extras>1?'ões':''} indevida${extras>1?'s':''}`);
+      if (missing > 0) parts.push(`${missing} par${missing>1?'es':''} distinguível${missing>1?'is':''} sem marcação`);
       showProf(parts.join(' · '), 8000);
-      showBanner('Tabela incorreta — veja o balão do professor.', 'error');
+      showBanner('Tabela incorreta — veja as células em vermelho.', 'error');
+      return;
     }
+
+    setBuildWrongCells(new Set());
+    updateProgress(`afd-min-${exercise.id}`, 3);
+    setPhase('RESULT');
+    showBanner('Correto! 3 estrelas! ★★★', 'success');
   };
 
   const stars = progress[`afd-min-${exercise.id}`]?.stars || 0;
-  const PHASE_ORDER = ['BUILD', 'TABLE', 'RESULT'];
+  const PHASE_ORDER  = ['REQUISITOS', 'BUILD', 'RESULT'];
+  const PHASE_LABELS = ['1 Requisitos', '2 Construir', '3 Resultado'];
 
   return (
     <div className="workspace-wrapper" style={{ position:'relative' }}>
@@ -761,7 +853,7 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
           <span style={{ fontWeight:'bold', fontSize:13 }}>{exercise.title}</span>
         </div>
         <div style={{ display:'flex', gap:5, marginRight:10 }}>
-          {['1 Construir','2 F×NF','3 Resultado'].map((lbl, i) => {
+          {PHASE_LABELS.map((lbl, i) => {
             const p = PHASE_ORDER[i];
             const done = PHASE_ORDER.indexOf(phase) > i;
             return (
@@ -803,22 +895,193 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
         {/* Right: phase content */}
         <section className="min-right">
 
+          {/* ── REQUISITOS ── */}
+          {phase === 'REQUISITOS' && (
+            <div className="min-panel">
+              <div className="section-header" style={{ fontSize:11 }}>Verificar Requisitos</div>
+              <p style={{ fontSize:11, color:'#555', margin:0 }}>
+                Monte a tabela de transições: ajuste o tamanho (+/−), preencha estados, símbolos e transições, marque o inicial (→) e os finais (*). Depois verifique cada requisito.
+              </p>
+
+              {/* Size controls */}
+              <div style={{ display:'flex', gap:12, fontSize:11, flexWrap:'wrap' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                  <span style={{ fontWeight:900 }}>Linhas:</span>
+                  <button onClick={() => { setReqRows(p => [...p, '']); clearReqChecks(); setReqCells({}); }}
+                    style={{ width:22, height:22, fontWeight:900, fontSize:14, lineHeight:1,
+                      border:'2px solid #000', borderRadius:4, background:'#bbf7d0', cursor:'pointer' }}>+</button>
+                  <button onClick={() => { if (reqRows.length > 1) { setReqRows(p => p.slice(0,-1)); setReqInitRow(i => Math.min(i, reqRows.length-2)); setReqFinalRows(prev => new Set([...prev].filter(i => i < reqRows.length-1))); clearReqChecks(); setReqCells({}); } }}
+                    disabled={reqRows.length <= 1}
+                    style={{ width:22, height:22, fontWeight:900, fontSize:16, lineHeight:1,
+                      border:'2px solid #000', borderRadius:4,
+                      background: reqRows.length <= 1 ? '#eee' : '#fca5a5',
+                      cursor: reqRows.length <= 1 ? 'not-allowed' : 'pointer' }}>−</button>
+                  <span style={{ fontWeight:700 }}>{reqRows.length}</span>
+                </div>
+                <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                  <span style={{ fontWeight:900 }}>Colunas:</span>
+                  <button onClick={() => { setReqCols(p => [...p, '']); clearReqChecks(); setReqCells({}); }}
+                    style={{ width:22, height:22, fontWeight:900, fontSize:14, lineHeight:1,
+                      border:'2px solid #000', borderRadius:4, background:'#bbf7d0', cursor:'pointer' }}>+</button>
+                  <button onClick={() => { if (reqCols.length > 1) { setReqCols(p => p.slice(0,-1)); clearReqChecks(); setReqCells({}); } }}
+                    disabled={reqCols.length <= 1}
+                    style={{ width:22, height:22, fontWeight:900, fontSize:16, lineHeight:1,
+                      border:'2px solid #000', borderRadius:4,
+                      background: reqCols.length <= 1 ? '#eee' : '#fca5a5',
+                      cursor: reqCols.length <= 1 ? 'not-allowed' : 'pointer' }}>−</button>
+                  <span style={{ fontWeight:700 }}>{reqCols.length}</span>
+                </div>
+              </div>
+
+              {/* Editable transition table */}
+              <div className="min-table-scroll">
+                <table className="req-trans-table">
+                  <thead>
+                    <tr>
+                      <th className="req-th req-th-delta">δ</th>
+                      {reqCols.map((sym, ci) => (
+                        <th key={ci}
+                          className={`req-th${reqErrors.has(`col-${ci}`) ? ' req-err' : ''}`}
+                          style={{ padding:0, minWidth:42 }}>
+                          <input value={sym}
+                            onChange={e => { const v=e.target.value; setReqCols(p => { const n=[...p]; n[ci]=v; return n; }); clearReqChecks(); }}
+                            style={{ width:38, textAlign:'center', border:'none', background:'transparent',
+                              fontFamily:"'Comic Sans MS','Comic Neue',cursive,sans-serif",
+                              fontWeight:900, fontSize:11, outline:'none',
+                              color: reqErrors.has(`col-${ci}`) ? '#dc2626' : undefined }}
+                            placeholder="?" maxLength={2} />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reqRows.map((rn, ri) => {
+                      const isInit   = reqInitRow === ri;
+                      const isFinal  = reqFinalRows.has(ri);
+                      const rowErr   = reqErrors.has(`row-${ri}`) || reqErrors.has('init') && isInit;
+                      const finalErr = reqErrors.has(`final-${ri}`);
+                      return (
+                        <tr key={ri}>
+                          <th className={`req-th req-state-cell${isInit ? ' req-initial' : (isFinal ? ' req-final' : '')}${rowErr || finalErr ? ' req-err' : ''}`}
+                            style={{ padding:'2px 4px', minWidth:96 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:2 }}>
+                              <button onClick={() => setReqInitRow(ri)} title="Marcar como estado inicial"
+                                className={`req-marker-btn${isInit ? ' active-init' : ''}`}>→</button>
+                              <button onClick={() => setReqFinalRows(prev => { const n=new Set(prev); n.has(ri)?n.delete(ri):n.add(ri); return n; })} title="Marcar como estado final"
+                                className={`req-marker-btn${isFinal ? ' active-final' : ''}`}>*</button>
+                              <input value={rn}
+                                onChange={e => { const v=e.target.value; setReqRows(p => { const n=[...p]; n[ri]=v; return n; }); clearReqChecks(); }}
+                                style={{ width:30, textAlign:'center', border:'none', background:'transparent',
+                                  fontFamily:"'Comic Sans MS','Comic Neue',cursive,sans-serif",
+                                  fontWeight:900, fontSize:11, outline:'none',
+                                  color: rowErr ? '#dc2626' : undefined }}
+                                placeholder="?" maxLength={3} />
+                            </div>
+                          </th>
+                          {reqCols.map((cn, ci) => {
+                            const cellErr = reqErrors.has(`${ri},${ci}`);
+                            return (
+                              <td key={ci}
+                                className={`req-td${cellErr ? ' req-missing' : ''}`}
+                                style={{ padding:0 }}>
+                                <input value={reqCells[`${ri},${ci}`] || ''}
+                                  onChange={e => { const v=e.target.value; setReqCells(p => ({ ...p, [`${ri},${ci}`]: v })); clearReqChecks(); }}
+                                  style={{ width:38, textAlign:'center', border:'none', background:'transparent',
+                                    fontFamily:"'Comic Sans MS','Comic Neue',cursive,sans-serif",
+                                    fontWeight:700, fontSize:11, outline:'none',
+                                    color: cellErr ? '#dc2626' : undefined }}
+                                  placeholder="?" maxLength={3} />
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Check 1 — É AFD? */}
+              <div className="req-check">
+                <div className="req-check-header">
+                  <span className="req-check-icon">{reqChecks.isDFA ? (reqResults.isDFA ? '✅' : '❌') : '🔲'}</span>
+                  <span className="req-check-label">1. É um AFD (determinístico)?</span>
+                  {!reqChecks.isDFA && (
+                    <button className="req-verify-btn" onClick={() => handleVerifyReq('isDFA')}>Verificar</button>
+                  )}
+                </div>
+                {reqChecks.isDFA && (
+                  <div className={`req-result ${reqResults.isDFA ? 'ok' : 'err'}`}>
+                    {reqResults.isDFA
+                      ? '✓ Sim — cada par (estado, símbolo) tem exatamente uma transição. É determinístico.'
+                      : '✗ Não — há estados com nomes repetidos (múltiplas linhas para o mesmo estado). Isso caracteriza não-determinismo.'}
+                  </div>
+                )}
+              </div>
+
+              {/* Check 2 — Estados inacessíveis? */}
+              <div className="req-check">
+                <div className="req-check-header">
+                  <span className="req-check-icon">{reqChecks.unreachable ? (reqResults.unreachableList?.length === 0 ? '✅' : '⚠️') : '🔲'}</span>
+                  <span className="req-check-label">2. Estados inacessíveis?</span>
+                  {!reqChecks.unreachable && (
+                    <button className="req-verify-btn" onClick={() => handleVerifyReq('unreachable')}>Verificar</button>
+                  )}
+                </div>
+                {reqChecks.unreachable && (
+                  <div className={`req-result ${reqResults.unreachableList?.length === 0 ? 'ok' : 'warn'}`}>
+                    {reqResults.unreachableList?.length === 0
+                      ? `✓ Nenhum — todos os estados são acessíveis a partir do estado marcado com →.`
+                      : `⚠ Inacessíveis: {${reqResults.unreachableList?.join(', ')}} — remova-os antes de minimizar.`}
+                  </div>
+                )}
+              </div>
+
+              {/* Check 3 — Função total? */}
+              <div className="req-check">
+                <div className="req-check-header">
+                  <span className="req-check-icon">{reqChecks.isTotal ? (reqResults.isTotal ? '✅' : '❌') : '🔲'}</span>
+                  <span className="req-check-label">3. Função transição total?</span>
+                  {!reqChecks.isTotal && (
+                    <button className="req-verify-btn" onClick={() => handleVerifyReq('isTotal')}>Verificar</button>
+                  )}
+                </div>
+                {reqChecks.isTotal && (
+                  <div className={`req-result ${reqResults.isTotal ? 'ok' : 'err'}`}>
+                    {reqResults.isTotal
+                      ? '✓ Sim — cada estado tem transição definida para cada símbolo. A função δ é total.'
+                      : '✗ Incompleta — há células vazias na tabela. A função δ deve ser total para minimizar.'}
+                  </div>
+                )}
+              </div>
+
+              <button className="add-test-btn"
+                style={{ alignSelf:'stretch', padding:'10px', fontSize:13, fontWeight:'bold', marginTop:4,
+                  background: reqAllDone ? '#4ade80' : '#d1d5db',
+                  cursor: reqAllDone ? 'pointer' : 'not-allowed' }}
+                onClick={handleAdvanceFromReq}
+                disabled={!reqAllDone}>
+                Avançar → Construir Tabela
+              </button>
+            </div>
+          )}
+
           {/* ── BUILD ── */}
           {phase === 'BUILD' && (
             <div className="min-panel">
               <div className="section-header" style={{ fontSize:11 }}>Construir Tabela</div>
               <p style={{ fontSize:11, color:'#555', marginBottom:0 }}>
-                Monte a tabela triangular: defina quantas linhas (Y) e colunas (X) precisa, depois digite os estados.
+                Monte a tabela triangular: defina o tamanho (+ / −), preencha os eixos com os estados e clique nas células para marcar <b>×</b> os pares distinguíveis. Depois clique em <b>Verificar</b>.
               </p>
 
               {/* Controles de tamanho */}
               <div style={{ display:'flex', gap:12, fontSize:11, flexWrap:'wrap' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:4 }}>
                   <span style={{ fontWeight:900 }}>Linhas (Y):</span>
-                  <button onClick={() => { setBuildAxisY(p => [...p, '']); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); }}
+                  <button onClick={() => { setBuildAxisY(p => [...p, '']); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); setBuildCells({}); setBuildWrongCells(new Set()); }}
                     style={{ width:22, height:22, fontWeight:900, fontSize:14, lineHeight:1,
                       border:'2px solid #000', borderRadius:4, background:'#bbf7d0', cursor:'pointer' }}>+</button>
-                  <button onClick={() => { setBuildAxisY(p => p.length > 1 ? p.slice(0, -1) : p); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); }}
+                  <button onClick={() => { setBuildAxisY(p => p.length > 1 ? p.slice(0, -1) : p); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); setBuildCells({}); setBuildWrongCells(new Set()); }}
                     disabled={buildAxisY.length <= 1}
                     style={{ width:22, height:22, fontWeight:900, fontSize:16, lineHeight:1,
                       border:'2px solid #000', borderRadius:4,
@@ -828,10 +1091,10 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
                 </div>
                 <div style={{ display:'flex', alignItems:'center', gap:4 }}>
                   <span style={{ fontWeight:900 }}>Colunas (X):</span>
-                  <button onClick={() => { setBuildAxisX(p => [...p, '']); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); }}
+                  <button onClick={() => { setBuildAxisX(p => [...p, '']); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); setBuildCells({}); setBuildWrongCells(new Set()); }}
                     style={{ width:22, height:22, fontWeight:900, fontSize:14, lineHeight:1,
                       border:'2px solid #000', borderRadius:4, background:'#bbf7d0', cursor:'pointer' }}>+</button>
-                  <button onClick={() => { setBuildAxisX(p => p.length > 1 ? p.slice(0, -1) : p); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); }}
+                  <button onClick={() => { setBuildAxisX(p => p.length > 1 ? p.slice(0, -1) : p); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); setBuildCells({}); setBuildWrongCells(new Set()); }}
                     disabled={buildAxisX.length <= 1}
                     style={{ width:22, height:22, fontWeight:900, fontSize:16, lineHeight:1,
                       border:'2px solid #000', borderRadius:4,
@@ -859,6 +1122,8 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
                               setBuildAxisY(prev => { const n=[...prev]; n[ri]=v; return n; });
                               setBuildSelfPairs(new Set());
                               setBuildInvalidInputs(new Set());
+                              setBuildCells({});
+                              setBuildWrongCells(new Set());
                             }}
                             style={{ width:34, textAlign:'center', border:'none', background:'transparent',
                               fontFamily:"'Comic Sans MS','Comic Neue',cursive,sans-serif",
@@ -870,17 +1135,25 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
                           />
                         </th>
                         {Array(ri + 1).fill(0).map((_, ci) => {
-                          const isSelf = buildSelfPairs.has(`${ri},${ci}`);
+                          const cellKey = `${ri},${ci}`;
+                          const isSelf    = buildSelfPairs.has(cellKey);
+                          const isMarked  = !!buildCells[cellKey];
+                          const isWrong   = buildWrongCells.has(cellKey);
                           return (
-                            <td key={ci} className="min-cell"
+                            <td key={ci}
+                              className={`min-cell${isMarked ? ' marked' : ''}${isWrong ? ' wrong' : ''}`}
                               style={{
-                                background: isSelf ? '#fca5a5' : '#f1f5f9',
-                                cursor: 'default',
-                                color: isSelf ? '#dc2626' : '#d1d5db',
+                                background: isSelf ? '#fca5a5' : undefined,
+                                cursor: isSelf ? 'default' : 'pointer',
+                                color: isSelf ? '#dc2626' : undefined,
                                 border: isSelf ? '2.5px solid #dc2626' : undefined,
-                                fontWeight: isSelf ? 900 : undefined,
                               }}
-                            >{isSelf ? '×' : ''}</td>
+                              onClick={() => {
+                                if (isSelf) return;
+                                setBuildCells(prev => ({ ...prev, [cellKey]: !prev[cellKey] }));
+                                setBuildWrongCells(new Set());
+                              }}
+                            >{isSelf || isMarked ? '×' : ''}</td>
                           );
                         })}
                       </tr>
@@ -902,6 +1175,8 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
                               setBuildAxisX(prev => { const n=[...prev]; n[i]=v; return n; });
                               setBuildSelfPairs(new Set());
                               setBuildInvalidInputs(new Set());
+                              setBuildCells({});
+                              setBuildWrongCells(new Set());
                             }}
                             style={{ width:34, textAlign:'center', border:'none', background:'transparent',
                               fontFamily:"'Comic Sans MS','Comic Neue',cursive,sans-serif",
@@ -926,34 +1201,7 @@ function MinGame({ exercise, progress, onBack, updateProgress, showToast }) {
                 onClick={handleValidateBuild}
                 disabled={!buildAllFilled}
               >
-                Confirmar Eixos →
-              </button>
-            </div>
-          )}
-
-          {/* ── TABLE ── */}
-          {phase === 'TABLE' && (
-            <div className="min-panel">
-              <div className="section-header" style={{ fontSize:11 }}>
-                Final Vs não Final
-              </div>
-              <p style={{ fontSize:11, color:'#444', marginBottom:4 }}>
-                Marque <b>×</b> nos pares onde um estado é final e o outro não é. Deixe em branco os pares do mesmo tipo.
-              </p>
-
-              <TriangularTable
-                states={states}
-                userTable={userTable}
-                onToggle={handleToggle}
-                correctTable={firstPassTable}
-                showErrors={showErrors}
-              />
-
-              <button className="add-test-btn"
-                style={{ alignSelf:'stretch', padding:'10px', fontSize:13,
-                  fontWeight:'bold', background:'#4ade80', marginTop:4 }}
-                onClick={handleValidate}>
-                Validar Tabela ✓
+                Verificar Tabela ✓
               </button>
             </div>
           )}

@@ -2,9 +2,10 @@
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
 import { GAME_LEVELS } from '../levels';
+import { EXERCISES } from '../modules/afd/AFDMinimizer';
 
-const P1_MAX_STARS = GAME_LEVELS.reduce((a, l) => a + (l.impossible ? 1 : 3), 0);
-const MINIMIZER_MAX_STARS = 14 * 3;
+const P1_MAX_STARS = GAME_LEVELS.reduce((a, l) => a + (l.impossible || l.wordOnly ? 1 : 3), 0);
+const MINIMIZER_MAX_STARS = EXERCISES.reduce((a, e) => a + (e.impossible ? 1 : 3), 0);
 
 export default function MainMenu({ onStart, progress }) {
   const totalStars = Object.values(progress).reduce((sum, p) => sum + (p.stars || 0), 0);

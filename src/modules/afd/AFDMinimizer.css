@@ -223,3 +223,139 @@
   font-weight: 900;
   box-shadow: 2px 2px 0 #000;
 }
+
+/* ── Requisitos ── */
+.req-check {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 2px 2px 0 #000;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.req-check-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.req-check-icon { font-size: 14px; flex-shrink: 0; }
+
+.req-check-label {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 900;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+
+.req-verify-btn {
+  background: #fde047;
+  border: 2px solid #000;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #000;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.req-verify-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #000;
+}
+
+.req-result {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1.5px solid;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  line-height: 1.4;
+}
+.req-result.ok   { background: #bbf7d0; color: #14532d; border-color: #16a34a; }
+.req-result.warn { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+.req-result.err  { background: #fee2e2; color: #7f1d1d; border-color: #dc2626; }
+
+/* Transition table */
+.req-trans-table {
+  border-collapse: collapse;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-size: 11px;
+}
+
+.req-th {
+  background: #f3f4f6;
+  border: 1.5px solid #bbb;
+  padding: 2px 6px;
+  text-align: center;
+  font-weight: 900;
+  min-width: 34px;
+  height: 26px;
+  white-space: nowrap;
+}
+
+.req-th-delta {
+  background: #e5e7eb;
+  font-style: italic;
+  color: #374151;
+}
+
+.req-state-cell {
+  background: #fef9c3 !important;
+  white-space: nowrap;
+}
+.req-state-cell.req-initial { background: #bae6fd !important; }
+.req-state-cell.req-final   { background: #bbf7d0 !important; }
+
+.req-td {
+  border: 1.5px solid #bbb;
+  padding: 2px 6px;
+  text-align: center;
+  font-weight: 700;
+  min-width: 36px;
+  height: 26px;
+  background: #fff;
+}
+
+.req-missing {
+  background: #fee2e2 !important;
+  color: #dc2626;
+  font-weight: 900;
+}
+
+.req-ok { background: #f0fdf4; }
+
+/* Marker buttons (→ initial, * final) inside row headers */
+.req-marker-btn {
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 0;
+  border: 1.5px solid #aaa;
+  border-radius: 3px;
+  background: #f3f4f6;
+  color: #555;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  transition: background 0.1s, border-color 0.1s;
+}
+.req-marker-btn:hover { background: #e5e7eb; }
+.req-marker-btn.active-init  { background: #bae6fd; border-color: #0284c7; color: #0369a1; }
+.req-marker-btn.active-final { background: #bbf7d0; border-color: #16a34a; color: #15803d; }
+
+/* Error highlight for header cells */
+.req-err {
+  background: #fee2e2 !important;
+  color: #dc2626;
+  border-color: #dc2626 !important;
+}

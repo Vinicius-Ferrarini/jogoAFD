@@ -470,7 +470,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     if (isShortest) {
       if (!isDrawingUnlocked) {
         updateProgress(currentLevel.id, 1);
-        if (currentLevel.impossible) {
+        if (currentLevel.impossible || currentLevel.wordOnly) {
           setShowImpossibleScreen(true);
         } else {
         setIsDrawingUnlocked(true);
@@ -1095,7 +1095,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   // TELA MENU (FASES)
   // ══════════════════════════════════════════════════════════════
   if (tela === 'MENU') {
-    const maxStars    = GAME_LEVELS.reduce((a, l) => a + (l.impossible ? 1 : 3), 0);
+    const maxStars    = GAME_LEVELS.reduce((a, l) => a + (l.impossible || l.wordOnly ? 1 : 3), 0);
     const totalStars  = GAME_LEVELS.reduce((a, l) => a + (progress[l.id]?.stars || 0), 0);
     const perPage     = 20;
     const totalPages  = Math.ceil(GAME_LEVELS.length / perPage);
@@ -1126,7 +1126,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                   background: bg }}>
                 <span>{lvl.label}</span>
-                <SvgStars count={progress[lvl.id]?.stars || 0} size={14} max={lvl.impossible ? 1 : 3} />
+                <SvgStars count={progress[lvl.id]?.stars || 0} size={14} max={lvl.impossible || lvl.wordOnly ? 1 : 3} />
               </button>
             );
           })}
@@ -1161,7 +1161,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       <header className="game-header">
         <div className="header-left">
           <button className="sidebar-toggle" onClick={toggleSidebar} title="Abrir Descrição Formal">☰</button>
-          <button className="back-btn" onClick={() => onBack?.()}>⬅ Voltar</button>
+          <button className="back-btn" onClick={() => setTela('MENU')}>⬅ Voltar</button>
         </div>
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
           <span className="mission-label">Objetivo</span>
@@ -1169,7 +1169,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         </div>
         <div style={{ width: 150, textAlign: 'right' }}>
           <span className="mission-label" style={{ background: diffBg }}>{currentLevel?.label}</span>
-          <div style={{ marginTop: 4 }}><SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} max={currentLevel?.impossible ? 1 : 3} /></div>
+          <div style={{ marginTop: 4 }}><SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} max={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3} /></div>
         </div>
       </header>
 
@@ -1596,7 +1596,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                 <img src={imgBalaoFala} style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:1 }} />
                 <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center',
                   padding:'20px 20px 52px', boxSizing:'border-box', color:'#000', fontSize:15, fontWeight:900, textAlign:'center', zIndex:2 }}>
-                  Este exercício é impossível de resolver com AFD! Com AP nós vamos resolvê-lo! 🚫🔄
+                  {currentLevel?.wordOnly
+                    ? (currentLevel?.successMsg || 'Muito bem! Fase concluída.')
+                    : 'Este exercício é impossível de resolver com AFD! Com AP nós vamos resolvê-lo! 🚫🔄'}
                 </div>
               </div>
             </div>
