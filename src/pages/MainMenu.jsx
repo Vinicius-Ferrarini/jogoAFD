@@ -1,10 +1,14 @@
 // MainMenu.jsx – Tela inicial com branding TuringLab
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
+import { GAME_LEVELS } from '../levels';
+
+const P1_MAX_STARS = GAME_LEVELS.reduce((a, l) => a + (l.impossible ? 1 : 3), 0);
+const MINIMIZER_MAX_STARS = 14 * 3;
 
 export default function MainMenu({ onStart, progress }) {
   const totalStars = Object.values(progress).reduce((sum, p) => sum + (p.stars || 0), 0);
-  const maxStars = 3 * 5; // 5 exercícios × 3 estrelas (inicialmente)
+  const maxStars = P1_MAX_STARS + MINIMIZER_MAX_STARS;
 
   return (
     <div className="main-menu-wrapper">

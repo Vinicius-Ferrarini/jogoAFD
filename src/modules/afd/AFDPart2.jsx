@@ -89,7 +89,7 @@ function normalize(s) {
     .replace(/[≤]/g, '<=');
   // Absorb prefix literal: aa^n → a^n; adjust constraint n>=0 → n>0
   const absorbed = new Set();
-  r = r.replace(/([a-z])\1\^([a-z]+)/g, (_, ch, v) => { absorbed.add(v); return `${ch}^${v}`; });
+  r = r.replace(/([a-z])\1\^([a-z]+?)(?=[^a-z]|[a-z]\^|$)/g, (_, ch, v) => { absorbed.add(v); return `${ch}^${v}`; });
   for (const v of absorbed)
     r = r.replace(new RegExp(`([,|])${v}>=0`, 'g'), (_, sep) => `${sep}${v}>0`);
   // Universal: n>=1 → n>0 (equivalent for integer-valued exponents)
