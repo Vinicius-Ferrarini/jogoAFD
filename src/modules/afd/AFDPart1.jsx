@@ -1151,6 +1151,8 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       .flatMap(w => w.word.split(''))
   );
 
+  const diffBg = DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff';
+
   return (
     <div className="workspace-wrapper">
       {toastData.show && <div className={`toast-notification ${toastData.type}`}>{toastData.message}</div>}
@@ -1166,7 +1168,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           <div className="mission-formula">{currentLevel?.formula || ''}</div>
         </div>
         <div style={{ width: 150, textAlign: 'right' }}>
-          <span className="mission-label">{currentLevel?.label}</span>
+          <span className="mission-label" style={{ background: diffBg }}>{currentLevel?.label}</span>
           <div style={{ marginTop: 4 }}><SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} max={currentLevel?.impossible ? 1 : 3} /></div>
         </div>
       </header>

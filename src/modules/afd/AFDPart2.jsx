@@ -130,17 +130,17 @@ function normalize(s) {
 // ── Grupos de inserção rápida do quadro de notações ──────────────────────────
 const INSERT_GROUPS = [
   { chips: [
-    { text: '∅',    display: '∅',    title: 'Conjunto vazio' },
-    { text: 'w',    display: 'w',    title: 'Palavra w' },
-    { text: '|w|',  display: '|w|',  title: 'Comprimento de w' },
+    { text: 'λ',    display: 'λ',    title: 'Palavra vazia (λ)' },
     { text: '∈',    display: '∈',    title: 'Pertence (∈)' },
+    { text: '|w|a', display: '|w|a', title: 'Quantidade de "a" em w' },
   ]},
   { label: 'Expoentes', chips: [
     { text: '^n',   display: '^n',   title: 'Expoente n' },
     { text: '^m',   display: '^m',   title: 'Expoente m' },
-    { text: '^2',   display: '^2',   title: 'Ao quadrado' },
-    { text: '≥',    display: '≥',    title: 'Maior ou igual (≥)' },
-    { text: '>',    display: '>',    title: 'Maior que (>)' },
+  ]},
+  { label: 'Comparadores', chips: [
+    { text: '>',    display: '>',    title: 'Maior que' },
+    { text: '>=',   display: '>=',   title: 'Maior ou igual' },
   ]},
   { label: 'Estrutura', chips: [
     { text: '{ ',   display: '{',    title: 'Abre chave' },
@@ -148,7 +148,6 @@ const INSERT_GROUPS = [
     { text: ' }',   display: '}',    title: 'Fecha chave' },
     { text: ', ',   display: ',',    title: 'Vírgula' },
     { text: ' e ',  display: 'e',    title: '"e" lógico' },
-    { text: 'λ',    display: 'λ',    title: 'Palavra vazia (λ)' },
   ]},
 ];
 
@@ -525,7 +524,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   const speechRef      = useRef(null);
   const answerInputRef = useRef(null);
   const savedCursor    = useRef(null);
-  const [showCheatsheet, setShowCheatsheet] = useState(true);
+  const [showCheatsheet, setShowCheatsheet] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
 
   // ── Word simulation ────────────────────────────────────────────────────────
@@ -742,24 +741,36 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   };
 
   const cheatSections = [
-    {
-      label: 'Expoentes',
-      color: 'blue',
-      items: [
-        { code: 'a^n',              desc: '"a" repetido n vezes', underline: true },
-        { code: 'n ≥ 0  /  n > 0', desc: 'zero-ou-mais / um-ou-mais' },
+    { type: 'plain',  label: '_vazio',              color: 'yellow', items: [
+        { code: 'λ', desc: 'Vazio' },
       ],
     },
-    {
-      label: 'Prontos',
-      color: 'orange',
-      items: [
-        { code: '{ a^n | n > 0 }',                    desc: 'a, aa, aaa…', underline: true },
-        { code: '{ a^n b^m | n,m ≥ 0 }',             desc: 'λ, a, ab, aabb…' },
-        { code: '{ a^n | n > 0 e n é ímpar }',        desc: 'duas condições com e' },
+    { type: 'inline', label: 'Expoentes',            color: 'blue',   items: [
+        { code: 'a^n' },
+      ],
+    },
+    { type: 'inline', label: 'Maior/maior igual',    color: 'pink',   items: [
+        { code: '>' },
+        { code: '>=' },
+      ],
+    },
+    { type: 'inline', label: "Quantidade de 'a'",    color: 'orange', items: [
+        { code: '|w|a' },
+      ],
+    },
+    { type: 'inline', label: 'Pertence',             color: 'white',  items: [
+        { code: '∈' },
+      ],
+    },
+    {                 label: 'Exemplo de linguagem', color: 'orange', items: [
+        { code: '{a^n | n >= 0}' },
+        { code: '{a^n b c^m | n > 0 e n é ímpar}' },
+        { code: '{a^n b^m w ∈ {a,b}* | n >= 0, m > 0}' },
       ],
     },
   ];
+
+  const diffBg = DIFF_COLOR[LEVEL_DIFFICULTY[level?.id]] ?? '#fff';
 
   return (
     <div className="workspace-wrapper">
@@ -926,25 +937,31 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
             </button>
             {showCheatsheet && (
               <div className="p2-blackboard">
-                <div className="p2-bb-title">✦ Clique para inserir na resposta</div>
-                <div className="p2-bb-insert-bar">
-                  {INSERT_GROUPS.map((group, gi) => (
-                    <div key={gi} className="p2-bb-group">
-                      {group.label && <span className="p2-bb-group-label">{group.label}:</span>}
-                      {group.chips.map((chip, ci) => (
-                        <button
-                          key={ci}
-                          className={`p2-bb-chip${chip.wide ? ' wide' : ''}`}
-                          title={chip.title}
-                          onClick={() => { insertAtCursor(chip.text); navigator.clipboard?.writeText(chip.text); }}
-                        >
-                          {chip.display}
-                        </button>
-                      ))}
-                    </div>
-                  ))}
+                <div className="p2-bb-section-label p2-chalk-white">Sintaxe</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr', alignItems: 'baseline', rowGap: 4, columnGap: 10 }}>
+                  {cheatSections.filter(s => s.type === 'plain' || s.type === 'inline').flatMap(section => {
+                    const labelText = section.type === 'plain'
+                      ? (section.items[0]?.desc || section.label)
+                      : section.label;
+                    return [
+                      <span key={`lbl-${section.label}`} className={`p2-chalk-${section.color} p2-chalk-dim`} style={{ textAlign: 'left', fontFamily: 'Caveat,"Comic Sans MS",cursive', fontSize: 13, fontWeight: 700 }}>
+                        {labelText}:
+                      </span>,
+                      <div key={`val-${section.label}`} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {section.items.map((item, i) => {
+                          const key = `${section.label}-${i}`;
+                          return (
+                            <code key={key} className={`p2-chalk-${section.color}`} style={{ cursor: 'pointer' }}
+                              onClick={(e) => { e.stopPropagation(); copyRow(item.code, key); }} title="Clique para copiar">
+                              {item.code}{copiedIdx === key ? ' ✓' : ''}
+                            </code>
+                          );
+                        })}
+                      </div>,
+                    ];
+                  })}
                 </div>
-                {cheatSections.map((section) => (
+                {cheatSections.filter(s => !s.type).map(section => (
                   <div key={section.label} className="p2-bb-section">
                     <div className={`p2-bb-section-label p2-chalk-${section.color}`}>
                       {section.label}
@@ -952,18 +969,8 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
                     {section.items.map((item, i) => {
                       const key = `${section.label}-${i}`;
                       return (
-                        <div
-                          key={key}
-                          className="p2-bb-row"
-                          onClick={() => copyRow(item.code, key)}
-                          title="Clique para copiar"
-                        >
-                          <code className={`p2-chalk-${section.color}`}>
-                            {item.code}
-                          </code>
-                          <span className={`p2-chalk-${section.color} p2-chalk-dim`}>
-                            {item.desc}
-                          </span>
+                        <div key={key} className="p2-bb-row" onClick={() => copyRow(item.code, key)} title="Clique para copiar">
+                          <code className={`p2-chalk-${section.color}`}>{item.code}</code>
                           <span className="p2-bb-copy">{copiedIdx === key ? '✓' : ''}</span>
                         </div>
                       );
