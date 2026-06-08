@@ -659,11 +659,12 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   const [earnedStars, setEarnedStars] = useState(0);
   const [profMsg,     setProfMsg]     = useState('');
   const speechRef      = useRef(null);
+  const [errorAlert,   setErrorAlert]  = useState('');
+  const errorAlertRef  = useRef(null);
   const answerInputRef = useRef(null);
   const savedCursor    = useRef(null);
   const [showCheatsheet, setShowCheatsheet] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
-  const [feedbackMsg, setFeedbackMsg] = useState('');
 
   // ── Word simulation ────────────────────────────────────────────────────────
   const [simWords,     setSimWords]     = useState([]);
@@ -822,7 +823,8 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
     const n = attempts + 1;
     setAttempts(n);
 
-    const correct = normalize(answer) === normalize(level.formula);
+    const nu = normalize(answer);
+    const correct = [level.formula, ...(level.aliases || [])].some(f => normalize(f) === nu);
     if (correct) {
       const earned = n === 1 ? 3 : n === 2 ? 2 : 1;
       setEarnedStars(earned);
@@ -835,18 +837,19 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
         : [];
       const fb = generateFeedback(answer, level.formula, graph?.nodes, graphAlphabet)
         || (level.hint || 'Siga o caminho do autômato estado por estado!');
-      setFeedbackMsg(fb);
       setResult('wrong');
       if (n >= 2) setShowExpected(true);
-      showToast(fb, 'error');
-      showProf(fb);
+      setErrorAlert(fb);
+      if (errorAlertRef.current) clearTimeout(errorAlertRef.current);
+      errorAlertRef.current = setTimeout(() => setErrorAlert(''), 4000);
     }
   }, [answer, attempts, level, updateProgress, showToast, showProf]);
 
   const handleReset = () => {
     setAnswer(''); setAttempts(0); setResult(null);
     setShowExpected(false); setShowVictory(false); setEarnedStars(0);
-    setFeedbackMsg('');
+    setErrorAlert('');
+    if (errorAlertRef.current) clearTimeout(errorAlertRef.current);
   };
 
   const copyRow = (text, key) => {
@@ -1130,7 +1133,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
         </section>
 
         {/* Right panel */}
-        <aside className="test-panel">
+        <aside className="test-panel p2-test-panel">
           {/* Word tester */}
           <div className="section-header" style={{ fontSize: 10, marginTop: 2 }}>Testar Palavra</div>
           <div className="test-input-area">
@@ -1166,7 +1169,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
               className={`word-input p2-answer-textarea ${result === 'correct' ? 'p2-ok' : result === 'wrong' ? 'p2-err' : ''}`}
               placeholder="Ex: { a^n | n > 0 }"
               value={answer}
-              onChange={e => { setAnswer(e.target.value); setResult(null); setFeedbackMsg(''); }}
+              onChange={e => { setAnswer(e.target.value); setResult(null); }}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (result !== 'correct') handleCheck(); } }}
               onSelect={e => { savedCursor.current = { start: e.target.selectionStart, end: e.target.selectionEnd }; }}
               onBlur={e => { savedCursor.current = { start: e.target.selectionStart, end: e.target.selectionEnd }; }}
@@ -1178,28 +1181,6 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
             />
           </div>
 
-          {/* Feedback */}
-          {result === 'wrong' && (
-            <div style={{
-              background: '#fef3c7',
-              border: '2.5px solid #f59e0b',
-              borderRadius: 6,
-              padding: '7px 10px',
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#92400e',
-              marginTop: 4,
-              lineHeight: 1.45,
-              boxShadow: '2px 2px 0 #000',
-            }}>
-              💡 {feedbackMsg || 'Não está certo — tente novamente!'}
-              {attempts >= 2 && (
-                <div style={{ marginTop: 3, fontSize: 11, color: '#dc2626', fontWeight: 900 }}>
-                  ↓ Resposta liberada abaixo
-                </div>
-              )}
-            </div>
-          )}
 
           {showExpected && result !== 'correct' && (
             <div className="p2-expected">
@@ -1253,6 +1234,11 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
             onHighlightNode={(nid, type) => setSimHighlight({ nodeId: nid, type })}
           />
         </footer>
+      )}
+
+      {/* Error alert — topo centralizado */}
+      {errorAlert && (
+        <div className="p2-error-alert">{errorAlert}</div>
       )}
 
       {/* Professor HUD */}
