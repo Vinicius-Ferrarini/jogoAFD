@@ -863,6 +863,7 @@ body { color: var(--text-main); }
 .draw-color-btn.active { outline: 3px solid #000; outline-offset: 2px; transform: scale(1.1); }
 .draw-tool-btn {
   background: #fff;
+  color: #000;
   border: 2.5px solid #000;
   border-radius: 7px;
   width: 28px;

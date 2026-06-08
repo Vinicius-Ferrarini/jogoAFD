@@ -677,7 +677,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   const [drawings, setDrawings]           = useState([]);
   const [drawingStack, setDrawingStack]   = useState([]);
   const [currentStroke, setCurrentStroke] = useState(null);
-  const [drawColor, setDrawColor]         = useState('#1a1a1a');
+  const [drawColor, setDrawColor]         = useState('#FF0000');
   const [drawSize, setDrawSize]           = useState(3);
   const [isErasing, setIsErasing]         = useState(false);
   const [drawTool, setDrawTool]           = useState('pencil');
@@ -729,9 +729,10 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
     if (!svg) return { x: 0, y: 0 };
     try {
       const pt = svg.createSVGPoint();
-      // getScreenCTM() ignora CSS zoom de ancestrais; compensar dividindo pelas coords visuais
-      const svgRect = svg.getBoundingClientRect();
-      const cssZoom = svgRect.width / svg.offsetWidth;
+      // SVG offsetWidth é não-confiável; usar a div pai para compensar zoom: 0.9 do workspace
+      const parent = svg.parentElement;
+      const parentRect = parent ? parent.getBoundingClientRect() : svg.getBoundingClientRect();
+      const cssZoom = parent && parent.offsetWidth ? parentRect.width / parent.offsetWidth : 1;
       pt.x = e.clientX / cssZoom;
       pt.y = e.clientY / cssZoom;
       const ctm = svg.getScreenCTM();

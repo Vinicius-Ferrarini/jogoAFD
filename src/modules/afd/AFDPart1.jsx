@@ -280,7 +280,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const [drawings, setDrawings]           = useState([]);
   const [drawingStack, setDrawingStack]   = useState([]);
   const [currentStroke, setCurrentStroke] = useState(null);
-  const [drawColor, setDrawColor]         = useState('#1a1a1a');
+  const [drawColor, setDrawColor]         = useState('#FF0000');
   const [drawSize, setDrawSize]           = useState(3);
   const [isErasing, setIsErasing]         = useState(false);
   const [drawTool, setDrawTool]           = useState('pencil'); // 'pencil'|'line'|'arrow'|'rect'
