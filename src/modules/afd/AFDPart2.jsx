@@ -81,6 +81,7 @@ function normalize(s) {
     .normalize('NFD').replace(/[̀-ͯ]/g, '')   // ímpar→impar, ã→a, etc.
     .replace(/\x01/g, '\xe9')                           // restaura 'é' (será stripado depois)
     .replace(/\s+/g, '')
+    .replace(/\xe9umnumero/g, '\xe9')                     // "é um número par" ≡ "é par"
     .replace(/[{}\[\]]/g, '')
     .replace(/[\\\/]/g, '|')                           // \ e / equivalem a |
     .replace(/λ|ε|epsilon/gi, 'lambda')
@@ -125,6 +126,142 @@ function normalize(s) {
     r = wPart + '|' + cPart;
   }
   return r.replace(/[^a-z0-9^*+|(),_.=><!]/g, '');
+}
+
+// ── Feedback específico para resposta errada ──────────────────────────────────
+function generateFeedback(userAnswer, expectedFormula, nodes, alphabet) {
+  const raw = userAnswer.trim();
+  const nu  = normalize(raw);
+  const ne  = normalize(expectedFormula.trim());
+  if (nu === ne) return null;
+
+  const lambdaAccepted = !!(nodes?.find(n => n.isInitial)?.isFinal);
+
+  // ── Verificações no texto original (antes da normalização) ──────────────────
+
+  // Chaves desbalanceadas — aviso individual para abrir/fechar
+  const openBraces  = (raw.match(/\{/g)  || []).length;
+  const closeBraces = (raw.match(/\}/g) || []).length;
+  if (openBraces > closeBraces)
+    return `Você esqueceu de fechar ${openBraces - closeBraces > 1 ? openBraces - closeBraces + ' chaves' : 'a chave'}! Adicione } ao final.`;
+  if (closeBraces > openBraces)
+    return `Você esqueceu de abrir ${closeBraces - openBraces > 1 ? closeBraces - openBraces + ' chaves' : 'a chave'}! Adicione { no início.`;
+
+  // Pipe | faltando dentro das chaves quando a resposta esperada precisa dele
+  const expNeedsPipe = ne.indexOf('|') >= 0 && !ne.includes('emptyset') && ne !== 'lambda';
+  if (expNeedsPipe && openBraces > 0) {
+    const firstOpen = raw.indexOf('{');
+    const lastClose = raw.lastIndexOf('}');
+    const outerContent = firstOpen >= 0 && lastClose > firstOpen ? raw.slice(firstOpen + 1, lastClose) : '';
+    if (outerContent && !/[|/\\]/.test(outerContent))
+      return 'Falta o "|" dentro das chaves! Use: { padrão | condição }. Ex: { a^n | n > 0 }';
+  }
+
+  // Variável "w" usada sem "∈" (ex: { w | condição } sem indicar o conjunto)
+  const rawHasWVar = /(?<![a-z])w(?![a-z])/i.test(raw);
+  const rawHasIn   = raw.includes('∈');
+  if (rawHasWVar && !rawHasIn)
+    return 'Se usar "w" como variável de palavra, inclua ∈ para indicar o conjunto: ex: { w ∈ {a,b}* | condição }';
+
+  // Resposta esperada usa notação com "w" mas o usuário não usou
+  const expHasWVar        = /(?<![a-z])w(?![a-z])/i.test(expectedFormula);
+  const expUsesCountNotation = /\|w\|_?[a-z]/i.test(expectedFormula);
+  if (expHasWVar && !rawHasWVar && !/emptyset|lambda/i.test(raw)) {
+    if (expUsesCountNotation)
+      return 'Este autômato conta letras, não posições (sem ordem). Tente: { w ∈ {a,b}* | |w|_a > ... }';
+    return 'Esta linguagem usa variável de palavra "w". Tente começar com: { w ∈ Σ* | ... }';
+  }
+
+  // |w|_x onde x não está no alfabeto
+  if (alphabet?.length) {
+    for (const m of raw.matchAll(/\|w\|_?([a-z])/gi)) {
+      if (!alphabet.includes(m[1]))
+        return `O símbolo "${m[1]}" em |w|_${m[1]} não está no alfabeto {${alphabet.join(',')}} — verifique os símbolos!`;
+    }
+  }
+
+  // |w| sem subscrito quando a fórmula usa |w|_a (contagem de caractere)
+  if (/\|w\|(?![_a-z])/i.test(raw) && /\|w\|_?[a-z]/i.test(expectedFormula))
+    return 'Falta o subscrito em |w|! Use |w|_a para contar "a"s, ex: { w ∈ {a,b}* | |w|_a > 0 }';
+
+  // ── Verificações normalizadas ─────────────────────────────────────────────────
+
+  // ∅
+  if (nu.includes('emptyset') && !ne.includes('emptyset'))
+    return 'O autômato aceita palavras — não é linguagem vazia (∅)!';
+  if (!nu.includes('emptyset') && ne.includes('emptyset'))
+    return 'Nenhuma palavra é aceita aqui. Escreva a linguagem vazia: ∅';
+
+  // {λ} apenas
+  if (nu === 'lambda' && ne !== 'lambda')
+    return 'Só {λ} não basta — o autômato aceita palavras além da vazia!';
+  if (nu !== 'lambda' && ne === 'lambda')
+    return 'Somente λ (palavra vazia) é aceita aqui. Escreva: { λ }';
+
+  // Pipe | na forma normalizada
+  const pipeU = nu.indexOf('|');
+  const pipeE = ne.indexOf('|');
+
+  if (pipeU < 0 && pipeE >= 0)
+    return 'Falta a condição! Use: { padrão | condição }. Ex: { a^n | n > 0 }';
+  if (pipeU >= 0 && pipeE < 0)
+    return 'A linguagem não precisa de condição. Retire o "|" e o que vem depois!';
+
+  if (pipeU >= 0 && pipeE >= 0) {
+    const wordU = nu.slice(0, pipeU);
+    const wordE = ne.slice(0, pipeE);
+    const condU = nu.slice(pipeU + 1);
+    const condE = ne.slice(pipeE + 1);
+    const wordSame = wordU === wordE;
+    const condSame  = condU === condE;
+
+    // * faltando ou sobrando no padrão da palavra
+    if (!wordSame && wordE.replace(/\*/g, '') === wordU)
+      return 'Faltou o * após o conjunto! Ex: w ∈ {0,1}* — o * indica todas as palavras sobre esse alfabeto.';
+    if (!wordSame && wordU.replace(/\*/g, '') === wordE)
+      return 'Tem um * a mais no padrão — verifique se o conjunto precisa do *.';
+
+    if (wordSame && !condSame) {
+      if (/[a-z]>=0/.test(condE) && !/[a-z]>=0/.test(condU))
+        return lambdaAccepted
+          ? 'Quase! λ É aceita (estado inicial é final) — use ≥ 0, não > 0.'
+          : 'Quase! Verifique: use ≥ 0 em vez de > 0 nesta condição.';
+      if (!/[a-z]>=0/.test(condE) && /[a-z]>=0/.test(condU) && /[a-z]>(?!=)/.test(condE))
+        return !lambdaAccepted
+          ? 'Quase! λ NÃO é aceita (estado inicial não é final) — use > 0, não ≥ 0.'
+          : 'Quase! Verifique: use > 0 em vez de ≥ 0 nesta condição.';
+      if (condE.includes('impar') && !condU.includes('impar'))
+        return 'Falta a restrição de paridade! Adicione: "e n é ímpar"';
+      if (!condE.includes('impar') && condU.includes('impar'))
+        return 'Não precisa de condição ímpar aqui. Retire "ímpar" da condição!';
+      if ((condE.match(/,/g) || []).length > (condU.match(/,/g) || []).length)
+        return 'Condição incompleta! Faltam restrições — use "," para separar: ex: "n > 0, m ≥ 0"';
+      return 'A estrutura da palavra está certa! Revise a condição após "|".';
+    }
+
+    if (!wordSame && condSame)
+      return 'A condição está certa! Revise os blocos da linguagem (parte antes do "|").';
+
+    if (!wordSame && !condSame) {
+      const setE = new Set(wordE.replace(/[^a-z0-9]/g, ''));
+      const setU = new Set(wordU.replace(/[^a-z0-9]/g, ''));
+      for (const c of setE) if (!setU.has(c)) return `Parece que falta o símbolo "${c}" no padrão da linguagem.`;
+      for (const c of setU) if (!setE.has(c)) return `Símbolo "${c}" a mais no padrão — verifique o alfabeto do autômato.`;
+      if (lambdaAccepted && /[a-z]>(?!=)/.test(condU) && !/[a-z]>=0/.test(condU))
+        return 'λ é aceita aqui! Verifique: use ≥ 0 na condição e revise a estrutura.';
+      if (!lambdaAccepted && /[a-z]>=0/.test(condU))
+        return 'λ não é aceita! Verifique: use > 0 na condição e revise a estrutura.';
+      return 'Estrutura e condição precisam de revisão. Simule palavras para descobrir o padrão!';
+    }
+  }
+
+  // Sem pipe nos dois
+  if (!nu.includes('lambda') && ne.includes('lambda'))
+    return 'λ (palavra vazia) também é aceita! Inclua na sua resposta.';
+  if (nu.includes('lambda') && !ne.includes('lambda'))
+    return 'λ não faz parte desta linguagem. Retire da sua resposta!';
+
+  return 'Simule palavras com o testador para descobrir quais são aceitas — depois tente de novo!';
 }
 
 // ── Grupos de inserção rápida do quadro de notações ──────────────────────────
@@ -526,6 +663,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
   const savedCursor    = useRef(null);
   const [showCheatsheet, setShowCheatsheet] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
+  const [feedbackMsg, setFeedbackMsg] = useState('');
 
   // ── Word simulation ────────────────────────────────────────────────────────
   const [simWords,     setSimWords]     = useState([]);
@@ -692,15 +830,23 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
       setResult('correct');
       setShowVictory(true);
     } else {
+      const graphAlphabet = graph?.transitions
+        ? [...new Set(graph.transitions.flatMap(t => t.symbol.split(',').map(s => s.trim())))]
+        : [];
+      const fb = generateFeedback(answer, level.formula, graph?.nodes, graphAlphabet)
+        || (level.hint || 'Siga o caminho do autômato estado por estado!');
+      setFeedbackMsg(fb);
       setResult('wrong');
       if (n >= 2) setShowExpected(true);
-      showProf('Hmm, não é isso... Siga o caminho do autômato estado por estado!');
+      showToast(fb, 'error');
+      showProf(fb);
     }
   }, [answer, attempts, level, updateProgress, showToast, showProf]);
 
   const handleReset = () => {
     setAnswer(''); setAttempts(0); setResult(null);
     setShowExpected(false); setShowVictory(false); setEarnedStars(0);
+    setFeedbackMsg('');
   };
 
   const copyRow = (text, key) => {
@@ -764,6 +910,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
     },
     {                 label: 'Exemplo de linguagem', color: 'orange', items: [
         { code: '{a^n | n >= 0}' },
+        { code: '{w ∈ {0,1}* | w é ímpar}' },
         { code: '{a^n b c^m | n > 0 e n é ímpar}' },
         { code: '{a^n b^m w ∈ {a,b}* | n >= 0, m > 0}' },
       ],
@@ -1019,7 +1166,7 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
               className={`word-input p2-answer-textarea ${result === 'correct' ? 'p2-ok' : result === 'wrong' ? 'p2-err' : ''}`}
               placeholder="Ex: { a^n | n > 0 }"
               value={answer}
-              onChange={e => { setAnswer(e.target.value); setResult(null); }}
+              onChange={e => { setAnswer(e.target.value); setResult(null); setFeedbackMsg(''); }}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (result !== 'correct') handleCheck(); } }}
               onSelect={e => { savedCursor.current = { start: e.target.selectionStart, end: e.target.selectionEnd }; }}
               onBlur={e => { savedCursor.current = { start: e.target.selectionStart, end: e.target.selectionEnd }; }}
@@ -1033,9 +1180,24 @@ function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, on
 
           {/* Feedback */}
           {result === 'wrong' && (
-            <div className="word-row wrong" style={{ fontSize: 12, justifyContent: 'flex-start', gap: 6 }}>
-              ❌ Não está certo!
-              {attempts >= 2 && ' (Veja a resposta abaixo)'}
+            <div style={{
+              background: '#fef3c7',
+              border: '2.5px solid #f59e0b',
+              borderRadius: 6,
+              padding: '7px 10px',
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#92400e',
+              marginTop: 4,
+              lineHeight: 1.45,
+              boxShadow: '2px 2px 0 #000',
+            }}>
+              💡 {feedbackMsg || 'Não está certo — tente novamente!'}
+              {attempts >= 2 && (
+                <div style={{ marginTop: 3, fontSize: 11, color: '#dc2626', fontWeight: 900 }}>
+                  ↓ Resposta liberada abaixo
+                </div>
+              )}
             </div>
           )}
 
