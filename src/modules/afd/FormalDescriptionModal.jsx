@@ -12,6 +12,7 @@ export default function FormalDescriptionModal({
   onSuccess,
   showToast,
   onValidateGraph,
+  onTableFocusChange,
 }) {
   const [inputQ,       setInputQ]       = useState('');
   const [inputSigma,   setInputSigma]   = useState('');
@@ -271,7 +272,10 @@ export default function FormalDescriptionModal({
         )}
 
         {areElementsValid && (
-          <div className="table-section">
+          <div className="table-section"
+            onFocus={() => onTableFocusChange?.(true)}
+            onBlur={() => onTableFocusChange?.(false)}
+          >
             <h3>Tabela (δ)</h3>
             <div style={{ overflowX: 'auto' }}>
               <table className="transition-table">

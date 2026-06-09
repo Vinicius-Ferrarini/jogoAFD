@@ -1044,16 +1044,20 @@ body { color: var(--text-main); }
   transform: scaleX(-1);
   filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.4));
   display: block;
+  transition: transform 0.2s ease-out, filter 0.2s ease-out;
 }
-.professor-hud .prof-img:hover,
+.professor-hud .prof-img:hover {
+  transform: scaleX(-1) translateY(-8px);
+  filter: drop-shadow(2px 10px 16px rgba(0,0,0,0.55)) brightness(1.1);
+}
 .professor-hud .prof-img:active {
-  transform: scaleX(-1);
+  transform: scaleX(-1) translateY(-3px);
 }
 
 .professor-balloon {
   position: absolute;
   bottom: 78%;
-  right: 0px;
+  right: -25px;
   width: 233px;
   height: 158px;
   margin-bottom: 0;

@@ -1,22 +1,202 @@
 export const GAME_LEVELS = [
-  { id: 1,  label: "L01", formula: "L = ∅",                                                               wordOnly: true,  desc: "A linguagem mais simples que existe; não contém palavras.",           shortestWord: null,       regex: /(?!)/,                                                     alphabet: [],                     acceptedWords: [],                         rejectedWords: ["λ","a","0"],           hint: "Uma linguagem vazia não aceita absolutamente nada. Como o grafo deve ficar?",                                       successMsg: "Perfeito! Um autômato sem estados finais não aceita nada." },
-  { id: 2,  label: "L02", formula: "L = { λ }",                                                           desc: "Contém uma única palavra: a palavra vazia.",                         shortestWord: "",         regex: /^$/,                                                        alphabet: [],                     acceptedWords: [""],                        rejectedWords: ["a","0","b"],           hint: "Se a palavra é vazia, o estado inicial também deve ser o final!",                                                   successMsg: "Exato! Aceitar o vazio significa já nascer no estado final." },
-  { id: 3,  label: "L03", formula: "L = { 0 }",                                                           desc: "Contém uma única palavra: 0.",                                      shortestWord: "0",        regex: /^0$/,                                                       alphabet: ['0'],                  acceptedWords: ["0"],                       rejectedWords: ["λ","1","00"],          hint: "Basta um caminho simples do início ao fim lendo '0'.",                                                              successMsg: "Muito bem! Simples e direto." },
-  { id: 4,  label: "L04", formula: "L = { λ, 0 }",                                                        desc: "Contém duas palavras: λ e 0.",                                      shortestWord: "",         regex: /^0?$/,                                                      alphabet: ['0'],                  acceptedWords: ["","0"],                    rejectedWords: ["1","00","01"],         hint: "Lembre-se que o estado inicial já aceita λ. O que acontece se ler um 0?",                                           successMsg: "Acertou! Dois caminhos de aceitação." },
-  { id: 5,  label: "L05", formula: "L = { a^n | n > 0 }",                                                 desc: "",                                                                 shortestWord: "a",        regex: /^a+$/,                                                      alphabet: ['a'],                  acceptedWords: ["a","aa","aaa"],            rejectedWords: ["λ","b","ba"],          hint: "Você precisa ler pelo menos um 'a', e depois pode ler infinitos.",                                                  successMsg: "Ótimo uso de repetição (loop) no estado final!" },
-  { id: 6,  label: "L06", formula: "L = { a^n | n > 0 e n é ímpar }",                                    desc: "",                                                                 shortestWord: "a",        regex: /^a(aa)*$/,                                                  alphabet: ['a'],                  acceptedWords: ["a","aaa","aaaaa"],         rejectedWords: ["λ","aa","aaaa"],       hint: "Ímpar significa 1, 3, 5... Vai e volta entre dois estados!",                                                        successMsg: "Mecânica de paridade dominada!" },
-  { id: 7,  label: "L07", formula: "L = { a b^n a | n ≥ 0 e n é par }",                                  desc: "",                                                                 shortestWord: "aa",       regex: /^a(bb)*a$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["aa","abba","abbbba"],      rejectedWords: ["a","aba","abbba"],     hint: "A palavra começa com 'a', termina com 'a', e no meio os 'b's andam em duplas.",                                    successMsg: "Excelente! Você controlou o sanduíche de 'b's pares." },
-  { id: 8,  label: "L08", formula: "L = { a(bc)^n a | n > 0 }",                                          desc: "",                                                                 shortestWord: "abca",     regex: /^a(bc)+a$/,                                                 alphabet: ['a', 'b', 'c'],        acceptedWords: ["abca","abcbca"],           rejectedWords: ["aa","aca","abba"],     hint: "Começa com 'a', depois exige o ciclo exato 'bc', 'bc', e fecha com 'a'.",                                           successMsg: "Belo ciclo! A sequência foi respeitada." },
-  { id: 9,  label: "L09", formula: "L = { a^n b^m c^p | n > 0, m ≥ 0, p ≥ 0 }",                         desc: "",                                                                 shortestWord: "a",        regex: /^a+b*c*$/,                                                  alphabet: ['a', 'b', 'c'],        acceptedWords: ["a","ab","abc"],            rejectedWords: ["λ","b","ba"],          hint: "Os blocos não se misturam. Primeiro só 'a's, depois só 'b's, e por fim só 'c's.",                                  successMsg: "Progresso linear perfeito!" },
+  { id: 1,  label: "L01", formula: "L = ∅",                                                               wordOnly: true,  desc: "A linguagem mais simples que existe; não contém palavras.",           shortestWord: null,       regex: /(?!)/,                                                     alphabet: [],                     acceptedWords: [],                         rejectedWords: ["λ","a","0"],           hint: "Uma linguagem vazia não aceita absolutamente nada. Como o grafo deve ficar?",                                       successMsg: "Perfeito! Um autômato sem estados finais não aceita nada.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Bem-vindo ao TuringLab!', dialog: [
+        'Olá! Sou Maurílio, seu guia de AFDs! 🤖 Vamos aprender construindo!',
+        'Um AFD lê uma palavra letra por letra e decide: ACEITA ✅ ou REJEITA ❌.',
+        'L = ∅ é a linguagem VAZIA — zero palavras aceitas. Absolutamente nada!',
+        'Sua tarefa: descobrir a menor palavra desta linguagem. Ela é bem especial... 🤔',
+      ] },
+      onFormalDesc: { type: 'theory', title: 'Descrição Formal', dialog: [
+        'Um AFD é a quíntupla M = (Q, Σ, δ, q₀, F) — cada campo tem um significado preciso!',
+        'Q = estados, Σ = alfabeto, δ = transições, q₀ = inicial, F = finais.',
+        'Para L = ∅: F = {} (conjunto vazio). Nenhum estado é final, logo nada é aceito!',
+      ] },
+      onTable: { type: 'theory', title: 'Tabela de Transição (δ)', dialog: [
+        'A Tabela δ formaliza a função de transição: δ(estado, símbolo) → estado destino.',
+        'Cada linha é um estado; cada coluna é um símbolo do alfabeto Σ.',
+        'Para L = ∅, Σ é vazio — por isso a tabela δ também não tem colunas!',
+      ] },
+    } },
+  { id: 2,  label: "L02", formula: "L = { λ }",                                                           desc: "Contém uma única palavra: a palavra vazia.",                         shortestWord: "",         regex: /^$/,                                                        alphabet: [],                     acceptedWords: [""],                        rejectedWords: ["a","0","b"],           hint: "Se a palavra é vazia, o estado inicial também deve ser o final!",                                                   successMsg: "Exato! Aceitar o vazio significa já nascer no estado final.",
+    allowedCards: ['toggleInitial', 'addNode', 'toggleFinal', 'erase', 'undo', 'redo'],
+    tutorials: {
+      onStart: { type: 'mechanic', title: 'Seu Primeiro Autômato!', dialog: [
+        'Boa! Hora de construir seu PRIMEIRO autômato! 🎉',
+        'L = {λ} aceita só a palavra vazia λ (zero letras). Nada mais!',
+        'Se λ é aceita, o estado inicial JÁ É o final. Use ▶ e depois ◎ no mesmo estado!',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Canvas Liberado!', dialog: [
+        'Perfeito! Você descobriu a menor palavra. Agora construa o autômato!',
+        'L = {λ}: um único estado que seja INICIAL e FINAL ao mesmo tempo.',
+        'Use a carta ▶ e depois ◎ no mesmo estado. Um clique de cada!',
+      ] },
+      onFormalDesc: { type: 'theory', title: 'Descrição Formal', dialog: [
+        'Hora de formalizar! M = (Q, Σ, δ, q₀, F).',
+        'Para L = {λ}: Q = {q0}, Σ = {} (sem símbolos!), q₀ = q0, F = {q0}.',
+        'Note: q₀ ∈ F — o estado inicial também é final, pois λ é aceita imediatamente!',
+        'Dica: campo com 1 elemento usa nome direto — ex: q0 (sem chaves { }).',
+      ] },
+      onTable: { type: 'theory', title: 'Tabela de Transição (δ)', dialog: [
+        'L = {λ} tem Σ = {} — alfabeto vazio, portanto δ não tem colunas!',
+        'Isso é normal: sem símbolos no alfabeto, não há transições para descrever.',
+        'A partir de L03 (com símbolo "0"), a tabela começa a ter conteúdo real!',
+      ] },
+    } },
+  { id: 3,  label: "L03", formula: "L = { 0 }",                                                           desc: "Contém uma única palavra: 0.",                                      shortestWord: "0",        regex: /^0$/,                                                       alphabet: ['0'],                  acceptedWords: ["0"],                       rejectedWords: ["λ","1","00"],          hint: "Basta um caminho simples do início ao fim lendo '0'.",                                                              successMsg: "Muito bem! Simples e direto.",
+    allowedCards: ['toggleInitial', 'addNode', 'addTransition', 'toggleFinal', 'erase', 'undo', 'redo'],
+    tutorials: {
+      onStart: { type: 'mechanic', title: 'Criando Transições!', dialog: [
+        'Parabéns! Hora de criar SETAS (transições)! ↗',
+        'L = {0} aceita só "0". Precisa de 2 estados ligados por uma seta com símbolo "0".',
+        'Nova carta desbloqueada: Criar Seta ↗. Clique nela, depois no estado origem, depois no destino!',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Hora de Montar!', dialog: [
+        'Você achou a menor palavra! Agora monte o autômato passo a passo.',
+        'Dica: use o botão 👨‍🏫 Assistir Aula no topo para ver uma demonstração guiada!',
+      ] },
+      onFormalDesc: { type: 'theory', title: 'Descrição Formal', dialog: [
+        'Este painel mostra a DESCRIÇÃO FORMAL do AFD: estados, alfabeto, função de transição...',
+        'Preencha tudo corretamente aqui para ganhar a terceira estrela ⭐⭐⭐!',
+      ] },
+      onTable: { type: 'theory', title: 'Tabela de Transição (δ)', dialog: [
+        'Preencha a tabela δ para L = {0}: 1 coluna (símbolo "0"), linhas = seus estados.',
+        'δ(q0, 0) = q1 — lendo "0" em q0, vamos para q1 (o estado final).',
+        'Se um estado não tem transição para um símbolo, a célula fica vazia (rejeição implícita).',
+        'Atenção: o nome do estado destino deve bater EXATAMENTE com o nome que você deu no canvas!',
+      ] },
+    },
+    guidedLesson: [
+      {
+        text: 'Passo 1: Crie o estado inicial. Clique em "Novo Estado" para criar q0, depois em "Estado Inicial" e clique nele.',
+        stateUpdate: {
+          nodes: [{ id: 'q0', label: 'q0', x: 30, y: 50, isInitial: true, isFinal: false }],
+          transitions: [],
+        },
+      },
+      {
+        text: 'Passo 2: Crie o estado final. Clique em "Novo Estado" para criar q1, depois em "Definir Final" e clique nele.',
+        stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 30, y: 50, isInitial: true, isFinal: false },
+            { id: 'q1', label: 'q1', x: 70, y: 50, isInitial: false, isFinal: true },
+          ],
+          transitions: [],
+        },
+      },
+      {
+        text: 'Passo 3: Conecte q0 → q1. Clique em "Criar Seta", depois em q0 (origem), depois em q1 (destino). Por fim, selecione o símbolo "0".',
+        stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 30, y: 50, isInitial: true, isFinal: false },
+            { id: 'q1', label: 'q1', x: 70, y: 50, isInitial: false, isFinal: true },
+          ],
+          transitions: [{ from: 'q0', to: 'q1', symbol: '0' }],
+        },
+      },
+    ] },
+  { id: 4,  label: "L04", formula: "L = { λ, 0 }",                                                        desc: "Contém duas palavras: λ e 0.",                                      shortestWord: "",         regex: /^0?$/,                                                      alphabet: ['0'],                  acceptedWords: ["","0"],                    rejectedWords: ["1","00","01"],         hint: "Lembre-se que o estado inicial já aceita λ. O que acontece se ler um 0?",                                           successMsg: "Acertou! Dois caminhos de aceitação.",
+    tutorials: {
+      onStart: { type: 'mechanic', title: 'Dois Caminhos de Aceitação!', dialog: [
+        'L = {λ, 0} aceita DUAS palavras: λ (vazia) E "0". Mais de uma aceitação!',
+        'Para aceitar λ, o estado inicial deve ser final. Para aceitar "0", precisa de uma seta.',
+        'Um único estado pode ser inicial E final ao mesmo tempo — assim cobre os dois casos!',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Estado Inicial Final + Seta', dialog: [
+        'Padrão novo: q0 é inicial E final (aceita λ). Adicione q1 (final) com seta 0→q1.',
+        'Esse padrão — estado inicial final mais transição para outro final — vai aparecer muito!',
+      ] },
+    } },
+  { id: 5,  label: "L05", formula: "L = { a^n | n > 0 }",                                                 desc: "",                                                                 shortestWord: "a",        regex: /^a+$/,                                                      alphabet: ['a'],                  acceptedWords: ["a","aa","aaa"],            rejectedWords: ["λ","b","ba"],          hint: "Você precisa ler pelo menos um 'a', e depois pode ler infinitos.",                                                  successMsg: "Ótimo uso de repetição (loop) no estado final!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Notação a^n — Repetição Infinita!', dialog: [
+        'Nova notação: a^n com n > 0 significa "pelo menos um a, podendo ser infinitos".',
+        '"a", "aa", "aaa"... todos aceitos. λ NÃO — pois n > 0 exige ao menos 1 símbolo!',
+        'Para aceitar infinitas palavras, o grafo precisa de um LOOP — seta que aponta para si mesma.',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Mecânica de Loop!', dialog: [
+        'Mecânica nova: LOOP — uma transição que parte de um estado e volta para ele mesmo.',
+        'Estrutura: q0 (inicial) →(a)→ q1 (final). Mais: q1 →(a)→ q1 (o próprio loop).',
+        'Assim: ler "a" chega em q1 (aceita). Ler mais "a"s fica em q1 e continua aceitando!',
+      ] },
+    } },
+  { id: 6,  label: "L06", formula: "L = { a^n | n > 0 e n é ímpar }",                                    desc: "",                                                                 shortestWord: "a",        regex: /^a(aa)*$/,                                                  alphabet: ['a'],                  acceptedWords: ["a","aaa","aaaaa"],         rejectedWords: ["λ","aa","aaaa"],       hint: "Ímpar significa 1, 3, 5... Vai e volta entre dois estados!",                                                        successMsg: "Mecânica de paridade dominada!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Paridade: Ímpar vs Par', dialog: [
+        'Novo conceito: PARIDADE! 🔢 Ímpar = 1,3,5... Par = 0,2,4...',
+        'Para contar comprimento ímpar, use 2 estados alternando a cada "a" lido.',
+        'Comece no estado "ímpar" (1 "a" já aceita). Cada novo "a" inverte: ímpar ↔ par!',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Mecânica Vai-e-Volta', dialog: [
+        'Mecânica VAI-E-VOLTA: dois estados trocam papéis a cada símbolo lido.',
+        'q0 (par, inicial, NÃO final) ←→ q1 (ímpar, FINAL). Cada "a" alterna entre eles.',
+        'Leu "a": q0→q1 (aceita, comprimento ímpar). Leu mais "a": q1→q0 (rejeita, par). E assim vai!',
+      ] },
+    } },
+  { id: 7,  label: "L07", formula: "L = { a b^n a | n ≥ 0 e n é par }",                                  desc: "",                                                                 shortestWord: "aa",       regex: /^a(bb)*a$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["aa","abba","abbbba"],      rejectedWords: ["a","aba","abbba"],     hint: "A palavra começa com 'a', termina com 'a', e no meio os 'b's andam em duplas.",                                    successMsg: "Excelente! Você controlou o sanduíche de 'b's pares.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Linguagem Sanduíche!', dialog: [
+        'Linguagem SANDUÍCHE! 🥪 Início e fim fixos, meio variável.',
+        'Começa com "a", seguido de um número PAR de "b"s (0, 2, 4...), termina com "a".',
+        'Dica: rastreie o "a" inicial, a paridade dos "b"s e feche com o "a" final.',
+      ] },
+      onDrawGraph: { type: 'theory', title: '≥ 0 vs > 0: Detalhe Crucial!', dialog: [
+        'Atenção: n ≥ 0 significa ZERO ou mais "b"s — portanto "aa" é válida (zero b\'s no meio)!',
+        'Se fosse n > 0, pelo menos um "b" seria obrigatório. Com ≥ 0, o meio pode ser vazio.',
+        'Para cobrir n=0: crie uma transição do estado "b-par" direto para o estado que lê o "a" final.',
+      ] },
+    } },
+  { id: 8,  label: "L08", formula: "L = { a(bc)^n a | n > 0 }",                                          desc: "",                                                                 shortestWord: "abca",     regex: /^a(bc)+a$/,                                                 alphabet: ['a', 'b', 'c'],        acceptedWords: ["abca","abcbca"],           rejectedWords: ["aa","aca","abba"],     hint: "Começa com 'a', depois exige o ciclo exato 'bc', 'bc', e fecha com 'a'.",                                           successMsg: "Belo ciclo! A sequência foi respeitada.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Agrupamento Cíclico (bc)^n', dialog: [
+        'Parênteses na notação! (bc)^n significa o GRUPO "bc" repetido n vezes, com n > 0.',
+        'Cada volta do ciclo consome DOIS símbolos em ordem fixa: primeiro "b", depois "c".',
+        'Para isso, dois estados intermediários formam o ciclo: s→(b)→s2→(c)→s (e volta).',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Ciclo de Dois Passos', dialog: [
+        'Estrutura: q0→(a)→q1→(b)→q2→(c)→q1 (loop do ciclo). Depois q1→(a)→qFinal.',
+        'O ciclo "bc" gira entre q1 e q2 indefinidamente — cada volta completa o grupo!',
+        'Como n > 0, o ciclo é obrigatório: não existe atalho direto de q0 para o estado final.',
+      ] },
+    } },
+  { id: 9,  label: "L09", formula: "L = { a^n b^m c^p | n > 0, m ≥ 0, p ≥ 0 }",                         desc: "",                                                                 shortestWord: "a",        regex: /^a+b*c*$/,                                                  alphabet: ['a', 'b', 'c'],        acceptedWords: ["a","ab","abc"],            rejectedWords: ["λ","b","ba"],          hint: "Os blocos não se misturam. Primeiro só 'a's, depois só 'b's, e por fim só 'c's.",                                  successMsg: "Progresso linear perfeito!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Variáveis Independentes!', dialog: [
+        'Três blocos independentes: a^n (n>0, obrigatório), b^m (m≥0, opcional), c^p (p≥0, opcional).',
+        'Independente significa que cada bloco tem sua regra própria. "a" sozinho é válido!',
+        'O fluxo é estritamente da esquerda para a direita — nunca se volta para o bloco anterior.',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Blocos Lineares com Loops', dialog: [
+        'q0 (inicial, NÃO final) →(a)→ q1 (final). q1 tem loop em "a" para a\'s extras.',
+        'q1 →(b)→ q2 (final, loop em "b"). q2 →(c)→ q3 (final, loop em "c").',
+        'q1, q2 e q3 são todos finais — após o primeiro "a", qualquer b*c* é válido!',
+      ] },
+    } },
   { id: 10, label: "L10", formula: "L = { a^n b b a^m | n,m ≥ 0 e pares }",                              desc: "",                                                                 shortestWord: "bb",       regex: /^(aa)*bb(aa)*$/,                                            alphabet: ['a', 'b'],             acceptedWords: ["bb","aabb","bbaa"],        rejectedWords: ["abb","bba","b"],       hint: "Começa com 'a's pares (ou zero), o núcleo é 'bb', termina com 'a's pares.",                                        successMsg: "Núcleo isolado com sucesso!" },
   { id: 11, label: "L11", formula: "L = { a^n b^m | (n + m) é par e n,m ≥ 0 }",                         desc: "",                                                                 shortestWord: "",         regex: /^((aa)*(bb)*|a(aa)*b(bb)*)$/,                               alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "A soma é par se ambos forem pares, ou se ambos forem ímpares!",                                                    successMsg: "Lógica matemática aplicada no grafo. Lindo!" },
   { id: 12, label: "L12", formula: "L = { a^n b^2m | n > 0, m > 0 }",                                    desc: "",                                                                 shortestWord: "abb",      regex: /^a+(bb)+$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["abb","aabb","abbbb"],      rejectedWords: ["a","ab","bb"],         hint: "Os 'b's só podem vir em duplas após pelo menos um 'a'.",                                                            successMsg: "Duplas de B controladas." },
   { id: 13, label: "L13", formula: "L = { (ab)^n (cd)^m | n > 0, m > 0 }",                               desc: "",                                                                 shortestWord: "abcd",     regex: /^(ab)+(cd)+$/,                                              alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","ababcd","abcdcd"], rejectedWords: ["ab","cd","abdc"],      hint: "Blocos duplos de 'ab' seguidos por blocos duplos de 'cd'.",                                                        successMsg: "Padrão silábico validado!" },
-  { id: 14, label: "L14", formula: "L = { w ∈ {a,b}* | |w|a = |w|b }", impossible: true,                                  desc: "",                                                                 shortestWord: "",         regex: /^[ab]*$/, validate: w => [...w].filter(c=>c==='a').length === [...w].filter(c=>c==='b').length, alphabet: ['a', 'b'], acceptedWords: ["λ","ab","ba","aabb"],  rejectedWords: ["a","b","aab"],         hint: "Cuidado, essa é clássica! Garantir quantidade igual pode exigir muitos estados.",                                   successMsg: "Sobreviveu à máquina de estados complexa!" },
+  { id: 14, label: "L14", formula: "L = { w ∈ {a,b}* | |w|a = |w|b }", impossible: true,                                  desc: "",                                                                 shortestWord: "",         regex: /^[ab]*$/, validate: w => [...w].filter(c=>c==='a').length === [...w].filter(c=>c==='b').length, alphabet: ['a', 'b'], acceptedWords: ["λ","ab","ba","aabb"],  rejectedWords: ["a","b","aab"],         hint: "Cuidado, essa é clássica! Garantir quantidade igual pode exigir muitos estados.",                                   successMsg: "Sobreviveu à máquina de estados complexa!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Linguagem IMPOSSÍVEL para AFD!', dialog: [
+        'Esta linguagem é ESPECIAL: ela NÃO pode ser reconhecida por nenhum AFD!',
+        '|w|a = |w|b exige comparar dois contadores que crescem sem limite — AFDs têm memória finita.',
+        'O Lema do Bombeamento (Pumping Lemma) prova formalmente essa impossibilidade.',
+        'Experimente construir. Entender os LIMITES do AFD é tão importante quanto construí-los!',
+      ] },
+    } },
   { id: 15, label: "L15", formula: "L = { w ∈ {a,b}* | |w|a + |w|b é par }",                            desc: "",                                                                 shortestWord: "",         regex: /^([ab]{2})*$/,                                              alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "Não importa a ordem, desde que o tamanho total da palavra seja par.",                                               successMsg: "Tamanho par garantido com sucesso." },
   { id: 16, label: "L16", formula: "L = { u a v b x c y | u,v,x,y ∈ {a,b,c}* }",                       desc: "",                                                                 shortestWord: "abc",      regex: /^[abc]*a[abc]*b[abc]*c[abc]*$/,                             alphabet: ['a', 'b', 'c'],        acceptedWords: ["abc","aabc","abbc"],       rejectedWords: ["λ","ab","bc"],         hint: "A palavra tem que ter pelo menos um 'a', um 'b' e um 'c', na ordem.",                                               successMsg: "Filtro de caracteres construído." },
   { id: 17, label: "L17", formula: "L = { w ∈ {a,b}* | começa com a e tem tamanho par }",               desc: "",                                                                 shortestWord: "aa",       regex: /^a[ab]([ab]{2})*$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["aa","ab","abba"],          rejectedWords: ["a","b","aba"],         hint: "Forçar o início e depois manter a paridade.",                                                                       successMsg: "Paridade e prefixo resolvidos." },
-  { id: 18, label: "L18", formula: "L = { w ∈ {a,b}* | nunca tem mais de dois 'a's seguidos }",         desc: "",                                                                 shortestWord: "",         regex: /^(b|ab|aab)*a?a?$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["λ","a","aa","aab"],       rejectedWords: ["aaa","baaa","aaab"],   hint: "Crie um caminho que 'quebra' se o terceiro 'a' aparecer.",                                                          successMsg: "Limitação de sequência perfeita!" },
+  { id: 18, label: "L18", formula: "L = { w ∈ {a,b}* | nunca tem mais de dois 'a's seguidos }",         desc: "",                                                                 shortestWord: "",         regex: /^(b|ab|aab)*a?a?$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["λ","a","aa","aab"],       rejectedWords: ["aaa","baaa","aaab"],   hint: "Crie um caminho que 'quebra' se o terceiro 'a' aparecer.",                                                          successMsg: "Limitação de sequência perfeita!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Estado Armadilha (Trap State)!', dialog: [
+        'Novo padrão: ESTADO ARMADILHA — um estado não-final do qual nunca se sai.',
+        'Para "nunca mais de 2 a\'s seguidos": ao ler o 3º "a" consecutivo, cai na armadilha.',
+        'A armadilha tem auto-loops em todos os símbolos — absorve qualquer coisa e rejeita.',
+        'Dica: crie qErro com loop em "a" e "b". Qualquer estado que lê o 3º "a" vai para qErro.',
+      ] },
+    } },
   { id: 19, label: "L19", formula: "L = { w ∈ {a,b}* | w tem um número ímpar de ab's }",               desc: "",                                                                 shortestWord: "ab",       regex: /^b*a+(ba+)*b+(a+b+)*(a+b+)?$/,                             alphabet: ['a', 'b'],             acceptedWords: ["ab","ababab"],             rejectedWords: ["λ","abab","b"],        hint: "O autômato deve alternar seu estado de aceitação a cada 'ab' lido.",                                                successMsg: "Contador de substrings excelente." },
   { id: 20, label: "L20", formula: "L = { w ∈ {a,b}* | |w| ≥ 2 e a's precedem os b's }",              desc: "",                                                                 shortestWord: "aa",       regex: /^(aa+|a+b+|bb+)$/,                                          alphabet: ['a', 'b'],             acceptedWords: ["aa","ab","bb"],            rejectedWords: ["λ","a","ba"],          hint: "Depois que o primeiro 'b' for lido, um 'a' nunca mais poderá aparecer.",                                            successMsg: "Transição irreversível dominada." },
   { id: 21, label: "L21", formula: "L = { w ∈ {a,b,c,d}* | a's precedem b's e c's precedem d's }",    desc: "",                                                                 shortestWord: "",         regex: /^a*b*c*d*$/,                                                alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["λ","abcd","abc"],         rejectedWords: ["ba","ca","cb"],        hint: "É uma progressão linear estrita pelo alfabeto.",                                                                    successMsg: "Ordem alfabética mantida!" },
@@ -26,7 +206,15 @@ export const GAME_LEVELS = [
       "L = { w ∈ {0,1}* | w termina em 0 }",
       "L = { w ∈ {0,1}* | w termina com 0 }",
     ],
-    desc: "",                                                                 shortestWord: "0",        regex: /^[01]*0$/,                                                  alphabet: ['0', '1'],             acceptedWords: ["0","10","110"],            rejectedWords: ["1","11","101"],        hint: "Pense em binário! Todo número binário par termina com que dígito?",                                                 successMsg: "Lógica binária! Terminou em zero." },
+    desc: "",                                                                 shortestWord: "0",        regex: /^[01]*0$/,                                                  alphabet: ['0', '1'],             acceptedWords: ["0","10","110"],            rejectedWords: ["1","11","101"],        hint: "Pense em binário! Todo número binário par termina com que dígito?",                                                 successMsg: "Lógica binária! Terminou em zero.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Bem-vindo ao Mundo Binário!', dialog: [
+        'Novo contexto: alfabeto {0, 1} — o sistema BINÁRIO!',
+        'Em binário, todo número PAR termina em "0". Todo ÍMPAR termina em "1". Simples!',
+        'O AFD não precisa ler a palavra inteira — só o ÚLTIMO símbolo determina paridade.',
+        'Isso implica: um estado "par" e um estado "ímpar", trocando a cada símbolo lido.',
+      ] },
+    } },
   { id: 23, label: "L23", formula: "L = { w ∈ {0,1}* | w é um número ímpar }",
     aliases: [
       "L = { w ∈ {0,1}* | w é ímpar }",
@@ -37,12 +225,36 @@ export const GAME_LEVELS = [
   { id: 24, label: "L24", formula: "L = { w ∈ {0,1}* | w tem tamanho 3 }",                              desc: "",                                                                 shortestWord: "000",      regex: /^[01]{3}$/,                                                 alphabet: ['0', '1'],             acceptedWords: ["000","011","101"],         rejectedWords: ["λ","00","0000"],       hint: "Você precisa de um caminho reto que só aceita na terceira etapa.",                                                  successMsg: "Controle de tamanho exato." },
   { id: 25, label: "L25", formula: "L = { w ∈ {0,1}* | w tem tamanho menor que 3 }",                   desc: "",                                                                 shortestWord: "",         regex: /^[01]{0,2}$/,                                               alphabet: ['0', '1'],             acceptedWords: ["λ","0","10"],             rejectedWords: ["000","0000","010"],    hint: "Os estados iniciais já podem ser finais, mas pare no terceiro passo.",                                               successMsg: "Tamanho máximo controlado." },
   { id: 26, label: "L26", formula: "L = { w ∈ {0,1}* | w tem tamanho maior que 3 }",                   desc: "",                                                                 shortestWord: "0000",     regex: /^[01]{4,}$/,                                                alphabet: ['0', '1'],             acceptedWords: ["0000","1111","01010"],    rejectedWords: ["λ","0","000"],         hint: "Passe pelos primeiros três estados sem aceitar, depois aceite tudo.",                                                successMsg: "Tamanho mínimo garantido." },
-  { id: 27, label: "L27", formula: "L = { w ∈ {0,1}* | w tem tamanho múltiplo de 3 }",                 desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["λ","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemático de tamanho 3." },
+  { id: 27, label: "L27", formula: "L = { w ∈ {0,1}* | w tem tamanho múltiplo de 3 }",                 desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["λ","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemático de tamanho 3.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Contagem Modular — Mod 3!', dialog: [
+        'Múltiplo de 3: comprimento ≡ 0 (mod 3). Ou seja, palavras de tamanho 0, 3, 6, 9...',
+        'Estratégia: 3 estados formando um ciclo. Cada símbolo avança um passo no ciclo.',
+        'q0 (final, mod 0) →(any)→ q1 (mod 1) →(any)→ q2 (mod 2) →(any)→ q0. Elegante!',
+        'Esse padrão escala: para "múltiplo de N", use N estados em ciclo.',
+      ] },
+    } },
   { id: 28, label: "L28", formula: "L = { w ∈ {0,1}* | cada 0 é seguido de, no mínimo, dois 1's }",   desc: "",                                                                 shortestWord: "",         regex: /^(1*011+)*1*$/,                                             alphabet: ['0', '1'],             acceptedWords: ["λ","011","1011"],         rejectedWords: ["0","01","010"],        hint: "Leu um '0'? Então os próximos dois passos OBRIGATORIAMENTE devem ser '1'.",                                         successMsg: "Padrão de segurança estabelecido." },
   { id: 29, label: "L29", formula: "L = { w ∈ {0,1}* | os primeiros 4 símbolos de w contêm, no mínimo, dois 1's }", desc: "", shortestWord: "11", regex: /^([01]*)$/, validate: w => w.slice(0,4).split('').filter(c=>c==='1').length >= 2, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Essa exige rastrear o prefixo. Concentre-se nas combinações dos primeiros passos.",                                  successMsg: "Prefixo complexo analisado." },
-  { id: 30, label: "L30", formula: "L = { w ∈ {0,1}* | w NÃO contém 000 nem 111 }",                    desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000)(?!.*111)[01]*$/,                                 alphabet: ['0', '1'],             acceptedWords: ["λ","01","0101"],          rejectedWords: ["000","111","1000"],    hint: "Se 3 zeros ou 3 uns aparecerem, jogue a palavra num estado de erro.",                                                successMsg: "Evitou a bomba tripla!" },
+  { id: 30, label: "L30", formula: "L = { w ∈ {0,1}* | w NÃO contém 000 nem 111 }",                    desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000)(?!.*111)[01]*$/,                                 alphabet: ['0', '1'],             acceptedWords: ["λ","01","0101"],          rejectedWords: ["000","111","1000"],    hint: "Se 3 zeros ou 3 uns aparecerem, jogue a palavra num estado de erro.",                                                successMsg: "Evitou a bomba tripla!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Evitando Subpalavras Proibidas!', dialog: [
+        'Novo padrão: NÃO CONTÉM — rejeitar quando uma sequência específica aparecer.',
+        'Estratégia: rastrear o "progresso" da sequência proibida com estados intermediários.',
+        '"0" visto → alerta. "00" visto → alerta máximo. "000" visto → ARMADILHA irrecuperável!',
+        'São duas sequências proibidas independentes (000 e 111), cada uma com sua trilha de estados.',
+      ] },
+    } },
   { id: 31, label: "L31", formula: "L = { w ∈ {0,1}* | os últimos três símbolos de w NÃO são 000 }",  desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000$)[01]*$/,                                         alphabet: ['0', '1'],             acceptedWords: ["λ","1","001"],            rejectedWords: ["000","1000","10000"],  hint: "O final da palavra é o mais importante aqui.",                                                                      successMsg: "Sufixo validado." },
-  { id: 32, label: "L32", formula: "L = { w ∈ {0,1,2}* | par de 0's, par de 1's e par de 2's }",      desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído." },
+  { id: 32, label: "L32", formula: "L = { w ∈ {0,1,2}* | par de 0's, par de 1's e par de 2's }",      desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Explosão de Estados — 2³ = 8!', dialog: [
+        'Paridade tripla simultânea: par/ímpar de 0s, de 1s e de 2s — totalmente independentes.',
+        'Cada combinação possível exige seu próprio estado: 2³ = 8 estados no total!',
+        'Só o estado (par-0, par-1, par-2) é final. Os outros 7 são não-finais.',
+        'Princípio geral: N paridades independentes → 2^N estados no AFD mínimo.',
+      ] },
+    } },
   { id: 33, label: "L33", formula: "L = { w ∈ {0,1}* | w tem 001 como prefixo }",                      desc: "",                                                                 shortestWord: "001",      regex: /^001[01]*$/,                                                alphabet: ['0', '1'],             acceptedWords: ["001","0011","001100"],    rejectedWords: ["λ","1","010"],         hint: "O começo tem que ser rigorosamente '0' -> '0' -> '1'.",                                                             successMsg: "Prefixo amarrado!" },
   { id: 34, label: "L34", formula: "L = { w ∈ {0,1}* | w tem 1010 como sufixo }",                      desc: "",                                                                 shortestWord: "1010",     regex: /^[01]*1010$/,                                               alphabet: ['0', '1'],             acceptedWords: ["1010","01010","001010"], rejectedWords: ["λ","101","1011"],       hint: "Mantenha a porta aberta para infinitos caracteres, mas só aceite se a 'memória' bater com 1010.",                  successMsg: "Detector de sufixo ativado." },
   { id: 35, label: "L35a", formula: "L = { w ∈ {0,1}* | w tem 1111 como subpalavra }",                 desc: "",                                                                 shortestWord: "1111",     regex: /^[01]*1111[01]*/,                                           alphabet: ['0', '1'],             acceptedWords: ["1111","01111","11110"],   rejectedWords: ["λ","111","11011"],     hint: "Assim que achar quatro '1's seguidos, pode ir para um estado final que aceita tudo.",                               successMsg: "Achou a subpalavra!" },

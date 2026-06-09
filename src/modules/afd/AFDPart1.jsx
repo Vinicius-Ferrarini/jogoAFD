@@ -5,6 +5,8 @@ import './AFDPart1.css';
 import { SvgStars, DifficultyLegend } from './SvgStar';
 import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 import FormalDescriptionModal from './FormalDescriptionModal';
+import TutorialModal from './TutorialModal';
+import GuidedLessonOverlay from './GuidedLessonOverlay';
 import imgMaurilioApontando  from '../../assets/maurilio2_apontando_pro_lado.webp';
 import imgMaurilioSerio      from '../../assets/maurilio1_serio.webp';
 import imgMaurilioExplicando from '../../assets/maurilio3_explicando.webp';
@@ -370,6 +372,24 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const speechRef = useRef(null);
   const [showVictoryScreen, setShowVictoryScreen]     = useState(false);
   const [showImpossibleScreen, setShowImpossibleScreen] = useState(false);
+  const [activeTutorial, setActiveTutorial] = useState(null);
+  const [guidedLessonStep, setGuidedLessonStep] = useState(null);
+  const shownTutorialsRef = useRef(new Set());
+  const userNodesSnapshot = useRef(null);
+  const userTransitionsSnapshot = useRef(null);
+  const isTableFocusedRef = useRef(false);
+  const tableBlurTimeoutRef = useRef(null);
+  const [autoTutorial, setAutoTutorial] = useState(() => {
+    const v = localStorage.getItem('autoQuest_autoTutorial');
+    return v !== null ? JSON.parse(v) : false;
+  });
+  const toggleAutoTutorial = useCallback(() => {
+    setAutoTutorial(v => {
+      const next = !v;
+      localStorage.setItem('autoQuest_autoTutorial', JSON.stringify(next));
+      return next;
+    });
+  }, []);
   const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
 
   // Simulação no rodapé (não modal)
@@ -439,6 +459,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     setSelectedSymbolCard(null);
     setShowVictoryScreen(false);
     setShowImpossibleScreen(false);
+    setActiveTutorial(null);
+    setGuidedLessonStep(null);
+    shownTutorialsRef.current = new Set();
     setProfessorMessage('');
     setZoom(1);
     setPan({ x: 0, y: 0 });
@@ -455,7 +478,26 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     drawingsRef.current = [];
     isDrawingRef.current = false;
     currentStrokeRef.current = null;
+    userNodesSnapshot.current = null;
+    userTransitionsSnapshot.current = null;
+    isTableFocusedRef.current = false;
   }, []);
+
+  const showContextualTutorial = useCallback((key) => {
+    if (!autoTutorial) return;
+    const tut = currentLevel?.tutorials?.[key];
+    if (tut && !shownTutorialsRef.current.has(key)) {
+      shownTutorialsRef.current.add(key);
+      setActiveTutorial(tut);
+    }
+  }, [currentLevel, autoTutorial]);
+
+  useEffect(() => {
+    if (!autoTutorial || !currentLevel?.tutorials?.onStart) return;
+    shownTutorialsRef.current = new Set();
+    setActiveTutorial(currentLevel.tutorials.onStart);
+    shownTutorialsRef.current.add('onStart');
+  }, [currentLevel, autoTutorial]);
 
   // ── Teste de palavra ───────────────────────────────────────────────────────
   const handleTestWord = useCallback(() => {
@@ -484,6 +526,8 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         } else {
         setIsDrawingUnlocked(true);
         showToast('Sucesso! Tabuleiro liberado.', 'success');
+        showContextualTutorial('onDrawGraph');
+        const allowed = currentLevel.allowedCards;
         const initialCards = [
           { id: 'c0', type: 'action', action: 'toggleInitial', icon: '▶', label: 'Estado Inicial' },
           { id: 'c1', type: 'action', action: 'addNode',       icon: '◯', label: 'Novo Estado' },
@@ -492,7 +536,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           { id: 'c4', type: 'action', action: 'erase',         icon: '🗑', label: 'Apagar' },
           { id: 'cu', type: 'action', action: 'undo',          icon: '↶', label: 'Desfazer' },
           { id: 'cr', type: 'action', action: 'redo',          icon: '↷', label: 'Refazer' },
-        ];
+        ].filter(c => !allowed || allowed.includes(c.action));
         const symbolCards = (currentLevel.alphabet || []).map((sym, i) => ({
           id: `s${i}`, type: 'symbol', symbol: sym, label: `Símbolo ${sym}`,
         }));
@@ -506,7 +550,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       setTestWords(prev => [{ word: wordDisplay, status: 'wrong' }, ...prev]);
     }
     setNewWord('');
-  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress]);
+  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, showContextualTutorial]);
 
   // ── Helpers de modo ───────────────────────────────────────────────────────
   const resetMode = () => {
@@ -563,7 +607,22 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const toggleFinalStateMode = () => { if (!isDrawingUnlocked) return; setInteractionMode('TOGGLE_FINAL');    resetMode(); };
   const setEraserMode        = () => { if (!isDrawingUnlocked) return; setInteractionMode('ERASE');           resetMode(); };
   const setDrawMode          = () => { if (!isDrawingUnlocked) return; setInteractionMode('DRAW');            resetMode(); };
-  const toggleSidebar        = () => setIsSidebarOpen(o => !o);
+  const toggleSidebar = () => setIsSidebarOpen(o => {
+    const next = !o;
+    if (next) showContextualTutorial('onFormalDesc');
+    return next;
+  });
+
+  const handleProfessorClick = useCallback(() => {
+    let key;
+    if (isSidebarOpen && isTableFocusedRef.current) key = 'onTable';
+    else if (isSidebarOpen) key = 'onFormalDesc';
+    else if (isDrawingUnlocked) key = 'onDrawGraph';
+    else key = 'onStart';
+    const tut = currentLevel?.tutorials?.[key];
+    if (tut) setActiveTutorial(tut);
+    else showToast('Você está indo muito bem! Não tenho dicas extras para este passo.', 'info');
+  }, [isSidebarOpen, isDrawingUnlocked, currentLevel, showToast]);
 
   // ── Validação do grafo ─────────────────────────────────────────────────────
   const validateAFDSilent = useCallback((showErrors = true) => {
@@ -1072,17 +1131,30 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     transitionLabelRefs.current[idx]?.triggerAdd();
   }, [isDrawingUnlocked, interactionMode, selectedSymbolCard, handleEraseTransition, handleAppendCardToTransition]);
 
+  // ── Dados de exibição (aula guiada substitui estado real) ─────────────────
+  const displayNodes = useMemo(() => {
+    if (guidedLessonStep === null) return nodes;
+    const ld = currentLevel?.guidedLesson?.[guidedLessonStep]?.stateUpdate;
+    return ld ? ld.nodes.map(n => ({ ...n, uid: n.id })) : nodes;
+  }, [guidedLessonStep, currentLevel, nodes]);
+
+  const displayTransitions = useMemo(() => {
+    if (guidedLessonStep === null) return transitions;
+    const ld = currentLevel?.guidedLesson?.[guidedLessonStep]?.stateUpdate;
+    return ld ? ld.transitions : transitions;
+  }, [guidedLessonStep, currentLevel, transitions]);
+
   // ── Renderização de transições (memoizada) ────────────────────────────────
   const transitionRenders = useMemo(() => {
-    return transitions.map((t, idx) => {
-      const src = nodes.find(n => n.id === t.from);
-      const tgt = nodes.find(n => n.id === t.to);
+    return displayTransitions.map((t, idx) => {
+      const src = displayNodes.find(n => n.id === t.from);
+      const tgt = displayNodes.find(n => n.id === t.to);
       if (!src || !tgt) return null;
 
       const sw = canvasSize.w, sh = canvasSize.h;
       const sx = (src.x * sw) / 100, sy = (src.y * sh) / 100;
       const tx = (tgt.x * sw) / 100, ty = (tgt.y * sh) / 100;
-      const bidir = src.uid !== tgt.uid && transitions.some(o => o.from === tgt.id && o.to === src.id);
+      const bidir = src.uid !== tgt.uid && displayTransitions.some(o => o.from === tgt.id && o.to === src.id);
 
       let pathD = '', lx = 0, ly = 0;
       if (src.uid === tgt.uid) {
@@ -1104,7 +1176,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       }
       return { ...t, idx, src, tgt, pathD, labelPxX: lx, labelPxY: ly, bidir };
     }).filter(Boolean);
-  }, [transitions, nodes, canvasSize]);
+  }, [displayTransitions, displayNodes, canvasSize]);
 
   // ══════════════════════════════════════════════════════════════
   // TELA MENU (FASES)
@@ -1181,10 +1253,38 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
           <span className="mission-label">Objetivo</span>
           <div className="mission-formula">{currentLevel?.formula || ''}</div>
+          {currentLevel?.guidedLesson && (
+            <button
+              className="menu-btn"
+              style={{ padding: '4px 12px', fontSize: 12, marginLeft: 6 }}
+              onClick={() => {
+                userNodesSnapshot.current = JSON.parse(JSON.stringify(nodes));
+                userTransitionsSnapshot.current = JSON.parse(JSON.stringify(transitions));
+                setGuidedLessonStep(0);
+              }}
+              title="Assistir demonstração passo a passo"
+            >
+              👨‍🏫 Aula
+            </button>
+          )}
         </div>
-        <div style={{ width: 150, textAlign: 'right' }}>
+        <div style={{ width: 160, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
           <span className="mission-label" style={{ background: diffBg }}>{currentLevel?.label}</span>
-          <div style={{ marginTop: 4 }}><SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} max={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3} /></div>
+          <SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} max={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3} />
+          <button
+            style={{
+              padding: '2px 7px', fontSize: 10, fontWeight: 900,
+              background: autoTutorial ? '#bbf7d0' : '#fef3c7',
+              border: '2px solid #000', borderRadius: 6,
+              cursor: 'pointer', boxShadow: '2px 2px 0 #000',
+              fontFamily: "'Comic Sans MS', cursive",
+              whiteSpace: 'nowrap',
+            }}
+            onClick={toggleAutoTutorial}
+            title={autoTutorial ? 'Modo Iniciante ativado — clique para desligar' : 'Modo Iniciante desligado — clique para ligar'}
+          >
+            💡 {autoTutorial ? 'Dicas: ON' : 'Dicas: OFF'}
+          </button>
         </div>
       </header>
 
@@ -1220,6 +1320,14 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
             onSuccess={handleFormalSuccess}
             showToast={showToast}
             onValidateGraph={() => validateAFDSilent(true)}
+            onTableFocusChange={v => {
+              if (v) {
+                clearTimeout(tableBlurTimeoutRef.current);
+                isTableFocusedRef.current = true;
+              } else {
+                tableBlurTimeoutRef.current = setTimeout(() => { isTableFocusedRef.current = false; }, 300);
+              }
+            }}
           />
         </aside>
 
@@ -1277,7 +1385,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
             </div>
           )}
 
-          {!isDrawingUnlocked ? (
+          {!isDrawingUnlocked && guidedLessonStep === null ? (
             <div className="locked-overlay">
               <div style={{ display:'flex', alignItems:'center', justifyContent:'center', marginTop:80 }}>
                 <img src={imgMaurilioApontando} alt="Professor" style={{ height:320, zIndex:1 }} />
@@ -1435,7 +1543,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
               </svg>
 
               {/* Nós */}
-              {nodes.map(node => {
+              {displayNodes.map(node => {
                 const simCls =
                   simHighlight.nodeId === node.id
                     ? simHighlight.type === 'ok'    ? 'sim-active'
@@ -1464,6 +1572,24 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                 );
               })}
             </div>
+            {/* ── Aula Guiada ── */}
+            {guidedLessonStep !== null && currentLevel?.guidedLesson && (
+              <GuidedLessonOverlay
+                steps={currentLevel.guidedLesson}
+                step={guidedLessonStep}
+                onNext={() => setGuidedLessonStep(s => s + 1)}
+                onPrev={() => setGuidedLessonStep(s => s - 1)}
+                onFinish={() => {
+                  setGuidedLessonStep(null);
+                  const sn = userNodesSnapshot.current ?? [];
+                  const st = userTransitionsSnapshot.current ?? [];
+                  setNodes(sn);
+                  setTransitions(st);
+                  setHistory([{ nodes: sn, transitions: st }]);
+                  setHistoryIndex(0);
+                }}
+              />
+            )}
             </>
           )}
         </section>
@@ -1593,10 +1719,18 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
               </div>
             )}
             <img src={imgMaurilioSerio} alt="Professor Maurílio" className="prof-img"
-              onClick={() => triggerProfessorSpeech(currentLevel?.hint || 'Continue tentando!')} />
+              onClick={handleProfessorClick} />
           </div>
         )}
       </footer>
+
+      {/* ── Tutorial Modal ── */}
+      {activeTutorial && (
+        <TutorialModal
+          tutorial={activeTutorial}
+          onClose={() => setActiveTutorial(null)}
+        />
+      )}
 
       {/* ── Tela Impossível ── */}
       {showImpossibleScreen && (() => {
