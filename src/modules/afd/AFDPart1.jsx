@@ -291,12 +291,21 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   // ── UNDO/REDO ──────────────────────────────────────────────────────────────
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  // Quando true, o próximo recordHistory substitui o último entry (squash)
+  // em vez de empurrar um novo — usado para fundir "criar seta" + "adicionar símbolo"
+  const squashNextHistoryRef = useRef(false);
 
-  const recordHistory = useCallback((newNodes, newTransitions) => {
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push({ nodes: JSON.parse(JSON.stringify(newNodes)), transitions: JSON.parse(JSON.stringify(newTransitions)) });
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
+  const recordHistory = useCallback((newNodes, newTransitions, squash = false) => {
+    const snap = { nodes: JSON.parse(JSON.stringify(newNodes)), transitions: JSON.parse(JSON.stringify(newTransitions)) };
+    if (squash && historyIndex >= 0) {
+      setHistory(prev => { const h = [...prev]; h[historyIndex] = snap; return h; });
+      // historyIndex não muda
+    } else {
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(snap);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    }
   }, [history, historyIndex]);
 
   const undo = useCallback(() => {
@@ -507,6 +516,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     isDrawingRef.current = false;
     currentStrokeRef.current = null;
     setCurrentStroke(null);
+    squashNextHistoryRef.current = false;
   };
 
   const deleteSelected = useCallback(() => {
@@ -831,6 +841,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
           setTransitions(newTrans);
           recordHistory(nodes, newTrans);
+          squashNextHistoryRef.current = true;
         }
         setConnectingSource(null);
       }
@@ -1015,7 +1026,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     if (!existing.includes(sym)) {
       newTrans[idx] = { ...newTrans[idx], symbol: [...existing, sym].join(',') };
       setTransitions(newTrans);
-      recordHistory(nodes, newTrans);
+      const squash = squashNextHistoryRef.current;
+      squashNextHistoryRef.current = false;
+      recordHistory(nodes, newTrans, squash);
     }
   }, [transitions, nodes, recordHistory]);
 
@@ -1042,7 +1055,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     if (!existing.includes(sym)) {
       newTrans[idx] = { ...newTrans[idx], symbol: [...existing, sym].join(',') };
       setTransitions(newTrans);
-      recordHistory(nodes, newTrans);
+      const squash = squashNextHistoryRef.current;
+      squashNextHistoryRef.current = false;
+      recordHistory(nodes, newTrans, squash);
     }
     setSelectedSymbolCard(null);
   }, [selectedSymbolCard, transitions, nodes, recordHistory]);
@@ -1429,7 +1444,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
                     : '' : '';
                 return (
                   <div key={node.uid}
-                    className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${simCls}`}
+                    className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${simCls}`}
                     style={{ top:`${node.y}%`, left:`${node.x}%` }}
                     onPointerDown={e => handlePointerDownNode(e, node.uid)}>
                     <input

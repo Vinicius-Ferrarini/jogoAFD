@@ -939,7 +939,16 @@ body { color: var(--text-main); }
 
 /* Modos de cursor */
 .node.dragging { cursor: grabbing; z-index: 100; transform: translate(-50%, -50%) scale(1.1); box-shadow: 10px 10px 0px #000; }
-.node.selected-source { border: 4px dashed #000; box-shadow: 0 0 0 4px #fef08a, 6px 6px 0px #000; }
+.node.selected-source {
+  border: 3px dashed #f59e0b;
+  background: #fef9c3 !important;
+  box-shadow: 0 0 0 4px #fde047, 6px 6px 0px #000;
+  animation: source-pulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes source-pulse {
+  from { box-shadow: 0 0 0 3px #fde047, 6px 6px 0px #000; }
+  to   { box-shadow: 0 0 0 7px #fbbf24, 6px 6px 0px #000; }
+}
 .connecting-mode, .connecting-mode .node { cursor: crosshair; }
 .erase-mode { cursor: crosshair; }
 
