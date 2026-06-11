@@ -1085,3 +1085,182 @@ body { color: var(--text-main); }
   font-weight: bold;
   z-index: 1;
 }
+
+/* ═══════════════════════════════════════════════════════
+   BlackboardPanel — Modo Aula V2
+   ═══════════════════════════════════════════════════════ */
+
+.blackboard-panel {
+  width: 240px;
+  flex-shrink: 0;
+  background: #1e1e1e;
+  border-left: 3px solid #000;
+  box-shadow: -4px 0 0 #000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Seção do Professor ── */
+.bp-professor {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 8px 6px 0;
+  background: #2a2a2a;
+  border-bottom: 2px solid #444;
+  flex-shrink: 0;
+  min-height: 150px;
+  gap: 0;
+}
+
+.bp-balloon-wrap {
+  position: relative;
+  width: 148px;
+  height: 98px;
+  flex-shrink: 0;
+  margin-right: -12px;
+  z-index: 2;
+  align-self: flex-end;
+  margin-bottom: 6px;
+}
+
+.bp-balloon-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+  pointer-events: none;
+}
+
+.bp-balloon-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 10px 24px 8px;
+  box-sizing: border-box;
+  color: #000;
+  font-size: 10px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 1;
+  line-height: 1.3;
+  overflow: hidden;
+  font-family: 'Comic Sans MS', cursive;
+}
+
+.bp-maurilio-img {
+  height: 128px;
+  transform: scaleX(-1);
+  filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.7));
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+/* ── Quadro Negro ── */
+.bp-blackboard {
+  flex: 1;
+  background: #1a3a1a;
+  border-bottom: 2px solid #444;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.bp-blackboard::-webkit-scrollbar { width: 5px; }
+.bp-blackboard::-webkit-scrollbar-track { background: transparent; }
+.bp-blackboard::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+.bp-board-title {
+  color: #facc15;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px dashed #555;
+  padding-bottom: 5px;
+  margin-bottom: 4px;
+  font-family: 'Comic Sans MS', cursive;
+  flex-shrink: 0;
+}
+
+.bp-word-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.bw-done {
+  color: #555;
+  text-decoration: line-through;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bw-current {
+  color: #fde047;
+  font-size: 16px;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(253,224,71,0.55);
+}
+
+.bw-pending {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── Controles de Navegação ── */
+.bp-nav {
+  background: #2a2a2a;
+  border-top: 2px solid #444;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.bp-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.bp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #444;
+  border: 2px solid #666;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.bp-dot-active {
+  background: #facc15;
+  border-color: #facc15;
+}
+
+.bp-step-counter {
+  color: #888;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: center;
+  font-family: 'Comic Sans MS', cursive;
+}
+
+.bp-nav-btns {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
