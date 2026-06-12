@@ -1,30 +1,16 @@
 // ─── BlackboardPanel: painel lateral direito no Modo Aula V2 ─────────────────
 // Substitui o TestPanel quando guidedLessonStep !== null && boardWords presente.
-// Contém: HUD do Maurílio (balloon + imagem), quadro negro com palavras por status
-// e controles de navegação (Anterior / Próximo / Fechar Aula).
-import imgMaurilioExplicando from '../../../assets/maurilio3_explicando.webp';
-import imgBalaoFala          from '../../../assets/balao_fala_redondo.webp';
+// Contém: quadro negro com palavras por status e controles de navegação.
+// O HUD do Maurílio fica no FooterDeck (não aqui).
+import './BlackboardPanel.css';
 
 export default function BlackboardPanel({ boardWords, step, steps, onNext, onPrev, onFinish }) {
   const currentStep = steps[step];
   const doneUpTo    = currentStep?.boardDoneUpTo ?? -1;
   const isLast      = step === steps.length - 1;
-  const profText    = currentStep?.text ?? '';
 
   return (
     <aside className="blackboard-panel">
-
-      {/* ── HUD Maurílio ── */}
-      <div className="bp-professor">
-        <div className="bp-balloon-wrap">
-          <img src={imgBalaoFala} alt="" className="bp-balloon-img" />
-          <div
-            className="bp-balloon-text"
-            dangerouslySetInnerHTML={{ __html: profText || '...' }}
-          />
-        </div>
-        <img src={imgMaurilioExplicando} alt="Maurílio" className="bp-maurilio-img" />
-      </div>
 
       {/* ── Quadro Negro ── */}
       <div className="bp-blackboard">

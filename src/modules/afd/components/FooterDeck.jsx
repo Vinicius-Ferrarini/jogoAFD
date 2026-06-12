@@ -1,6 +1,7 @@
 // ─── FooterDeck: rodapé com a "mão" de cartas de ação/símbolos + HUD Maurílio ─
 // Alterna entre o SimPanel (durante a simulação) e a fileira de cartas. Inclui o
 // professor (balão de fala + figura). CSS: .bottom-hand / .card* / .professor-* .
+import './FooterDeck.css';
 import SimPanel from './SimPanel';
 import imgMaurilioSerio      from '../../../assets/maurilio1_serio.webp';
 import imgMaurilioExplicando from '../../../assets/maurilio3_explicando.webp';
@@ -19,8 +20,26 @@ export default function FooterDeck({
   // HUD professor
   isDrawingUnlocked, guidedLessonStep, currentLevel, professorMessage, handleProfessorClick,
 }) {
-  // No modo Aula V2 o professor está no BlackboardPanel — rodapé some completamente
-  if (isLessonActive) return null;
+  // No modo Aula V2 mostra só o HUD do professor (sem cartas/sim)
+  if (isLessonActive) {
+    const stepText = currentLevel?.guidedLesson?.[guidedLessonStep]?.text;
+    return (
+      <footer className="bottom-hand">
+        <div className="professor-hud professor-hud--lesson">
+          {stepText && (
+            <div className="professor-balloon">
+              <img src={imgBalaoFala} alt="" />
+              <div className="professor-balloon-text">
+                <div dangerouslySetInnerHTML={{ __html: stepText }} />
+              </div>
+            </div>
+          )}
+          <img src={imgMaurilioExplicando} alt="Professor Maurílio" className="prof-img"
+            onClick={handleProfessorClick} />
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="bottom-hand">
@@ -98,11 +117,11 @@ export default function FooterDeck({
       )}
       {/* ── HUD Maurílio ── */}
       {isDrawingUnlocked && (() => {
-        const isLessonActive = guidedLessonStep !== null;
-        const currentProfMsg = isLessonActive
+        const isInLesson     = guidedLessonStep !== null;
+        const currentProfMsg = isInLesson
           ? currentLevel?.guidedLesson?.[guidedLessonStep]?.text
           : professorMessage;
-        const currentProfImg = isLessonActive ? imgMaurilioExplicando : imgMaurilioSerio;
+        const currentProfImg = isInLesson ? imgMaurilioExplicando : imgMaurilioSerio;
         return (
           <div className="professor-hud">
             {currentProfMsg && (

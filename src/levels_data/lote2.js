@@ -12,13 +12,16 @@ export const lote2 = [
         '"ba" é rejeitado: q1 sem seta para "a". "cb" é rejeitado: q2 sem seta para "b". A ordem importa!',
       ] },
     },
+    boardWords: ['λ', 'a', 'ab', 'abc', 'cd', 'abcd', 'ad', 'bd', 'd'],
     guidedLesson: [
       {
         text: '4 blocos em ordem: a* b* c* d* — todos opcionais!<br/>Aceitar: <b>λ</b>, <b>ab</b>, <b>abcd</b>, <b>bcd</b>, <b>d</b>. Rejeitar: <b>bd</b> (q1 sem seta para d).',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
         text: 'λ e a\'s: q0 inicial e final, loop em \'a\'!<br/>Status: <s>λ</s>, <s>a</s>. E "ab"?',
+        boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -29,7 +32,8 @@ export const lote2 = [
         },
       },
       {
-        text: '"ab": q0→q1(b, final, loop b). E "abc"?<br/>Status: <s>λ</s>, <s>a</s>, <s>ab</s>.',
+        text: '"ab": q0→q1(b, final, loop b). E "abc"?',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -44,6 +48,7 @@ export const lote2 = [
       },
       {
         text: '"abc": q1→q2(c, final, loop c). Atalho <b>q0→q2(c)</b> aceita "cd"!<br/>Status: <s>λ</s>, <s>a</s>, <s>ab</s>, <s>abc</s>, <s>cd</s>. E "abcd"?',
+        boardDoneUpTo: 5,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -61,7 +66,8 @@ export const lote2 = [
         },
       },
       {
-        text: 'Bloco "d": q2→q3(final, loop d). Atalhos: <b>q0→q3(d)</b> e <b>q1→q3(d)</b> — "ad" e "bd" pulam blocos do meio!<br/>Status: <s>λ</s>, <s>a</s>, <s>ab</s>, <s>abcd</s>, <s>ad</s>, <s>bd</s>, <s>d</s> ✔ Concluído!',
+        text: 'Bloco "d": q2→q3(final, loop d). Atalhos: <b>q0→q3(d)</b> e <b>q1→q3(d)</b> — "ad" e "bd" pulam blocos do meio!',
+        boardDoneUpTo: 9,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -104,13 +110,16 @@ export const lote2 = [
         'O AFD guarda só o ÚLTIMO bit. Loops em q0(1) e q1(0) cobrem sequências longas.',
       ] },
     },
+    boardWords: ['0', '10', '110'],
     guidedLesson: [
       {
         text: 'PAR em binário termina em "0"!<br/>Aceitar: <b>0</b>, <b>10</b>, <b>110</b>. Rejeitar: 1, 11, 101.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
-        text: 'Menor palavra válida: "0". q0 —0→ q1(final).<br/>Status: <s>0</s>. E a palavra "10"?',
+        text: 'Menor palavra válida: "0". q0 —0→ q1(final).',
+        boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -123,6 +132,7 @@ export const lote2 = [
       },
       {
         text: '🐛 "10": q0 lê "1" → sem seta, trava! Fix: loop <b>q0 —1→ q0</b> (prefixo de 1\'s não muda paridade).<br/>Status: <s>0</s>, <s>10</s>. E "00"?',
+        boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -136,6 +146,7 @@ export const lote2 = [
       },
       {
         text: '🐛 "00": q1 lê o segundo "0" → sem seta, trava! Fix: loop <b>q1 —0→ q1</b> (dois zeros seguidos ainda é par).<br/>Status: <s>0</s>, <s>10</s>, <s>110</s>. E "010"?',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -149,7 +160,8 @@ export const lote2 = [
         },
       },
       {
-        text: '🐛 "010": q0→q1(0)→q1(0)→? q1 lê "1" → sem seta! Fix: <b>q1 —1→ q0</b> (um "1" desfaz a paridade).<br/>Status: <s>0</s>, <s>10</s>, <s>110</s> ✔ Concluído!',
+        text: '🐛 "010": q0→q1(0)→q1(0)→? q1 lê "1" → sem seta! Fix: <b>q1 —1→ q0</b> (um "1" desfaz a paridade).',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -183,13 +195,16 @@ export const lote2 = [
         'Espelho do L22: loop q0(0) e q1(1). Só o ÚLTIMO bit decide. "101": q0→q1→q0→q1 ✔',
       ] },
     },
+    boardWords: ['1', '01', '11', '101'],
     guidedLesson: [
       {
         text: 'ÍMPAR em binário termina em "1"!<br/>Aceitar: <b>1</b>, <b>11</b>, <b>101</b>. Rejeitar: 0, 10, 100.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
-        text: 'Menor palavra válida: "1". q0 —1→ q1(final).<br/>Status: <s>1</s>. E a palavra "01"?',
+        text: 'Menor palavra válida: "1". q0 —1→ q1(final).',
+        boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -202,6 +217,7 @@ export const lote2 = [
       },
       {
         text: '🐛 "01": q0 lê "0" → sem seta, trava! Fix: loop <b>q0 —0→ q0</b> (prefixo de 0\'s não muda paridade).<br/>Status: <s>1</s>, <s>01</s>. E "11"?',
+        boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -215,6 +231,7 @@ export const lote2 = [
       },
       {
         text: '🐛 "11": q1 lê o segundo "1" → sem seta, trava! Fix: loop <b>q1 —1→ q1</b> (último símbolo ainda é "1", continua ímpar).<br/>Status: <s>1</s>, <s>11</s>. E "101"?',
+        boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -228,7 +245,8 @@ export const lote2 = [
         },
       },
       {
-        text: '🐛 "101": q0→q1(1)→q1(1)→? q1 lê "0" → sem seta! Fix: <b>q1 —0→ q0</b> (um "0" desfaz a imparidade).<br/>Status: <s>1</s>, <s>11</s>, <s>101</s> ✔ Concluído!',
+        text: '🐛 "101": q0→q1(1)→q1(1)→? q1 lê "0" → sem seta! Fix: <b>q1 —0→ q0</b> (um "0" desfaz a imparidade).',
+        boardDoneUpTo: 4,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -256,13 +274,16 @@ export const lote2 = [
         '"0000": lê 4° símbolo em q3, sem seta → rejeição automática. Sem estado extra!',
       ] },
     },
+    boardWords: ['000', '101'],
     guidedLesson: [
       {
         text: 'Exatamente 3 símbolos!<br/>Aceitar: <b>000</b>, <b>101</b>. Rejeitar: λ, 00, 0000.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
         text: 'Trilho linear: q0→q1→q2→q3(final) com {0,1}.<br/>Status: <s>000</s>, <s>101</s>. E "0000"?',
+        boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
@@ -278,7 +299,8 @@ export const lote2 = [
         },
       },
       {
-        text: '"0000": q3 lê o 4° símbolo — <u>sem seta</u> = dead-state implícito! Sem estado extra necessário.<br/>Status: <s>000</s>, <s>101</s> ✔ Concluído!',
+        text: '"0000": q3 lê o 4° símbolo — <u>sem seta</u> = dead-state implícito! Sem estado extra necessário.',
+        boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
@@ -307,13 +329,16 @@ export const lote2 = [
         'Dual de L24: aqui o trilho curto aceita, e a ausência de setas rejeita o extra.',
       ] },
     },
+    boardWords: ['λ', '0', '10'],
     guidedLesson: [
       {
         text: 'Comprimento 0, 1 ou 2!<br/>Aceitar: <b>λ</b>, <b>0</b>, <b>10</b>. Rejeitar: 000, 0000.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
         text: 'Trilho curto: q0(ini,f)→q1(f)→q2(f) com {0,1}. λ aceita em q0, "0" em q1, "10" em q2!<br/>Status: <s>λ</s>, <s>0</s>, <s>10</s>. E "000"?',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true },
@@ -327,7 +352,8 @@ export const lote2 = [
         },
       },
       {
-        text: '"000": q2 lê o 3° símbolo — <u>sem seta</u> = dead-state implícito! Sem qD necessário.<br/>Status: <s>λ</s>, <s>0</s>, <s>10</s> ✔ Concluído!',
+        text: '"000": q2 lê o 3° símbolo — <u>sem seta</u> = dead-state implícito! Sem qD necessário.',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true },
@@ -354,13 +380,16 @@ export const lote2 = [
         '"000" termina em q3 (não final) → rejeição automática. Posição importa, não conteúdo.',
       ] },
     },
+    boardWords: ['0000', '1111', '01010'],
     guidedLesson: [
       {
         text: 'MAIOR que 3 — mínimo 4 símbolos!<br/>Aceitar: <b>0000</b>, <b>1111</b>, <b>01010</b>. Rejeitar: λ, 0, 000.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
         text: 'Trilho de 4 passos: q0→q1→q2→q3→q4(final) com {0,1}.<br/>"0000" aceito em q4. "000" termina em q3 (não final) → rejeitado. E "00000"?',
+        boardDoneUpTo: 0,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -378,7 +407,8 @@ export const lote2 = [
         },
       },
       {
-        text: '🐛 "00000": q4 lê o 5° símbolo — sem seta, trava! Fix: loop <b>q4 —{0,1}→ q4</b>. Palavras mais longas aceitas!<br/>Status: <s>0000</s>, <s>1111</s>, <s>01010</s> ✔ Concluído!',
+        text: '🐛 "00000": q4 lê o 5° símbolo — sem seta, trava! Fix: loop <b>q4 —{0,1}→ q4</b>. Palavras mais longas aceitas!',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -411,13 +441,16 @@ export const lote2 = [
         '"0001" (4 símbolos): q0→q1→q2→q0→q1 → rejeitado em q1. O ciclo é exato!',
       ] },
     },
+    boardWords: ['λ', '000', '010101'],
     guidedLesson: [
       {
         text: 'Múltiplo de 3 — comprimento ≡ 0 (mod 3)!<br/>Aceitar: <b>λ</b>, <b>000</b>, <b>010101</b>. Rejeitar: 0, 00, 0001.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
         text: '"λ" já é aceita (q0 final). Para "000": q0 avança para q1 e q2 a cada símbolo.<br/>Adicione <b>q0 —{0,1}→ q1</b> e <b>q1 —{0,1}→ q2</b>. E "000"?',
+        boardDoneUpTo: 0,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true,  isFinal: true  },
@@ -431,7 +464,8 @@ export const lote2 = [
         },
       },
       {
-        text: '🐛 "000": q0→q1→q2→? q2 lê o 3° símbolo — sem seta, trava! Fix: <b>q2 —{0,1}→ q0</b>. Ciclo completo!<br/>Status: <s>λ</s>, <s>000</s>, <s>010101</s> ✔ Concluído!',
+        text: '🐛 "000": q0→q1→q2→? q2 lê o 3° símbolo — sem seta, trava! Fix: <b>q2 —{0,1}→ q0</b>. Ciclo completo!',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true,  isFinal: true  },
@@ -459,13 +493,16 @@ export const lote2 = [
         'Novo 0 antes de quitar (q1→qT ou q2→qT) = violação irrecuperável. qT rejeita tudo.',
       ] },
     },
+    boardWords: ['011', '1011'],
     guidedLesson: [
       {
         text: 'Todo "0" exige dois "1"s em seguida!<br/>Aceitar: <b>λ</b>, <b>011</b>, <b>1011</b>. Rejeitar: 0, 01, 010.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
         text: 'Menor palavra com 0: "011". q0 —0→ q1 (deve 2 uns) —1→ q2 (deve 1 un) —1→ q0 (dívida quitada!).<br/>Status: <s>011</s>. E "1011"?',
+        boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
@@ -481,6 +518,7 @@ export const lote2 = [
       },
       {
         text: '🐛 "1011": q0 lê "1" → sem seta, trava! Fix: loop <b>q0 —1→ q0</b> (1s livres antes de um 0).<br/>Status: <s>011</s>, <s>1011</s>. E "010"?',
+        boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
@@ -497,6 +535,7 @@ export const lote2 = [
       },
       {
         text: '🐛 "010": q1 lê "0" — dívida não quitada! Sem seta = dead implícito. Mesmo para q2—0: dead implícito.<br/>Autômato completo: q0—0→q1, q1—1→q2, q2—1→q0, q0 loop em 1. Transições q1—0 e q2—0 ausentes = rejeição automática ✔ Concluído!',
+        boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
@@ -526,13 +565,16 @@ export const lote2 = [
         'q3—0→dead (impossível: 3 zeros, só 1 posição restante). q5—0→dead (4 símbolos, só 1 um).',
       ] },
     },
+    boardWords: ['11', '0011', '1011'],
     guidedLesson: [
       {
         text: '4 primeiros símbolos com ≥ 2 uns!<br/>Aceitar: <b>0011</b>, <b>1011</b>, <b>1100</b>. Rejeitar: 0, 00, 0001.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] },
       },
       {
         text: 'Camada 1 — q0 distribui por símbolo:<br/><b>q0—0→q1</b>(posição 1, 0 uns) e <b>q0—1→q2</b>(posição 1, 1 um).',
+        boardDoneUpTo: 0,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
@@ -547,6 +589,7 @@ export const lote2 = [
       },
       {
         text: 'Camada 2 — posição 2:<br/>q1: 0→q3(0 uns), 1→q4(1 um). q2: 0→q4(1 um), 1→q7(2 uns — atingiu o mínimo antecipado!).',
+        boardDoneUpTo: 0,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
@@ -567,7 +610,8 @@ export const lote2 = [
         },
       },
       {
-        text: 'Camadas 3-4 completas: q3—1→q5, q4—0→q5 ou 1→q8, q7—{0,1}→q8, q5—1→q6, q8—{0,1}→q6, q6 loop.<br/><b>q7 e q8 também são finais</b> — ≥2 uns já vistos antes da 4ª posição basta! "11": q0→q2→<b>q7(final)</b> ✔<br/>Status: <s>11</s>, <s>0011</s>, <s>1011</s> ✔ Concluído!',
+        text: 'Camadas 3-4 completas: q3—1→q5, q4—0→q5 ou 1→q8, q7—{0,1}→q8, q5—1→q6, q8—{0,1}→q6, q6 loop.<br/><b>q7 e q8 também são finais</b> — ≥2 uns já vistos antes da 4ª posição basta! "11": q0→q2→<b>q7(final)</b> ✔',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
@@ -664,10 +708,13 @@ export const lote2 = [
         'q3 não é final (000 no sufixo). Mas q3—1→q0 permite escapar! "10001": termina em "001" → aceito.',
       ] },
     },
+    boardWords: ['λ', '1', '001'],
     guidedLesson: [
       { text: 'Sufixo "000" proibido — mas escapável com "1"!<br/>Aceitar: <b>λ</b>, <b>1</b>, <b>001</b>. Rejeitar: 000, 1000, 10000.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] } },
       { text: 'λ e "1": q0(ini,f)—1→q0 (loop). "001": q0—0→q1—0→q2—1→q0.<br/>Status: <s>λ</s>, <s>1</s>, <s>001</s>. E "000"?',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true },
@@ -683,6 +730,7 @@ export const lote2 = [
           ],
         } },
       { text: '🐛 "000": q2 lê 3° zero — sem seta! Fix: <b>q2—0→q3</b>(não-final). <b>q3—0→q3</b>(loop), <b>q3—1→q0</b>(escape!).<br/>"1000": q0→q0→q1→q2→q3. Não-final → rejeitado ✔ Concluído!',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true  },
@@ -792,10 +840,13 @@ export const lote2 = [
         'Dead implícito: q0—1, q1—1, q2—0 — qualquer desvio rejeita permanentemente.',
       ] },
     },
+    boardWords: ['001'],
     guidedLesson: [
       { text: 'Prefixo obrigatório "001"!<br/>Aceitar: <b>001</b>, <b>0011</b>, <b>001100</b>. Rejeitar: λ, 1, 010.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] } },
       { text: '"001": q0—0→q1—0→q2—1→q3(final). Cadeia linear.<br/>Status: <s>001</s>. E "0011"?',
+        boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
@@ -810,6 +861,7 @@ export const lote2 = [
           ],
         } },
       { text: '🐛 "0011": q3 lê "1" — sem seta! Fix: loop <b>q3—{0,1}→q3</b>.<br/>"001100": q3 absorve o resto. ✔ Concluído!',
+        boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
@@ -839,10 +891,13 @@ export const lote2 = [
         'Resets: q2—0→q0, q3—1→q0, q4—0→q0. q4—1→q3 (após "1010"+1 → novo "101").',
       ] },
     },
+    boardWords: ['1010', '01010', '001010'],
     guidedLesson: [
       { text: 'Sufixo obrigatório "1010"!<br/>Aceitar: <b>1010</b>, <b>01010</b>, <b>001010</b>. Rejeitar: λ, 101, 1011.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] } },
       { text: '"1010": q0—1→q1—0→q2—1→q3—0→q4(final). Cadeia linear de 5 estados.<br/>Status: <s>1010</s>. E "01010"?',
+        boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -859,6 +914,7 @@ export const lote2 = [
           ],
         } },
       { text: '🐛 "01010": q0 lê "0" — sem seta! Fix loops de absorção: <b>q0—0→q0</b> e <b>q1—1→q1</b>.<br/>Status: <s>1010</s>, <s>01010</s>, <s>001010</s> ✔. E "1011"?',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -877,6 +933,7 @@ export const lote2 = [
           ],
         } },
       { text: '🐛 "1011": q3 lê "1" — sem seta! Fix resets: <b>q2—0→q0</b>, <b>q3—1→q0</b>, <b>q4—0→q0</b>, <b>q4—1→q3</b>.<br/>"1011": q3—1→q0. Não-final → rejeitado ✔ Concluído!',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -913,10 +970,13 @@ export const lote2 = [
         'q4—{0,1}→q4: uma vez achados os 4 uns, a palavra já é válida. Loop eterno!',
       ] },
     },
+    boardWords: ['1111'],
     guidedLesson: [
       { text: 'Subpalavra "1111" em qualquer posição!<br/>Aceitar: <b>1111</b>, <b>01111</b>, <b>11110</b>. Rejeitar: λ, 111, 11011.',
+        boardDoneUpTo: -1,
         stateUpdate: { nodes: [], transitions: [] } },
       { text: '"1111": q0—1→q1—1→q2—1→q3—1→q4(final). Cadeia de 5 estados.<br/>Status: <s>1111</s>. E "01111"?',
+        boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -933,6 +993,7 @@ export const lote2 = [
           ],
         } },
       { text: '🐛 "01111": q0 lê "0" — sem seta! Fix resets: <b>q0—0→q0</b>, <b>q1—0→q0</b>, <b>q2—0→q0</b>, <b>q3—0→q0</b>. Loop final: <b>q4—{0,1}→q4</b>.<br/>"11110": q4—0→q4 ✔ "11011": termina em q2 (não-final) ✔ Concluído!',
+        boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },

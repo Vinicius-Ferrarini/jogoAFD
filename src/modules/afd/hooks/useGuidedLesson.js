@@ -26,20 +26,22 @@ export default function useGuidedLesson({ currentLevel }) {
 
   const showContextualTutorial = useCallback((key) => {
     if (!autoTutorial) return;
+    if (guidedLessonStep !== null) return;
     const tut = currentLevel?.tutorials?.[key];
     if (tut && !shownTutorialsRef.current.has(key)) {
       shownTutorialsRef.current.add(key);
       setActiveTutorial(tut);
     }
-  }, [currentLevel, autoTutorial]);
+  }, [currentLevel, autoTutorial, guidedLessonStep]);
 
   // Dispara o tutorial de abertura ao carregar uma fase (se modo iniciante ligado).
   useEffect(() => {
     if (!autoTutorial || !currentLevel?.tutorials?.onStart) return;
+    if (guidedLessonStep !== null) return;
     shownTutorialsRef.current = new Set();
     setActiveTutorial(currentLevel.tutorials.onStart);
     shownTutorialsRef.current.add('onStart');
-  }, [currentLevel, autoTutorial]);
+  }, [currentLevel, autoTutorial, guidedLessonStep]);
 
   return {
     guidedLessonStep, setGuidedLessonStep,

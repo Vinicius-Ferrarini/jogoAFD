@@ -40,9 +40,11 @@ export default function useCanvasState({
       if (canvasRef.current)
         setCanvasSize({ w: canvasRef.current.clientWidth, h: canvasRef.current.clientHeight });
     };
+    const el = canvasRef.current;
     window.addEventListener('resize', update);
     const tid = setTimeout(update, 50);
-    const el = canvasRef.current;
+    const ro = el ? new ResizeObserver(update) : null;
+    if (ro) ro.observe(el);
     const onWheel = (e) => {
       if (!isUnlockedRef.current) return;
       e.preventDefault();
@@ -63,6 +65,7 @@ export default function useCanvasState({
     return () => {
       window.removeEventListener('resize', update);
       clearTimeout(tid);
+      if (ro) ro.disconnect();
       if (el) el.removeEventListener('wheel', onWheel);
     };
   }, [tela, isSidebarOpen, canvasRef]);

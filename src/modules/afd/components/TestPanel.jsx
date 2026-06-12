@@ -1,4 +1,5 @@
 // ─── TestPanel: barra lateral direita (testar palavras + validar AFD) ────────
+import './TestPanel.css';
 // Input de nova palavra, lista de testes (menor/aceita/rejeitada), botão de
 // simulação e botão de validação. CSS: .test-panel / .word-* em AFDPart1.css.
 export default function TestPanel({

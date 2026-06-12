@@ -1,6 +1,7 @@
 // ─── GameHeader: cabeçalho da tela de jogo ───────────────────────────────────
 // Botões de sidebar/voltar, objetivo (fórmula) + atalho de Aula Guiada, rótulo
 // de dificuldade, estrelas e toggle "Dicas ON/OFF". CSS: .game-header em AFDPart1.css.
+import './GameHeader.css';
 import { SvgStars } from '../SvgStar';
 import { LEVEL_DIFFICULTY, DIFF_COLOR, GAME_LEVELS } from '../../../levels';
 

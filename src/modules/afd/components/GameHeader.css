@@ -1,0 +1,70 @@
+.game-header {
+  background: var(--panel-bg);
+  border-bottom: 3px solid #000;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  box-shadow: 0 4px 0px #000;
+  flex-shrink: 0;
+}
+
+.header-left { display: flex; align-items: center; gap: 12px; width: 150px; }
+
+.sidebar-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-toggle:hover { transform: scale(1.1); }
+
+.mission-label {
+  color: var(--text-main);
+  font-weight: 800;
+  font-size: 13px;
+  text-transform: uppercase;
+  margin-right: 12px;
+  background: var(--accent-green);
+  padding: 4px 8px;
+  border: 3px solid #000;
+  border-radius: 8px;
+  box-shadow: 2px 2px 0px #000;
+  transform: rotate(-2deg);
+  white-space: nowrap;
+}
+
+.mission-formula {
+  font-size: 20px;
+  font-weight: bold;
+  background: #fff;
+  padding: 4px 16px;
+  border-radius: 8px;
+  border: 3px solid #000;
+  color: #000;
+  box-shadow: 4px 4px 0px #000;
+}
+
+.back-btn {
+  background: #fff;
+  border: 3px solid #000;
+  padding: 5px 10px;
+  border-radius: 8px;
+  color: var(--text-main);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+  box-shadow: 3px 3px 0px #000;
+}
+.back-btn:hover {
+  background: var(--accent-red);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #000;
+}
