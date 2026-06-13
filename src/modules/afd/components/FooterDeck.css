@@ -149,10 +149,10 @@
 
 .professor-balloon {
   position: absolute;
-  bottom: 78%;
-  right: -25px;
-  width: 233px;
-  height: 158px;
+  bottom: 65%;
+  right: 0px;
+  width: 220px;
+  height: 210px;
   margin-bottom: 0;
   pointer-events: none;
 }
@@ -168,9 +168,9 @@
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 18px 14px 38px;
+  padding: 28px 18px 64px;
   box-sizing: border-box;
   color: #000;
   font-size: 12px;

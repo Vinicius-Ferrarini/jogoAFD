@@ -14,27 +14,20 @@ export const lote2 = [
     },
     boardWords: ['λ', 'a', 'ab', 'abc', 'cd', 'abcd', 'ad', 'bd', 'd'],
     guidedLesson: [
-      {
-        text: '4 blocos em ordem: a* b* c* d* — todos opcionais!<br/>Aceitar: <b>λ</b>, <b>ab</b>, <b>abcd</b>, <b>bcd</b>, <b>d</b>. Rejeitar: <b>bd</b> (q1 sem seta para d).',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: 'λ e a\'s: q0 inicial e final, loop em \'a\'!<br/>Status: <s>λ</s>, <s>a</s>. E "ab"?',
-        boardDoneUpTo: 2,
-        stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q0', symbol: 'a' },
-          ],
-        },
-      },
-      {
-        text: '"ab": q0→q1(b, final, loop b). E "abc"?',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+      { text: '4 blocos em ordem: a* b* c* d* — todos opcionais!<br/>Aceitar: <b>λ</b>, <b>a</b>, <b>ab</b>, <b>abc</b>, <b>cd</b>, <b>abcd</b>, <b>ad</b>, <b>bd</b>, <b>d</b>.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>λ</b> e <b>a</b>: ambas no bloco "a". q0(ini,final) + loop a resolve as duas!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0(ini,final) + loop a. λ=q0✓, a=q0→q0✓. Próximo: "ab"!',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [{ id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true }],
+          transitions: [{ from: 'q0', to: 'q0', symbol: 'a' }] } },
+      { text: 'Spotlight <b>ab</b>: bloco b — q0 lê "b" sem seta! Preciso de q1(final, loop b).',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [{ id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true }],
+          transitions: [{ from: 'q0', to: 'q0', symbol: 'a' }] } },
+      { text: 'Fix: q0→q1(b,final,loop b). "ab" ✓. Próximas: "abc" e "cd"!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
             { id: 'q1', label: 'q1', x: 40, y: 35, isInitial: false, isFinal: true },
@@ -43,13 +36,20 @@ export const lote2 = [
             { from: 'q0', to: 'q0', symbol: 'a' },
             { from: 'q0', to: 'q1', symbol: 'b' },
             { from: 'q1', to: 'q1', symbol: 'b' },
+          ] } },
+      { text: 'Spotlight <b>abc</b> e <b>cd</b>: q1 lê "c" sem seta! q2(final, loop c) com atalho q0→q2(c).',
+        boardDoneUpTo: 3, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 40, y: 35, isInitial: false, isFinal: true },
           ],
-        },
-      },
-      {
-        text: '"abc": q1→q2(c, final, loop c). Atalho <b>q0→q2(c)</b> aceita "cd"!<br/>Status: <s>λ</s>, <s>a</s>, <s>ab</s>, <s>abc</s>, <s>cd</s>. E "abcd"?',
-        boardDoneUpTo: 5,
-        stateUpdate: {
+          transitions: [
+            { from: 'q0', to: 'q0', symbol: 'a' },
+            { from: 'q0', to: 'q1', symbol: 'b' },
+            { from: 'q1', to: 'q1', symbol: 'b' },
+          ] } },
+      { text: 'Fix: q2(final,loop c), q0→q2(c), q1→q2(c). "abc" e "cd" ✓. Próximas: "abcd", "ad", "bd", "d"!',
+        boardDoneUpTo: 5, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
             { id: 'q1', label: 'q1', x: 40, y: 35, isInitial: false, isFinal: true },
@@ -62,13 +62,24 @@ export const lote2 = [
             { from: 'q1', to: 'q1', symbol: 'b' },
             { from: 'q1', to: 'q2', symbol: 'c' },
             { from: 'q2', to: 'q2', symbol: 'c' },
+          ] } },
+      { text: 'Spotlight <b>abcd</b>, <b>ad</b>, <b>bd</b>, <b>d</b>: todos precisam do bloco d — q2 sem seta para "d"!',
+        boardDoneUpTo: 5, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 40, y: 35, isInitial: false, isFinal: true },
+            { id: 'q2', label: 'q2', x: 60, y: 65, isInitial: false, isFinal: true },
           ],
-        },
-      },
-      {
-        text: 'Bloco "d": q2→q3(final, loop d). Atalhos: <b>q0→q3(d)</b> e <b>q1→q3(d)</b> — "ad" e "bd" pulam blocos do meio!',
-        boardDoneUpTo: 9,
-        stateUpdate: {
+          transitions: [
+            { from: 'q0', to: 'q0', symbol: 'a' },
+            { from: 'q0', to: 'q1', symbol: 'b' },
+            { from: 'q0', to: 'q2', symbol: 'c' },
+            { from: 'q1', to: 'q1', symbol: 'b' },
+            { from: 'q1', to: 'q2', symbol: 'c' },
+            { from: 'q2', to: 'q2', symbol: 'c' },
+          ] } },
+      { text: 'Fix: q3(final,loop d) + atalhos q0→q3(d), q1→q3(d), q2→q3(d). Todos ✓ Concluído!',
+        boardDoneUpTo: 9, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
             { id: 'q1', label: 'q1', x: 40, y: 35, isInitial: false, isFinal: true },
@@ -86,9 +97,7 @@ export const lote2 = [
             { from: 'q2', to: 'q2', symbol: 'c' },
             { from: 'q2', to: 'q3', symbol: 'd' },
             { from: 'q3', to: 'q3', symbol: 'd' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 22, label: "L22", formula: "L = { w ∈ {0,1}* | w é um número par }",
     aliases: [
@@ -112,57 +121,26 @@ export const lote2 = [
     },
     boardWords: ['0', '10', '110'],
     guidedLesson: [
-      {
-        text: 'PAR em binário termina em "0"!<br/>Aceitar: <b>0</b>, <b>10</b>, <b>110</b>. Rejeitar: 1, 11, 101.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: 'Menor palavra válida: "0". q0 —0→ q1(final).',
-        boardDoneUpTo: 1,
-        stateUpdate: {
+      { text: 'PAR em binário termina em "0"!<br/>Aceitar: <b>0</b>, <b>10</b>, <b>110</b>. Rejeitar: 1, 11, 101.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>0</b>: menor caso — o último símbolo é "0". Preciso de q0→q1(0,final).',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1(final). "0" ✓. Próximas: "10" e "110"!',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: '0' },
-          ],
-        },
-      },
-      {
-        text: '🐛 "10": q0 lê "1" → sem seta, trava! Fix: loop <b>q0 —1→ q0</b> (prefixo de 1\'s não muda paridade).<br/>Status: <s>0</s>, <s>10</s>. E "00"?',
-        boardDoneUpTo: 2,
-        stateUpdate: {
+          transitions: [{ from: 'q0', to: 'q1', symbol: '0' }] } },
+      { text: 'Spotlight <b>10</b> e <b>110</b>: q0 lê "1" — sem seta! Precisam de loop q0(1) + loop q1(0) + q1→q0(1).',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: '0' },
-            { from: 'q0', to: 'q0', symbol: '1' },
-          ],
-        },
-      },
-      {
-        text: '🐛 "00": q1 lê o segundo "0" → sem seta, trava! Fix: loop <b>q1 —0→ q1</b> (dois zeros seguidos ainda é par).<br/>Status: <s>0</s>, <s>10</s>, <s>110</s>. E "010"?',
-        boardDoneUpTo: 3,
-        stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: '0' },
-            { from: 'q0', to: 'q0', symbol: '1' },
-            { from: 'q1', to: 'q1', symbol: '0' },
-          ],
-        },
-      },
-      {
-        text: '🐛 "010": q0→q1(0)→q1(0)→? q1 lê "1" → sem seta! Fix: <b>q1 —1→ q0</b> (um "1" desfaz a paridade).',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+          transitions: [{ from: 'q0', to: 'q1', symbol: '0' }] } },
+      { text: 'Fix: q0 loop 1, q1 loop 0, q1→q0(1). "10"=q0→q0→q1✓, "110"=q0→q0→q0→q1✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
@@ -172,9 +150,7 @@ export const lote2 = [
             { from: 'q0', to: 'q0', symbol: '1' },
             { from: 'q1', to: 'q1', symbol: '0' },
             { from: 'q1', to: 'q0', symbol: '1' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 23, label: "L23", formula: "L = { w ∈ {0,1}* | w é um número ímpar }",
     aliases: [
@@ -197,28 +173,26 @@ export const lote2 = [
     },
     boardWords: ['1', '01', '11', '101'],
     guidedLesson: [
-      {
-        text: 'ÍMPAR em binário termina em "1"!<br/>Aceitar: <b>1</b>, <b>11</b>, <b>101</b>. Rejeitar: 0, 10, 100.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: 'Menor palavra válida: "1". q0 —1→ q1(final).',
-        boardDoneUpTo: 1,
-        stateUpdate: {
+      { text: 'ÍMPAR em binário termina em "1"!<br/>Aceitar: <b>1</b>, <b>01</b>, <b>11</b>, <b>101</b>. Rejeitar: 0, 10, 100.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>1</b>: menor caso — q0→q1(1,final).',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1(final). "1" ✓. Próxima: "01"!',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: '1' },
+          transitions: [{ from: 'q0', to: 'q1', symbol: '1' }] } },
+      { text: 'Spotlight <b>01</b>: q0 lê "0" — sem seta! Preciso de loop q0(0).',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
-        },
-      },
-      {
-        text: '🐛 "01": q0 lê "0" → sem seta, trava! Fix: loop <b>q0 —0→ q0</b> (prefixo de 0\'s não muda paridade).<br/>Status: <s>1</s>, <s>01</s>. E "11"?',
-        boardDoneUpTo: 2,
-        stateUpdate: {
+          transitions: [{ from: 'q0', to: 'q1', symbol: '1' }] } },
+      { text: 'Fix: q0 loop 0. "01"=q0→q0→q1✓. Próxima: "11"!',
+        boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
@@ -226,13 +200,19 @@ export const lote2 = [
           transitions: [
             { from: 'q0', to: 'q1', symbol: '1' },
             { from: 'q0', to: 'q0', symbol: '0' },
+          ] } },
+      { text: 'Spotlight <b>11</b>: q1 lê 2° "1" — sem seta! Preciso de loop q1(1).',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
-        },
-      },
-      {
-        text: '🐛 "11": q1 lê o segundo "1" → sem seta, trava! Fix: loop <b>q1 —1→ q1</b> (último símbolo ainda é "1", continua ímpar).<br/>Status: <s>1</s>, <s>11</s>. E "101"?',
-        boardDoneUpTo: 2,
-        stateUpdate: {
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: '1' },
+            { from: 'q0', to: 'q0', symbol: '0' },
+          ] } },
+      { text: 'Fix: q1 loop 1. "11"=q0→q1→q1✓. Próxima: "101"!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
@@ -241,13 +221,20 @@ export const lote2 = [
             { from: 'q0', to: 'q1', symbol: '1' },
             { from: 'q0', to: 'q0', symbol: '0' },
             { from: 'q1', to: 'q1', symbol: '1' },
+          ] } },
+      { text: 'Spotlight <b>101</b>: q1 lê "0" — sem seta! Preciso de q1→q0(0).',
+        boardDoneUpTo: 3, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
-        },
-      },
-      {
-        text: '🐛 "101": q0→q1(1)→q1(1)→? q1 lê "0" → sem seta! Fix: <b>q1 —0→ q0</b> (um "0" desfaz a imparidade).',
-        boardDoneUpTo: 4,
-        stateUpdate: {
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: '1' },
+            { from: 'q0', to: 'q0', symbol: '0' },
+            { from: 'q1', to: 'q1', symbol: '1' },
+          ] } },
+      { text: 'Fix: q1→q0(0). "101"=q0→q1→q0→q1✓ Concluído!',
+        boardDoneUpTo: 4, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
@@ -257,9 +244,7 @@ export const lote2 = [
             { from: 'q0', to: 'q0', symbol: '0' },
             { from: 'q1', to: 'q1', symbol: '1' },
             { from: 'q1', to: 'q0', symbol: '0' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 24, label: "L24", formula: "L = { w ∈ {0,1}* | w tem tamanho 3 }",                              desc: "",                                                                 shortestWord: "000",      regex: /^[01]{3}$/,                                                 alphabet: ['0', '1'],             acceptedWords: ["000","011","101"],         rejectedWords: ["λ","00","0000"],       hint: "Você precisa de um caminho reto que só aceita na terceira etapa.",                                                  successMsg: "Controle de tamanho exato.",
     tutorials: {
@@ -276,15 +261,12 @@ export const lote2 = [
     },
     boardWords: ['000', '101'],
     guidedLesson: [
-      {
-        text: 'Exatamente 3 símbolos!<br/>Aceitar: <b>000</b>, <b>101</b>. Rejeitar: λ, 00, 0000.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: 'Trilho linear: q0→q1→q2→q3(final) com {0,1}.<br/>Status: <s>000</s>, <s>101</s>. E "0000"?',
-        boardDoneUpTo: 2,
-        stateUpdate: {
+      { text: 'Exatamente 3 símbolos!<br/>Aceitar: <b>000</b>, <b>101</b>. Rejeitar: λ, 00, 0000.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>000</b> e <b>101</b>: ambas têm 3 símbolos — um trilho de 4 estados resolve as duas!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1→q2→q3(final) com {0,1}. "000" e "101" ✓. E "0000"?',
+        boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 40, y: 50, isInitial: false, isFinal: false },
@@ -295,13 +277,9 @@ export const lote2 = [
             { from: 'q0', to: 'q1', symbol: '0,1' },
             { from: 'q1', to: 'q2', symbol: '0,1' },
             { from: 'q2', to: 'q3', symbol: '0,1' },
-          ],
-        },
-      },
-      {
-        text: '"0000": q3 lê o 4° símbolo — <u>sem seta</u> = dead-state implícito! Sem estado extra necessário.',
-        boardDoneUpTo: 2,
-        stateUpdate: {
+          ] } },
+      { text: '"0000": q3 lê o 4° símbolo — sem seta = dead-state implícito! Sem estado extra necessário. Concluído!',
+        boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 40, y: 50, isInitial: false, isFinal: false },
@@ -312,9 +290,7 @@ export const lote2 = [
             { from: 'q0', to: 'q1', symbol: '0,1' },
             { from: 'q1', to: 'q2', symbol: '0,1' },
             { from: 'q2', to: 'q3', symbol: '0,1' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 25, label: "L25", formula: "L = { w ∈ {0,1}* | w tem tamanho menor que 3 }",                   desc: "",                                                                 shortestWord: "",         regex: /^[01]{0,2}$/,                                               alphabet: ['0', '1'],             acceptedWords: ["λ","0","10"],             rejectedWords: ["000","0000","010"],    hint: "Os estados iniciais já podem ser finais, mas pare no terceiro passo.",                                               successMsg: "Tamanho máximo controlado.",
     tutorials: {
@@ -331,15 +307,12 @@ export const lote2 = [
     },
     boardWords: ['λ', '0', '10'],
     guidedLesson: [
-      {
-        text: 'Comprimento 0, 1 ou 2!<br/>Aceitar: <b>λ</b>, <b>0</b>, <b>10</b>. Rejeitar: 000, 0000.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: 'Trilho curto: q0(ini,f)→q1(f)→q2(f) com {0,1}. λ aceita em q0, "0" em q1, "10" em q2!<br/>Status: <s>λ</s>, <s>0</s>, <s>10</s>. E "000"?',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+      { text: 'Comprimento 0, 1 ou 2!<br/>Aceitar: <b>λ</b>, <b>0</b>, <b>10</b>. Rejeitar: 000, 0000.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>λ</b>, <b>0</b> e <b>10</b>: trilho curto q0(f)→q1(f)→q2(f) resolve as três de vez!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0(ini,f)→q1(f)→q2(f) com {0,1}. λ=q0✓, "0"=q0→q1✓, "10"=q0→q1→q2✓. E "000"?',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true },
             { id: 'q1', label: 'q1', x: 50, y: 50, isInitial: false, isFinal: true },
@@ -348,13 +321,9 @@ export const lote2 = [
           transitions: [
             { from: 'q0', to: 'q1', symbol: '0,1' },
             { from: 'q1', to: 'q2', symbol: '0,1' },
-          ],
-        },
-      },
-      {
-        text: '"000": q2 lê o 3° símbolo — <u>sem seta</u> = dead-state implícito! Sem qD necessário.',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+          ] } },
+      { text: '"000": q2 lê o 3° símbolo — sem seta = dead-state implícito! Sem qD necessário. Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true },
             { id: 'q1', label: 'q1', x: 50, y: 50, isInitial: false, isFinal: true },
@@ -363,9 +332,7 @@ export const lote2 = [
           transitions: [
             { from: 'q0', to: 'q1', symbol: '0,1' },
             { from: 'q1', to: 'q2', symbol: '0,1' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 26, label: "L26", formula: "L = { w ∈ {0,1}* | w tem tamanho maior que 3 }",                   desc: "",                                                                 shortestWord: "0000",     regex: /^[01]{4,}$/,                                                alphabet: ['0', '1'],             acceptedWords: ["0000","1111","01010"],    rejectedWords: ["λ","0","000"],         hint: "Passe pelos primeiros três estados sem aceitar, depois aceite tudo.",                                                successMsg: "Tamanho mínimo garantido.",
     tutorials: {
@@ -382,15 +349,12 @@ export const lote2 = [
     },
     boardWords: ['0000', '1111', '01010'],
     guidedLesson: [
-      {
-        text: 'MAIOR que 3 — mínimo 4 símbolos!<br/>Aceitar: <b>0000</b>, <b>1111</b>, <b>01010</b>. Rejeitar: λ, 0, 000.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: 'Trilho de 4 passos: q0→q1→q2→q3→q4(final) com {0,1}.<br/>"0000" aceito em q4. "000" termina em q3 (não final) → rejeitado. E "00000"?',
-        boardDoneUpTo: 0,
-        stateUpdate: {
+      { text: 'MAIOR que 3 — mínimo 4 símbolos!<br/>Aceitar: <b>0000</b>, <b>1111</b>, <b>01010</b>. Rejeitar: λ, 0, 000.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>0000</b> e <b>1111</b>: ambas têm 4 símbolos — trilho linear q0→…→q4(final) resolve as duas!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1→q2→q3→q4(final) com {0,1}. "0000"✓, "1111"✓. Próxima: "01010"!',
+        boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 28, y: 35, isInitial: false, isFinal: false },
@@ -403,13 +367,24 @@ export const lote2 = [
             { from: 'q1', to: 'q2', symbol: '0,1' },
             { from: 'q2', to: 'q3', symbol: '0,1' },
             { from: 'q3', to: 'q4', symbol: '0,1' },
+          ] } },
+      { text: 'Spotlight <b>01010</b>: 5 símbolos — q4 lê o 5° e trava! Preciso de loop q4(0,1).',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 28, y: 35, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 46, y: 65, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 64, y: 35, isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 82, y: 65, isInitial: false, isFinal: true  },
           ],
-        },
-      },
-      {
-        text: '🐛 "00000": q4 lê o 5° símbolo — sem seta, trava! Fix: loop <b>q4 —{0,1}→ q4</b>. Palavras mais longas aceitas!',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: '0,1' },
+            { from: 'q1', to: 'q2', symbol: '0,1' },
+            { from: 'q2', to: 'q3', symbol: '0,1' },
+            { from: 'q3', to: 'q4', symbol: '0,1' },
+          ] } },
+      { text: 'Fix: q4 loop {0,1}. "01010"✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 28, y: 35, isInitial: false, isFinal: false },
@@ -423,9 +398,7 @@ export const lote2 = [
             { from: 'q2', to: 'q3', symbol: '0,1' },
             { from: 'q3', to: 'q4', symbol: '0,1' },
             { from: 'q4', to: 'q4', symbol: '0,1' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 27, label: "L27", formula: "L = { w ∈ {0,1}* | w tem tamanho múltiplo de 3 }",                 desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["λ","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemático de tamanho 3.",
     tutorials: {
@@ -443,30 +416,20 @@ export const lote2 = [
     },
     boardWords: ['λ', '000', '010101'],
     guidedLesson: [
-      {
-        text: 'Múltiplo de 3 — comprimento ≡ 0 (mod 3)!<br/>Aceitar: <b>λ</b>, <b>000</b>, <b>010101</b>. Rejeitar: 0, 00, 0001.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: '"λ" já é aceita (q0 final). Para "000": q0 avança para q1 e q2 a cada símbolo.<br/>Adicione <b>q0 —{0,1}→ q1</b> e <b>q1 —{0,1}→ q2</b>. E "000"?',
-        boardDoneUpTo: 0,
-        stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true,  isFinal: true  },
-            { id: 'q1', label: 'q1', x: 50, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 85, y: 68, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: '0,1' },
-            { from: 'q1', to: 'q2', symbol: '0,1' },
-          ],
-        },
-      },
-      {
-        text: '🐛 "000": q0→q1→q2→? q2 lê o 3° símbolo — sem seta, trava! Fix: <b>q2 —{0,1}→ q0</b>. Ciclo completo!',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+      { text: 'Múltiplo de 3 — comprimento ≡ 0 (mod 3)!<br/>Aceitar: <b>λ</b>, <b>000</b>, <b>010101</b>. Rejeitar: 0, 00, 0001.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>λ</b>: palavra vazia — q0(ini,final) aceita imediatamente!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0(ini,final). "λ"✓. Próximas: "000" e "010101"!',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [{ id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true, isFinal: true }],
+          transitions: [] } },
+      { text: 'Spotlight <b>000</b> e <b>010101</b>: ambas têm comprimento múltiplo de 3 — ciclo q0→q1→q2→q0 resolve as duas!',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [{ id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true, isFinal: true }],
+          transitions: [] } },
+      { text: 'Fix: q0→q1→q2→q0(final) com {0,1}. Ciclo completo! "000"✓, "010101"✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true,  isFinal: true  },
             { id: 'q1', label: 'q1', x: 50, y: 20, isInitial: false, isFinal: false },
@@ -476,9 +439,7 @@ export const lote2 = [
             { from: 'q0', to: 'q1', symbol: '0,1' },
             { from: 'q1', to: 'q2', symbol: '0,1' },
             { from: 'q2', to: 'q0', symbol: '0,1' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 28, label: "L28", formula: "L = { w ∈ {0,1}* | cada 0 é seguido de, no mínimo, dois 1's }",   desc: "",                                                                 shortestWord: "",         regex: /^(1*011+)*1*$/,                                             alphabet: ['0', '1'],             acceptedWords: ["λ","011","1011"],         rejectedWords: ["0","01","010"],        hint: "Leu um '0'? Então os próximos dois passos OBRIGATORIAMENTE devem ser '1'.",                                         successMsg: "Padrão de segurança estabelecido.",
     tutorials: {
@@ -495,15 +456,12 @@ export const lote2 = [
     },
     boardWords: ['011', '1011'],
     guidedLesson: [
-      {
-        text: 'Todo "0" exige dois "1"s em seguida!<br/>Aceitar: <b>λ</b>, <b>011</b>, <b>1011</b>. Rejeitar: 0, 01, 010.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: 'Menor palavra com 0: "011". q0 —0→ q1 (deve 2 uns) —1→ q2 (deve 1 un) —1→ q0 (dívida quitada!).<br/>Status: <s>011</s>. E "1011"?',
-        boardDoneUpTo: 1,
-        stateUpdate: {
+      { text: 'Todo "0" exige dois "1"s em seguida!<br/>Aceitar: <b>λ</b>, <b>011</b>, <b>1011</b>. Rejeitar: 0, 01, 010.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>011</b>: menor palavra com "0" — q0→q1(0)→q2(1)→q0(1), dívida quitada!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0(ini,f)→q1(0)→q2(1)→q0(1). "011"✓. Próxima: "1011"!',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
             { id: 'q1', label: 'q1', x: 50, y: 70, isInitial: false, isFinal: false },
@@ -513,30 +471,21 @@ export const lote2 = [
             { from: 'q0', to: 'q1', symbol: '0' },
             { from: 'q1', to: 'q2', symbol: '1' },
             { from: 'q2', to: 'q0', symbol: '1' },
-          ],
-        },
-      },
-      {
-        text: '🐛 "1011": q0 lê "1" → sem seta, trava! Fix: loop <b>q0 —1→ q0</b> (1s livres antes de um 0).<br/>Status: <s>011</s>, <s>1011</s>. E "010"?',
-        boardDoneUpTo: 2,
-        stateUpdate: {
+          ] } },
+      { text: 'Spotlight <b>1011</b>: q0 lê "1" — sem seta! Preciso de loop q0(1).',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
             { id: 'q1', label: 'q1', x: 50, y: 70, isInitial: false, isFinal: false },
             { id: 'q2', label: 'q2', x: 85, y: 35, isInitial: false, isFinal: false },
           ],
           transitions: [
-            { from: 'q0', to: 'q0', symbol: '1' },
             { from: 'q0', to: 'q1', symbol: '0' },
             { from: 'q1', to: 'q2', symbol: '1' },
             { from: 'q2', to: 'q0', symbol: '1' },
-          ],
-        },
-      },
-      {
-        text: '🐛 "010": q1 lê "0" — dívida não quitada! Sem seta = dead implícito. Mesmo para q2—0: dead implícito.<br/>Autômato completo: q0—0→q1, q1—1→q2, q2—1→q0, q0 loop em 1. Transições q1—0 e q2—0 ausentes = rejeição automática ✔ Concluído!',
-        boardDoneUpTo: 2,
-        stateUpdate: {
+          ] } },
+      { text: 'Fix: q0 loop 1. "1011"=q0→q0→q1→q2→q0✓. q1—0 e q2—0 sem seta = dead implícito. Concluído!',
+        boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
             { id: 'q1', label: 'q1', x: 50, y: 70, isInitial: false, isFinal: false },
@@ -547,9 +496,7 @@ export const lote2 = [
             { from: 'q0', to: 'q1', symbol: '0' },
             { from: 'q1', to: 'q2', symbol: '1' },
             { from: 'q2', to: 'q0', symbol: '1' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 29, label: "L29", formula: "L = { w ∈ {0,1}* | os primeiros 4 símbolos de w contêm, no mínimo, dois 1's }", desc: "", shortestWord: "11", regex: /^([01]*)$/, validate: w => w.slice(0,4).split('').filter(c=>c==='1').length >= 2, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Essa exige rastrear o prefixo. Concentre-se nas combinações dos primeiros passos.",                                  successMsg: "Prefixo complexo analisado.",
     tutorials: {
@@ -567,52 +514,34 @@ export const lote2 = [
     },
     boardWords: ['11', '0011', '1011'],
     guidedLesson: [
-      {
-        text: '4 primeiros símbolos com ≥ 2 uns!<br/>Aceitar: <b>0011</b>, <b>1011</b>, <b>1100</b>. Rejeitar: 0, 00, 0001.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] },
-      },
-      {
-        text: 'Camada 1 — q0 distribui por símbolo:<br/><b>q0—0→q1</b>(posição 1, 0 uns) e <b>q0—1→q2</b>(posição 1, 1 um).',
-        boardDoneUpTo: 0,
-        stateUpdate: {
+      { text: '4 primeiros símbolos com ≥ 2 uns!<br/>Aceitar: <b>11</b>, <b>0011</b>, <b>1011</b>. Rejeitar: 0, 00, 0001.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>11</b>: apenas 2 símbolos — q0→q2(1)→q7(1,final) com 3 estados!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q2(1)→q7(final,1). "11"=q0→q2→q7✓. Próximas: "0011" e "1011"!',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
-            { id: 'q1', label: 'q1', x: 25, y: 33, isInitial: false, isFinal: false },
             { id: 'q2', label: 'q2', x: 75, y: 33, isInitial: false, isFinal: false },
+            { id: 'q7', label: 'q7', x: 87, y: 58, isInitial: false, isFinal: true  },
           ],
           transitions: [
-            { from: 'q0', to: 'q1', symbol: '0' },
             { from: 'q0', to: 'q2', symbol: '1' },
-          ],
-        },
-      },
-      {
-        text: 'Camada 2 — posição 2:<br/>q1: 0→q3(0 uns), 1→q4(1 um). q2: 0→q4(1 um), 1→q7(2 uns — atingiu o mínimo antecipado!).',
-        boardDoneUpTo: 0,
-        stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
-            { id: 'q1', label: 'q1', x: 25, y: 33, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 75, y: 33, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 10, y: 58, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 50, y: 58, isInitial: false, isFinal: false },
-            { id: 'q7', label: 'q7', x: 87, y: 58, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: '0' },
-            { from: 'q0', to: 'q2', symbol: '1' },
-            { from: 'q1', to: 'q3', symbol: '0' },
-            { from: 'q1', to: 'q4', symbol: '1' },
-            { from: 'q2', to: 'q4', symbol: '0' },
             { from: 'q2', to: 'q7', symbol: '1' },
+          ] } },
+      { text: 'Spotlight <b>0011</b> e <b>1011</b>: 4 símbolos — precisam da árvore completa de prefixo!',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
+            { id: 'q2', label: 'q2', x: 75, y: 33, isInitial: false, isFinal: false },
+            { id: 'q7', label: 'q7', x: 87, y: 58, isInitial: false, isFinal: true  },
           ],
-        },
-      },
-      {
-        text: 'Camadas 3-4 completas: q3—1→q5, q4—0→q5 ou 1→q8, q7—{0,1}→q8, q5—1→q6, q8—{0,1}→q6, q6 loop.<br/><b>q7 e q8 também são finais</b> — ≥2 uns já vistos antes da 4ª posição basta! "11": q0→q2→<b>q7(final)</b> ✔',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+          transitions: [
+            { from: 'q0', to: 'q2', symbol: '1' },
+            { from: 'q2', to: 'q7', symbol: '1' },
+          ] } },
+      { text: 'Fix: árvore de prefixo 4×2 completa. q7,q8,q6 finais. "0011"=q0→q1→q3→q5→q6✓, "1011"=q0→q2→q4→q8✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 25, y: 33, isInitial: false, isFinal: false },
@@ -638,9 +567,7 @@ export const lote2 = [
             { from: 'q5', to: 'q6', symbol: '1' },
             { from: 'q8', to: 'q6', symbol: '0,1' },
             { from: 'q6', to: 'q6', symbol: '0,1' },
-          ],
-        },
-      },
+          ] } },
     ] },
   { id: 30, label: "L30", formula: "L = { w ∈ {0,1}* | w NÃO contém 000 nem 111 }",                    desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000)(?!.*111)[01]*$/,                                 alphabet: ['0', '1'],             acceptedWords: ["λ","01","0101"],          rejectedWords: ["000","111","1000"],    hint: "Se 3 zeros ou 3 uns aparecerem, jogue a palavra num estado de erro.",                                                successMsg: "Evitou a bomba tripla!",
     tutorials: {
@@ -656,11 +583,14 @@ export const lote2 = [
         'Dead implícito: q2 lê 0 = terceiro zero = 000. q4 lê 1 = terceiro um = 111. Sem seta = rejeitado!',
       ] },
     },
+    boardWords: ['λ', '01', '0101'],
     guidedLesson: [
       { text: 'Proibido 000 e proibido 111!<br/>Aceitar: <b>λ</b>, <b>01</b>, <b>0101</b>. Rejeitar: 000, 111, 1000.',
-        stateUpdate: { nodes: [], transitions: [] } },
-      { text: '"01": q0—0→q1—1→q3(final). Transições básicas: <b>q0—0→q1</b>, <b>q0—1→q3</b>, <b>q1—1→q3</b>, <b>q3—0→q1</b>.<br/>Cruzamentos resetam a contagem. E "001"?',
-        stateUpdate: {
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>λ</b> e <b>01</b>: λ=q0(f), "01"=q0→q1(0)→q3(1,f). 4 transições básicas resolvem as duas!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0(f)→q1(f)(0)→q3(f)(1)→q1(0); q0→q3(1). "λ"✓, "01"✓. Próxima: "0101"!',
+        boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: true },
             { id: 'q1', label: 'q1', x: 48, y: 20, isInitial: false, isFinal: true },
@@ -671,10 +601,22 @@ export const lote2 = [
             { from: 'q0', to: 'q3', symbol: '1' },
             { from: 'q1', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q1', symbol: '0' },
+          ] } },
+      { text: 'Spotlight <b>0101</b>: q1 lê 2° "0" — sem seta! E q3 lê 2° "1" — sem seta!',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: true },
+            { id: 'q1', label: 'q1', x: 48, y: 20, isInitial: false, isFinal: true },
+            { id: 'q3', label: 'q3', x: 48, y: 80, isInitial: false, isFinal: true },
           ],
-        } },
-      { text: '🐛 "001": q1 lê 2° zero — sem seta! Fix: <b>q1—0→q2</b> (topo-dir), <b>q2—1→q3</b>. 🐛 "011": q3 lê 2° um — sem seta! Fix: <b>q3—1→q4</b> (baixo-esq), <b>q4—0→q1</b>.<br/>Dead implícito: q2—0=000 e q4—1=111. ✔ Concluído!',
-        stateUpdate: {
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: '0' },
+            { from: 'q0', to: 'q3', symbol: '1' },
+            { from: 'q1', to: 'q3', symbol: '1' },
+            { from: 'q3', to: 'q1', symbol: '0' },
+          ] } },
+      { text: 'Fix: q1→q2(0)→q3(1) e q3→q4(1)→q1(0). Dead implícito: q2—0=000, q4—1=111. "0101"✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: true },
             { id: 'q1', label: 'q1', x: 48, y: 20, isInitial: false, isFinal: true },
@@ -691,8 +633,7 @@ export const lote2 = [
             { from: 'q3', to: 'q1', symbol: '0' },
             { from: 'q3', to: 'q4', symbol: '1' },
             { from: 'q4', to: 'q1', symbol: '0' },
-          ],
-        } },
+          ] } },
     ] },
   { id: 31, label: "L31", formula: "L = { w ∈ {0,1}* | os últimos três símbolos de w NÃO são 000 }",  desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000$)[01]*$/,                                         alphabet: ['0', '1'],             acceptedWords: ["λ","1","001"],            rejectedWords: ["000","1000","10000"],  hint: "O final da palavra é o mais importante aqui.",                                                                      successMsg: "Sufixo validado.",
     tutorials: {
@@ -711,11 +652,11 @@ export const lote2 = [
     boardWords: ['λ', '1', '001'],
     guidedLesson: [
       { text: 'Sufixo "000" proibido — mas escapável com "1"!<br/>Aceitar: <b>λ</b>, <b>1</b>, <b>001</b>. Rejeitar: 000, 1000, 10000.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'λ e "1": q0(ini,f)—1→q0 (loop). "001": q0—0→q1—0→q2—1→q0.<br/>Status: <s>λ</s>, <s>1</s>, <s>001</s>. E "000"?',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>λ</b>, <b>1</b> e <b>001</b>: todas resolvidas pela mesma estrutura de 3 estados!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0(f) loop 1, q0→q1(0)→q2(0)→q0(1). "λ"✓, "1"✓, "001"✓. E "000"?',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true },
             { id: 'q1', label: 'q1', x: 42, y: 25, isInitial: false, isFinal: true },
@@ -727,11 +668,9 @@ export const lote2 = [
             { from: 'q1', to: 'q2', symbol: '0' },
             { from: 'q1', to: 'q0', symbol: '1' },
             { from: 'q2', to: 'q0', symbol: '1' },
-          ],
-        } },
-      { text: '🐛 "000": q2 lê 3° zero — sem seta! Fix: <b>q2—0→q3</b>(não-final). <b>q3—0→q3</b>(loop), <b>q3—1→q0</b>(escape!).<br/>"1000": q0→q0→q1→q2→q3. Não-final → rejeitado ✔ Concluído!',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+          ] } },
+      { text: '"000": q2 lê 3° zero — sem seta! Fix: q2→q3(0,não-final), q3 loop 0, q3→q0(1,escape). Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true  },
             { id: 'q1', label: 'q1', x: 42, y: 25, isInitial: false, isFinal: true  },
@@ -747,8 +686,7 @@ export const lote2 = [
             { from: 'q2', to: 'q0', symbol: '1' },
             { from: 'q3', to: 'q3', symbol: '0' },
             { from: 'q3', to: 'q0', symbol: '1' },
-          ],
-        } },
+          ] } },
     ] },
   { id: 32, label: "L32", formula: "L = { w ∈ {0,1,2}* | par de 0's, par de 1's e par de 2's }",      desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
     tutorials: {
@@ -764,11 +702,14 @@ export const lote2 = [
         'O autômato forma um cubo: 8 vértices, cada aresta troca exatamente um bit.',
       ] },
     },
+    boardWords: ['λ', '0011', '001122'],
     guidedLesson: [
       { text: 'Paridade tripla: par de 0s AND par de 1s AND par de 2s!<br/>Aceitar: <b>λ</b>, <b>0011</b>, <b>001122</b>. Rejeitar: 0, 1, 012.',
-        stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Paridades de 0 e 1 (4 estados): q0(f)↔q1 via 0; q0↔q2 via 1; q1↔q4 via 1; q2↔q4 via 0.<br/>"0011": q0→q1→q0→q2→q0 ✔. Bug: "002" — q0 lê 2 sem seta!',
-        stateUpdate: {
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>λ</b> e <b>0011</b>: paridades de 0 e 1 — 4 estados resolvem as duas!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0(f)↔q1 via 0; q0↔q2 via 1; q1↔q4 via 1; q2↔q4 via 0. "λ"✓, "0011"✓. Próxima: "001122"!',
+        boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true  },
             { id: 'q1', label: 'q1', x: 42, y: 25, isInitial: false, isFinal: false },
@@ -784,9 +725,27 @@ export const lote2 = [
             { from: 'q4', to: 'q1', symbol: '1' },
             { from: 'q2', to: 'q4', symbol: '0' },
             { from: 'q4', to: 'q2', symbol: '0' },
+          ] } },
+      { text: 'Spotlight <b>001122</b>: contém "2" — sem seta para 2 no grafo atual!',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true  },
+            { id: 'q1', label: 'q1', x: 42, y: 25, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 42, y: 75, isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 68, y: 50, isInitial: false, isFinal: false },
           ],
-        } },
-      { text: 'Fix paridade de 2: 4 novos estados q3,q5,q6,q7. Ler 2 inverte bit-2: q0↔q3, q1↔q5, q2↔q6, q4↔q7.<br/>Cruzados: q3↔q5(0), q3↔q6(1), q5↔q7(1), q6↔q7(0). ✔ Concluído!',
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: '0' },
+            { from: 'q1', to: 'q0', symbol: '0' },
+            { from: 'q0', to: 'q2', symbol: '1' },
+            { from: 'q2', to: 'q0', symbol: '1' },
+            { from: 'q1', to: 'q4', symbol: '1' },
+            { from: 'q4', to: 'q1', symbol: '1' },
+            { from: 'q2', to: 'q4', symbol: '0' },
+            { from: 'q4', to: 'q2', symbol: '0' },
+          ] } },
+      { text: 'Fix: cubo de paridade — 4 novos estados q3,q5,q6,q7 via símbolo 2. "001122"✓ Concluído!',
+        boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true,  isFinal: true  },
@@ -843,11 +802,11 @@ export const lote2 = [
     boardWords: ['001'],
     guidedLesson: [
       { text: 'Prefixo obrigatório "001"!<br/>Aceitar: <b>001</b>, <b>0011</b>, <b>001100</b>. Rejeitar: λ, 1, 010.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] } },
-      { text: '"001": q0—0→q1—0→q2—1→q3(final). Cadeia linear.<br/>Status: <s>001</s>. E "0011"?',
-        boardDoneUpTo: 1,
-        stateUpdate: {
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>001</b>: prefixo exato "001" — trilho linear q0→q1(0)→q2(0)→q3(1,final).',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1(0)→q2(0)→q3(final,1). "001"=q0→q1→q2→q3✓. E "0011"?',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 40, y: 50, isInitial: false, isFinal: false },
@@ -858,11 +817,9 @@ export const lote2 = [
             { from: 'q0', to: 'q1', symbol: '0' },
             { from: 'q1', to: 'q2', symbol: '0' },
             { from: 'q2', to: 'q3', symbol: '1' },
-          ],
-        } },
-      { text: '🐛 "0011": q3 lê "1" — sem seta! Fix: loop <b>q3—{0,1}→q3</b>.<br/>"001100": q3 absorve o resto. ✔ Concluído!',
-        boardDoneUpTo: 1,
-        stateUpdate: {
+          ] } },
+      { text: '"0011": q3 lê "1" — sem seta! Fix: q3 loop {0,1}. "001100": q3 absorve o resto. Concluído!',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 40, y: 50, isInitial: false, isFinal: false },
@@ -874,8 +831,7 @@ export const lote2 = [
             { from: 'q1', to: 'q2', symbol: '0' },
             { from: 'q2', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q3', symbol: '0,1' },
-          ],
-        } },
+          ] } },
     ] },
   { id: 34, label: "L34", formula: "L = { w ∈ {0,1}* | w tem 1010 como sufixo }",                      desc: "",                                                                 shortestWord: "1010",     regex: /^[01]*1010$/,                                               alphabet: ['0', '1'],             acceptedWords: ["1010","01010","001010"], rejectedWords: ["λ","101","1011"],       hint: "Mantenha a porta aberta para infinitos caracteres, mas só aceite se a 'memória' bater com 1010.",                  successMsg: "Detector de sufixo ativado.",
     tutorials: {
@@ -894,11 +850,11 @@ export const lote2 = [
     boardWords: ['1010', '01010', '001010'],
     guidedLesson: [
       { text: 'Sufixo obrigatório "1010"!<br/>Aceitar: <b>1010</b>, <b>01010</b>, <b>001010</b>. Rejeitar: λ, 101, 1011.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] } },
-      { text: '"1010": q0—1→q1—0→q2—1→q3—0→q4(final). Cadeia linear de 5 estados.<br/>Status: <s>1010</s>. E "01010"?',
-        boardDoneUpTo: 1,
-        stateUpdate: {
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>1010</b>: cadeia q0→q1(1)→q2(0)→q3(1)→q4(0,final).',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1(1)→q2(0)→q3(1)→q4(final,0). "1010"✓. Próximas: "01010" e "001010"!',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 28, y: 35, isInitial: false, isFinal: false },
@@ -911,11 +867,9 @@ export const lote2 = [
             { from: 'q1', to: 'q2', symbol: '0' },
             { from: 'q2', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q4', symbol: '0' },
-          ],
-        } },
-      { text: '🐛 "01010": q0 lê "0" — sem seta! Fix loops de absorção: <b>q0—0→q0</b> e <b>q1—1→q1</b>.<br/>Status: <s>1010</s>, <s>01010</s>, <s>001010</s> ✔. E "1011"?',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+          ] } },
+      { text: 'Spotlight <b>01010</b> e <b>001010</b>: q0 lê "0" — sem seta! Preciso de loops e resets.',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 28, y: 35, isInitial: false, isFinal: false },
@@ -924,17 +878,13 @@ export const lote2 = [
             { id: 'q4', label: 'q4', x: 82, y: 65, isInitial: false, isFinal: true  },
           ],
           transitions: [
-            { from: 'q0', to: 'q0', symbol: '0' },
             { from: 'q0', to: 'q1', symbol: '1' },
-            { from: 'q1', to: 'q1', symbol: '1' },
             { from: 'q1', to: 'q2', symbol: '0' },
             { from: 'q2', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q4', symbol: '0' },
-          ],
-        } },
-      { text: '🐛 "1011": q3 lê "1" — sem seta! Fix resets: <b>q2—0→q0</b>, <b>q3—1→q0</b>, <b>q4—0→q0</b>, <b>q4—1→q3</b>.<br/>"1011": q3—1→q0. Não-final → rejeitado ✔ Concluído!',
-        boardDoneUpTo: 3,
-        stateUpdate: {
+          ] } },
+      { text: 'Fix: q0 loop 0, q1 loop 1, resets q2→q0(0), q3→q0(1), q4→q0(0), q4→q3(1). "01010"✓, "001010"✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 28, y: 35, isInitial: false, isFinal: false },
@@ -953,8 +903,7 @@ export const lote2 = [
             { from: 'q3', to: 'q0', symbol: '1' },
             { from: 'q4', to: 'q0', symbol: '0' },
             { from: 'q4', to: 'q3', symbol: '1' },
-          ],
-        } },
+          ] } },
     ] },
   { id: 35, label: "L35a", formula: "L = { w ∈ {0,1}* | w tem 1111 como subpalavra }",                 desc: "",                                                                 shortestWord: "1111",     regex: /^[01]*1111[01]*/,                                           alphabet: ['0', '1'],             acceptedWords: ["1111","01111","11110"],   rejectedWords: ["λ","111","11011"],     hint: "Assim que achar quatro '1's seguidos, pode ir para um estado final que aceita tudo.",                               successMsg: "Achou a subpalavra!",
     tutorials: {
@@ -973,11 +922,11 @@ export const lote2 = [
     boardWords: ['1111'],
     guidedLesson: [
       { text: 'Subpalavra "1111" em qualquer posição!<br/>Aceitar: <b>1111</b>, <b>01111</b>, <b>11110</b>. Rejeitar: λ, 111, 11011.',
-        boardDoneUpTo: -1,
-        stateUpdate: { nodes: [], transitions: [] } },
-      { text: '"1111": q0—1→q1—1→q2—1→q3—1→q4(final). Cadeia de 5 estados.<br/>Status: <s>1111</s>. E "01111"?',
-        boardDoneUpTo: 1,
-        stateUpdate: {
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>1111</b>: cadeia de 5 estados, contador de uns consecutivos.',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1(1)→q2(1)→q3(1)→q4(final,1). "1111"✓. E "01111"?',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 28, y: 35, isInitial: false, isFinal: false },
@@ -990,11 +939,9 @@ export const lote2 = [
             { from: 'q1', to: 'q2', symbol: '1' },
             { from: 'q2', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q4', symbol: '1' },
-          ],
-        } },
-      { text: '🐛 "01111": q0 lê "0" — sem seta! Fix resets: <b>q0—0→q0</b>, <b>q1—0→q0</b>, <b>q2—0→q0</b>, <b>q3—0→q0</b>. Loop final: <b>q4—{0,1}→q4</b>.<br/>"11110": q4—0→q4 ✔ "11011": termina em q2 (não-final) ✔ Concluído!',
-        boardDoneUpTo: 1,
-        stateUpdate: {
+          ] } },
+      { text: '"01111": q0 lê "0" — sem seta! Fix: resets q0-q3 com 0→q0, q4 loop {0,1}. "11110"✓, "11011"→q2✗. Concluído!',
+        boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
             { id: 'q1', label: 'q1', x: 28, y: 35, isInitial: false, isFinal: false },
@@ -1012,12 +959,371 @@ export const lote2 = [
             { from: 'q3', to: 'q0', symbol: '0' },
             { from: 'q3', to: 'q4', symbol: '1' },
             { from: 'q4', to: 'q4', symbol: '0,1' },
+          ] } },
+    ] },
+  { id: 36, label: "L35b", formula: "L = { w ∈ {a,b,c,d}* | w tem abc como prefixo }",                 desc: "",                                                                 shortestWord: "abc",      regex: /^abc[abcd]*/,                                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abc","abcd","abcabc"],   rejectedWords: ["λ","ab","bca"],        hint: "Igual ao 001, mas com um alfabeto maior.",                                                                          successMsg: "Prefixo alfabético concluído.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Prefixo Obrigatório: "abc"!', dialog: [
+        'L35b: toda palavra aceita DEVE começar com "abc". O resto pode ser qualquer coisa.',
+        '"abcd" — válida (começa com abc). "bca" — inválida (1° símbolo é b, não a).',
+        'Estratégia: 3 estados de checagem (q0→q1→q2) + estado final q3 com loop.',
+        'Qualquer desvio no prefixo cai em dead-state implícito. Sem volta!',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Trilho de Prefixo + Loop Final', dialog: [
+        'q0—a→q1—b→q2—c→q3(final). Cadeia linear exata para "abc".',
+        'q3—{a,b,c,d}→q3: após confirmar o prefixo, qualquer símbolo é aceito.',
+        'Dead implícito: q0—{b,c,d}, q1—{a,c,d}, q2—{a,b,d} — qualquer desvio rejeita permanentemente.',
+      ] },
+    },
+    boardWords: ['abc', 'abcd', 'abcabc'],
+    guidedLesson: [
+      { text: 'Prefixo obrigatório "abc"!<br/>Aceitar: <b>abc</b>, <b>abcd</b>, <b>abcabc</b>. Rejeitar: λ, ab, bca.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>abc</b>: prefixo exato — trilho q0→q1(a)→q2(b)→q3(c,final).',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1(a)→q2(b)→q3(final,c). "abc"✓. Próximas: "abcd" e "abcabc"!',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 62, y: 50, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 85, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'a' },
+            { from: 'q1', to: 'q2', symbol: 'b' },
+            { from: 'q2', to: 'q3', symbol: 'c' },
+          ] } },
+      { text: 'Spotlight <b>abcd</b> e <b>abcabc</b>: q3 lê "d" ou "a" — sem seta! Preciso de loop q3.',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 62, y: 50, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 85, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'a' },
+            { from: 'q1', to: 'q2', symbol: 'b' },
+            { from: 'q2', to: 'q3', symbol: 'c' },
+          ] } },
+      { text: 'Fix: q3 loop {a,b,c,d}. "abcd"✓, "abcabc"✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 62, y: 50, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 85, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'a' },
+            { from: 'q1', to: 'q2', symbol: 'b' },
+            { from: 'q2', to: 'q3', symbol: 'c' },
+            { from: 'q3', to: 'q3', symbol: 'a,b,c,d' },
+          ] } },
+    ] },
+  { id: 37, label: "L36", formula: "L = { w ∈ {a,b,c,d}* | w tem dcba como sufixo }",                  desc: "",                                                                 shortestWord: "dcba",     regex: /^[abcd]*dcba$/,                                             alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dcba","adcba","aadcba"], rejectedWords: ["λ","dcb","abcd"],      hint: "O caminho final deve obrigatoriamente soletrar 'dcba'.",                                                            successMsg: "Sufixo alfabético detectado.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Sufixo Obrigatório: "dcba"!', dialog: [
+        'L36: a palavra deve TERMINAR com "dcba". O prefixo pode ser qualquer coisa.',
+        '"dcba" ✓ "adcba" ✓ "aadcba" ✓. "λ", "dcb", "abcd" ✗.',
+        'Técnica KMP: 5 estados rastreiam quanto do sufixo "dcba" já foi lido.',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Cadeia + Retornos KMP', dialog: [
+        'q0—d→q1—c→q2—b→q3—a→q4(f). Cadeia principal do sufixo.',
+        'q0 loop a,b,c (prefixo descartado). q1 loop d (novo "d" reinicia a busca).',
+        'Mismatches em q2,q3,q4 voltam para q0 ou q1 — nunca desperdiçam um "d".',
+      ] },
+    },
+    boardWords: ['dcba', 'adcba', 'aadcba'],
+    guidedLesson: [
+      { text: 'Sufixo obrigatório "dcba"!<br/>Aceitar: <b>dcba</b>, <b>adcba</b>, <b>aadcba</b>. Rejeitar: λ, dcb, abcd.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>dcba</b>: cadeia exata q0→q1(d)→q2(c)→q3(b)→q4(a,final).',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1(d)→q2(c)→q3(b)→q4(final,a). "dcba"✓. Próximas: "adcba" e "aadcba"!',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 50, y: 50, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 70, y: 50, isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 90, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'd' },
+            { from: 'q1', to: 'q2', symbol: 'c' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+            { from: 'q3', to: 'q4', symbol: 'a' },
+          ] } },
+      { text: 'Spotlight <b>adcba</b> e <b>aadcba</b>: q0 lê "a" — sem seta! Preciso de loops e retornos KMP.',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 50, y: 50, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 70, y: 50, isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 90, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'd' },
+            { from: 'q1', to: 'q2', symbol: 'c' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+            { from: 'q3', to: 'q4', symbol: 'a' },
+          ] } },
+      { text: 'Fix KMP: q0 loop a,b,c; q1 loop d; mismatches→q0/q1. "adcba"✓, "aadcba"✓ Concluído!',
+        boardDoneUpTo: 3,
+        stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 50, y: 50, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 70, y: 50, isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 90, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q0', symbol: 'a,b,c' },
+            { from: 'q0', to: 'q1', symbol: 'd' },
+            { from: 'q1', to: 'q0', symbol: 'a,b' },
+            { from: 'q1', to: 'q1', symbol: 'd' },
+            { from: 'q1', to: 'q2', symbol: 'c' },
+            { from: 'q2', to: 'q0', symbol: 'a,c' },
+            { from: 'q2', to: 'q1', symbol: 'd' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+            { from: 'q3', to: 'q0', symbol: 'b,c' },
+            { from: 'q3', to: 'q1', symbol: 'd' },
+            { from: 'q3', to: 'q4', symbol: 'a' },
+            { from: 'q4', to: 'q0', symbol: 'a,b,c' },
+            { from: 'q4', to: 'q1', symbol: 'd' },
           ],
         } },
     ] },
-  { id: 36, label: "L35b", formula: "L = { w ∈ {a,b,c,d}* | w tem abc como prefixo }",                 desc: "",                                                                 shortestWord: "abc",      regex: /^abc[abcd]*/,                                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abc","abcd","abcabc"],   rejectedWords: ["λ","ab","bca"],        hint: "Igual ao 001, mas com um alfabeto maior.",                                                                          successMsg: "Prefixo alfabético concluído." },
-  { id: 37, label: "L36", formula: "L = { w ∈ {a,b,c,d}* | w tem dcba como sufixo }",                  desc: "",                                                                 shortestWord: "dcba",     regex: /^[abcd]*dcba$/,                                             alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dcba","adcba","aadcba"], rejectedWords: ["λ","dcb","abcd"],      hint: "O caminho final deve obrigatoriamente soletrar 'dcba'.",                                                            successMsg: "Sufixo alfabético detectado." },
-  { id: 38, label: "L37", formula: "L = { w ∈ {a,b,c,d}* | tem abcd ou dcba como subpalavra }",        desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*(abcd|dcba)[abcd]*$/,                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","dcba","aabcdb"],  rejectedWords: ["λ","abc","dcb"],       hint: "Dois caminhos independentes saindo do início que caem num mesmo estado de vitória.",                                successMsg: "Bifurcação de subpalavras dominada!" },
-  { id: 39, label: "L38", formula: "L = { (a+b)* | qtd de 'a' é par, qtd de 'b' é ímpar }",            desc: "",                                                                 shortestWord: "b",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["λ","a","ab"],          hint: "Você precisa de 4 estados para controlar: Par/Par, Par/Ímpar, Ímpar/Par, Ímpar/Ímpar.",                             successMsg: "Quadrante de paridade solucionado." },
-  { id: 40, label: "L39", formula: "L = { (a+b)* | qtd de 'a' é ímpar, qtd de 'b' é ímpar }",          desc: "",                                                                 shortestWord: "ab",       regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===1 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["ab","abbb","aaabbb"],     rejectedWords: ["λ","a","b"],           hint: "Parecido com a anterior, mas o estado de aceitação muda.",                                                          successMsg: "Paridade ímpar cruzada!" },
+  { id: 38, label: "L37", formula: "L = { w ∈ {a,b,c,d}* | tem abcd ou dcba como subpalavra }",        desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*(abcd|dcba)[abcd]*$/,                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","dcba","aabcdb"],  rejectedWords: ["λ","abc","dcb"],       hint: "Dois caminhos independentes saindo do início que caem num mesmo estado de vitória.",                                successMsg: "Bifurcação de subpalavras dominada!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Subpalavra: "abcd" ou "dcba"!', dialog: [
+        'L37: basta conter "abcd" ou "dcba" em qualquer posição da palavra.',
+        '"abcd" ✓, "dcba" ✓, "aabcdb" ✓ (contém "abcd"). "abc", "dcb" ✗ (incompletos).',
+        'Dois caminhos independentes do q0 convergem para o mesmo estado final q4.',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: 'Bifurcação de Dois Caminhos', dialog: [
+        'Caminho 1 (topo): q0—a→q1—b→q2—c→q3—d→q4(f). "abcd" aceito!',
+        'Caminho 2 (base): q0—d→q5—c→q6—b→q7—a→q4(f). "dcba" aceito!',
+        'q4 loop em tudo. KMP garante que mismatches reiniciam corretamente nos dois caminhos.',
+      ] },
+    },
+    boardWords: ['abcd', 'dcba', 'aabcdb'],
+    guidedLesson: [
+      { text: 'Subpalavra "abcd" ou "dcba"!<br/>Aceitar: <b>abcd</b>, <b>dcba</b>, <b>aabcdb</b>. Rejeitar: λ, abc, dcb.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>abcd</b> e <b>dcba</b>: dois caminhos opostos — q0→{q1-q4} e q0→{q5-q4}.',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: caminho abcd (topo) e dcba (base) convergem em q4(final). "abcd"✓, "dcba"✓. Próxima: "aabcdb"!',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 30, y: 20, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 55, y: 20, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 75, y: 20, isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 92, y: 50, isInitial: false, isFinal: true  },
+            { id: 'q5', label: 'q5', x: 30, y: 80, isInitial: false, isFinal: false },
+            { id: 'q6', label: 'q6', x: 55, y: 80, isInitial: false, isFinal: false },
+            { id: 'q7', label: 'q7', x: 75, y: 80, isInitial: false, isFinal: false },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'a' },
+            { from: 'q1', to: 'q2', symbol: 'b' },
+            { from: 'q2', to: 'q3', symbol: 'c' },
+            { from: 'q3', to: 'q4', symbol: 'd' },
+            { from: 'q0', to: 'q5', symbol: 'd' },
+            { from: 'q5', to: 'q6', symbol: 'c' },
+            { from: 'q6', to: 'q7', symbol: 'b' },
+            { from: 'q7', to: 'q4', symbol: 'a' },
+          ] } },
+      { text: 'Spotlight <b>aabcdb</b>: q1 lê 2° "a" — sem seta! Preciso de loops e retornos KMP.',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 30, y: 20, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 55, y: 20, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 75, y: 20, isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 92, y: 50, isInitial: false, isFinal: true  },
+            { id: 'q5', label: 'q5', x: 30, y: 80, isInitial: false, isFinal: false },
+            { id: 'q6', label: 'q6', x: 55, y: 80, isInitial: false, isFinal: false },
+            { id: 'q7', label: 'q7', x: 75, y: 80, isInitial: false, isFinal: false },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'a' },
+            { from: 'q1', to: 'q2', symbol: 'b' },
+            { from: 'q2', to: 'q3', symbol: 'c' },
+            { from: 'q3', to: 'q4', symbol: 'd' },
+            { from: 'q0', to: 'q5', symbol: 'd' },
+            { from: 'q5', to: 'q6', symbol: 'c' },
+            { from: 'q6', to: 'q7', symbol: 'b' },
+            { from: 'q7', to: 'q4', symbol: 'a' },
+          ] } },
+      { text: 'Fix KMP: q4 loop {a,b,c,d}, loops em q0, retornos parciais. "aabcdb"✓ Concluído!',
+        boardDoneUpTo: 3,
+        stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 30, y: 20, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 55, y: 20, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 75, y: 20, isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 92, y: 50, isInitial: false, isFinal: true  },
+            { id: 'q5', label: 'q5', x: 30, y: 80, isInitial: false, isFinal: false },
+            { id: 'q6', label: 'q6', x: 55, y: 80, isInitial: false, isFinal: false },
+            { id: 'q7', label: 'q7', x: 75, y: 80, isInitial: false, isFinal: false },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q0', symbol: 'b,c' },
+            { from: 'q0', to: 'q1', symbol: 'a' },
+            { from: 'q0', to: 'q5', symbol: 'd' },
+            { from: 'q1', to: 'q1', symbol: 'a' },
+            { from: 'q1', to: 'q2', symbol: 'b' },
+            { from: 'q1', to: 'q0', symbol: 'c' },
+            { from: 'q1', to: 'q5', symbol: 'd' },
+            { from: 'q2', to: 'q1', symbol: 'a' },
+            { from: 'q2', to: 'q0', symbol: 'b' },
+            { from: 'q2', to: 'q3', symbol: 'c' },
+            { from: 'q2', to: 'q5', symbol: 'd' },
+            { from: 'q3', to: 'q1', symbol: 'a' },
+            { from: 'q3', to: 'q0', symbol: 'b,c' },
+            { from: 'q3', to: 'q4', symbol: 'd' },
+            { from: 'q4', to: 'q4', symbol: 'a,b,c,d' },
+            { from: 'q5', to: 'q1', symbol: 'a' },
+            { from: 'q5', to: 'q0', symbol: 'b' },
+            { from: 'q5', to: 'q6', symbol: 'c' },
+            { from: 'q5', to: 'q5', symbol: 'd' },
+            { from: 'q6', to: 'q1', symbol: 'a' },
+            { from: 'q6', to: 'q7', symbol: 'b' },
+            { from: 'q6', to: 'q0', symbol: 'c' },
+            { from: 'q6', to: 'q5', symbol: 'd' },
+            { from: 'q7', to: 'q4', symbol: 'a' },
+            { from: 'q7', to: 'q0', symbol: 'b,c' },
+            { from: 'q7', to: 'q5', symbol: 'd' },
+          ],
+        } },
+    ] },
+  { id: 39, label: "L38", formula: "L = { (a+b)* | qtd de 'a' é par, qtd de 'b' é ímpar }",            desc: "",                                                                 shortestWord: "b",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["λ","a","ab"],          hint: "Você precisa de 4 estados para controlar: Par/Par, Par/Ímpar, Ímpar/Par, Ímpar/Ímpar.",                             successMsg: "Quadrante de paridade solucionado.",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Paridade Dupla: a-par e b-ímpar!', dialog: [
+        'L38: contar a\'s e b\'s separadamente. Aceito quando #a par E #b ímpar.',
+        '"b" ✓ (0a=par, 1b=ímpar). "aab" ✓ (2a=par, 1b=ímpar). "ab" ✗ (1a=ímpar, 1b=ímpar).',
+        '4 combinações de paridade → 4 estados: (p,p)=q0, (p,í)=q1, (í,p)=q2, (í,í)=q3.',
+        'Cada \'a\' lido troca a paridade de a. Cada \'b\' lido troca a paridade de b.',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: '4 Estados em Quadrado', dialog: [
+        'q0(ini)=(p,p), q1(f)=(p,í), q2=(í,p), q3=(í,í). Só q1 é final.',
+        'Ler \'b\': q0↔q1 e q2↔q3 (troca bit-b). Ler \'a\': q0↔q2 e q1↔q3 (troca bit-a).',
+        '"aab": q0—a→q2—a→q0—b→q1(f) ✓. "ab": q0—a→q2—b→q3 (não-final) ✗.',
+      ] },
+    },
+    boardWords: ['b', 'bbb', 'aab'],
+    guidedLesson: [
+      { text: 'Paridade dupla: #a par AND #b ímpar!<br/>Aceitar: <b>b</b>, <b>bbb</b>, <b>aab</b>. Rejeitar: λ, a, ab.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>b</b> e <b>bbb</b>: raia do b — q0(ini)↔q1(final) via b resolve as duas!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q1(b,final)→q0(b). "b"=q0→q1✓, "bbb"=q0→q1→q0→q1✓. Próxima: "aab"!',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 35, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'b' },
+            { from: 'q1', to: 'q0', symbol: 'b' },
+          ] } },
+      { text: 'Spotlight <b>aab</b>: q0 lê "a" — sem seta! Preciso da raia do a (q2, q3).',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 35, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'b' },
+            { from: 'q1', to: 'q0', symbol: 'b' },
+          ] } },
+      { text: 'Fix: q0↔q2(a), q1↔q3(a), q2↔q3(b). "aab"=q0→q2→q0→q1✓. "ab"→q3(não-final)✗. Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 35, isInitial: false, isFinal: true  },
+            { id: 'q2', label: 'q2', x: 25, y: 70, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 75, y: 70, isInitial: false, isFinal: false },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'b' },
+            { from: 'q1', to: 'q0', symbol: 'b' },
+            { from: 'q0', to: 'q2', symbol: 'a' },
+            { from: 'q2', to: 'q0', symbol: 'a' },
+            { from: 'q1', to: 'q3', symbol: 'a' },
+            { from: 'q3', to: 'q1', symbol: 'a' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+            { from: 'q3', to: 'q2', symbol: 'b' },
+          ] } },
+    ] },
+  { id: 40, label: "L39", formula: "L = { (a+b)* | qtd de 'a' é ímpar, qtd de 'b' é ímpar }",          desc: "",                                                                 shortestWord: "ab",       regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===1 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["ab","abbb","aaabbb"],     rejectedWords: ["λ","a","b"],           hint: "Parecido com a anterior, mas o estado de aceitação muda.",                                                          successMsg: "Paridade ímpar cruzada!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Paridade Dupla: a-ímpar e b-ímpar!', dialog: [
+        'L39: aceito quando #a ímpar E #b ímpar. Estado final: q3=(í,í) no canto oposto de q0.',
+        '"ab" ✓ (1a=ímpar, 1b=ímpar). "abbb" ✓ (1a=ímpar, 3b=ímpar). "a" ✗ (1a=ímpar, 0b=par).',
+        '4 estados de paridade: q0=(p,p), q1=(p,í), q2=(í,p), q3=(í,í). Só q3 é final.',
+        'Mesmo quadrado da L38, mas o estado de aceitação muda de q1 para q3.',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: '4 Estados — Quadrante Oposto!', dialog: [
+        'q0(ini)=(p,p), q1=(p,í), q2=(í,p), q3(f)=(í,í). Só q3 é final.',
+        'Ler \'a\': q0↔q2 e q1↔q3 (troca bit-a). Ler \'b\': q0↔q1 e q2↔q3 (troca bit-b).',
+        '"ab": q0—a→q2—b→q3(f) ✓. "aaabbb": 3a e 3b = ímpar/ímpar → q3(f) ✓.',
+      ] },
+    },
+    boardWords: ['ab', 'abbb', 'aaabbb'],
+    guidedLesson: [
+      { text: 'Paridade dupla: #a ímpar AND #b ímpar!<br/>Aceitar: <b>ab</b>, <b>abbb</b>, <b>aaabbb</b>. Rejeitar: λ, a, b.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Spotlight <b>ab</b>: 1a e 1b — q0→q2(a)→q3(b,final). Quadrado parcial!',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Fix: q0→q2(a)→q3(final,b). "ab"=q0→q2→q3✓. Próximas: "abbb" e "aaabbb"!',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 35, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 25, y: 70, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 75, y: 70, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q2', symbol: 'a' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+          ] } },
+      { text: 'Spotlight <b>abbb</b> e <b>aaabbb</b>: precisam de todas as raias do quadrado!',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 35, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 25, y: 70, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 75, y: 70, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q2', symbol: 'a' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+          ] } },
+      { text: 'Fix: q0↔q1(b), q2↔q0(a), q1↔q3(a), q2↔q3(b). "abbb"✓, "aaabbb"✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
+            { id: 'q1', label: 'q1', x: 75, y: 35, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 25, y: 70, isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 75, y: 70, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'b' },
+            { from: 'q1', to: 'q0', symbol: 'b' },
+            { from: 'q0', to: 'q2', symbol: 'a' },
+            { from: 'q2', to: 'q0', symbol: 'a' },
+            { from: 'q1', to: 'q3', symbol: 'a' },
+            { from: 'q3', to: 'q1', symbol: 'a' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+            { from: 'q3', to: 'q2', symbol: 'b' },
+          ] } },
+    ] },
 ];
