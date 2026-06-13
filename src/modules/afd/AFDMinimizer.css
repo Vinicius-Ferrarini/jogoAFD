@@ -177,6 +177,88 @@
   animation: min-shake 0.3s;
 }
 
+/* Célula travada (validada num passo anterior) */
+.min-cell.locked {
+  background: #e5e7eb;
+  color: #6b7280;
+  cursor: default;
+}
+.min-cell.locked:hover { background: #e5e7eb; }
+
+/* Célula de equivalência (par não marcado, no passo de agrupamento) */
+.min-cell.equiv {
+  background: #dcfce7;
+  color: #16a34a;
+  cursor: default;
+  font-size: 16px;
+}
+.min-cell.equiv:hover { background: #dcfce7; }
+
+/* ── Stepper dos sub-passos da fase BUILD ── */
+.min-substeps {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.min-substep {
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  font-weight: 900;
+  border: 2px solid #000;
+  background: #eee;
+  color: #555;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  white-space: nowrap;
+}
+.min-substep.current { background: #fde047; color: #000; }
+.min-substep.done    { background: #bbf7d0; color: #14532d; }
+
+/* Texto explicativo de cada passo */
+.min-step-text {
+  font-size: 11px;
+  color: #444;
+  line-height: 1.5;
+  margin: 0;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 8px;
+  padding: 7px 10px;
+  box-shadow: 2px 2px 0 #000;
+}
+
+/* Botão de avanço/verificação dos passos */
+.min-step-btn {
+  align-self: stretch;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
+/* Badges de estados (finais destacados) no passo trivial */
+.min-final-badges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.min-state-badge {
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 900;
+  border: 1.5px solid #999;
+  background: #f3f4f6;
+  color: #555;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+.min-state-badge.final {
+  background: #bbf7d0;
+  border-color: #16a34a;
+  color: #14532d;
+}
+
 @keyframes min-shake {
   0%,100% { transform: translateX(0); }
   25%      { transform: translateX(-3px); }

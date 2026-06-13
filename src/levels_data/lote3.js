@@ -1,24 +1,24 @@
 ﻿export const lote3 = [
-  { id: 41, label: "L40", formula: "L = { a^n b^2m d c^3p d | n, m, p â‰¥ 0 }",                          desc: "",                                                                 shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccdd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Essa Ã© grande! Blocos de 'b' em duplas, o primeiro 'd' serve de ponte, e 'c' em trios.",                            successMsg: "Sintaxe complexa analisada com sucesso.",
+  { id: 41, label: "L40", formula: "L = { a^n b^2m d c^3p d | n, m, p ≥ 0 }",                          desc: "",                                                                 shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccdd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Essa é grande! Blocos de 'b' em duplas, o primeiro 'd' serve de ponte, e 'c' em trios.",                            successMsg: "Sintaxe complexa analisada com sucesso.",
     tutorials: {
       onStart: { type: 'theory', title: 'Blocos: a-block, b-pares, d, c-trios, d!', dialog: [
         'L40: a^n b^2m d c^3p d. a-s, depois b-pares, depois d, depois c-trios, depois d.',
-        '"dd" âœ“ (0a 0b 0c). "abbdd" âœ“ (1a 1par-b). "adcccd" âœ“ (1a 1trio-c).',
+        '"dd" ✓ (0a 0b 0c). "abbdd" ✓ (1a 1par-b). "adcccd" ✓ (1a 1trio-c).',
         '6 estados: q0(ini), q1(b-impar), q2(apos-d), q3(c-1), q4(c-2), q5(f).',
       ] },
       onDrawGraph: { type: 'mechanic', title: '6 Estados em Sequencia', dialog: [
-        'q0 loop a. q0â€”bâ†’q1â€”bâ†’q0 (pares). q0â€”dâ†’q2 (ponte).',
-        'q2â€”dâ†’q5(f). q2â€”câ†’q3â€”câ†’q4â€”câ†’q2 (trio completo volta a q2).',
-        '"adcccd": q0â€”aâ†’q0â€”dâ†’q2â€”câ†’q3â€”câ†’q4â€”câ†’q2â€”dâ†’q5(f) âœ“.',
+        'q0 loop a. q0—b→q1—b→q0 (pares). q0—d→q2 (ponte).',
+        'q2—d→q5(f). q2—c→q3—c→q4—c→q2 (trio completo volta a q2).',
+        '"adcccd": q0—a→q0—d→q2—c→q3—c→q4—c→q2—d→q5(f) ✓.',
       ] },
     },
     boardWords: ['dd', 'abbdd', 'adcccd'],
     guidedLesson: [
-      { text: 'Blocos sequenciais: a* â€” b-pares â€” d â€” c-trios â€” d!<br/>Aceitar: <b>dd</b>, <b>abbdd</b>, <b>adcccd</b>. Rejeitar: d, abd, abcdd.',
+      { text: 'Blocos sequenciais: a* — b-pares — d — c-trios — d!<br/>Aceitar: <b>dd</b>, <b>abbdd</b>, <b>adcccd</b>. Rejeitar: d, abd, abcdd.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>dd</b>: nÃºcleo q0â†’q2(d)â†’q5(final).',
+      { text: 'Foco em <b>dd</b>: núcleo q0→q2(d)→q5(final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q2(d)â†’q5(final). "dd"âœ“. PrÃ³xima: "abbdd"!',
+      { text: 'Solução: q0→q2(d)→q5(final). "dd"✓. Próxima: "abbdd"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -29,7 +29,7 @@
             { from: 'q0', to: 'q2', symbol: 'd' },
             { from: 'q2', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Foco em <b>abbdd</b>: q0 lÃª "a" e "b" â€” sem seta! Preciso de loop a e q1 para b-pares.',
+      { text: 'Foco em <b>abbdd</b>: q0 lê "a" e "b" — sem seta! Preciso de loop a e q1 para b-pares.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -40,7 +40,7 @@
             { from: 'q0', to: 'q2', symbol: 'd' },
             { from: 'q2', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Solução: q0 loop a, q0â†’q1(b)â†’q0(b). "abbdd"âœ“. PrÃ³xima: "adcccd"!',
+      { text: 'Solução: q0 loop a, q0→q1(b)→q0(b). "abbdd"✓. Próxima: "adcccd"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -55,7 +55,7 @@
             { from: 'q0', to: 'q2', symbol: 'd' },
             { from: 'q2', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Foco em <b>adcccd</b>: q2 lÃª "c" â€” sem seta! Preciso de ciclo de c-trios.',
+      { text: 'Foco em <b>adcccd</b>: q2 lê "c" — sem seta! Preciso de ciclo de c-trios.',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -70,7 +70,7 @@
             { from: 'q0', to: 'q2', symbol: 'd' },
             { from: 'q2', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Solução: q2â†’q3(c)â†’q4(c)â†’q2(c). "adcccd"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q2→q3(c)→q4(c)→q2(c). "adcccd"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -91,26 +91,26 @@
             { from: 'q4', to: 'q2', symbol: 'c' },
           ] } },
     ] },
-  { id: 42, label: "L41", formula: "L = { a(dcb)^n a^m (bb)^p | n > 0, m > 0, p â‰¥ 0 }",               desc: "",                                                                 shortestWord: "adcba",    regex: /^a(dcb)+a+(bb)*$/,                                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["adcba","adcbaa","adcbabb"], rejectedWords: ["a","adcb","dcba"],  hint: "Siga a receita passo a passo, o ciclo 'dcb' Ã© o coraÃ§Ã£o do automato.",                                              successMsg: "Ciclo gigante dominado.",
+  { id: 42, label: "L41", formula: "L = { a(dcb)^n a^m (bb)^p | n > 0, m > 0, p ≥ 0 }",               desc: "",                                                                 shortestWord: "adcba",    regex: /^a(dcb)+a+(bb)*$/,                                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["adcba","adcbaa","adcbabb"], rejectedWords: ["a","adcb","dcba"],  hint: "Siga a receita passo a passo, o ciclo 'dcb' é o coração do automato.",                                              successMsg: "Ciclo gigante dominado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Ciclo dcb: a + dcb+ + a+ + b-pares!', dialog: [
         'L41: "a", depois 1+ ciclos de "dcb", depois 1+ "a", depois b-pares opcionais.',
-        '"adcba" âœ“ (1 ciclo, 1a). "adcbaa" âœ“ (1 ciclo, 2a). "adcbabb" âœ“ (1a, 1par-b).',
-        '"a" âœ— (sem dcb). "adcb" âœ— (sem a final). 7 estados em cadeia.',
+        '"adcba" ✓ (1 ciclo, 1a). "adcbaa" ✓ (1 ciclo, 2a). "adcbabb" ✓ (1a, 1par-b).',
+        '"a" ✗ (sem dcb). "adcb" ✗ (sem a final). 7 estados em cadeia.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '7 Estados: Cadeia + Ciclo + b-pares', dialog: [
-        'q0â€”aâ†’q1â€”dâ†’q2â€”câ†’q3â€”bâ†’q4 (ciclo dcb). q4â€”dâ†’q2 (repetir ciclo).',
-        'q4â€”aâ†’q5(f). q5 loop a. q5â€”bâ†’q6â€”bâ†’q5 (pares de b).',
-        '"adcbabb": q0â†’q1â†’q2â†’q3â†’q4â†’q5â€”bâ†’q6â€”bâ†’q5(f) âœ“.',
+        'q0—a→q1—d→q2—c→q3—b→q4 (ciclo dcb). q4—d→q2 (repetir ciclo).',
+        'q4—a→q5(f). q5 loop a. q5—b→q6—b→q5 (pares de b).',
+        '"adcbabb": q0→q1→q2→q3→q4→q5—b→q6—b→q5(f) ✓.',
       ] },
     },
     boardWords: ['adcba', 'adcbaa', 'adcbabb'],
     guidedLesson: [
       { text: 'Ciclo dcb! a + (dcb)+ + a+ + (bb)*<br/>Aceitar: <b>adcba</b>, <b>adcbaa</b>, <b>adcbabb</b>. Rejeitar: a, adcb, dcba.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>adcba</b>: cadeia q0â†’q1(a)â†’q2(d)â†’q3(c)â†’q4(b) + ciclo q4â†’q2(d) e saÃ­da q4â†’q5(final).',
+      { text: 'Foco em <b>adcba</b>: cadeia q0→q1(a)→q2(d)→q3(c)→q4(b) + ciclo q4→q2(d) e saída q4→q5(final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: cadeia + ciclo. "adcba"âœ“. PrÃ³xima: "adcbaa"!',
+      { text: 'Solução: cadeia + ciclo. "adcba"✓. Próxima: "adcbaa"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 40, isInitial: true,  isFinal: false },
@@ -128,7 +128,7 @@
             { from: 'q4', to: 'q2', symbol: 'd' },
             { from: 'q4', to: 'q5', symbol: 'a' },
           ] } },
-      { text: 'Foco em <b>adcbaa</b>: q5 lÃª segundo "a" â€” sem loop! Preciso de q5â†’q5(a).',
+      { text: 'Foco em <b>adcbaa</b>: q5 lê segundo "a" — sem loop! Preciso de q5→q5(a).',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 40, isInitial: true,  isFinal: false },
@@ -146,7 +146,7 @@
             { from: 'q4', to: 'q2', symbol: 'd' },
             { from: 'q4', to: 'q5', symbol: 'a' },
           ] } },
-      { text: 'Solução: q5 loop a. "adcbaa"âœ“. PrÃ³xima: "adcbabb"!',
+      { text: 'Solução: q5 loop a. "adcbaa"✓. Próxima: "adcbabb"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 40, isInitial: true,  isFinal: false },
@@ -165,7 +165,7 @@
             { from: 'q4', to: 'q5', symbol: 'a' },
             { from: 'q5', to: 'q5', symbol: 'a' },
           ] } },
-      { text: 'Foco em <b>adcbabb</b>: q5 lÃª "b" â€” sem seta! Preciso de q6 para b-pares.',
+      { text: 'Foco em <b>adcbabb</b>: q5 lê "b" — sem seta! Preciso de q6 para b-pares.',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 40, isInitial: true,  isFinal: false },
@@ -184,7 +184,7 @@
             { from: 'q4', to: 'q5', symbol: 'a' },
             { from: 'q5', to: 'q5', symbol: 'a' },
           ] } },
-      { text: 'Solução: q5â†’q6(b)â†’q5(b). "adcbabb"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q5→q6(b)→q5(b). "adcbabb"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 40, isInitial: true,  isFinal: false },
@@ -207,26 +207,26 @@
             { from: 'q6', to: 'q5', symbol: 'b' },
           ] } },
     ] },
-  { id: 43, label: "L42", formula: "L = { a^n b^2m c c d^p | n > 0 (Ã­mpar), m, p â‰¥ 0 }",              desc: "",                                                                 shortestWord: "acc",      regex: /^a(aa)*(bb)*ccd*$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["acc","aaacc","accdd"],   rejectedWords: ["cc","aacc","abcc"],    hint: "O inÃ­cio exige vai-e-volta Ã­mpar para os 'a's, depois 'b's em duplas.",                                             successMsg: "Paridade e duplas em sequÃªncia perfeita.",
+  { id: 43, label: "L42", formula: "L = { a^n b^2m c c d^p | n > 0 (ímpar), m, p ≥ 0 }",              desc: "",                                                                 shortestWord: "acc",      regex: /^a(aa)*(bb)*ccd*$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["acc","aaacc","accdd"],   rejectedWords: ["cc","aacc","abcc"],    hint: "O início exige vai-e-volta ímpar para os 'a's, depois 'b's em duplas.",                                             successMsg: "Paridade e duplas em sequência perfeita.",
     tutorials: {
-      onStart: { type: 'theory', title: 'a-Ã­mpar + b-pares + cc + d*!', dialog: [
-        'L42: a^n b^2m cc d^p onde n > 0 Ã­mpar, m â‰¥ 0, p â‰¥ 0.',
-        '"acc" âœ“ (1a, 0b). "aaacc" âœ“ (3a, 0b). "abbcc" âœ“ (1a, 2b). "aacc" âœ— (2a = par!).',
-        '6 estados: q0 (start), q1 (odd-a), q2 (even-a), q3 (odd-b), q4 (1Âºc), q5 (final).',
+      onStart: { type: 'theory', title: 'a-ímpar + b-pares + cc + d*!', dialog: [
+        'L42: a^n b^2m cc d^p onde n > 0 ímpar, m ≥ 0, p ≥ 0.',
+        '"acc" ✓ (1a, 0b). "aaacc" ✓ (3a, 0b). "abbcc" ✓ (1a, 2b). "aacc" ✗ (2a = par!).',
+        '6 estados: q0 (start), q1 (odd-a), q2 (even-a), q3 (odd-b), q4 (1ºc), q5 (final).',
       ] },
       onDrawGraph: { type: 'mechanic', title: '6 Estados: Paridade + Cadeia', dialog: [
-        'q0â€”aâ†’q1â†”q2(a). q1 = a-Ã­mpar (vÃ¡lido). q2 = a-par (precisa de mais um "a").',
-        'q1â€”câ†’q4â€”câ†’q5(f). q5 loop d. "cc" obrigatÃ³rio antes dos d\'s.',
-        'q1â€”bâ†’q3â€”bâ†’q1. Pares de "b" retornam a q1. Ãmpar de "b" trava em q3.',
+        'q0—a→q1↔q2(a). q1 = a-ímpar (válido). q2 = a-par (precisa de mais um "a").',
+        'q1—c→q4—c→q5(f). q5 loop d. "cc" obrigatório antes dos d\'s.',
+        'q1—b→q3—b→q1. Pares de "b" retornam a q1. Ímpar de "b" trava em q3.',
       ] },
     },
     boardWords: ['acc', 'aaacc', 'abbcc', 'accdd'],
     guidedLesson: [
-      { text: 'a-Ã­mpar + b-pares + cc + d*!<br/>Aceitar: <b>acc</b>, <b>aaacc</b>, <b>abbcc</b>, <b>accdd</b>. Rejeitar: cc, aacc, abcc.',
+      { text: 'a-ímpar + b-pares + cc + d*!<br/>Aceitar: <b>acc</b>, <b>aaacc</b>, <b>abbcc</b>, <b>accdd</b>. Rejeitar: cc, aacc, abcc.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>acc</b> e <b>aaacc</b>: ambas precisam de paridade-a (q1â†”q2) + cadeia cc.',
+      { text: 'Foco em <b>acc</b> e <b>aaacc</b>: ambas precisam de paridade-a (q1↔q2) + cadeia cc.',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1â†”q2(a), q1â†’q4(c)â†’q5(final,loop d). "acc"âœ“ "aaacc"âœ“. PrÃ³ximas: "abbcc" e "accdd"!',
+      { text: 'Solução: q0→q1↔q2(a), q1→q4(c)→q5(final,loop d). "acc"✓ "aaacc"✓. Próximas: "abbcc" e "accdd"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 35, isInitial: true,  isFinal: false },
@@ -243,7 +243,7 @@
             { from: 'q4', to: 'q5', symbol: 'c' },
             { from: 'q5', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Foco em <b>abbcc</b> e <b>accdd</b>: "abbcc" â€” q1 sem seta para "b"! Preciso de q3 para b-pares.',
+      { text: 'Foco em <b>abbcc</b> e <b>accdd</b>: "abbcc" — q1 sem seta para "b"! Preciso de q3 para b-pares.',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 35, isInitial: true,  isFinal: false },
@@ -260,7 +260,7 @@
             { from: 'q4', to: 'q5', symbol: 'c' },
             { from: 'q5', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Solução: +q3, q1â†’q3(b)â†’q1(b). "abbcc"âœ“ "accdd"âœ“ ConcluÃ­do!',
+      { text: 'Solução: +q3, q1→q3(b)→q1(b). "abbcc"✓ "accdd"✓ Concluído!',
         boardDoneUpTo: 4, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 35, isInitial: true,  isFinal: false },
@@ -281,26 +281,26 @@
             { from: 'q5', to: 'q5', symbol: 'd' },
           ] } },
     ] },
-  { id: 44, label: "L43", formula: "L = { w âˆˆ {a,b,c,d}* | subpalavra 'ab' e sufixo 'cd' }",           desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*ab[abcd]*cd$/,                                      alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","aabcd","abccd"],  rejectedWords: ["Î»","acd","abdc"],      hint: "Ache primeiro o 'ab'. Depois de achar, fique aguardando um 'cd' para finalizar.",                                   successMsg: "Subpalavra + Sufixo resolvido.",
+  { id: 44, label: "L43", formula: "L = { w ∈ {a,b,c,d}* | subpalavra 'ab' e sufixo 'cd' }",           desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*ab[abcd]*cd$/,                                      alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","aabcd","abccd"],  rejectedWords: ["λ","acd","abdc"],      hint: "Ache primeiro o 'ab'. Depois de achar, fique aguardando um 'cd' para finalizar.",                                   successMsg: "Subpalavra + Sufixo resolvido.",
     tutorials: {
       onStart: { type: 'theory', title: 'Subpalavra "ab" + Sufixo "cd"!', dialog: [
         'L43: a palavra deve conter "ab" em algum lugar E terminar com "cd".',
-        '"abcd" âœ“ (ab subpalavra, cd sufixo). "aabcd" âœ“. "abccd" âœ“.',
-        '"acd" âœ— (sem "ab"). "abdc" âœ— ("ab" ok mas nÃ£o termina em "cd").',
+        '"abcd" ✓ (ab subpalavra, cd sufixo). "aabcd" ✓. "abccd" ✓.',
+        '"acd" ✗ (sem "ab"). "abdc" ✗ ("ab" ok mas não termina em "cd").',
       ] },
       onDrawGraph: { type: 'mechanic', title: '5 Estados: Detectar + Esperar', dialog: [
-        'q0â†’q1(a): buscando "ab". q1â†’q2(b): "ab" encontrado! q0 e q1 voltam com c,d.',
-        'q2â†’q3(c): primeiro "c" do sufixo. q3â†’q4(d): "cd" completo â€” final!',
-        'q2 e q4 loop em a,b,d. q3 loop em c. Mismatches em q0,q1 voltam ao inÃ­cio.',
+        'q0→q1(a): buscando "ab". q1→q2(b): "ab" encontrado! q0 e q1 voltam com c,d.',
+        'q2→q3(c): primeiro "c" do sufixo. q3→q4(d): "cd" completo — final!',
+        'q2 e q4 loop em a,b,d. q3 loop em c. Mismatches em q0,q1 voltam ao início.',
       ] },
     },
     boardWords: ['abcd', 'aabcd', 'abccd'],
     guidedLesson: [
-      { text: 'Subpalavra "ab" e sufixo "cd"!<br/>Aceitar: <b>abcd</b>, <b>aabcd</b>, <b>abccd</b>. Rejeitar: Î», acd, abdc.',
+      { text: 'Subpalavra "ab" e sufixo "cd"!<br/>Aceitar: <b>abcd</b>, <b>aabcd</b>, <b>abccd</b>. Rejeitar: λ, acd, abdc.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>abcd</b>: cadeia simples q0â†’q1(a)â†’q2(b)â†’q3(c)â†’q4(final).',
+      { text: 'Foco em <b>abcd</b>: cadeia simples q0→q1(a)→q2(b)→q3(c)→q4(final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: cadeia q0â†’q1(a)â†’q2(b)â†’q3(c)â†’q4(final,d). "abcd"âœ“. PrÃ³ximas: "aabcd" e "abccd"!',
+      { text: 'Solução: cadeia q0→q1(a)→q2(b)→q3(c)→q4(final,d). "abcd"✓. Próximas: "aabcd" e "abccd"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
@@ -315,7 +315,7 @@
             { from: 'q2', to: 'q3', symbol: 'c' },
             { from: 'q3', to: 'q4', symbol: 'd' },
           ] } },
-      { text: 'Foco em <b>aabcd</b> e <b>abccd</b>: "aabcd" â€” q1 sem loop a! "abccd" â€” q3 sem loop c! Preciso de loops e retornos.',
+      { text: 'Foco em <b>aabcd</b> e <b>abccd</b>: "aabcd" — q1 sem loop a! "abccd" — q3 sem loop c! Preciso de loops e retornos.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
@@ -330,7 +330,7 @@
             { from: 'q2', to: 'q3', symbol: 'c' },
             { from: 'q3', to: 'q4', symbol: 'd' },
           ] } },
-      { text: 'Fix loops/retornos: q0 loop b,c,d; q1 loop a, q1â†’q0(c,d); q2 loop a,b,d; q3 loop c; q4â†’q3(c), q4â†’q2(a,b,d). "aabcd"âœ“ "abccd"âœ“ ConcluÃ­do!',
+      { text: 'Fix loops/retornos: q0 loop b,c,d; q1 loop a, q1→q0(c,d); q2 loop a,b,d; q3 loop c; q4→q3(c), q4→q2(a,b,d). "aabcd"✓ "abccd"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
@@ -354,17 +354,17 @@
             { from: 'q4', to: 'q3', symbol: 'c' },
           ] } },
     ] },
-  { id: 45, label: "L44", formula: "L = { w âˆˆ {a,b,c,d}* | prefixo 'abcd' e sufixo 'dcba' }",          desc: "",                                                                 shortestWord: "abcddcba", regex: /^abcd[abcd]*dcba$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcddcba","abcdadcba"],  rejectedWords: ["abcd","dcba","abcdcd"], hint: "SanduÃ­che de palavras! O comeÃ§o e o fim sÃ£o engessados.",                                                           successMsg: "SanduÃ­che de letras perfeito.",
+  { id: 45, label: "L44", formula: "L = { w ∈ {a,b,c,d}* | prefixo 'abcd' e sufixo 'dcba' }",          desc: "",                                                                 shortestWord: "abcddcba", regex: /^abcd[abcd]*dcba$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcddcba","abcdadcba"],  rejectedWords: ["abcd","dcba","abcdcd"], hint: "Sanduíche de palavras! O começo e o fim são engessados.",                                                           successMsg: "Sanduíche de letras perfeito.",
     tutorials: {
       onStart: { type: 'theory', title: 'Prefixo "abcd" E sufixo "dcba"!', dialog: [
         'L44: comecar com "abcd" obrigatorio, terminar com "dcba" obrigatorio.',
-        '"abcddcba" âœ“ (min, sobreposicao). "abcdadcba" âœ“ (1a no meio).',
-        '"abcd" âœ— (falta sufixo). "dcba" âœ— (falta prefixo). 9 estados.',
+        '"abcddcba" ✓ (min, sobreposicao). "abcdadcba" ✓ (1a no meio).',
+        '"abcd" ✗ (falta sufixo). "dcba" ✗ (falta prefixo). 9 estados.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '9 Estados: Prefixo + Sufixo', dialog: [
-        'Prefixo: q0â€”aâ†’q1â€”bâ†’q2â€”câ†’q3â€”dâ†’q4. Sufixo: q4â€”dâ†’q5â€”câ†’q6â€”bâ†’q7â€”aâ†’q8(f).',
-        'q4 loop a,b,c. q5 loop d; q5â€”a,bâ†’q4. q6â€”a,câ†’q4; q6â€”dâ†’q5.',
-        'q7â€”b,câ†’q4; q7â€”dâ†’q5. q8â€”a,b,câ†’q4; q8â€”dâ†’q5.',
+        'Prefixo: q0—a→q1—b→q2—c→q3—d→q4. Sufixo: q4—d→q5—c→q6—b→q7—a→q8(f).',
+        'q4 loop a,b,c. q5 loop d; q5—a,b→q4. q6—a,c→q4; q6—d→q5.',
+        'q7—b,c→q4; q7—d→q5. q8—a,b,c→q4; q8—d→q5.',
       ] },
     },
     boardWords: ['abcddcba', 'abcdadcba'],
@@ -373,7 +373,7 @@
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
       { text: 'Foco em <b>abcddcba</b>: dois prefixos e sufixos em cadeia linear de 9 estados.',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: cadeia q0â†’â€¦â†’q4(d)â†’q5(d)â†’q6(c)â†’q7(b)â†’q8(final,a). "abcddcba"âœ“. PrÃ³xima: "abcdadcba"!',
+      { text: 'Solução: cadeia q0→…→q4(d)→q5(d)→q6(c)→q7(b)→q8(final,a). "abcddcba"✓. Próxima: "abcdadcba"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 35, isInitial: true,  isFinal: false },
@@ -396,7 +396,7 @@
             { from: 'q6', to: 'q7', symbol: 'b' },
             { from: 'q7', to: 'q8', symbol: 'a' },
           ] } },
-      { text: 'Foco em <b>abcdadcba</b>: q4 lÃª "a" â€” sem loop! Preciso de loops e retornos em q4 e sufixo.',
+      { text: 'Foco em <b>abcdadcba</b>: q4 lê "a" — sem loop! Preciso de loops e retornos em q4 e sufixo.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 35, isInitial: true,  isFinal: false },
@@ -419,7 +419,7 @@
             { from: 'q6', to: 'q7', symbol: 'b' },
             { from: 'q7', to: 'q8', symbol: 'a' },
           ] } },
-      { text: 'Fix loops/retornos: q4 loop a,b,c; q5 loop d, q5â†’q4(a,b); q6â†’q5(d), q6â†’q4(a,c); q7â†’q4(b,c); q8â†’q4(a,b,c). "abcdadcba"âœ“ ConcluÃ­do!',
+      { text: 'Fix loops/retornos: q4 loop a,b,c; q5 loop d, q5→q4(a,b); q6→q5(d), q6→q4(a,c); q7→q4(b,c); q8→q4(a,b,c). "abcdadcba"✓ Concluído!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 35, isInitial: true,  isFinal: false },
@@ -452,26 +452,26 @@
             { from: 'q8', to: 'q5', symbol: 'd' },
           ] } },
     ] },
-  { id: 46, label: "L45", formula: "L = { w âˆˆ {a,b,c,d}* | pref 'abcd', sub 'cccc', suf 'dcba' }",    desc: "",                                                                 shortestWord: "abcdccccdcba", regex: /^abcd[abcd]*cccc[abcd]*dcba$/,                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcdccccdcba","abcdaccccdcba"], rejectedWords: ["abcddcba","abcdcccdcba","dcba"], hint: "FaÃ§a o caminho em trÃªs estÃ¡gios lÃ³gicos na sua cabeÃ§a.",                                          successMsg: "VocÃª construiu um autÃ´mato enorme, meus parabÃ©ns!",
+  { id: 46, label: "L45", formula: "L = { w ∈ {a,b,c,d}* | pref 'abcd', sub 'cccc', suf 'dcba' }",    desc: "",                                                                 shortestWord: "abcdccccdcba", regex: /^abcd[abcd]*cccc[abcd]*dcba$/,                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcdccccdcba","abcdaccccdcba"], rejectedWords: ["abcddcba","abcdcccdcba","dcba"], hint: "Faça o caminho em três estágios lógicos na sua cabeça.",                                          successMsg: "Você construiu um autômato enorme, meus parabéns!",
     tutorials: {
       onStart: { type: 'theory', title: 'Prefixo abcd + 4c seguidos + sufixo dcba!', dialog: [
         'L45: comecar com "abcd", conter "cccc" em algum lugar, terminar com "dcba".',
-        '"abcdccccdcba" âœ“ (min). "abcdaccccdcba" âœ“ (a no meio). 13 estados!',
-        'Tres fases: prefixo fixo â†’ detectar cccc â†’ sufixo fixo.',
+        '"abcdccccdcba" ✓ (min). "abcdaccccdcba" ✓ (a no meio). 13 estados!',
+        'Tres fases: prefixo fixo → detectar cccc → sufixo fixo.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '13 Estados: Tres Fases', dialog: [
-        'Prefixo: q0â€”aâ†’q1â€”bâ†’q2â€”câ†’q3â€”dâ†’q4. q4 loop a,b,d; q4â€”câ†’q5.',
-        'cccc: q5â€”câ†’q6â€”câ†’q7â€”câ†’q8. Mismatch volta a q4. q8 loop a,b,c.',
-        'Sufixo: q8â€”dâ†’q9â€”câ†’q10â€”bâ†’q11â€”aâ†’q12(f). Mismatches â†’ q8 ou q9.',
+        'Prefixo: q0—a→q1—b→q2—c→q3—d→q4. q4 loop a,b,d; q4—c→q5.',
+        'cccc: q5—c→q6—c→q7—c→q8. Mismatch volta a q4. q8 loop a,b,c.',
+        'Sufixo: q8—d→q9—c→q10—b→q11—a→q12(f). Mismatches → q8 ou q9.',
       ] },
     },
     boardWords: ['abcdccccdcba', 'abcdaccccdcba'],
     guidedLesson: [
       { text: 'Tres fases: prefixo "abcd" + subpalavra "cccc" + sufixo "dcba"!<br/>Aceitar: <b>abcdccccdcba</b>, <b>abcdaccccdcba</b>. Rejeitar: abcddcba, abcdcccdcba.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>abcdccccdcba</b>: cadeia linear de 13 estados â€” prefixo + 4c + sufixo.',
+      { text: 'Foco em <b>abcdccccdcba</b>: cadeia linear de 13 estados — prefixo + 4c + sufixo.',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: cadeia q0â†’â€¦â†’q4(c)â†’q5(c)â†’q6(c)â†’q7(c)â†’q8(d)â†’q9(c)â†’q10(b)â†’q11(a)â†’q12(final). "abcdccccdcba"âœ“. PrÃ³xima: "abcdaccccdcba"!',
+      { text: 'Solução: cadeia q0→…→q4(c)→q5(c)→q6(c)→q7(c)→q8(d)→q9(c)→q10(b)→q11(a)→q12(final). "abcdccccdcba"✓. Próxima: "abcdaccccdcba"!',
         boardDoneUpTo: 1,
         stateUpdate: {
           nodes: [
@@ -504,7 +504,7 @@
             { from: 'q11', to: 'q12', symbol: 'a' },
           ],
         } },
-      { text: 'Foco em <b>abcdaccccdcba</b>: q4 lÃª "a" â€” sem loop! Preciso de loops e mismatches em q4 e fases cccc/sufixo.',
+      { text: 'Foco em <b>abcdaccccdcba</b>: q4 lê "a" — sem loop! Preciso de loops e mismatches em q4 e fases cccc/sufixo.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0',  label: 'q0',  x:  6, y: 28, isInitial: true,  isFinal: false },
@@ -535,7 +535,7 @@
             { from: 'q10', to: 'q11', symbol: 'b' },
             { from: 'q11', to: 'q12', symbol: 'a' },
           ] } },
-      { text: 'Fix loops/mismatches: q4 loop a,b,d; q5-q7 mismatchâ†’q4; q8 loop a,b,c; q9 loop d, q9â†’q8(a,b); sufixo mismatchesâ†’q8. "abcdaccccdcba"âœ“ ConcluÃ­do!',
+      { text: 'Fix loops/mismatches: q4 loop a,b,d; q5-q7 mismatch→q4; q8 loop a,b,c; q9 loop d, q9→q8(a,b); sufixo mismatches→q8. "abcdaccccdcba"✓ Concluído!',
         boardDoneUpTo: 2,
         stateUpdate: {
           nodes: [
@@ -582,34 +582,34 @@
           ],
         } },
     ] },
-  { id: 47, label: "L46", formula: "L = { (a+b+c)* | qtd de a, b e c Ã© par }",                          desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['a','b','c'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['a', 'b', 'c'],        acceptedWords: ["Î»","aabb","aabbcc"],      rejectedWords: ["a","b","abc"],         hint: "Isso Ã© um cubo mÃ¡gico de estados! Paridade para 3 letras exige 8 estados.",                                        successMsg: "Paridade em 3D completada!",
+  { id: 47, label: "L46", formula: "L = { (a+b+c)* | qtd de a, b e c é par }",                          desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['a','b','c'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","aabb","aabbcc"],      rejectedWords: ["a","b","abc"],         hint: "Isso é um cubo mágico de estados! Paridade para 3 letras exige 8 estados.",                                        successMsg: "Paridade em 3D completada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Cubo de paridade: 3 letras, 8 estados!', dialog: [
         'L46: contar a, b e c separadamente. Aceito quando TODOS pares.',
-        '"Î»" âœ“ (0+0+0). "aabb" âœ“ (2a,2b,0c). "aabbcc" âœ“ (2a,2b,2c). "a" âœ— (1a impar).',
+        '"λ" ✓ (0+0+0). "aabb" ✓ (2a,2b,0c). "aabbcc" ✓ (2a,2b,2c). "a" ✗ (1a impar).',
         '8 combinacoes de paridade: 2^3 = 8 estados. Apenas q0(ini,f) aceita.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '8 Estados em Cubo', dialog: [
-        'Linhas "a" (vertical): q0â†”q1, q2â†”q4, q3â†”q5, q6â†”q7.',
-        'Linhas "b" (horizontal): q0â†”q2, q1â†”q4, q3â†”q6, q5â†”q7.',
-        'Linhas "c" (cruzadas): q0â†”q3, q1â†”q5, q2â†”q6, q4â†”q7.',
+        'Linhas "a" (vertical): q0↔q1, q2↔q4, q3↔q5, q6↔q7.',
+        'Linhas "b" (horizontal): q0↔q2, q1↔q4, q3↔q6, q5↔q7.',
+        'Linhas "c" (cruzadas): q0↔q3, q1↔q5, q2↔q6, q4↔q7.',
       ] },
     },
-    boardWords: ['Î»', 'aabb', 'aabbcc'],
+    boardWords: ['λ', 'aabb', 'aabbcc'],
     guidedLesson: [
-      { text: 'Cubo de paridade: a, b e c todos pares!<br/>Aceitar: <b>Î»</b>, <b>aabb</b>, <b>aabbcc</b>. Rejeitar: a, b, abc.',
+      { text: 'Cubo de paridade: a, b e c todos pares!<br/>Aceitar: <b>λ</b>, <b>aabb</b>, <b>aabbcc</b>. Rejeitar: a, b, abc.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>Î»</b>: palavra vazia â€” q0 inicial e final Ã© suficiente.',
+      { text: 'Foco em <b>λ</b>: palavra vazia — q0 inicial e final é suficiente.',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,final). Î»âœ“. PrÃ³xima: "aabb"!',
+      { text: 'Solução: q0(ini,final). λ✓. Próxima: "aabb"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [ { id: 'q0', label: 'q0', x: 50, y: 50, isInitial: true, isFinal: true } ],
           transitions: [] } },
-      { text: 'Foco em <b>aabb</b>: q0 lÃª "a" â€” sem seta! Preciso de raias a, b, c bidirecionais.',
+      { text: 'Foco em <b>aabb</b>: q0 lê "a" — sem seta! Preciso de raias a, b, c bidirecionais.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [ { id: 'q0', label: 'q0', x: 50, y: 50, isInitial: true, isFinal: true } ],
           transitions: [] } },
-      { text: 'Solução: q0â†”q1(a), q0â†”q2(b), q0â†”q3(c). "aabb"âœ“. PrÃ³xima: "aabbcc"!',
+      { text: 'Solução: q0↔q1(a), q0↔q2(b), q0↔q3(c). "aabb"✓. Próxima: "aabbcc"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 12, y: 25, isInitial: true,  isFinal: true  },
@@ -635,7 +635,7 @@
             { from: 'q0', to: 'q2', symbol: 'b' }, { from: 'q2', to: 'q0', symbol: 'b' },
             { from: 'q0', to: 'q3', symbol: 'c' }, { from: 'q3', to: 'q0', symbol: 'c' },
           ] } },
-      { text: 'Solução: cubo completo +q4,q5,q6,q7. "aabbcc"âœ“ ConcluÃ­do!',
+      { text: 'Solução: cubo completo +q4,q5,q6,q7. "aabbcc"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 12, y: 25, isInitial: true,  isFinal: true  },
@@ -662,26 +662,26 @@
             { from: 'q4', to: 'q7', symbol: 'c' }, { from: 'q7', to: 'q4', symbol: 'c' },
           ] } },
     ] },
-  { id: 48, label: "L47", formula: "L = { a^n b^2m d c^3p d | n, m, p â‰¥ 0 }",                          desc: "(RevisÃ£o L40)",                                                    shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccdd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Se chegou atÃ© aqui, jÃ¡ sabe: separe o problema em bloquinhos lÃ³gicos.",                                             successMsg: "RevisÃ£o bem sucedida.",
+  { id: 48, label: "L47", formula: "L = { a^n b^2m d c^3p d | n, m, p ≥ 0 }",                          desc: "(Revisão L40)",                                                    shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccdd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Se chegou até aqui, já sabe: separe o problema em bloquinhos lógicos.",                                             successMsg: "Revisão bem sucedida.",
     tutorials: {
-      onStart: { type: 'theory', title: 'RevisÃ£o L40: blocos a, b-pares, d, c-trios, d!', dialog: [
-        'L47 e revisÃ£o de L40. Mesma linguagem a^n b^2m d c^3p d.',
-        '"dd" âœ“. "abbdd" âœ“. "adcccd" âœ“. "d" âœ—. "abcdd" âœ—.',
+      onStart: { type: 'theory', title: 'Revisão L40: blocos a, b-pares, d, c-trios, d!', dialog: [
+        'L47 e revisão de L40. Mesma linguagem a^n b^2m d c^3p d.',
+        '"dd" ✓. "abbdd" ✓. "adcccd" ✓. "d" ✗. "abcdd" ✗.',
         'Relembre os 6 estados: q0(ini), q1(b-impar), q2(apos-d), q3(c-1), q4(c-2), q5(f).',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Revisao: 6 Estados', dialog: [
-        'q0 loop a; q0â€”bâ†’q1â€”bâ†’q0; q0â€”dâ†’q2.',
-        'q2â€”dâ†’q5(f); q2â€”câ†’q3â€”câ†’q4â€”câ†’q2.',
+        'q0 loop a; q0—b→q1—b→q0; q0—d→q2.',
+        'q2—d→q5(f); q2—c→q3—c→q4—c→q2.',
         'Mesmos estados e mesma logica de L40. Voce ja sabe montar isso!',
       ] },
     },
     boardWords: ['dd', 'abbdd', 'adcccd'],
     guidedLesson: [
-      { text: 'RevisÃ£o de L40! a* b-pares d c-trios d.<br/>Aceitar: <b>dd</b>, <b>abbdd</b>, <b>adcccd</b>. Rejeitar: d, abd, abcdd.',
+      { text: 'Revisão de L40! a* b-pares d c-trios d.<br/>Aceitar: <b>dd</b>, <b>abbdd</b>, <b>adcccd</b>. Rejeitar: d, abd, abcdd.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>dd</b>: nÃºcleo q0â†’q2(d)â†’q5(final).',
+      { text: 'Foco em <b>dd</b>: núcleo q0→q2(d)→q5(final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q2(d)â†’q5(final). "dd"âœ“. PrÃ³xima: "abbdd"!',
+      { text: 'Solução: q0→q2(d)→q5(final). "dd"✓. Próxima: "abbdd"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -692,7 +692,7 @@
             { from: 'q0', to: 'q2', symbol: 'd' },
             { from: 'q2', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Foco em <b>abbdd</b>: q0 lÃª "a" e "b" â€” sem seta! Preciso de loop a e q1 para b-pares.',
+      { text: 'Foco em <b>abbdd</b>: q0 lê "a" e "b" — sem seta! Preciso de loop a e q1 para b-pares.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -703,7 +703,7 @@
             { from: 'q0', to: 'q2', symbol: 'd' },
             { from: 'q2', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Solução: q0 loop a, q0â†’q1(b)â†’q0(b). "abbdd"âœ“. PrÃ³xima: "adcccd"!',
+      { text: 'Solução: q0 loop a, q0→q1(b)→q0(b). "abbdd"✓. Próxima: "adcccd"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -718,7 +718,7 @@
             { from: 'q0', to: 'q2', symbol: 'd' },
             { from: 'q2', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Foco em <b>adcccd</b>: q2 lÃª "c" â€” sem seta! Preciso de ciclo de c-trios.',
+      { text: 'Foco em <b>adcccd</b>: q2 lê "c" — sem seta! Preciso de ciclo de c-trios.',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -733,7 +733,7 @@
             { from: 'q0', to: 'q2', symbol: 'd' },
             { from: 'q2', to: 'q5', symbol: 'd' },
           ] } },
-      { text: 'Solução: q2â†’q3(c)â†’q4(c)â†’q2(c). "adcccd"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q2→q3(c)→q4(c)→q2(c). "adcccd"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -754,26 +754,26 @@
             { from: 'q4', to: 'q2', symbol: 'c' },
           ] } },
     ] },
-  { id: 49, label: "L48", formula: "L = { w âˆˆ {0,1}* | zeros pares e uns Ã­mpares }",                   desc: "",                                                                 shortestWord: "1",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='0').length%2===0 && [...w].filter(c=>c==='1').length%2===1, alphabet: ['0', '1'],             acceptedWords: ["1","001","11100"],        rejectedWords: ["Î»","0","01"],          hint: "Parecido com a L38, mas com nÃºmeros. Foque no estado correto de parada.",                                           successMsg: "Paridade binÃ¡ria.",
+  { id: 49, label: "L48", formula: "L = { w ∈ {0,1}* | zeros pares e uns ímpares }",                   desc: "",                                                                 shortestWord: "1",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='0').length%2===0 && [...w].filter(c=>c==='1').length%2===1, alphabet: ['0', '1'],             acceptedWords: ["1","001","11100"],        rejectedWords: ["λ","0","01"],          hint: "Parecido com a L38, mas com números. Foque no estado correto de parada.",                                           successMsg: "Paridade binária.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Paridade BinÃ¡ria: 0-par e 1-Ã­mpar!', dialog: [
-        'L48: contar 0s e 1s separadamente. Aceito quando #0 par E #1 Ã­mpar.',
-        '"1" âœ“ (0 zeros, 1 um). "001" âœ“ (2 zeros, 1 um). "Î»" âœ— (0 uns = par).',
-        '4 combinaÃ§Ãµes de paridade â†’ 4 estados. Mesmo quadrado da L38 mas com 0 e 1!',
+      onStart: { type: 'theory', title: 'Paridade Binária: 0-par e 1-ímpar!', dialog: [
+        'L48: contar 0s e 1s separadamente. Aceito quando #0 par E #1 ímpar.',
+        '"1" ✓ (0 zeros, 1 um). "001" ✓ (2 zeros, 1 um). "λ" ✗ (0 uns = par).',
+        '4 combinações de paridade → 4 estados. Mesmo quadrado da L38 mas com 0 e 1!',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '4 Estados em Quadrado BinÃ¡rio', dialog: [
-        'q0(ini)=(p0,p1), q1(f)=(p0,Ã­1), q2=(Ã­0,p1), q3=(Ã­0,Ã­1). SÃ³ q1 Ã© final.',
-        'Ler "1": q0â†”q1 e q2â†”q3. Ler "0": q0â†”q2 e q1â†”q3.',
-        '"001": q0â€”0â†’q2â€”0â†’q0â€”1â†’q1(f) âœ“. "11100": q0â†’q1â†’q0â†’q1â€”0â†’q3â€”0â†’q1(f) âœ“.',
+      onDrawGraph: { type: 'mechanic', title: '4 Estados em Quadrado Binário', dialog: [
+        'q0(ini)=(p0,p1), q1(f)=(p0,í1), q2=(í0,p1), q3=(í0,í1). Só q1 é final.',
+        'Ler "1": q0↔q1 e q2↔q3. Ler "0": q0↔q2 e q1↔q3.',
+        '"001": q0—0→q2—0→q0—1→q1(f) ✓. "11100": q0→q1→q0→q1—0→q3—0→q1(f) ✓.',
       ] },
     },
     boardWords: ['1', '001', '11100'],
     guidedLesson: [
-      { text: 'Paridade binÃ¡ria: #0 par AND #1 Ã­mpar!<br/>Aceitar: <b>1</b>, <b>001</b>, <b>11100</b>. Rejeitar: Î», 0, 01.',
+      { text: 'Paridade binária: #0 par AND #1 ímpar!<br/>Aceitar: <b>1</b>, <b>001</b>, <b>11100</b>. Rejeitar: λ, 0, 01.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>1</b>: raia do 1 â€” q0(ini)â†”q1(final) via "1".',
+      { text: 'Foco em <b>1</b>: raia do 1 — q0(ini)↔q1(final) via "1".',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†”q1(1). "1"âœ“. PrÃ³ximas: "001" e "11100"!',
+      { text: 'Solução: q0↔q1(1). "1"✓. Próximas: "001" e "11100"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
@@ -783,7 +783,7 @@
             { from: 'q0', to: 'q1', symbol: '1' },
             { from: 'q1', to: 'q0', symbol: '1' },
           ] } },
-      { text: 'Foco em <b>001</b> e <b>11100</b>: q0 lÃª "0" â€” sem seta! Preciso de q2 e q3 para raia do 0.',
+      { text: 'Foco em <b>001</b> e <b>11100</b>: q0 lê "0" — sem seta! Preciso de q2 e q3 para raia do 0.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
@@ -793,7 +793,7 @@
             { from: 'q0', to: 'q1', symbol: '1' },
             { from: 'q1', to: 'q0', symbol: '1' },
           ] } },
-      { text: 'Solução: +q2,q3. q0â†”q2(0), q1â†”q3(0), q2â†”q3(1). "001"âœ“ "11100"âœ“ ConcluÃ­do!',
+      { text: 'Solução: +q2,q3. q0↔q2(0), q1↔q3(0), q2↔q3(1). "001"✓ "11100"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
@@ -808,17 +808,17 @@
             { from: 'q2', to: 'q3', symbol: '1' }, { from: 'q3', to: 'q2', symbol: '1' },
           ] } },
     ] },
-  { id: 50, label: "L49", formula: "L = { a^n a c^m (ab+ba) c a^2p | n â‰¥ 0, m > 0, p > 0 }",          desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)ca(aa)*$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcaÃ§Ã£o no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "ExpressÃ£o bifurcada com sucesso.",
+  { id: 50, label: "L49", formula: "L = { a^n a c^m (ab+ba) c a^2p | n ≥ 0, m > 0, p > 0 }",          desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)ca(aa)*$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
     tutorials: {
-      onStart: { type: 'theory', title: 'a+ c+ (ab|ba) c aa+ â€” bifurcacao!', dialog: [
+      onStart: { type: 'theory', title: 'a+ c+ (ab|ba) c aa+ — bifurcacao!', dialog: [
         'L49: a-s, c-s, depois "ab" OU "ba", depois c, depois pares de a (min 1 par).',
-        '"acabcaa" âœ“ (ab, 1par-a). "aacabcaa" âœ“ (2a). "acbacaa" âœ“ (ba).',
+        '"acabcaa" ✓ (ab, 1par-a). "aacabcaa" ✓ (2a). "acbacaa" ✓ (ba).',
         '9 estados: q0-q2 (a/c loops), bifurcacao q3/q4, q5-q8 (cauda).',
       ] },
       onDrawGraph: { type: 'mechanic', title: '9 Estados: Loops + Bifurcacao', dialog: [
-        'q0â€”aâ†’q1 loop a. q1â€”câ†’q2 loop c. q2â€”aâ†’q3â€”bâ†’q5 (ab). q2â€”bâ†’q4â€”aâ†’q5 (ba).',
-        'q5â€”câ†’q6â€”aâ†’q7â€”aâ†’q8(f). q8â€”aâ†’q7 (mais pares).',
-        '"acbacaa": q2â€”bâ†’q4â€”aâ†’q5â†’q6â†’q7â†’q8(f) âœ“.',
+        'q0—a→q1 loop a. q1—c→q2 loop c. q2—a→q3—b→q5 (ab). q2—b→q4—a→q5 (ba).',
+        'q5—c→q6—a→q7—a→q8(f). q8—a→q7 (mais pares).',
+        '"acbacaa": q2—b→q4—a→q5→q6→q7→q8(f) ✓.',
       ] },
     },
     boardWords: ['acabcaa', 'aacabcaa', 'acbacaa'],
@@ -827,7 +827,7 @@
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
       { text: 'Foco em <b>acabcaa</b>: cadeia ab-branch + cauda, sem loops.',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(a)â†’q2(c)â†’q3(a)â†’q5(b)â†’q6(c)â†’q7(a)â†’q8(final,a)â†’q7(a). "acabcaa"âœ“. PrÃ³ximas: "aacabcaa" e "acbacaa"!',
+      { text: 'Solução: q0→q1(a)→q2(c)→q3(a)→q5(b)→q6(c)→q7(a)→q8(final,a)→q7(a). "acabcaa"✓. Próximas: "aacabcaa" e "acbacaa"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 50, isInitial: true,  isFinal: false },
@@ -849,7 +849,7 @@
             { from: 'q7', to: 'q8', symbol: 'a' },
             { from: 'q8', to: 'q7', symbol: 'a' },
           ] } },
-      { text: 'Foco em <b>aacabcaa</b> e <b>acbacaa</b>: "aacabcaa" â€” q1 sem loop a! "acbacaa" â€” q2 sem seta "b" para branch ba.',
+      { text: 'Foco em <b>aacabcaa</b> e <b>acbacaa</b>: "aacabcaa" — q1 sem loop a! "acbacaa" — q2 sem seta "b" para branch ba.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 50, isInitial: true,  isFinal: false },
@@ -871,7 +871,7 @@
             { from: 'q7', to: 'q8', symbol: 'a' },
             { from: 'q8', to: 'q7', symbol: 'a' },
           ] } },
-      { text: 'Solução: q1 loop a, q2 loop c, +q4 para ba-branch q2â†’q4(b)â†’q5(a). "aacabcaa"âœ“ "acbacaa"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q1 loop a, q2 loop c, +q4 para ba-branch q2→q4(b)→q5(a). "aacabcaa"✓ "acbacaa"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x:  8, y: 50, isInitial: true,  isFinal: false },
@@ -899,26 +899,26 @@
             { from: 'q8', to: 'q7', symbol: 'a' },
           ] } },
     ] },
-  { id: 51, label: "L50", formula: "L = { a^n b^m c^p | n, p > 0, m â‰¥ 0 e (n+p) Ã© Ã­mpar }",           desc: "",                                                                 shortestWord: "ac",       regex: /^.*$/, validate: w => /^a+b*c+$/.test(w) && ([...w].filter(c=>c==='a').length + [...w].filter(c=>c==='c').length)%2===1, alphabet: ['a', 'b', 'c'],        acceptedWords: ["acc","aac","abcc"],       rejectedWords: ["ac","aacc","c"],        hint: "Se a quantidade de 'a's for Ã­mpar, os 'c's precisam ser pares, e vice versa.",                                     successMsg: "Paridade correlacionada funcionando!",
+  { id: 51, label: "L50", formula: "L = { a^n b^m c^p | n, p > 0, m ≥ 0 e (n+p) é ímpar }",           desc: "",                                                                 shortestWord: "ac",       regex: /^.*$/, validate: w => /^a+b*c+$/.test(w) && ([...w].filter(c=>c==='a').length + [...w].filter(c=>c==='c').length)%2===1, alphabet: ['a', 'b', 'c'],        acceptedWords: ["acc","aac","abcc"],       rejectedWords: ["ac","aacc","c"],        hint: "Se a quantidade de 'a's for ímpar, os 'c's precisam ser pares, e vice versa.",                                     successMsg: "Paridade correlacionada funcionando!",
     tutorials: {
       onStart: { type: 'theory', title: 'a+ b* c+ com (n+p) impar!', dialog: [
         'L50: a^n b^m c^p. n>0, p>0, m>=0. Mas a quantidade (n+p) tem que ser impar.',
-        '"acc" âœ“ (1a+2c=3 impar). "aac" âœ“ (2a+1c=3). "abcc" âœ“ (1a+2c=3).',
-        '"ac" âœ— (1+1=2 par). "aacc" âœ— (2+2=4 par). 7 estados: paridade de a e c.',
+        '"acc" ✓ (1a+2c=3 impar). "aac" ✓ (2a+1c=3). "abcc" ✓ (1a+2c=3).',
+        '"ac" ✗ (1+1=2 par). "aacc" ✗ (2+2=4 par). 7 estados: paridade de a e c.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '7 Estados: Paridade a + c', dialog: [
-        'q0â€”aâ†’q1 (impar-a). q1â€”aâ†’q2 (par-a). q2â€”aâ†’q1 (ciclo). q1â€”câ†’q5, q2â€”câ†’q6(f).',
-        'b-phase: q1â€”bâ†’q4(impar), q2â€”bâ†’q3(par). q3,q4 loop b. q3â€”câ†’q6(f), q4â€”câ†’q5.',
-        'c-phase: q5â€”câ†’q6(f). q6â€”câ†’q5. "abcc": q1â€”bâ†’q4â€”câ†’q5â€”câ†’q6(f) âœ“.',
+        'q0—a→q1 (impar-a). q1—a→q2 (par-a). q2—a→q1 (ciclo). q1—c→q5, q2—c→q6(f).',
+        'b-phase: q1—b→q4(impar), q2—b→q3(par). q3,q4 loop b. q3—c→q6(f), q4—c→q5.',
+        'c-phase: q5—c→q6(f). q6—c→q5. "abcc": q1—b→q4—c→q5—c→q6(f) ✓.',
       ] },
     },
     boardWords: ['acc', 'aac', 'abcc'],
     guidedLesson: [
       { text: 'a+ b* c+ com (n+p) impar!<br/>Aceitar: <b>acc</b>, <b>aac</b>, <b>abcc</b>. Rejeitar: ac, aacc, c.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>acc</b>: caminho Ã­mpar-a â€” q0â†’q1(a)â†’q5(c)â†’q6(final,c).',
+      { text: 'Foco em <b>acc</b>: caminho ímpar-a — q0→q1(a)→q5(c)→q6(final,c).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(a)â†’q5(c)â†’q6(final)â†”q5(c). "acc"âœ“. PrÃ³xima: "aac"!',
+      { text: 'Solução: q0→q1(a)→q5(c)→q6(final)↔q5(c). "acc"✓. Próxima: "aac"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 35, isInitial: true,  isFinal: false },
@@ -932,7 +932,7 @@
             { from: 'q5', to: 'q6', symbol: 'c' },
             { from: 'q6', to: 'q5', symbol: 'c' },
           ] } },
-      { text: 'Foco em <b>aac</b>: q1 lÃª segundo "a" â€” sem seta! Preciso de q2 para par-a.',
+      { text: 'Foco em <b>aac</b>: q1 lê segundo "a" — sem seta! Preciso de q2 para par-a.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 35, isInitial: true,  isFinal: false },
@@ -946,7 +946,7 @@
             { from: 'q5', to: 'q6', symbol: 'c' },
             { from: 'q6', to: 'q5', symbol: 'c' },
           ] } },
-      { text: 'Solução: +q2, q1â†”q2(a), q2â†’q6(c). "aac"âœ“. PrÃ³xima: "abcc"!',
+      { text: 'Solução: +q2, q1↔q2(a), q2→q6(c). "aac"✓. Próxima: "abcc"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 35, isInitial: true,  isFinal: false },
@@ -964,7 +964,7 @@
             { from: 'q5', to: 'q6', symbol: 'c' },
             { from: 'q6', to: 'q5', symbol: 'c' },
           ] } },
-      { text: 'Foco em <b>abcc</b>: q1 lÃª "b" â€” sem seta! Preciso de q3,q4 para b-phase.',
+      { text: 'Foco em <b>abcc</b>: q1 lê "b" — sem seta! Preciso de q3,q4 para b-phase.',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 35, isInitial: true,  isFinal: false },
@@ -982,7 +982,7 @@
             { from: 'q5', to: 'q6', symbol: 'c' },
             { from: 'q6', to: 'q5', symbol: 'c' },
           ] } },
-      { text: 'Solução: +q4,q3. q1â†’q4(b,loop b), q2â†’q3(b,loop b), q4â†’q5(c), q3â†’q6(c). "abcc"âœ“ ConcluÃ­do!',
+      { text: 'Solução: +q4,q3. q1→q4(b,loop b), q2→q3(b,loop b), q4→q5(c), q3→q6(c). "abcc"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 35, isInitial: true,  isFinal: false },
@@ -1009,26 +1009,26 @@
             { from: 'q6', to: 'q5', symbol: 'c' },
           ] } },
     ] },
-  { id: 52, label: "L52", formula: "L = { a^n b^m c^p | n > 0 (par), m (Ã­mpar), p (par) }",            desc: "",                                                                 shortestWord: "aab",      regex: /^(aa)+(bb)*b(cc)*$/,                                        alphabet: ['a', 'b', 'c'],        acceptedWords: ["aab","aabcc","aaaabbb"],  rejectedWords: ["ab","aabb","b"],        hint: "Ã‰ um trem de paridade. VÃ¡ de vagÃ£o em vagÃ£o cuidando da regra de cada letra.",                                     successMsg: "Combo triplo de paridades concluÃ­do.",
+  { id: 52, label: "L52", formula: "L = { a^n b^m c^p | n > 0 (par), m (ímpar), p (par) }",            desc: "",                                                                 shortestWord: "aab",      regex: /^(aa)+(bb)*b(cc)*$/,                                        alphabet: ['a', 'b', 'c'],        acceptedWords: ["aab","aabcc","aaaabbb"],  rejectedWords: ["ab","aabb","b"],        hint: "É um trem de paridade. Vá de vagão em vagão cuidando da regra de cada letra.",                                     successMsg: "Combo triplo de paridades concluído.",
     tutorials: {
       onStart: { type: 'theory', title: '(aa)+ (bb)*b (cc)*: tres paridades!', dialog: [
         'L52: a-s em quantidade par (>=2), b-s impares (1,3,5...), c-s pares (0,2,4...).',
-        '"aab" âœ“ (2a,1b,0c). "aabcc" âœ“ (2a,1b,2c). "aaaabbb" âœ“ (4a,3b,0c).',
-        '"ab" âœ— (1a=impar). "aabb" âœ— (2b=par). 7 estados encadeados.',
+        '"aab" ✓ (2a,1b,0c). "aabcc" ✓ (2a,1b,2c). "aaaabbb" ✓ (4a,3b,0c).',
+        '"ab" ✗ (1a=impar). "aabb" ✗ (2b=par). 7 estados encadeados.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '7 Estados: Trem de Paridade', dialog: [
-        'aa-chain: q0â€”aâ†’q1â€”aâ†’q2. q2â€”aâ†’q1 (mais pares). q2â€”bâ†’q4(f,1b-impar).',
-        'b-phase: q4â€”bâ†’q3(par), q3â€”bâ†’q4(impar). q4 e final.',
-        'c-phase: q4â€”câ†’q5â€”câ†’q6(f). q6â€”câ†’q5. "aaaabbb": q2â†’q1â†’q2â€”bâ†’q4â€”bâ†’q3â€”bâ†’q4(f) âœ“.',
+        'aa-chain: q0—a→q1—a→q2. q2—a→q1 (mais pares). q2—b→q4(f,1b-impar).',
+        'b-phase: q4—b→q3(par), q3—b→q4(impar). q4 e final.',
+        'c-phase: q4—c→q5—c→q6(f). q6—c→q5. "aaaabbb": q2→q1→q2—b→q4—b→q3—b→q4(f) ✓.',
       ] },
     },
     boardWords: ['aab', 'aabcc', 'aaaabbb'],
     guidedLesson: [
       { text: '(aa)+ (bb)*b (cc)*: par-a, impar-b, par-c!<br/>Aceitar: <b>aab</b>, <b>aabcc</b>, <b>aaaabbb</b>. Rejeitar: ab, aabb, b.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>aab</b>: nÃºcleo q0â†’q1(a)â†’q2(a)â†’q4(final,b).',
+      { text: 'Foco em <b>aab</b>: núcleo q0→q1(a)→q2(a)→q4(final,b).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(a)â†’q2(a)â†’q4(final,b). "aab"âœ“. PrÃ³xima: "aabcc"!',
+      { text: 'Solução: q0→q1(a)→q2(a)→q4(final,b). "aab"✓. Próxima: "aabcc"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -1041,7 +1041,7 @@
             { from: 'q1', to: 'q2', symbol: 'a' },
             { from: 'q2', to: 'q4', symbol: 'b' },
           ] } },
-      { text: 'Foco em <b>aabcc</b>: q4 lÃª "c" â€” sem seta! Preciso de q5,q6 para c-phase.',
+      { text: 'Foco em <b>aabcc</b>: q4 lê "c" — sem seta! Preciso de q5,q6 para c-phase.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -1054,7 +1054,7 @@
             { from: 'q1', to: 'q2', symbol: 'a' },
             { from: 'q2', to: 'q4', symbol: 'b' },
           ] } },
-      { text: 'Solução: +q5,q6. q4â†’q5(c)â†’q6(final)â†”q5(c). "aabcc"âœ“. PrÃ³xima: "aaaabbb"!',
+      { text: 'Solução: +q5,q6. q4→q5(c)→q6(final)↔q5(c). "aabcc"✓. Próxima: "aaaabbb"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -1072,7 +1072,7 @@
             { from: 'q5', to: 'q6', symbol: 'c' },
             { from: 'q6', to: 'q5', symbol: 'c' },
           ] } },
-      { text: 'Foco em <b>aaaabbb</b>: q2 lÃª terceiro "a" â€” sem ciclo! q4 lÃª segundo "b" â€” sem seta! Preciso de q2â†’q1(a) e q3 para b-pares.',
+      { text: 'Foco em <b>aaaabbb</b>: q2 lê terceiro "a" — sem ciclo! q4 lê segundo "b" — sem seta! Preciso de q2→q1(a) e q3 para b-pares.',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -1090,7 +1090,7 @@
             { from: 'q5', to: 'q6', symbol: 'c' },
             { from: 'q6', to: 'q5', symbol: 'c' },
           ] } },
-      { text: 'Solução: q2â†’q1(a), +q3, q4â†’q3(b)â†’q4(b). "aaaabbb"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q2→q1(a), +q3, q4→q3(b)→q4(b). "aaaabbb"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 40, isInitial: true,  isFinal: false },
@@ -1113,34 +1113,34 @@
             { from: 'q6', to: 'q5', symbol: 'c' },
           ] } },
     ] },
-  { id: 53, label: "L53", formula: "L = { w âˆˆ {a,b,c}* | cada b Ã© seguido de pelo menos um c }",       desc: "",                                                                 shortestWord: "",         regex: /^(a|c|bc+)*$/,                                              alphabet: ['a', 'b', 'c'],        acceptedWords: ["Î»","a","bc","abc"],       rejectedWords: ["b","ab","bcb"],         hint: "Leu um 'b'? A prÃ³xima letra TEM que ser 'c'. Depois tudo fica livre.",                                              successMsg: "Condicional restrita dominada. Zerou a lista!",
+  { id: 53, label: "L53", formula: "L = { w ∈ {a,b,c}* | cada b é seguido de pelo menos um c }",       desc: "",                                                                 shortestWord: "",         regex: /^(a|c|bc+)*$/,                                              alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","a","bc","abc"],       rejectedWords: ["b","ab","bcb"],         hint: "Leu um 'b'? A próxima letra TEM que ser 'c'. Depois tudo fica livre.",                                              successMsg: "Condicional restrita dominada. Zerou a lista!",
     tutorials: {
       onStart: { type: 'theory', title: 'Cada "b" deve ser seguido de "c"!', dialog: [
-        'L53: sempre que ler um "b", a prÃ³xima letra TEM que ser "c". SenÃ£o rejeita.',
-        '"bc" âœ“ "abc" âœ“ "Î»" âœ“ "a" âœ“. "b" âœ— (nenhum c apÃ³s b). "bcb" âœ— (o 2Âº b nÃ£o tem c).',
+        'L53: sempre que ler um "b", a próxima letra TEM que ser "c". Senão rejeita.',
+        '"bc" ✓ "abc" ✓ "λ" ✓ "a" ✓. "b" ✗ (nenhum c após b). "bcb" ✗ (o 2º b não tem c).',
         'Apenas 2 estados: livre (q0) e esperando-c (q1). Simples mas rigoroso!',
       ] },
       onDrawGraph: { type: 'mechanic', title: '2 Estados: Livre e Esperando-c', dialog: [
-        'q0(ini,f): loop a,c. Ler "b" â†’ q1 (modo de espera).',
-        'q1: ler "c" â†’ q0 (volta ao livre). Ler "a" ou "b" â†’ morto (sem seta = rejeiÃ§Ã£o).',
-        '"abc": q0â€”aâ†’q0â€”bâ†’q1â€”câ†’q0(f) âœ“. "bcb": q0â†’q1â†’q0â†’q1(nÃ£o-f) âœ—.',
+        'q0(ini,f): loop a,c. Ler "b" → q1 (modo de espera).',
+        'q1: ler "c" → q0 (volta ao livre). Ler "a" ou "b" → morto (sem seta = rejeição).',
+        '"abc": q0—a→q0—b→q1—c→q0(f) ✓. "bcb": q0→q1→q0→q1(não-f) ✗.',
       ] },
     },
-    boardWords: ['Î»', 'a', 'bc', 'abc'],
+    boardWords: ['λ', 'a', 'bc', 'abc'],
     guidedLesson: [
-      { text: 'Condicional: cada "b" deve ser seguido de pelo menos um "c"!<br/>Aceitar: <b>Î»</b>, <b>a</b>, <b>bc</b>, <b>abc</b>. Rejeitar: b, ab, bcb.',
+      { text: 'Condicional: cada "b" deve ser seguido de pelo menos um "c"!<br/>Aceitar: <b>λ</b>, <b>a</b>, <b>bc</b>, <b>abc</b>. Rejeitar: b, ab, bcb.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>Î»</b> e <b>a</b>: ambas precisam apenas de q0(ini,final) com loop a e c.',
+      { text: 'Foco em <b>λ</b> e <b>a</b>: ambas precisam apenas de q0(ini,final) com loop a e c.',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,final) loop a,c. Î»âœ“ aâœ“. PrÃ³ximas: "bc" e "abc"!',
+      { text: 'Solução: q0(ini,final) loop a,c. λ✓ a✓. Próximas: "bc" e "abc"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [ { id: 'q0', label: 'q0', x: 50, y: 50, isInitial: true, isFinal: true } ],
           transitions: [ { from: 'q0', to: 'q0', symbol: 'a,c' } ] } },
-      { text: 'Foco em <b>bc</b> e <b>abc</b>: q0 lÃª "b" â€” sem seta! Preciso de q1 para esperar o "c".',
+      { text: 'Foco em <b>bc</b> e <b>abc</b>: q0 lê "b" — sem seta! Preciso de q1 para esperar o "c".',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [ { id: 'q0', label: 'q0', x: 50, y: 50, isInitial: true, isFinal: true } ],
           transitions: [ { from: 'q0', to: 'q0', symbol: 'a,c' } ] } },
-      { text: 'Solução: q0â†’q1(b)â†’q0(c). "bc"âœ“ "abc"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q0→q1(b)→q0(c). "bc"✓ "abc"✓ Concluído!',
         boardDoneUpTo: 4, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 30, y: 50, isInitial: true,  isFinal: true  },

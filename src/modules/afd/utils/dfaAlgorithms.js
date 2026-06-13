@@ -1,6 +1,37 @@
 // ─── Pair key utility ─────────────────────────────────────────────────────────
 export const pairKey = (a, b) => a <= b ? `${a},${b}` : `${b},${a}`;
 
+// ─── Step 1: reachable states via BFS from the initial state ───────────────────
+// Returns a Set with every state reachable from initialState. States not in the
+// set are unreachable and must be discarded before minimizing.
+export function computeReachable(states, initialState, transitions) {
+  const reachable = new Set([initialState]);
+  const queue = [initialState];
+  while (queue.length) {
+    const s = queue.shift();
+    for (const t of transitions) {
+      if (t.from === s && !reachable.has(t.to)) {
+        reachable.add(t.to);
+        queue.push(t.to);
+      }
+    }
+  }
+  return reachable;
+}
+
+// ─── Step 3: trivial distinguishability (final × non-final) ───────────────────
+// A par {p,q} is trivially distinguishable when exactly one of them is final.
+export function computeTrivialTable(states, finalStates) {
+  const table = {};
+  const finals = new Set(finalStates);
+  for (let i = 0; i < states.length; i++)
+    for (let j = i + 1; j < states.length; j++) {
+      const [p, q] = [states[i], states[j]];
+      table[pairKey(p, q)] = finals.has(p) !== finals.has(q);
+    }
+  return table;
+}
+
 // ─── Hopcroft-Karp distinguishability table ───────────────────────────────────
 export function computeDistTable(states, finalStates, transitions, alphabet) {
   const table = {};

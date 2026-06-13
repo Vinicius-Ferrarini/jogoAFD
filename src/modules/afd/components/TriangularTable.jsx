@@ -1,6 +1,17 @@
 import { pairKey } from '../utils/dfaAlgorithms';
 
-export default function TriangularTable({ states, userTable, onToggle, correctTable, showErrors }) {
+// Tabela triangular de pares de estados usada na fase BUILD da minimização.
+// Props:
+//   states        — estados (alcançáveis) que formam os eixos
+//   userTable     — { pairKey: bool } marcações do aluno
+//   onToggle      — (pairKey) => void ao clicar numa célula livre
+//   wrongCells    — Set<pairKey> destacados em vermelho (erro)
+//   lockedCells   — Set<pairKey> travados (passo anterior já validado) — não clicáveis
+//   highlightEquiv— bool: destaca os pares NÃO marcados como equivalentes (≡ verde)
+export default function TriangularTable({
+  states, userTable, onToggle,
+  wrongCells, lockedCells, highlightEquiv = false, readOnly = false,
+}) {
   return (
     <div className="min-table-scroll">
       <table className="min-tri-table">
@@ -10,15 +21,26 @@ export default function TriangularTable({ states, userTable, onToggle, correctTa
               <th className="min-th">{rowState}</th>
               {states.slice(0, ri + 1).map(colState => {
                 if (colState === rowState) return null;
-                const key = pairKey(rowState, colState);
-                const val  = !!userTable[key];
-                const isWrong = showErrors && correctTable && val !== !!correctTable[key];
+                const key      = pairKey(rowState, colState);
+                const marked   = !!userTable[key];
+                const isLocked = lockedCells?.has(key);
+                const isWrong  = wrongCells?.has(key);
+                const isEquiv  = highlightEquiv && !marked;
+                const cls = [
+                  'min-cell',
+                  marked   ? 'marked' : '',
+                  isLocked ? 'locked' : '',
+                  isWrong  ? 'wrong'  : '',
+                  isEquiv  ? 'equiv'  : '',
+                ].filter(Boolean).join(' ');
+                const clickable = !isLocked && !highlightEquiv && !readOnly;
                 return (
                   <td key={colState}
-                    className={`min-cell${val ? ' marked' : ''}${isWrong ? ' wrong' : ''}`}
-                    onClick={() => onToggle(key)}
+                    className={cls}
+                    style={{ cursor: clickable ? 'pointer' : 'default' }}
+                    onClick={() => { if (clickable) onToggle(key); }}
                     title={`(${colState}, ${rowState})`}
-                  >{val ? '×' : ''}</td>
+                  >{marked ? '×' : (isEquiv ? '≡' : '')}</td>
                 );
               })}
             </tr>

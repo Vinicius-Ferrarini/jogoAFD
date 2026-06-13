@@ -1,6 +1,7 @@
 // TuringLab — App.jsx v3.0
 // v3.0: Undo/Redo, Simulação no Rodapé, Cores Zoom Corrigidas, Validação Duplicata Aprimorada
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import './AFDPart1.css';
 import FormalDescriptionModal from './FormalDescriptionModal';
 import TutorialModal from './TutorialModal';
@@ -65,6 +66,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const [selectionBox, setSelectionBox]   = useState(null);
   const [selectedNodes, setSelectedNodes] = useState([]);
   const [dragInfo, setDragInfo] = useState({ isDragging: false, initialNodes: [], startX: 0, startY: 0 });
+  const [deckGhostPos, setDeckGhostPos] = useState(null);
 
   const canvasRef = useRef(null);
 
@@ -302,6 +304,31 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     setShowSimPanel(true);
   }, [isDrawingUnlocked, nodes, newWord, showToast]);
 
+  // ── Drag da carta Estado → canvas ─────────────────────────────────────────
+  const handleDeckNodeDrag = useCallback((x, y) => {
+    setDeckGhostPos({ x, y });
+  }, []);
+
+  const handleDeckNodeDrop = useCallback((clientX, clientY) => {
+    setDeckGhostPos(null);
+    if (!isDrawingUnlocked || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return;
+    const ix = ((clientX - rect.left - pan.x) / zoom / rect.width)  * 100;
+    const iy = ((clientY - rect.top  - pan.y) / zoom / rect.height) * 100;
+    let num = nodes.length;
+    const usedLabels = new Set(nodes.map(n => n.label));
+    while (usedLabels.has(`q${num}`)) num++;
+    const newLabel = `q${num}`;
+    const newNodes = [...nodes, { uid: genUid(), id: newLabel, label: newLabel, x: ix, y: iy, isInitial: false, isFinal: false }];
+    setNodes(newNodes);
+    recordHistory(newNodes, transitions);
+  }, [isDrawingUnlocked, pan, zoom, nodes, transitions, recordHistory]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleDeckNodeDragCancel = useCallback(() => {
+    setDeckGhostPos(null);
+  }, []);
+
   // ══════════════════════════════════════════════════════════════
   // TELA MENU (FASES)
   // ══════════════════════════════════════════════════════════════
@@ -331,6 +358,11 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   return (
     <div className="workspace-wrapper">
       {toastData.show && <div className={`toast-notification ${toastData.type}`}>{toastData.message}</div>}
+
+      {deckGhostPos && createPortal(
+        <div className="deck-drag-ghost" style={{ left: deckGhostPos.x, top: deckGhostPos.y }} />,
+        document.body
+      )}
 
       {/* ── Header ── */}
       <GameHeader
@@ -519,6 +551,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         currentLevel={currentLevel}
         professorMessage={professorMessage}
         handleProfessorClick={handleProfessorClick}
+        onDeckNodeDrag={handleDeckNodeDrag}
+        onDeckNodeDrop={handleDeckNodeDrop}
+        onDeckNodeDragCancel={handleDeckNodeDragCancel}
       />
 
       {/* ── Tutorial Modal ── */}

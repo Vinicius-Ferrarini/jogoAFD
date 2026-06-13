@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(git restore src/levels_data/lote1.js src/levels_data/lote2.js src/levels_data/lote3.js)",
+      "PowerShell(npm run build 2>&1)",
+      "PowerShell(tail -5)",
+      "Bash(Find /c/github/jogoAFD -name \"*Canvas*\" -type f)",
+      "WebFetch(domain:www.youtube.com)",
+      "Bash(npx eslint *)"
+    ]
+  }
+}

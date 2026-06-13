@@ -1,32 +1,32 @@
 ﻿export const lote2 = [
-  { id: 21, label: "L21", formula: "L = { w âˆˆ {a,b,c,d}* | a's precedem b's e c's precedem d's }",    desc: "",                                                                 shortestWord: "",         regex: /^a*b*c*d*$/,                                                alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["Î»","abcd","abc"],         rejectedWords: ["ba","ca","cb"],        hint: "Ã‰ uma progressÃ£o linear estrita pelo alfabeto.",                                                                    successMsg: "Ordem alfabÃ©tica mantida!",
+  { id: 21, label: "L21", formula: "L = { w ∈ {a,b,c,d}* | a's precedem b's e c's precedem d's }",    desc: "",                                                                 shortestWord: "",         regex: /^a*b*c*d*$/,                                                alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["λ","abcd","abc"],         rejectedWords: ["ba","ca","cb"],        hint: "É uma progressão linear estrita pelo alfabeto.",                                                                    successMsg: "Ordem alfabética mantida!",
     tutorials: {
-      onStart: { type: 'theory', title: 'Ordem AlfabÃ©tica Estrita!', dialog: [
-        'L21: sÃ­mbolos em ordem a* b* c* d* â€” cada bloco pode aparecer 0 ou mais vezes.',
-        '"Î»", "abcd", "aabdd", "bbdd" â€” vÃ¡lidos. "ba" ou "ca" â€” invÃ¡lidos (ordem errada)!',
-        'Uma vez que o AFD avanÃ§a para o bloco "b", nunca volta para "a". TransiÃ§Ãµes unidirecionais!',
+      onStart: { type: 'theory', title: 'Ordem Alfabética Estrita!', dialog: [
+        'L21: símbolos em ordem a* b* c* d* — cada bloco pode aparecer 0 ou mais vezes.',
+        '"λ", "abcd", "aabdd", "bbdd" — válidos. "ba" ou "ca" — inválidos (ordem errada)!',
+        'Uma vez que o AFD avança para o bloco "b", nunca volta para "a". Transições unidirecionais!',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Cadeia de Blocos com Atalhos', dialog: [
-        '4 estados em zigue-zague: <b>q0</b>(a,ini,f), <b>q1</b>(b,f), <b>q2</b>(c,f), <b>q3</b>(d,f) â€” todos finais!',
-        'Atalhos: q0â†’q3(d) e q1â†’q3(d). "ad" âœ” (pula b e c), "bd" âœ” (pula c), "cd" âœ” "d" âœ”',
-        '"ba" Ã© rejeitado: q1 sem seta para "a". "cb" Ã© rejeitado: q2 sem seta para "b". A ordem importa!',
+        '4 estados em zigue-zague: <b>q0</b>(a,ini,f), <b>q1</b>(b,f), <b>q2</b>(c,f), <b>q3</b>(d,f) — todos finais!',
+        'Atalhos: q0→q3(d) e q1→q3(d). "ad" ✔ (pula b e c), "bd" ✔ (pula c), "cd" ✔ "d" ✔',
+        '"ba" é rejeitado: q1 sem seta para "a". "cb" é rejeitado: q2 sem seta para "b". A ordem importa!',
       ] },
     },
-    boardWords: ['Î»', 'a', 'ab', 'abc', 'cd', 'abcd', 'ad', 'bd', 'd'],
+    boardWords: ['λ', 'a', 'ab', 'abc', 'cd', 'abcd', 'ad', 'bd', 'd'],
     guidedLesson: [
-      { text: '4 blocos em ordem: a* b* c* d* â€” todos opcionais!<br/>Aceitar: <b>Î»</b>, <b>a</b>, <b>ab</b>, <b>abc</b>, <b>cd</b>, <b>abcd</b>, <b>ad</b>, <b>bd</b>, <b>d</b>.',
+      { text: '4 blocos em ordem: a* b* c* d* — todos opcionais!<br/>Aceitar: <b>λ</b>, <b>a</b>, <b>ab</b>, <b>abc</b>, <b>cd</b>, <b>abcd</b>, <b>ad</b>, <b>bd</b>, <b>d</b>.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>Î»</b> e <b>a</b>: ambas no bloco "a". q0(ini,final) + loop a resolve as duas!',
+      { text: 'Foco em <b>λ</b> e <b>a</b>: ambas no bloco "a". q0(ini,final) + loop a resolve as duas!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,final) + loop a. Î»=q0âœ“, a=q0â†’q0âœ“. PrÃ³ximo: "ab"!',
+      { text: 'Solução: q0(ini,final) + loop a. λ=q0✓, a=q0→q0✓. Próximo: "ab"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [{ id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true }],
           transitions: [{ from: 'q0', to: 'q0', symbol: 'a' }] } },
-      { text: 'Foco em <b>ab</b>: bloco b â€” q0 lÃª "b" sem seta! Preciso de q1(final, loop b).',
+      { text: 'Foco em <b>ab</b>: bloco b — q0 lê "b" sem seta! Preciso de q1(final, loop b).',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [{ id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true }],
           transitions: [{ from: 'q0', to: 'q0', symbol: 'a' }] } },
-      { text: 'Solução: q0â†’q1(b,final,loop b). "ab" âœ“. PrÃ³ximas: "abc" e "cd"!',
+      { text: 'Solução: q0→q1(b,final,loop b). "ab" ✓. Próximas: "abc" e "cd"!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -37,7 +37,7 @@
             { from: 'q0', to: 'q1', symbol: 'b' },
             { from: 'q1', to: 'q1', symbol: 'b' },
           ] } },
-      { text: 'Foco em <b>abc</b> e <b>cd</b>: q1 lÃª "c" sem seta! q2(final, loop c) com atalho q0â†’q2(c).',
+      { text: 'Foco em <b>abc</b> e <b>cd</b>: q1 lê "c" sem seta! q2(final, loop c) com atalho q0→q2(c).',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -48,7 +48,7 @@
             { from: 'q0', to: 'q1', symbol: 'b' },
             { from: 'q1', to: 'q1', symbol: 'b' },
           ] } },
-      { text: 'Solução: q2(final,loop c), q0â†’q2(c), q1â†’q2(c). "abc" e "cd" âœ“. PrÃ³ximas: "abcd", "ad", "bd", "d"!',
+      { text: 'Solução: q2(final,loop c), q0→q2(c), q1→q2(c). "abc" e "cd" ✓. Próximas: "abcd", "ad", "bd", "d"!',
         boardDoneUpTo: 5, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -63,7 +63,7 @@
             { from: 'q1', to: 'q2', symbol: 'c' },
             { from: 'q2', to: 'q2', symbol: 'c' },
           ] } },
-      { text: 'Foco em <b>abcd</b>, <b>ad</b>, <b>bd</b>, <b>d</b>: todos precisam do bloco d â€” q2 sem seta para "d"!',
+      { text: 'Foco em <b>abcd</b>, <b>ad</b>, <b>bd</b>, <b>d</b>: todos precisam do bloco d — q2 sem seta para "d"!',
         boardDoneUpTo: 5, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -78,7 +78,7 @@
             { from: 'q1', to: 'q2', symbol: 'c' },
             { from: 'q2', to: 'q2', symbol: 'c' },
           ] } },
-      { text: 'Solução: q3(final,loop d) + atalhos q0â†’q3(d), q1â†’q3(d), q2â†’q3(d). Todos âœ“ ConcluÃ­do!',
+      { text: 'Solução: q3(final,loop d) + atalhos q0→q3(d), q1→q3(d), q2→q3(d). Todos ✓ Concluído!',
         boardDoneUpTo: 9, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: true },
@@ -99,47 +99,47 @@
             { from: 'q3', to: 'q3', symbol: 'd' },
           ] } },
     ] },
-  { id: 22, label: "L22", formula: "L = { w âˆˆ {0,1}* | w Ã© um nÃºmero par }",
+  { id: 22, label: "L22", formula: "L = { w ∈ {0,1}* | w é um número par }",
     aliases: [
-      "L = { w âˆˆ {0,1}* | w Ã© par }",
-      "L = { w âˆˆ {0,1}* | w termina em 0 }",
-      "L = { w âˆˆ {0,1}* | w termina com 0 }",
+      "L = { w ∈ {0,1}* | w é par }",
+      "L = { w ∈ {0,1}* | w termina em 0 }",
+      "L = { w ∈ {0,1}* | w termina com 0 }",
     ],
-    desc: "",                                                                 shortestWord: "0",        regex: /^[01]*0$/,                                                  alphabet: ['0', '1'],             acceptedWords: ["0","10","110"],            rejectedWords: ["1","11","101"],        hint: "Pense em binÃ¡rio! Todo nÃºmero binÃ¡rio par termina com que dÃ­gito?",                                                 successMsg: "LÃ³gica binÃ¡ria! Terminou em zero.",
+    desc: "",                                                                 shortestWord: "0",        regex: /^[01]*0$/,                                                  alphabet: ['0', '1'],             acceptedWords: ["0","10","110"],            rejectedWords: ["1","11","101"],        hint: "Pense em binário! Todo número binário par termina com que dígito?",                                                 successMsg: "Lógica binária! Terminou em zero.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Bem-vindo ao Mundo BinÃ¡rio!', dialog: [
-        'Novo contexto: alfabeto {0, 1} â€” o sistema BINÃRIO!',
-        'Em binÃ¡rio, todo nÃºmero PAR termina em "0". Todo ÃMPAR termina em "1". Simples!',
-        'O AFD nÃ£o precisa ler a palavra inteira â€” sÃ³ o ÃšLTIMO sÃ­mbolo determina paridade.',
-        'Isso implica: um estado "par" e um estado "Ã­mpar", trocando a cada sÃ­mbolo lido.',
+      onStart: { type: 'theory', title: 'Bem-vindo ao Mundo Binário!', dialog: [
+        'Novo contexto: alfabeto {0, 1} — o sistema BINÁRIO!',
+        'Em binário, todo número PAR termina em "0". Todo ÍMPAR termina em "1". Simples!',
+        'O AFD não precisa ler a palavra inteira — só o ÚLTIMO símbolo determina paridade.',
+        'Isso implica: um estado "par" e um estado "ímpar", trocando a cada símbolo lido.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Dois Estados: Par e Ãmpar', dialog: [
-        '2 estados: <b>q0</b>(inicial, Ãºltimo=1 ou vazio) e <b>q1</b>(Ãºltimo=0, FINAL).',
+      onDrawGraph: { type: 'mechanic', title: 'Dois Estados: Par e Ímpar', dialog: [
+        '2 estados: <b>q0</b>(inicial, último=1 ou vazio) e <b>q1</b>(último=0, FINAL).',
         '"0" de qualquer estado vai para <b>q1</b>. "1" de qualquer estado volta para <b>q0</b>.',
-        'O AFD guarda sÃ³ o ÃšLTIMO bit. Loops em q0(1) e q1(0) cobrem sequÃªncias longas.',
+        'O AFD guarda só o ÚLTIMO bit. Loops em q0(1) e q1(0) cobrem sequências longas.',
       ] },
     },
     boardWords: ['0', '10', '110'],
     guidedLesson: [
-      { text: 'PAR em binÃ¡rio termina em "0"!<br/>Aceitar: <b>0</b>, <b>10</b>, <b>110</b>. Rejeitar: 1, 11, 101.',
+      { text: 'PAR em binário termina em "0"!<br/>Aceitar: <b>0</b>, <b>10</b>, <b>110</b>. Rejeitar: 1, 11, 101.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>0</b>: menor caso â€” o Ãºltimo sÃ­mbolo Ã© "0". Preciso de q0â†’q1(0,final).',
+      { text: 'Foco em <b>0</b>: menor caso — o último símbolo é "0". Preciso de q0→q1(0,final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(final). "0" âœ“. PrÃ³ximas: "10" e "110"!',
+      { text: 'Solução: q0→q1(final). "0" ✓. Próximas: "10" e "110"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
           transitions: [{ from: 'q0', to: 'q1', symbol: '0' }] } },
-      { text: 'Foco em <b>10</b> e <b>110</b>: q0 lÃª "1" â€” sem seta! Precisam de loop q0(1) + loop q1(0) + q1â†’q0(1).',
+      { text: 'Foco em <b>10</b> e <b>110</b>: q0 lê "1" — sem seta! Precisam de loop q0(1) + loop q1(0) + q1→q0(1).',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
           transitions: [{ from: 'q0', to: 'q1', symbol: '0' }] } },
-      { text: 'Solução: q0 loop 1, q1 loop 0, q1â†’q0(1). "10"=q0â†’q0â†’q1âœ“, "110"=q0â†’q0â†’q0â†’q1âœ“ ConcluÃ­do!',
+      { text: 'Solução: q0 loop 1, q1 loop 0, q1→q0(1). "10"=q0→q0→q1✓, "110"=q0→q0→q0→q1✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -152,46 +152,46 @@
             { from: 'q1', to: 'q0', symbol: '1' },
           ] } },
     ] },
-  { id: 23, label: "L23", formula: "L = { w âˆˆ {0,1}* | w Ã© um nÃºmero Ã­mpar }",
+  { id: 23, label: "L23", formula: "L = { w ∈ {0,1}* | w é um número ímpar }",
     aliases: [
-      "L = { w âˆˆ {0,1}* | w Ã© Ã­mpar }",
-      "L = { w âˆˆ {0,1}* | w termina em 1 }",
-      "L = { w âˆˆ {0,1}* | w termina com 1 }",
+      "L = { w ∈ {0,1}* | w é ímpar }",
+      "L = { w ∈ {0,1}* | w termina em 1 }",
+      "L = { w ∈ {0,1}* | w termina com 1 }",
     ],
-    desc: "",                                                                 shortestWord: "1",        regex: /^[01]*1$/,                                                  alphabet: ['0', '1'],             acceptedWords: ["1","11","101"],            rejectedWords: ["0","10","100"],        hint: "NÃºmeros Ã­mpares em binÃ¡rio sempre terminam com '1'.",                                                               successMsg: "LÃ³gica binÃ¡ria! Terminou em um.",
+    desc: "",                                                                 shortestWord: "1",        regex: /^[01]*1$/,                                                  alphabet: ['0', '1'],             acceptedWords: ["1","11","101"],            rejectedWords: ["0","10","100"],        hint: "Números ímpares em binário sempre terminam com '1'.",                                                               successMsg: "Lógica binária! Terminou em um.",
     tutorials: {
-      onStart: { type: 'theory', title: 'ÃMPAR em BinÃ¡rio Termina em "1"!', dialog: [
-        'Espelho de L22: nÃºmero binÃ¡rio ÃMPAR termina em "1". PAR termina em "0".',
-        '"1", "11", "101" â€” vÃ¡lidos. "0", "10" â€” invÃ¡lidos (terminam em 0).',
-        'O AFD sÃ³ precisa lembrar o ÃšLTIMO dÃ­gito lido para decidir.',
+      onStart: { type: 'theory', title: 'ÍMPAR em Binário Termina em "1"!', dialog: [
+        'Espelho de L22: número binário ÍMPAR termina em "1". PAR termina em "0".',
+        '"1", "11", "101" — válidos. "0", "10" — inválidos (terminam em 0).',
+        'O AFD só precisa lembrar o ÚLTIMO dígito lido para decidir.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Dois Estados Espelhados', dialog: [
-        '2 estados: <b>q0</b>(inicial, Ãºltimo=0 ou vazio) e <b>q1</b>(Ãºltimo=1, FINAL).',
+        '2 estados: <b>q0</b>(inicial, último=0 ou vazio) e <b>q1</b>(último=1, FINAL).',
         '"1" de qualquer estado vai para <b>q1</b>. "0" de qualquer estado volta para <b>q0</b>.',
-        'Espelho do L22: loop q0(0) e q1(1). SÃ³ o ÃšLTIMO bit decide. "101": q0â†’q1â†’q0â†’q1 âœ”',
+        'Espelho do L22: loop q0(0) e q1(1). Só o ÚLTIMO bit decide. "101": q0→q1→q0→q1 ✔',
       ] },
     },
     boardWords: ['1', '01', '11', '101'],
     guidedLesson: [
-      { text: 'ÃMPAR em binÃ¡rio termina em "1"!<br/>Aceitar: <b>1</b>, <b>01</b>, <b>11</b>, <b>101</b>. Rejeitar: 0, 10, 100.',
+      { text: 'ÍMPAR em binário termina em "1"!<br/>Aceitar: <b>1</b>, <b>01</b>, <b>11</b>, <b>101</b>. Rejeitar: 0, 10, 100.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>1</b>: menor caso â€” q0â†’q1(1,final).',
+      { text: 'Foco em <b>1</b>: menor caso — q0→q1(1,final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(final). "1" âœ“. PrÃ³xima: "01"!',
+      { text: 'Solução: q0→q1(final). "1" ✓. Próxima: "01"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
           transitions: [{ from: 'q0', to: 'q1', symbol: '1' }] } },
-      { text: 'Foco em <b>01</b>: q0 lÃª "0" â€” sem seta! Preciso de loop q0(0).',
+      { text: 'Foco em <b>01</b>: q0 lê "0" — sem seta! Preciso de loop q0(0).',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
             { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
           ],
           transitions: [{ from: 'q0', to: 'q1', symbol: '1' }] } },
-      { text: 'Solução: q0 loop 0. "01"=q0â†’q0â†’q1âœ“. PrÃ³xima: "11"!',
+      { text: 'Solução: q0 loop 0. "01"=q0→q0→q1✓. Próxima: "11"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -201,7 +201,7 @@
             { from: 'q0', to: 'q1', symbol: '1' },
             { from: 'q0', to: 'q0', symbol: '0' },
           ] } },
-      { text: 'Foco em <b>11</b>: q1 lÃª 2Â° "1" â€” sem seta! Preciso de loop q1(1).',
+      { text: 'Foco em <b>11</b>: q1 lê 2° "1" — sem seta! Preciso de loop q1(1).',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -211,7 +211,7 @@
             { from: 'q0', to: 'q1', symbol: '1' },
             { from: 'q0', to: 'q0', symbol: '0' },
           ] } },
-      { text: 'Solução: q1 loop 1. "11"=q0â†’q1â†’q1âœ“. PrÃ³xima: "101"!',
+      { text: 'Solução: q1 loop 1. "11"=q0→q1→q1✓. Próxima: "101"!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -222,7 +222,7 @@
             { from: 'q0', to: 'q0', symbol: '0' },
             { from: 'q1', to: 'q1', symbol: '1' },
           ] } },
-      { text: 'Foco em <b>101</b>: q1 lÃª "0" â€” sem seta! Preciso de q1â†’q0(0).',
+      { text: 'Foco em <b>101</b>: q1 lê "0" — sem seta! Preciso de q1→q0(0).',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -233,7 +233,7 @@
             { from: 'q0', to: 'q0', symbol: '0' },
             { from: 'q1', to: 'q1', symbol: '1' },
           ] } },
-      { text: 'Solução: q1â†’q0(0). "101"=q0â†’q1â†’q0â†’q1âœ“ ConcluÃ­do!',
+      { text: 'Solução: q1→q0(0). "101"=q0→q1→q0→q1✓ Concluído!',
         boardDoneUpTo: 4, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: false },
@@ -246,26 +246,26 @@
             { from: 'q1', to: 'q0', symbol: '0' },
           ] } },
     ] },
-  { id: 24, label: "L24", formula: "L = { w âˆˆ {0,1}* | w tem tamanho 3 }",                              desc: "",                                                                 shortestWord: "000",      regex: /^[01]{3}$/,                                                 alphabet: ['0', '1'],             acceptedWords: ["000","011","101"],         rejectedWords: ["Î»","00","0000"],       hint: "VocÃª precisa de um caminho reto que sÃ³ aceita na terceira etapa.",                                                  successMsg: "Controle de tamanho exato.",
+  { id: 24, label: "L24", formula: "L = { w ∈ {0,1}* | w tem tamanho 3 }",                              desc: "",                                                                 shortestWord: "000",      regex: /^[01]{3}$/,                                                 alphabet: ['0', '1'],             acceptedWords: ["000","011","101"],         rejectedWords: ["λ","00","0000"],       hint: "Você precisa de um caminho reto que só aceita na terceira etapa.",                                                  successMsg: "Controle de tamanho exato.",
     tutorials: {
       onStart: { type: 'theory', title: 'Caminho de Comprimento Exato!', dialog: [
-        'L24: aceitar APENAS palavras com exatamente 3 sÃ­mbolos â€” nem mais, nem menos.',
-        '"000", "101", "010" â€” vÃ¡lidas. "00" (curto), "0000" (longo) â€” invÃ¡lidas.',
-        'EstratÃ©gia: 4 estados em linha â€” um por posiÃ§Ã£o lida. SÃ³ o 4Â° Ã© final.',
+        'L24: aceitar APENAS palavras com exatamente 3 símbolos — nem mais, nem menos.',
+        '"000", "101", "010" — válidas. "00" (curto), "0000" (longo) — inválidas.',
+        'Estratégia: 4 estados em linha — um por posição lida. Só o 4° é final.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Trilho de 3 Passos', dialog: [
-        'Trilho linear: <b>q0</b>â†’<b>q1</b>â†’<b>q2</b>â†’<b>q3</b>(final). Cada seta aceita {0,1}.',
-        'ApÃ³s q3, nÃ£o hÃ¡ transiÃ§Ãµes â€” qualquer sÃ­mbolo extra vai para o dead-state implÃ­cito.',
-        '"0000": lÃª 4Â° sÃ­mbolo em q3, sem seta â†’ rejeiÃ§Ã£o automÃ¡tica. Sem estado extra!',
+        'Trilho linear: <b>q0</b>→<b>q1</b>→<b>q2</b>→<b>q3</b>(final). Cada seta aceita {0,1}.',
+        'Após q3, não há transições — qualquer símbolo extra vai para o dead-state implícito.',
+        '"0000": lê 4° símbolo em q3, sem seta → rejeição automática. Sem estado extra!',
       ] },
     },
     boardWords: ['000', '101'],
     guidedLesson: [
-      { text: 'Exatamente 3 sÃ­mbolos!<br/>Aceitar: <b>000</b>, <b>101</b>. Rejeitar: Î», 00, 0000.',
+      { text: 'Exatamente 3 símbolos!<br/>Aceitar: <b>000</b>, <b>101</b>. Rejeitar: λ, 00, 0000.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>000</b> e <b>101</b>: ambas tÃªm 3 sÃ­mbolos â€” um trilho de 4 estados resolve as duas!',
+      { text: 'Foco em <b>000</b> e <b>101</b>: ambas têm 3 símbolos — um trilho de 4 estados resolve as duas!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1â†’q2â†’q3(final) com {0,1}. "000" e "101" âœ“. E "0000"?',
+      { text: 'Solução: q0→q1→q2→q3(final) com {0,1}. "000" e "101" ✓. E "0000"?',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
@@ -278,7 +278,7 @@
             { from: 'q1', to: 'q2', symbol: '0,1' },
             { from: 'q2', to: 'q3', symbol: '0,1' },
           ] } },
-      { text: '"0000": q3 lÃª o 4Â° sÃ­mbolo â€” sem seta = dead-state implÃ­cito! Sem estado extra necessÃ¡rio. ConcluÃ­do!',
+      { text: '"0000": q3 lê o 4° símbolo — sem seta = dead-state implícito! Sem estado extra necessário. Concluído!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
@@ -292,26 +292,26 @@
             { from: 'q2', to: 'q3', symbol: '0,1' },
           ] } },
     ] },
-  { id: 25, label: "L25", formula: "L = { w âˆˆ {0,1}* | w tem tamanho menor que 3 }",                   desc: "",                                                                 shortestWord: "",         regex: /^[01]{0,2}$/,                                               alphabet: ['0', '1'],             acceptedWords: ["Î»","0","10"],             rejectedWords: ["000","0000","010"],    hint: "Os estados iniciais jÃ¡ podem ser finais, mas pare no terceiro passo.",                                               successMsg: "Tamanho mÃ¡ximo controlado.",
+  { id: 25, label: "L25", formula: "L = { w ∈ {0,1}* | w tem tamanho menor que 3 }",                   desc: "",                                                                 shortestWord: "",         regex: /^[01]{0,2}$/,                                               alphabet: ['0', '1'],             acceptedWords: ["λ","0","10"],             rejectedWords: ["000","0000","010"],    hint: "Os estados iniciais já podem ser finais, mas pare no terceiro passo.",                                               successMsg: "Tamanho máximo controlado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Comprimento Menor que 3!', dialog: [
-        'L25: aceitar palavras com 0, 1 ou 2 sÃ­mbolos. Rejeitar com 3 ou mais.',
-        '"Î»", "0", "10" â€” vÃ¡lidas. "000", "0000" â€” invÃ¡lidas (longas demais).',
-        'EstratÃ©gia: 3 estados finais (q0, q1, q2). ApÃ³s q2, sem transiÃ§Ãµes â€” dead-state implÃ­cito.',
+        'L25: aceitar palavras com 0, 1 ou 2 símbolos. Rejeitar com 3 ou mais.',
+        '"λ", "0", "10" — válidas. "000", "0000" — inválidas (longas demais).',
+        'Estratégia: 3 estados finais (q0, q1, q2). Após q2, sem transições — dead-state implícito.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Trilho Curto com Dead-State ImplÃ­cito', dialog: [
-        '<b>q0</b>(ini,f), <b>q1</b>(f), <b>q2</b>(f) â€” todos finais, aceita em qualquer um.',
-        'q0â†’q1â†’q2 com {0,1}. ApÃ³s q2, sem transiÃ§Ãµes â€” 3Â° sÃ­mbolo dispara dead-state implÃ­cito.',
-        'Dual de L24: aqui o trilho curto aceita, e a ausÃªncia de setas rejeita o extra.',
+      onDrawGraph: { type: 'mechanic', title: 'Trilho Curto com Dead-State Implícito', dialog: [
+        '<b>q0</b>(ini,f), <b>q1</b>(f), <b>q2</b>(f) — todos finais, aceita em qualquer um.',
+        'q0→q1→q2 com {0,1}. Após q2, sem transições — 3° símbolo dispara dead-state implícito.',
+        'Dual de L24: aqui o trilho curto aceita, e a ausência de setas rejeita o extra.',
       ] },
     },
-    boardWords: ['Î»', '0', '10'],
+    boardWords: ['λ', '0', '10'],
     guidedLesson: [
-      { text: 'Comprimento 0, 1 ou 2!<br/>Aceitar: <b>Î»</b>, <b>0</b>, <b>10</b>. Rejeitar: 000, 0000.',
+      { text: 'Comprimento 0, 1 ou 2!<br/>Aceitar: <b>λ</b>, <b>0</b>, <b>10</b>. Rejeitar: 000, 0000.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>Î»</b>, <b>0</b> e <b>10</b>: trilho curto q0(f)â†’q1(f)â†’q2(f) resolve as trÃªs de vez!',
+      { text: 'Foco em <b>λ</b>, <b>0</b> e <b>10</b>: trilho curto q0(f)→q1(f)→q2(f) resolve as três de vez!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,f)â†’q1(f)â†’q2(f) com {0,1}. Î»=q0âœ“, "0"=q0â†’q1âœ“, "10"=q0â†’q1â†’q2âœ“. E "000"?',
+      { text: 'Solução: q0(ini,f)→q1(f)→q2(f) com {0,1}. λ=q0✓, "0"=q0→q1✓, "10"=q0→q1→q2✓. E "000"?',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true },
@@ -322,7 +322,7 @@
             { from: 'q0', to: 'q1', symbol: '0,1' },
             { from: 'q1', to: 'q2', symbol: '0,1' },
           ] } },
-      { text: '"000": q2 lÃª o 3Â° sÃ­mbolo â€” sem seta = dead-state implÃ­cito! Sem qD necessÃ¡rio. ConcluÃ­do!',
+      { text: '"000": q2 lê o 3° símbolo — sem seta = dead-state implícito! Sem qD necessário. Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true },
@@ -334,26 +334,26 @@
             { from: 'q1', to: 'q2', symbol: '0,1' },
           ] } },
     ] },
-  { id: 26, label: "L26", formula: "L = { w âˆˆ {0,1}* | w tem tamanho maior que 3 }",                   desc: "",                                                                 shortestWord: "0000",     regex: /^[01]{4,}$/,                                                alphabet: ['0', '1'],             acceptedWords: ["0000","1111","01010"],    rejectedWords: ["Î»","0","000"],         hint: "Passe pelos primeiros trÃªs estados sem aceitar, depois aceite tudo.",                                                successMsg: "Tamanho mÃ­nimo garantido.",
+  { id: 26, label: "L26", formula: "L = { w ∈ {0,1}* | w tem tamanho maior que 3 }",                   desc: "",                                                                 shortestWord: "0000",     regex: /^[01]{4,}$/,                                                alphabet: ['0', '1'],             acceptedWords: ["0000","1111","01010"],    rejectedWords: ["λ","0","000"],         hint: "Passe pelos primeiros três estados sem aceitar, depois aceite tudo.",                                                successMsg: "Tamanho mínimo garantido.",
     tutorials: {
       onStart: { type: 'theory', title: 'Tamanho MAIOR que 3!', dialog: [
-        'L26: aceitar palavras com 4 ou MAIS sÃ­mbolos. Rejeitar qualquer coisa menor.',
-        '"0000", "1111", "01010" â€” vÃ¡lidas. "Î»", "0", "000" â€” invÃ¡lidas (muito curtas).',
-        'EstratÃ©gia: 4 estados nÃ£o-finais (q0-q3) formam uma barreira. SÃ³ q4 Ã© final.',
+        'L26: aceitar palavras com 4 ou MAIS símbolos. Rejeitar qualquer coisa menor.',
+        '"0000", "1111", "01010" — válidas. "λ", "0", "000" — inválidas (muito curtas).',
+        'Estratégia: 4 estados não-finais (q0-q3) formam uma barreira. Só q4 é final.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Trilho de 4 Passos + Loop', dialog: [
-        'Trilho: <b>q0</b>(ini)â†’<b>q1</b>â†’<b>q2</b>â†’<b>q3</b>â†’<b>q4</b>(final) com {0,1}.',
-        'ApÃ³s q4, loop <b>q4â†’q4</b> aceita palavras mais longas. Sem ele, "00000" travaria!',
-        '"000" termina em q3 (nÃ£o final) â†’ rejeiÃ§Ã£o automÃ¡tica. PosiÃ§Ã£o importa, nÃ£o conteÃºdo.',
+        'Trilho: <b>q0</b>(ini)→<b>q1</b>→<b>q2</b>→<b>q3</b>→<b>q4</b>(final) com {0,1}.',
+        'Após q4, loop <b>q4→q4</b> aceita palavras mais longas. Sem ele, "00000" travaria!',
+        '"000" termina em q3 (não final) → rejeição automática. Posição importa, não conteúdo.',
       ] },
     },
     boardWords: ['0000', '1111', '01010'],
     guidedLesson: [
-      { text: 'MAIOR que 3 â€” mÃ­nimo 4 sÃ­mbolos!<br/>Aceitar: <b>0000</b>, <b>1111</b>, <b>01010</b>. Rejeitar: Î», 0, 000.',
+      { text: 'MAIOR que 3 — mínimo 4 símbolos!<br/>Aceitar: <b>0000</b>, <b>1111</b>, <b>01010</b>. Rejeitar: λ, 0, 000.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>0000</b> e <b>1111</b>: ambas tÃªm 4 sÃ­mbolos â€” trilho linear q0â†’â€¦â†’q4(final) resolve as duas!',
+      { text: 'Foco em <b>0000</b> e <b>1111</b>: ambas têm 4 símbolos — trilho linear q0→…→q4(final) resolve as duas!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1â†’q2â†’q3â†’q4(final) com {0,1}. "0000"âœ“, "1111"âœ“. PrÃ³xima: "01010"!',
+      { text: 'Solução: q0→q1→q2→q3→q4(final) com {0,1}. "0000"✓, "1111"✓. Próxima: "01010"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -368,7 +368,7 @@
             { from: 'q2', to: 'q3', symbol: '0,1' },
             { from: 'q3', to: 'q4', symbol: '0,1' },
           ] } },
-      { text: 'Foco em <b>01010</b>: 5 sÃ­mbolos â€” q4 lÃª o 5Â° e trava! Preciso de loop q4(0,1).',
+      { text: 'Foco em <b>01010</b>: 5 símbolos — q4 lê o 5° e trava! Preciso de loop q4(0,1).',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -383,7 +383,7 @@
             { from: 'q2', to: 'q3', symbol: '0,1' },
             { from: 'q3', to: 'q4', symbol: '0,1' },
           ] } },
-      { text: 'Solução: q4 loop {0,1}. "01010"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q4 loop {0,1}. "01010"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -400,35 +400,35 @@
             { from: 'q4', to: 'q4', symbol: '0,1' },
           ] } },
     ] },
-  { id: 27, label: "L27", formula: "L = { w âˆˆ {0,1}* | w tem tamanho mÃºltiplo de 3 }",                 desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["Î»","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemÃ¡tico de tamanho 3.",
+  { id: 27, label: "L27", formula: "L = { w ∈ {0,1}* | w tem tamanho múltiplo de 3 }",                 desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["λ","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemático de tamanho 3.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Contagem Modular â€” Mod 3!', dialog: [
-        'MÃºltiplo de 3: comprimento â‰¡ 0 (mod 3). Ou seja, palavras de tamanho 0, 3, 6, 9...',
-        'EstratÃ©gia: 3 estados formando um ciclo. Cada sÃ­mbolo avanÃ§a um passo no ciclo.',
-        'q0 (final, mod 0) â†’(any)â†’ q1 (mod 1) â†’(any)â†’ q2 (mod 2) â†’(any)â†’ q0. Elegante!',
-        'Esse padrÃ£o escala: para "mÃºltiplo de N", use N estados em ciclo.',
+      onStart: { type: 'theory', title: 'Contagem Modular — Mod 3!', dialog: [
+        'Múltiplo de 3: comprimento ≡ 0 (mod 3). Ou seja, palavras de tamanho 0, 3, 6, 9...',
+        'Estratégia: 3 estados formando um ciclo. Cada símbolo avança um passo no ciclo.',
+        'q0 (final, mod 0) →(any)→ q1 (mod 1) →(any)→ q2 (mod 2) →(any)→ q0. Elegante!',
+        'Esse padrão escala: para "múltiplo de N", use N estados em ciclo.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Ciclo de 3 Estados', dialog: [
-        '<b>q0</b>(ini,final) â†’ <b>q1</b> â†’ <b>q2</b> â†’ q0. Cada seta aceita {0,1}.',
-        '"Î»" aceita em q0. "000": q0â†’q1â†’q2â†’q0 âœ”. "00": termina em q2 (nÃ£o final) âœ—.',
-        '"0001" (4 sÃ­mbolos): q0â†’q1â†’q2â†’q0â†’q1 â†’ rejeitado em q1. O ciclo Ã© exato!',
+        '<b>q0</b>(ini,final) → <b>q1</b> → <b>q2</b> → q0. Cada seta aceita {0,1}.',
+        '"λ" aceita em q0. "000": q0→q1→q2→q0 ✔. "00": termina em q2 (não final) ✗.',
+        '"0001" (4 símbolos): q0→q1→q2→q0→q1 → rejeitado em q1. O ciclo é exato!',
       ] },
     },
-    boardWords: ['Î»', '000', '010101'],
+    boardWords: ['λ', '000', '010101'],
     guidedLesson: [
-      { text: 'MÃºltiplo de 3 â€” comprimento â‰¡ 0 (mod 3)!<br/>Aceitar: <b>Î»</b>, <b>000</b>, <b>010101</b>. Rejeitar: 0, 00, 0001.',
+      { text: 'Múltiplo de 3 — comprimento ≡ 0 (mod 3)!<br/>Aceitar: <b>λ</b>, <b>000</b>, <b>010101</b>. Rejeitar: 0, 00, 0001.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>Î»</b>: palavra vazia â€” q0(ini,final) aceita imediatamente!',
+      { text: 'Foco em <b>λ</b>: palavra vazia — q0(ini,final) aceita imediatamente!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,final). "Î»"âœ“. PrÃ³ximas: "000" e "010101"!',
+      { text: 'Solução: q0(ini,final). "λ"✓. Próximas: "000" e "010101"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [{ id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true, isFinal: true }],
           transitions: [] } },
-      { text: 'Foco em <b>000</b> e <b>010101</b>: ambas tÃªm comprimento mÃºltiplo de 3 â€” ciclo q0â†’q1â†’q2â†’q0 resolve as duas!',
+      { text: 'Foco em <b>000</b> e <b>010101</b>: ambas têm comprimento múltiplo de 3 — ciclo q0→q1→q2→q0 resolve as duas!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [{ id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true, isFinal: true }],
           transitions: [] } },
-      { text: 'Solução: q0â†’q1â†’q2â†’q0(final) com {0,1}. Ciclo completo! "000"âœ“, "010101"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q0→q1→q2→q0(final) com {0,1}. Ciclo completo! "000"✓, "010101"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 68, isInitial: true,  isFinal: true  },
@@ -441,26 +441,26 @@
             { from: 'q2', to: 'q0', symbol: '0,1' },
           ] } },
     ] },
-  { id: 28, label: "L28", formula: "L = { w âˆˆ {0,1}* | cada 0 Ã© seguido de, no mÃ­nimo, dois 1's }",   desc: "",                                                                 shortestWord: "",         regex: /^(1*011+)*1*$/,                                             alphabet: ['0', '1'],             acceptedWords: ["Î»","011","1011"],         rejectedWords: ["0","01","010"],        hint: "Leu um '0'? EntÃ£o os prÃ³ximos dois passos OBRIGATORIAMENTE devem ser '1'.",                                         successMsg: "PadrÃ£o de seguranÃ§a estabelecido.",
+  { id: 28, label: "L28", formula: "L = { w ∈ {0,1}* | cada 0 é seguido de, no mínimo, dois 1's }",   desc: "",                                                                 shortestWord: "",         regex: /^(1*011+)*1*$/,                                             alphabet: ['0', '1'],             acceptedWords: ["λ","011","1011"],         rejectedWords: ["0","01","010"],        hint: "Leu um '0'? Então os próximos dois passos OBRIGATORIAMENTE devem ser '1'.",                                         successMsg: "Padrão de segurança estabelecido.",
     tutorials: {
       onStart: { type: 'theory', title: 'Cada 0 Exige Dois 1s!', dialog: [
-        'RestriÃ§Ã£o: todo "0" lido OBRIGA que os prÃ³ximos dois sÃ­mbolos sejam "1".',
-        '"Î»" e "1011" â€” vÃ¡lidos (1s livres; cada 0 seguido de "11"). "01" â€” invÃ¡lido (sÃ³ um 1).',
-        'EstratÃ©gia: rastrear a "dÃ­vida" â€” quantos 1s ainda devemos apÃ³s o Ãºltimo 0.',
+        'Restrição: todo "0" lido OBRIGA que os próximos dois símbolos sejam "1".',
+        '"λ" e "1011" — válidos (1s livres; cada 0 seguido de "11"). "01" — inválido (só um 1).',
+        'Estratégia: rastrear a "dívida" — quantos 1s ainda devemos após o último 0.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Estados de DÃ­vida', dialog: [
-        '<b>q0</b>(ini,f): sem dÃ­vida. <b>q1</b>: deve 2 uns. <b>q2</b>: deve 1 un. <b>qT</b>: dead.',
-        '1 em q0: loop. 0 em q0: gera dÃ­vida (â†’q1). 1 em q1: paga parcial (â†’q2). 1 em q2: quita (â†’q0).',
-        'Novo 0 antes de quitar (q1â†’qT ou q2â†’qT) = violaÃ§Ã£o irrecuperÃ¡vel. qT rejeita tudo.',
+      onDrawGraph: { type: 'mechanic', title: 'Estados de Dívida', dialog: [
+        '<b>q0</b>(ini,f): sem dívida. <b>q1</b>: deve 2 uns. <b>q2</b>: deve 1 un. <b>qT</b>: dead.',
+        '1 em q0: loop. 0 em q0: gera dívida (→q1). 1 em q1: paga parcial (→q2). 1 em q2: quita (→q0).',
+        'Novo 0 antes de quitar (q1→qT ou q2→qT) = violação irrecuperável. qT rejeita tudo.',
       ] },
     },
     boardWords: ['011', '1011'],
     guidedLesson: [
-      { text: 'Todo "0" exige dois "1"s em seguida!<br/>Aceitar: <b>Î»</b>, <b>011</b>, <b>1011</b>. Rejeitar: 0, 01, 010.',
+      { text: 'Todo "0" exige dois "1"s em seguida!<br/>Aceitar: <b>λ</b>, <b>011</b>, <b>1011</b>. Rejeitar: 0, 01, 010.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>011</b>: menor palavra com "0" â€” q0â†’q1(0)â†’q2(1)â†’q0(1), dÃ­vida quitada!',
+      { text: 'Foco em <b>011</b>: menor palavra com "0" — q0→q1(0)→q2(1)→q0(1), dívida quitada!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,f)â†’q1(0)â†’q2(1)â†’q0(1). "011"âœ“. PrÃ³xima: "1011"!',
+      { text: 'Solução: q0(ini,f)→q1(0)→q2(1)→q0(1). "011"✓. Próxima: "1011"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
@@ -472,7 +472,7 @@
             { from: 'q1', to: 'q2', symbol: '1' },
             { from: 'q2', to: 'q0', symbol: '1' },
           ] } },
-      { text: 'Foco em <b>1011</b>: q0 lÃª "1" â€” sem seta! Preciso de loop q0(1).',
+      { text: 'Foco em <b>1011</b>: q0 lê "1" — sem seta! Preciso de loop q0(1).',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
@@ -484,7 +484,7 @@
             { from: 'q1', to: 'q2', symbol: '1' },
             { from: 'q2', to: 'q0', symbol: '1' },
           ] } },
-      { text: 'Solução: q0 loop 1. "1011"=q0â†’q0â†’q1â†’q2â†’q0âœ“. q1â€”0 e q2â€”0 sem seta = dead implÃ­cito. ConcluÃ­do!',
+      { text: 'Solução: q0 loop 1. "1011"=q0→q0→q1→q2→q0✓. q1—0 e q2—0 sem seta = dead implícito. Concluído!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 35, isInitial: true,  isFinal: true  },
@@ -498,27 +498,27 @@
             { from: 'q2', to: 'q0', symbol: '1' },
           ] } },
     ] },
-  { id: 29, label: "L29", formula: "L = { w âˆˆ {0,1}* | os primeiros 4 sÃ­mbolos de w contÃªm, no mÃ­nimo, dois 1's }", desc: "", shortestWord: "11", regex: /^([01]*)$/, validate: w => w.slice(0,4).split('').filter(c=>c==='1').length >= 2, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Essa exige rastrear o prefixo. Concentre-se nas combinaÃ§Ãµes dos primeiros passos.",                                  successMsg: "Prefixo complexo analisado.",
+  { id: 29, label: "L29", formula: "L = { w ∈ {0,1}* | os primeiros 4 símbolos de w contêm, no mínimo, dois 1's }", desc: "", shortestWord: "11", regex: /^([01]*)$/, validate: w => w.slice(0,4).split('').filter(c=>c==='1').length >= 2, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Essa exige rastrear o prefixo. Concentre-se nas combinações dos primeiros passos.",                                  successMsg: "Prefixo complexo analisado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Rastreando o Prefixo de 4!', dialog: [
-        'L29: os 4 primeiros sÃ­mbolos devem conter ao menos 2 uns. O resto Ã© livre.',
-        '"0011": prefixo "0011" tem 2 uns âœ”. "0001": prefixo "0001" tem 1 um âœ—.',
-        'EstratÃ©gia: 9 estados rastreiam (posiÃ§Ã£o, uns vistos) para posiÃ§Ãµes 1-4.',
-        'ApÃ³s 4 sÃ­mbolos com â‰¥2 uns, q6 aceita tudo via loop. Dead-states implÃ­citos para caminhos impossÃ­veis.',
+        'L29: os 4 primeiros símbolos devem conter ao menos 2 uns. O resto é livre.',
+        '"0011": prefixo "0011" tem 2 uns ✔. "0001": prefixo "0001" tem 1 um ✗.',
+        'Estratégia: 9 estados rastreiam (posição, uns vistos) para posições 1-4.',
+        'Após 4 símbolos com ≥2 uns, q6 aceita tudo via loop. Dead-states implícitos para caminhos impossíveis.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Ãrvore de Prefixo 4Ã—2', dialog: [
-        'Camada 1: q0â€”0â†’q1(0 uns), q0â€”1â†’q2(1 um). Camada 2: q1,q2 expandem para q3,q4,q7.',
-        'Camada 3: q3,q4,q7 expandem para q5,q8. Camada 4: q5,q8â€”{0,1}â†’q6(final, loop).',
-        'q3â€”0â†’dead (impossÃ­vel: 3 zeros, sÃ³ 1 posiÃ§Ã£o restante). q5â€”0â†’dead (4 sÃ­mbolos, sÃ³ 1 um).',
+      onDrawGraph: { type: 'mechanic', title: 'Árvore de Prefixo 4×2', dialog: [
+        'Camada 1: q0—0→q1(0 uns), q0—1→q2(1 um). Camada 2: q1,q2 expandem para q3,q4,q7.',
+        'Camada 3: q3,q4,q7 expandem para q5,q8. Camada 4: q5,q8—{0,1}→q6(final, loop).',
+        'q3—0→dead (impossível: 3 zeros, só 1 posição restante). q5—0→dead (4 símbolos, só 1 um).',
       ] },
     },
     boardWords: ['11', '0011', '1011'],
     guidedLesson: [
-      { text: '4 primeiros sÃ­mbolos com â‰¥ 2 uns!<br/>Aceitar: <b>11</b>, <b>0011</b>, <b>1011</b>. Rejeitar: 0, 00, 0001.',
+      { text: '4 primeiros símbolos com ≥ 2 uns!<br/>Aceitar: <b>11</b>, <b>0011</b>, <b>1011</b>. Rejeitar: 0, 00, 0001.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>11</b>: apenas 2 sÃ­mbolos â€” q0â†’q2(1)â†’q7(1,final) com 3 estados!',
+      { text: 'Foco em <b>11</b>: apenas 2 símbolos — q0→q2(1)→q7(1,final) com 3 estados!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q2(1)â†’q7(final,1). "11"=q0â†’q2â†’q7âœ“. PrÃ³ximas: "0011" e "1011"!',
+      { text: 'Solução: q0→q2(1)→q7(final,1). "11"=q0→q2→q7✓. Próximas: "0011" e "1011"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
@@ -529,7 +529,7 @@
             { from: 'q0', to: 'q2', symbol: '1' },
             { from: 'q2', to: 'q7', symbol: '1' },
           ] } },
-      { text: 'Foco em <b>0011</b> e <b>1011</b>: 4 sÃ­mbolos â€” precisam da Ã¡rvore completa de prefixo!',
+      { text: 'Foco em <b>0011</b> e <b>1011</b>: 4 símbolos — precisam da árvore completa de prefixo!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
@@ -540,7 +540,7 @@
             { from: 'q0', to: 'q2', symbol: '1' },
             { from: 'q2', to: 'q7', symbol: '1' },
           ] } },
-      { text: 'Solução: Ã¡rvore de prefixo 4Ã—2 completa. q7,q8,q6 finais. "0011"=q0â†’q1â†’q3â†’q5â†’q6âœ“, "1011"=q0â†’q2â†’q4â†’q8âœ“ ConcluÃ­do!',
+      { text: 'Solução: árvore de prefixo 4×2 completa. q7,q8,q6 finais. "0011"=q0→q1→q3→q5→q6✓, "1011"=q0→q2→q4→q8✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 50, y: 10, isInitial: true,  isFinal: false },
@@ -569,27 +569,27 @@
             { from: 'q6', to: 'q6', symbol: '0,1' },
           ] } },
     ] },
-  { id: 30, label: "L30", formula: "L = { w âˆˆ {0,1}* | w NÃƒO contÃ©m 000 nem 111 }",                    desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000)(?!.*111)[01]*$/,                                 alphabet: ['0', '1'],             acceptedWords: ["Î»","01","0101"],          rejectedWords: ["000","111","1000"],    hint: "Se 3 zeros ou 3 uns aparecerem, jogue a palavra num estado de erro.",                                                successMsg: "Evitou a bomba tripla!",
+  { id: 30, label: "L30", formula: "L = { w ∈ {0,1}* | w NÃO contém 000 nem 111 }",                    desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000)(?!.*111)[01]*$/,                                 alphabet: ['0', '1'],             acceptedWords: ["λ","01","0101"],          rejectedWords: ["000","111","1000"],    hint: "Se 3 zeros ou 3 uns aparecerem, jogue a palavra num estado de erro.",                                                successMsg: "Evitou a bomba tripla!",
     tutorials: {
       onStart: { type: 'theory', title: 'Evitando Subpalavras Proibidas!', dialog: [
-        'Novo padrÃ£o: NÃƒO CONTÃ‰M â€” rejeitar quando uma sequÃªncia especÃ­fica aparecer.',
-        'EstratÃ©gia: rastrear o "progresso" da sequÃªncia proibida com estados intermediÃ¡rios.',
-        '"0" visto â†’ alerta. "00" visto â†’ alerta mÃ¡ximo. "000" visto â†’ ARMADILHA irrecuperÃ¡vel!',
-        'SÃ£o duas sequÃªncias proibidas independentes (000 e 111), cada uma com sua trilha de estados.',
+        'Novo padrão: NÃO CONTÉM — rejeitar quando uma sequência específica aparecer.',
+        'Estratégia: rastrear o "progresso" da sequência proibida com estados intermediários.',
+        '"0" visto → alerta. "00" visto → alerta máximo. "000" visto → ARMADILHA irrecuperável!',
+        'São duas sequências proibidas independentes (000 e 111), cada uma com sua trilha de estados.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Duas Trilhas, Dois Limites', dialog: [
         '5 estados todos finais: <b>q0</b>(ini), <b>q1</b>(um 0), <b>q2</b>(dois 0s), <b>q3</b>(um 1), <b>q4</b>(dois 1s).',
-        'Cruzamentos: q1â€”1â†’q3 e q3â€”0â†’q1 (troca de corrida cancela a contagem anterior).',
-        'Dead implÃ­cito: q2 lÃª 0 = terceiro zero = 000. q4 lÃª 1 = terceiro um = 111. Sem seta = rejeitado!',
+        'Cruzamentos: q1—1→q3 e q3—0→q1 (troca de corrida cancela a contagem anterior).',
+        'Dead implícito: q2 lê 0 = terceiro zero = 000. q4 lê 1 = terceiro um = 111. Sem seta = rejeitado!',
       ] },
     },
-    boardWords: ['Î»', '01', '0101'],
+    boardWords: ['λ', '01', '0101'],
     guidedLesson: [
-      { text: 'Proibido 000 e proibido 111!<br/>Aceitar: <b>Î»</b>, <b>01</b>, <b>0101</b>. Rejeitar: 000, 111, 1000.',
+      { text: 'Proibido 000 e proibido 111!<br/>Aceitar: <b>λ</b>, <b>01</b>, <b>0101</b>. Rejeitar: 000, 111, 1000.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>Î»</b> e <b>01</b>: Î»=q0(f), "01"=q0â†’q1(0)â†’q3(1,f). 4 transiÃ§Ãµes bÃ¡sicas resolvem as duas!',
+      { text: 'Foco em <b>λ</b> e <b>01</b>: λ=q0(f), "01"=q0→q1(0)→q3(1,f). 4 transições básicas resolvem as duas!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(f)â†’q1(f)(0)â†’q3(f)(1)â†’q1(0); q0â†’q3(1). "Î»"âœ“, "01"âœ“. PrÃ³xima: "0101"!',
+      { text: 'Solução: q0(f)→q1(f)(0)→q3(f)(1)→q1(0); q0→q3(1). "λ"✓, "01"✓. Próxima: "0101"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: true },
@@ -602,7 +602,7 @@
             { from: 'q1', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q1', symbol: '0' },
           ] } },
-      { text: 'Foco em <b>0101</b>: q1 lÃª 2Â° "0" â€” sem seta! E q3 lÃª 2Â° "1" â€” sem seta!',
+      { text: 'Foco em <b>0101</b>: q1 lê 2° "0" — sem seta! E q3 lê 2° "1" — sem seta!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: true },
@@ -615,7 +615,7 @@
             { from: 'q1', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q1', symbol: '0' },
           ] } },
-      { text: 'Solução: q1â†’q2(0)â†’q3(1) e q3â†’q4(1)â†’q1(0). Dead implÃ­cito: q2â€”0=000, q4â€”1=111. "0101"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q1→q2(0)→q3(1) e q3→q4(1)→q1(0). Dead implícito: q2—0=000, q4—1=111. "0101"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: true },
@@ -635,27 +635,27 @@
             { from: 'q4', to: 'q1', symbol: '0' },
           ] } },
     ] },
-  { id: 31, label: "L31", formula: "L = { w âˆˆ {0,1}* | os Ãºltimos trÃªs sÃ­mbolos de w NÃƒO sÃ£o 000 }",  desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000$)[01]*$/,                                         alphabet: ['0', '1'],             acceptedWords: ["Î»","1","001"],            rejectedWords: ["000","1000","10000"],  hint: "O final da palavra Ã© o mais importante aqui.",                                                                      successMsg: "Sufixo validado.",
+  { id: 31, label: "L31", formula: "L = { w ∈ {0,1}* | os últimos três símbolos de w NÃO são 000 }",  desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000$)[01]*$/,                                         alphabet: ['0', '1'],             acceptedWords: ["λ","1","001"],            rejectedWords: ["000","1000","10000"],  hint: "O final da palavra é o mais importante aqui.",                                                                      successMsg: "Sufixo validado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Sufixo Proibido: "000"!', dialog: [
-        'Diferente de L30, L31 sÃ³ proÃ­be "000" como SUFIXO â€” nÃ£o em qualquer posiÃ§Ã£o.',
-        '"1000" Ã© rejeitado (termina em 000). "0001" Ã© ACEITO (nÃ£o termina em 000)!',
-        'EstratÃ©gia: rastrear os Ãºltimos 3 sÃ­mbolos. Se forem "000", entrar em estado especial.',
-        'Um "1" depois de "000" RESETA o sufixo â€” o autÃ´mato Ã© escapÃ¡vel!',
+        'Diferente de L30, L31 só proíbe "000" como SUFIXO — não em qualquer posição.',
+        '"1000" é rejeitado (termina em 000). "0001" é ACEITO (não termina em 000)!',
+        'Estratégia: rastrear os últimos 3 símbolos. Se forem "000", entrar em estado especial.',
+        'Um "1" depois de "000" RESETA o sufixo — o autômato é escapável!',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Trilho ReversÃ­vel de 4 Estados', dialog: [
-        '<b>q0</b>(ini,f): sufixo OK. <b>q1</b>(f): Ãºltimo=0. <b>q2</b>(f): Ãºltimos=00. <b>q3</b>: Ãºltimos=000.',
-        '"1" em qualquer estado â†’ q0 (sufixo "1" nÃ£o ameaÃ§a). "0" avanÃ§a a trilha.',
-        'q3 nÃ£o Ã© final (000 no sufixo). Mas q3â€”1â†’q0 permite escapar! "10001": termina em "001" â†’ aceito.',
+      onDrawGraph: { type: 'mechanic', title: 'Trilho Reversível de 4 Estados', dialog: [
+        '<b>q0</b>(ini,f): sufixo OK. <b>q1</b>(f): último=0. <b>q2</b>(f): últimos=00. <b>q3</b>: últimos=000.',
+        '"1" em qualquer estado → q0 (sufixo "1" não ameaça). "0" avança a trilha.',
+        'q3 não é final (000 no sufixo). Mas q3—1→q0 permite escapar! "10001": termina em "001" → aceito.',
       ] },
     },
-    boardWords: ['Î»', '1', '001'],
+    boardWords: ['λ', '1', '001'],
     guidedLesson: [
-      { text: 'Sufixo "000" proibido â€” mas escapÃ¡vel com "1"!<br/>Aceitar: <b>Î»</b>, <b>1</b>, <b>001</b>. Rejeitar: 000, 1000, 10000.',
+      { text: 'Sufixo "000" proibido — mas escapável com "1"!<br/>Aceitar: <b>λ</b>, <b>1</b>, <b>001</b>. Rejeitar: 000, 1000, 10000.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>Î»</b>, <b>1</b> e <b>001</b>: todas resolvidas pela mesma estrutura de 3 estados!',
+      { text: 'Foco em <b>λ</b>, <b>1</b> e <b>001</b>: todas resolvidas pela mesma estrutura de 3 estados!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(f) loop 1, q0â†’q1(0)â†’q2(0)â†’q0(1). "Î»"âœ“, "1"âœ“, "001"âœ“. E "000"?',
+      { text: 'Solução: q0(f) loop 1, q0→q1(0)→q2(0)→q0(1). "λ"✓, "1"✓, "001"✓. E "000"?',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true },
@@ -669,7 +669,7 @@
             { from: 'q1', to: 'q0', symbol: '1' },
             { from: 'q2', to: 'q0', symbol: '1' },
           ] } },
-      { text: '"000": q2 lÃª 3Â° zero â€” sem seta! Solução: q2â†’q3(0,nÃ£o-final), q3 loop 0, q3â†’q0(1,escape). ConcluÃ­do!',
+      { text: '"000": q2 lê 3° zero — sem seta! Solução: q2→q3(0,não-final), q3 loop 0, q3→q0(1,escape). Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true  },
@@ -688,27 +688,27 @@
             { from: 'q3', to: 'q0', symbol: '1' },
           ] } },
     ] },
-  { id: 32, label: "L32", formula: "L = { w âˆˆ {0,1,2}* | par de 0's, par de 1's e par de 2's }",      desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["Î»","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinaÃ§Ãµes de par/Ã­mpar.",                                  successMsg: "AutÃ´mato massivo concluÃ­do.",
+  { id: 32, label: "L32", formula: "L = { w ∈ {0,1,2}* | par de 0's, par de 1's e par de 2's }",      desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
     tutorials: {
-      onStart: { type: 'theory', title: 'ExplosÃ£o de Estados â€” 2Â³ = 8!', dialog: [
-        'Paridade tripla simultÃ¢nea: par/Ã­mpar de 0s, de 1s e de 2s â€” totalmente independentes.',
-        'Cada combinaÃ§Ã£o possÃ­vel exige seu prÃ³prio estado: 2Â³ = 8 estados no total!',
-        'SÃ³ o estado (par-0, par-1, par-2) Ã© final. Os outros 7 sÃ£o nÃ£o-finais.',
-        'PrincÃ­pio geral: N paridades independentes â†’ 2^N estados no AFD mÃ­nimo.',
+      onStart: { type: 'theory', title: 'Explosão de Estados — 2³ = 8!', dialog: [
+        'Paridade tripla simultânea: par/ímpar de 0s, de 1s e de 2s — totalmente independentes.',
+        'Cada combinação possível exige seu próprio estado: 2³ = 8 estados no total!',
+        'Só o estado (par-0, par-1, par-2) é final. Os outros 7 são não-finais.',
+        'Princípio geral: N paridades independentes → 2^N estados no AFD mínimo.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Cubo de Paridade 3D', dialog: [
-        'Cada estado = vetor (par_0, par_1, par_2). q0=(0,0,0) Ã© o Ãºnico final.',
+        'Cada estado = vetor (par_0, par_1, par_2). q0=(0,0,0) é o único final.',
         'Ler 0 inverte bit-0, ler 1 inverte bit-1, ler 2 inverte bit-2.',
-        'O autÃ´mato forma um cubo: 8 vÃ©rtices, cada aresta troca exatamente um bit.',
+        'O autômato forma um cubo: 8 vértices, cada aresta troca exatamente um bit.',
       ] },
     },
-    boardWords: ['Î»', '0011', '001122'],
+    boardWords: ['λ', '0011', '001122'],
     guidedLesson: [
-      { text: 'Paridade tripla: par de 0s AND par de 1s AND par de 2s!<br/>Aceitar: <b>Î»</b>, <b>0011</b>, <b>001122</b>. Rejeitar: 0, 1, 012.',
+      { text: 'Paridade tripla: par de 0s AND par de 1s AND par de 2s!<br/>Aceitar: <b>λ</b>, <b>0011</b>, <b>001122</b>. Rejeitar: 0, 1, 012.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>Î»</b> e <b>0011</b>: paridades de 0 e 1 â€” 4 estados resolvem as duas!',
+      { text: 'Foco em <b>λ</b> e <b>0011</b>: paridades de 0 e 1 — 4 estados resolvem as duas!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(f)â†”q1 via 0; q0â†”q2 via 1; q1â†”q4 via 1; q2â†”q4 via 0. "Î»"âœ“, "0011"âœ“. PrÃ³xima: "001122"!',
+      { text: 'Solução: q0(f)↔q1 via 0; q0↔q2 via 1; q1↔q4 via 1; q2↔q4 via 0. "λ"✓, "0011"✓. Próxima: "001122"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true  },
@@ -726,7 +726,7 @@
             { from: 'q2', to: 'q4', symbol: '0' },
             { from: 'q4', to: 'q2', symbol: '0' },
           ] } },
-      { text: 'Foco em <b>001122</b>: contÃ©m "2" â€” sem seta para 2 no grafo atual!',
+      { text: 'Foco em <b>001122</b>: contém "2" — sem seta para 2 no grafo atual!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: true  },
@@ -744,7 +744,7 @@
             { from: 'q2', to: 'q4', symbol: '0' },
             { from: 'q4', to: 'q2', symbol: '0' },
           ] } },
-      { text: 'Solução: cubo de paridade â€” 4 novos estados q3,q5,q6,q7 via sÃ­mbolo 2. "001122"âœ“ ConcluÃ­do!',
+      { text: 'Solução: cubo de paridade — 4 novos estados q3,q5,q6,q7 via símbolo 2. "001122"✓ Concluído!',
         boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
@@ -785,27 +785,27 @@
           ],
         } },
     ] },
-  { id: 33, label: "L33", formula: "L = { w âˆˆ {0,1}* | w tem 001 como prefixo }",                      desc: "",                                                                 shortestWord: "001",      regex: /^001[01]*$/,                                                alphabet: ['0', '1'],             acceptedWords: ["001","0011","001100"],    rejectedWords: ["Î»","1","010"],         hint: "O comeÃ§o tem que ser rigorosamente '0' -> '0' -> '1'.",                                                             successMsg: "Prefixo amarrado!",
+  { id: 33, label: "L33", formula: "L = { w ∈ {0,1}* | w tem 001 como prefixo }",                      desc: "",                                                                 shortestWord: "001",      regex: /^001[01]*$/,                                                alphabet: ['0', '1'],             acceptedWords: ["001","0011","001100"],    rejectedWords: ["λ","1","010"],         hint: "O começo tem que ser rigorosamente '0' -> '0' -> '1'.",                                                             successMsg: "Prefixo amarrado!",
     tutorials: {
-      onStart: { type: 'theory', title: 'Prefixo ObrigatÃ³rio: "001"!', dialog: [
-        'L33: toda palavra aceita DEVE comeÃ§ar com "001". O resto pode ser qualquer coisa.',
-        '"001100" â€” vÃ¡lida (comeÃ§a com 001). "010" â€” invÃ¡lida (2Â° sÃ­mbolo Ã© 1, nÃ£o 0).',
-        'EstratÃ©gia: 3 estados de checagem (q0â†’q1â†’q2) + estado final q3 com loop.',
-        'Qualquer desvio no prefixo cai em dead-state implÃ­cito. Sem volta!',
+      onStart: { type: 'theory', title: 'Prefixo Obrigatório: "001"!', dialog: [
+        'L33: toda palavra aceita DEVE começar com "001". O resto pode ser qualquer coisa.',
+        '"001100" — válida (começa com 001). "010" — inválida (2° símbolo é 1, não 0).',
+        'Estratégia: 3 estados de checagem (q0→q1→q2) + estado final q3 com loop.',
+        'Qualquer desvio no prefixo cai em dead-state implícito. Sem volta!',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Trilho de Prefixo + Loop Final', dialog: [
-        'q0â€”0â†’q1â€”0â†’q2â€”1â†’q3(final). Cadeia linear exata para "001".',
-        'q3â€”{0,1}â†’q3: apÃ³s confirmar o prefixo, qualquer sÃ­mbolo Ã© aceito.',
-        'Dead implÃ­cito: q0â€”1, q1â€”1, q2â€”0 â€” qualquer desvio rejeita permanentemente.',
+        'q0—0→q1—0→q2—1→q3(final). Cadeia linear exata para "001".',
+        'q3—{0,1}→q3: após confirmar o prefixo, qualquer símbolo é aceito.',
+        'Dead implícito: q0—1, q1—1, q2—0 — qualquer desvio rejeita permanentemente.',
       ] },
     },
     boardWords: ['001'],
     guidedLesson: [
-      { text: 'Prefixo obrigatÃ³rio "001"!<br/>Aceitar: <b>001</b>, <b>0011</b>, <b>001100</b>. Rejeitar: Î», 1, 010.',
+      { text: 'Prefixo obrigatório "001"!<br/>Aceitar: <b>001</b>, <b>0011</b>, <b>001100</b>. Rejeitar: λ, 1, 010.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>001</b>: prefixo exato "001" â€” trilho linear q0â†’q1(0)â†’q2(0)â†’q3(1,final).',
+      { text: 'Foco em <b>001</b>: prefixo exato "001" — trilho linear q0→q1(0)→q2(0)→q3(1,final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(0)â†’q2(0)â†’q3(final,1). "001"=q0â†’q1â†’q2â†’q3âœ“. E "0011"?',
+      { text: 'Solução: q0→q1(0)→q2(0)→q3(final,1). "001"=q0→q1→q2→q3✓. E "0011"?',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
@@ -818,7 +818,7 @@
             { from: 'q1', to: 'q2', symbol: '0' },
             { from: 'q2', to: 'q3', symbol: '1' },
           ] } },
-      { text: '"0011": q3 lÃª "1" â€” sem seta! Solução: q3 loop {0,1}. "001100": q3 absorve o resto. ConcluÃ­do!',
+      { text: '"0011": q3 lê "1" — sem seta! Solução: q3 loop {0,1}. "001100": q3 absorve o resto. Concluído!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
@@ -833,27 +833,27 @@
             { from: 'q3', to: 'q3', symbol: '0,1' },
           ] } },
     ] },
-  { id: 34, label: "L34", formula: "L = { w âˆˆ {0,1}* | w tem 1010 como sufixo }",                      desc: "",                                                                 shortestWord: "1010",     regex: /^[01]*1010$/,                                               alphabet: ['0', '1'],             acceptedWords: ["1010","01010","001010"], rejectedWords: ["Î»","101","1011"],       hint: "Mantenha a porta aberta para infinitos caracteres, mas sÃ³ aceite se a 'memÃ³ria' bater com 1010.",                  successMsg: "Detector de sufixo ativado.",
+  { id: 34, label: "L34", formula: "L = { w ∈ {0,1}* | w tem 1010 como sufixo }",                      desc: "",                                                                 shortestWord: "1010",     regex: /^[01]*1010$/,                                               alphabet: ['0', '1'],             acceptedWords: ["1010","01010","001010"], rejectedWords: ["λ","101","1011"],       hint: "Mantenha a porta aberta para infinitos caracteres, mas só aceite se a 'memória' bater com 1010.",                  successMsg: "Detector de sufixo ativado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Detector de Sufixo "1010"!', dialog: [
-        'L34: a palavra termina em "1010". O comeÃ§o pode ser qualquer coisa!',
-        '"01010" â€” vÃ¡lida (termina em 1010). "1011" â€” invÃ¡lida (termina em 1011).',
-        'EstratÃ©gia: 5 estados rastreiam o melhor sufixo que seja prefixo de "1010".',
-        'Ao sair do padrÃ£o, backedges resetam para o estado correto â€” sem perder contexto.',
+        'L34: a palavra termina em "1010". O começo pode ser qualquer coisa!',
+        '"01010" — válida (termina em 1010). "1011" — inválida (termina em 1011).',
+        'Estratégia: 5 estados rastreiam o melhor sufixo que seja prefixo de "1010".',
+        'Ao sair do padrão, backedges resetam para o estado correto — sem perder contexto.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Sufixo com Backedges', dialog: [
-        'Cadeia: q0â€”1â†’q1â€”0â†’q2â€”1â†’q3â€”0â†’q4(final). LÃª "1010" perfeito!',
-        'AbsorÃ§Ã£o: q0â€”0â†’q0 (0 antes de 1 nÃ£o ajuda). q1â€”1â†’q1 (dois 1s; sÃ³ o Ãºltimo conta).',
-        'Resets: q2â€”0â†’q0, q3â€”1â†’q0, q4â€”0â†’q0. q4â€”1â†’q3 (apÃ³s "1010"+1 â†’ novo "101").',
+        'Cadeia: q0—1→q1—0→q2—1→q3—0→q4(final). Lê "1010" perfeito!',
+        'Absorção: q0—0→q0 (0 antes de 1 não ajuda). q1—1→q1 (dois 1s; só o último conta).',
+        'Resets: q2—0→q0, q3—1→q0, q4—0→q0. q4—1→q3 (após "1010"+1 → novo "101").',
       ] },
     },
     boardWords: ['1010', '01010', '001010'],
     guidedLesson: [
-      { text: 'Sufixo obrigatÃ³rio "1010"!<br/>Aceitar: <b>1010</b>, <b>01010</b>, <b>001010</b>. Rejeitar: Î», 101, 1011.',
+      { text: 'Sufixo obrigatório "1010"!<br/>Aceitar: <b>1010</b>, <b>01010</b>, <b>001010</b>. Rejeitar: λ, 101, 1011.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>1010</b>: cadeia q0â†’q1(1)â†’q2(0)â†’q3(1)â†’q4(0,final).',
+      { text: 'Foco em <b>1010</b>: cadeia q0→q1(1)→q2(0)→q3(1)→q4(0,final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(1)â†’q2(0)â†’q3(1)â†’q4(final,0). "1010"âœ“. PrÃ³ximas: "01010" e "001010"!',
+      { text: 'Solução: q0→q1(1)→q2(0)→q3(1)→q4(final,0). "1010"✓. Próximas: "01010" e "001010"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -868,7 +868,7 @@
             { from: 'q2', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q4', symbol: '0' },
           ] } },
-      { text: 'Foco em <b>01010</b> e <b>001010</b>: q0 lÃª "0" â€” sem seta! Preciso de loops e resets.',
+      { text: 'Foco em <b>01010</b> e <b>001010</b>: q0 lê "0" — sem seta! Preciso de loops e resets.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -883,7 +883,7 @@
             { from: 'q2', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q4', symbol: '0' },
           ] } },
-      { text: 'Solução: q0 loop 0, q1 loop 1, resets q2â†’q0(0), q3â†’q0(1), q4â†’q0(0), q4â†’q3(1). "01010"âœ“, "001010"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q0 loop 0, q1 loop 1, resets q2→q0(0), q3→q0(1), q4→q0(0), q4→q3(1). "01010"✓, "001010"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -905,27 +905,27 @@
             { from: 'q4', to: 'q3', symbol: '1' },
           ] } },
     ] },
-  { id: 35, label: "L35a", formula: "L = { w âˆˆ {0,1}* | w tem 1111 como subpalavra }",                 desc: "",                                                                 shortestWord: "1111",     regex: /^[01]*1111[01]*/,                                           alphabet: ['0', '1'],             acceptedWords: ["1111","01111","11110"],   rejectedWords: ["Î»","111","11011"],     hint: "Assim que achar quatro '1's seguidos, pode ir para um estado final que aceita tudo.",                               successMsg: "Achou a subpalavra!",
+  { id: 35, label: "L35a", formula: "L = { w ∈ {0,1}* | w tem 1111 como subpalavra }",                 desc: "",                                                                 shortestWord: "1111",     regex: /^[01]*1111[01]*/,                                           alphabet: ['0', '1'],             acceptedWords: ["1111","01111","11110"],   rejectedWords: ["λ","111","11011"],     hint: "Assim que achar quatro '1's seguidos, pode ir para um estado final que aceita tudo.",                               successMsg: "Achou a subpalavra!",
     tutorials: {
-      onStart: { type: 'theory', title: 'CaÃ§ando "1111"!', dialog: [
-        'L35a: a palavra CONTÃ‰M "1111" como subpalavra (em qualquer posiÃ§Ã£o).',
-        '"01111" â€” vÃ¡lida (contÃ©m 1111). "11011" â€” invÃ¡lida (corrida de 1s interrompida).',
-        'EstratÃ©gia: contar 1s consecutivos. Ao atingir 4, entrar em estado final permanente.',
-        'Um "0" a qualquer momento zera a contagem e volta ao inÃ­cio.',
+      onStart: { type: 'theory', title: 'Caçando "1111"!', dialog: [
+        'L35a: a palavra CONTÉM "1111" como subpalavra (em qualquer posição).',
+        '"01111" — válida (contém 1111). "11011" — inválida (corrida de 1s interrompida).',
+        'Estratégia: contar 1s consecutivos. Ao atingir 4, entrar em estado final permanente.',
+        'Um "0" a qualquer momento zera a contagem e volta ao início.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Contador de Uns Consecutivos', dialog: [
-        'q0: nenhum 1. q1: um 1. q2: dois 1s. q3: trÃªs 1s. q4(final): quatro ou mais 1s!',
-        'Ler 0 em q0/q1/q2/q3 â†’ volta para q0 (zera contagem).',
-        'q4â€”{0,1}â†’q4: uma vez achados os 4 uns, a palavra jÃ¡ Ã© vÃ¡lida. Loop eterno!',
+        'q0: nenhum 1. q1: um 1. q2: dois 1s. q3: três 1s. q4(final): quatro ou mais 1s!',
+        'Ler 0 em q0/q1/q2/q3 → volta para q0 (zera contagem).',
+        'q4—{0,1}→q4: uma vez achados os 4 uns, a palavra já é válida. Loop eterno!',
       ] },
     },
     boardWords: ['1111'],
     guidedLesson: [
-      { text: 'Subpalavra "1111" em qualquer posiÃ§Ã£o!<br/>Aceitar: <b>1111</b>, <b>01111</b>, <b>11110</b>. Rejeitar: Î», 111, 11011.',
+      { text: 'Subpalavra "1111" em qualquer posição!<br/>Aceitar: <b>1111</b>, <b>01111</b>, <b>11110</b>. Rejeitar: λ, 111, 11011.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
       { text: 'Foco em <b>1111</b>: cadeia de 5 estados, contador de uns consecutivos.',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(1)â†’q2(1)â†’q3(1)â†’q4(final,1). "1111"âœ“. E "01111"?',
+      { text: 'Solução: q0→q1(1)→q2(1)→q3(1)→q4(final,1). "1111"✓. E "01111"?',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -940,7 +940,7 @@
             { from: 'q2', to: 'q3', symbol: '1' },
             { from: 'q3', to: 'q4', symbol: '1' },
           ] } },
-      { text: '"01111": q0 lÃª "0" â€” sem seta! Solução: resets q0-q3 com 0â†’q0, q4 loop {0,1}. "11110"âœ“, "11011"â†’q2âœ—. ConcluÃ­do!',
+      { text: '"01111": q0 lê "0" — sem seta! Solução: resets q0-q3 com 0→q0, q4 loop {0,1}. "11110"✓, "11011"→q2✗. Concluído!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 65, isInitial: true,  isFinal: false },
@@ -961,27 +961,27 @@
             { from: 'q4', to: 'q4', symbol: '0,1' },
           ] } },
     ] },
-  { id: 36, label: "L35b", formula: "L = { w âˆˆ {a,b,c,d}* | w tem abc como prefixo }",                 desc: "",                                                                 shortestWord: "abc",      regex: /^abc[abcd]*/,                                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abc","abcd","abcabc"],   rejectedWords: ["Î»","ab","bca"],        hint: "Igual ao 001, mas com um alfabeto maior.",                                                                          successMsg: "Prefixo alfabÃ©tico concluÃ­do.",
+  { id: 36, label: "L35b", formula: "L = { w ∈ {a,b,c,d}* | w tem abc como prefixo }",                 desc: "",                                                                 shortestWord: "abc",      regex: /^abc[abcd]*/,                                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abc","abcd","abcabc"],   rejectedWords: ["λ","ab","bca"],        hint: "Igual ao 001, mas com um alfabeto maior.",                                                                          successMsg: "Prefixo alfabético concluído.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Prefixo ObrigatÃ³rio: "abc"!', dialog: [
-        'L35b: toda palavra aceita DEVE comeÃ§ar com "abc". O resto pode ser qualquer coisa.',
-        '"abcd" â€” vÃ¡lida (comeÃ§a com abc). "bca" â€” invÃ¡lida (1Â° sÃ­mbolo Ã© b, nÃ£o a).',
-        'EstratÃ©gia: 3 estados de checagem (q0â†’q1â†’q2) + estado final q3 com loop.',
-        'Qualquer desvio no prefixo cai em dead-state implÃ­cito. Sem volta!',
+      onStart: { type: 'theory', title: 'Prefixo Obrigatório: "abc"!', dialog: [
+        'L35b: toda palavra aceita DEVE começar com "abc". O resto pode ser qualquer coisa.',
+        '"abcd" — válida (começa com abc). "bca" — inválida (1° símbolo é b, não a).',
+        'Estratégia: 3 estados de checagem (q0→q1→q2) + estado final q3 com loop.',
+        'Qualquer desvio no prefixo cai em dead-state implícito. Sem volta!',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Trilho de Prefixo + Loop Final', dialog: [
-        'q0â€”aâ†’q1â€”bâ†’q2â€”câ†’q3(final). Cadeia linear exata para "abc".',
-        'q3â€”{a,b,c,d}â†’q3: apÃ³s confirmar o prefixo, qualquer sÃ­mbolo Ã© aceito.',
-        'Dead implÃ­cito: q0â€”{b,c,d}, q1â€”{a,c,d}, q2â€”{a,b,d} â€” qualquer desvio rejeita permanentemente.',
+        'q0—a→q1—b→q2—c→q3(final). Cadeia linear exata para "abc".',
+        'q3—{a,b,c,d}→q3: após confirmar o prefixo, qualquer símbolo é aceito.',
+        'Dead implícito: q0—{b,c,d}, q1—{a,c,d}, q2—{a,b,d} — qualquer desvio rejeita permanentemente.',
       ] },
     },
     boardWords: ['abc', 'abcd', 'abcabc'],
     guidedLesson: [
-      { text: 'Prefixo obrigatÃ³rio "abc"!<br/>Aceitar: <b>abc</b>, <b>abcd</b>, <b>abcabc</b>. Rejeitar: Î», ab, bca.',
+      { text: 'Prefixo obrigatório "abc"!<br/>Aceitar: <b>abc</b>, <b>abcd</b>, <b>abcabc</b>. Rejeitar: λ, ab, bca.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>abc</b>: prefixo exato â€” trilho q0â†’q1(a)â†’q2(b)â†’q3(c,final).',
+      { text: 'Foco em <b>abc</b>: prefixo exato — trilho q0→q1(a)→q2(b)→q3(c,final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(a)â†’q2(b)â†’q3(final,c). "abc"âœ“. PrÃ³ximas: "abcd" e "abcabc"!',
+      { text: 'Solução: q0→q1(a)→q2(b)→q3(final,c). "abc"✓. Próximas: "abcd" e "abcabc"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
@@ -994,7 +994,7 @@
             { from: 'q1', to: 'q2', symbol: 'b' },
             { from: 'q2', to: 'q3', symbol: 'c' },
           ] } },
-      { text: 'Foco em <b>abcd</b> e <b>abcabc</b>: q3 lÃª "d" ou "a" â€” sem seta! Preciso de loop q3.',
+      { text: 'Foco em <b>abcd</b> e <b>abcabc</b>: q3 lê "d" ou "a" — sem seta! Preciso de loop q3.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
@@ -1007,7 +1007,7 @@
             { from: 'q1', to: 'q2', symbol: 'b' },
             { from: 'q2', to: 'q3', symbol: 'c' },
           ] } },
-      { text: 'Solução: q3 loop {a,b,c,d}. "abcd"âœ“, "abcabc"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q3 loop {a,b,c,d}. "abcd"✓, "abcabc"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true,  isFinal: false },
@@ -1022,26 +1022,26 @@
             { from: 'q3', to: 'q3', symbol: 'a,b,c,d' },
           ] } },
     ] },
-  { id: 37, label: "L36", formula: "L = { w âˆˆ {a,b,c,d}* | w tem dcba como sufixo }",                  desc: "",                                                                 shortestWord: "dcba",     regex: /^[abcd]*dcba$/,                                             alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dcba","adcba","aadcba"], rejectedWords: ["Î»","dcb","abcd"],      hint: "O caminho final deve obrigatoriamente soletrar 'dcba'.",                                                            successMsg: "Sufixo alfabÃ©tico detectado.",
+  { id: 37, label: "L36", formula: "L = { w ∈ {a,b,c,d}* | w tem dcba como sufixo }",                  desc: "",                                                                 shortestWord: "dcba",     regex: /^[abcd]*dcba$/,                                             alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dcba","adcba","aadcba"], rejectedWords: ["λ","dcb","abcd"],      hint: "O caminho final deve obrigatoriamente soletrar 'dcba'.",                                                            successMsg: "Sufixo alfabético detectado.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Sufixo ObrigatÃ³rio: "dcba"!', dialog: [
+      onStart: { type: 'theory', title: 'Sufixo Obrigatório: "dcba"!', dialog: [
         'L36: a palavra deve TERMINAR com "dcba". O prefixo pode ser qualquer coisa.',
-        '"dcba" âœ“ "adcba" âœ“ "aadcba" âœ“. "Î»", "dcb", "abcd" âœ—.',
-        'TÃ©cnica KMP: 5 estados rastreiam quanto do sufixo "dcba" jÃ¡ foi lido.',
+        '"dcba" ✓ "adcba" ✓ "aadcba" ✓. "λ", "dcb", "abcd" ✗.',
+        'Técnica KMP: 5 estados rastreiam quanto do sufixo "dcba" já foi lido.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Cadeia + Retornos KMP', dialog: [
-        'q0â€”dâ†’q1â€”câ†’q2â€”bâ†’q3â€”aâ†’q4(f). Cadeia principal do sufixo.',
+        'q0—d→q1—c→q2—b→q3—a→q4(f). Cadeia principal do sufixo.',
         'q0 loop a,b,c (prefixo descartado). q1 loop d (novo "d" reinicia a busca).',
-        'Mismatches em q2,q3,q4 voltam para q0 ou q1 â€” nunca desperdiÃ§am um "d".',
+        'Mismatches em q2,q3,q4 voltam para q0 ou q1 — nunca desperdiçam um "d".',
       ] },
     },
     boardWords: ['dcba', 'adcba', 'aadcba'],
     guidedLesson: [
-      { text: 'Sufixo obrigatÃ³rio "dcba"!<br/>Aceitar: <b>dcba</b>, <b>adcba</b>, <b>aadcba</b>. Rejeitar: Î», dcb, abcd.',
+      { text: 'Sufixo obrigatório "dcba"!<br/>Aceitar: <b>dcba</b>, <b>adcba</b>, <b>aadcba</b>. Rejeitar: λ, dcb, abcd.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>dcba</b>: cadeia exata q0â†’q1(d)â†’q2(c)â†’q3(b)â†’q4(a,final).',
+      { text: 'Foco em <b>dcba</b>: cadeia exata q0→q1(d)→q2(c)→q3(b)→q4(a,final).',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(d)â†’q2(c)â†’q3(b)â†’q4(final,a). "dcba"âœ“. PrÃ³ximas: "adcba" e "aadcba"!',
+      { text: 'Solução: q0→q1(d)→q2(c)→q3(b)→q4(final,a). "dcba"✓. Próximas: "adcba" e "aadcba"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
@@ -1056,7 +1056,7 @@
             { from: 'q2', to: 'q3', symbol: 'b' },
             { from: 'q3', to: 'q4', symbol: 'a' },
           ] } },
-      { text: 'Foco em <b>adcba</b> e <b>aadcba</b>: q0 lÃª "a" â€” sem seta! Preciso de loops e retornos KMP.',
+      { text: 'Foco em <b>adcba</b> e <b>aadcba</b>: q0 lê "a" — sem seta! Preciso de loops e retornos KMP.',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
@@ -1071,7 +1071,7 @@
             { from: 'q2', to: 'q3', symbol: 'b' },
             { from: 'q3', to: 'q4', symbol: 'a' },
           ] } },
-      { text: 'Fix KMP: q0 loop a,b,c; q1 loop d; mismatchesâ†’q0/q1. "adcba"âœ“, "aadcba"âœ“ ConcluÃ­do!',
+      { text: 'Fix KMP: q0 loop a,b,c; q1 loop d; mismatches→q0/q1. "adcba"✓, "aadcba"✓ Concluído!',
         boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
@@ -1098,26 +1098,26 @@
           ],
         } },
     ] },
-  { id: 38, label: "L37", formula: "L = { w âˆˆ {a,b,c,d}* | tem abcd ou dcba como subpalavra }",        desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*(abcd|dcba)[abcd]*$/,                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","dcba","aabcdb"],  rejectedWords: ["Î»","abc","dcb"],       hint: "Dois caminhos independentes saindo do inÃ­cio que caem num mesmo estado de vitÃ³ria.",                                successMsg: "BifurcaÃ§Ã£o de subpalavras dominada!",
+  { id: 38, label: "L37", formula: "L = { w ∈ {a,b,c,d}* | tem abcd ou dcba como subpalavra }",        desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*(abcd|dcba)[abcd]*$/,                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","dcba","aabcdb"],  rejectedWords: ["λ","abc","dcb"],       hint: "Dois caminhos independentes saindo do início que caem num mesmo estado de vitória.",                                successMsg: "Bifurcação de subpalavras dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Subpalavra: "abcd" ou "dcba"!', dialog: [
-        'L37: basta conter "abcd" ou "dcba" em qualquer posiÃ§Ã£o da palavra.',
-        '"abcd" âœ“, "dcba" âœ“, "aabcdb" âœ“ (contÃ©m "abcd"). "abc", "dcb" âœ— (incompletos).',
+        'L37: basta conter "abcd" ou "dcba" em qualquer posição da palavra.',
+        '"abcd" ✓, "dcba" ✓, "aabcdb" ✓ (contém "abcd"). "abc", "dcb" ✗ (incompletos).',
         'Dois caminhos independentes do q0 convergem para o mesmo estado final q4.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'BifurcaÃ§Ã£o de Dois Caminhos', dialog: [
-        'Caminho 1 (topo): q0â€”aâ†’q1â€”bâ†’q2â€”câ†’q3â€”dâ†’q4(f). "abcd" aceito!',
-        'Caminho 2 (base): q0â€”dâ†’q5â€”câ†’q6â€”bâ†’q7â€”aâ†’q4(f). "dcba" aceito!',
+      onDrawGraph: { type: 'mechanic', title: 'Bifurcação de Dois Caminhos', dialog: [
+        'Caminho 1 (topo): q0—a→q1—b→q2—c→q3—d→q4(f). "abcd" aceito!',
+        'Caminho 2 (base): q0—d→q5—c→q6—b→q7—a→q4(f). "dcba" aceito!',
         'q4 loop em tudo. KMP garante que mismatches reiniciam corretamente nos dois caminhos.',
       ] },
     },
     boardWords: ['abcd', 'dcba', 'aabcdb'],
     guidedLesson: [
-      { text: 'Subpalavra "abcd" ou "dcba"!<br/>Aceitar: <b>abcd</b>, <b>dcba</b>, <b>aabcdb</b>. Rejeitar: Î», abc, dcb.',
+      { text: 'Subpalavra "abcd" ou "dcba"!<br/>Aceitar: <b>abcd</b>, <b>dcba</b>, <b>aabcdb</b>. Rejeitar: λ, abc, dcb.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>abcd</b> e <b>dcba</b>: dois caminhos opostos â€” q0â†’{q1-q4} e q0â†’{q5-q4}.',
+      { text: 'Foco em <b>abcd</b> e <b>dcba</b>: dois caminhos opostos — q0→{q1-q4} e q0→{q5-q4}.',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: caminho abcd (topo) e dcba (base) convergem em q4(final). "abcd"âœ“, "dcba"âœ“. PrÃ³xima: "aabcdb"!',
+      { text: 'Solução: caminho abcd (topo) e dcba (base) convergem em q4(final). "abcd"✓, "dcba"✓. Próxima: "aabcdb"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
@@ -1139,7 +1139,7 @@
             { from: 'q6', to: 'q7', symbol: 'b' },
             { from: 'q7', to: 'q4', symbol: 'a' },
           ] } },
-      { text: 'Foco em <b>aabcdb</b>: q1 lÃª 2Â° "a" â€” sem seta! Preciso de loops e retornos KMP.',
+      { text: 'Foco em <b>aabcdb</b>: q1 lê 2° "a" — sem seta! Preciso de loops e retornos KMP.',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false },
@@ -1161,7 +1161,7 @@
             { from: 'q6', to: 'q7', symbol: 'b' },
             { from: 'q7', to: 'q4', symbol: 'a' },
           ] } },
-      { text: 'Fix KMP: q4 loop {a,b,c,d}, loops em q0, retornos parciais. "aabcdb"âœ“ ConcluÃ­do!',
+      { text: 'Fix KMP: q4 loop {a,b,c,d}, loops em q0, retornos parciais. "aabcdb"✓ Concluído!',
         boardDoneUpTo: 3,
         stateUpdate: {
           nodes: [
@@ -1204,27 +1204,27 @@
           ],
         } },
     ] },
-  { id: 39, label: "L38", formula: "L = { (a+b)* | qtd de 'a' Ã© par, qtd de 'b' Ã© Ã­mpar }",            desc: "",                                                                 shortestWord: "b",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["Î»","a","ab"],          hint: "VocÃª precisa de 4 estados para controlar: Par/Par, Par/Ãmpar, Ãmpar/Par, Ãmpar/Ãmpar.",                             successMsg: "Quadrante de paridade solucionado.",
+  { id: 39, label: "L38", formula: "L = { (a+b)* | qtd de 'a' é par, qtd de 'b' é ímpar }",            desc: "",                                                                 shortestWord: "b",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["λ","a","ab"],          hint: "Você precisa de 4 estados para controlar: Par/Par, Par/Ímpar, Ímpar/Par, Ímpar/Ímpar.",                             successMsg: "Quadrante de paridade solucionado.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Paridade Dupla: a-par e b-Ã­mpar!', dialog: [
-        'L38: contar a\'s e b\'s separadamente. Aceito quando #a par E #b Ã­mpar.',
-        '"b" âœ“ (0a=par, 1b=Ã­mpar). "aab" âœ“ (2a=par, 1b=Ã­mpar). "ab" âœ— (1a=Ã­mpar, 1b=Ã­mpar).',
-        '4 combinaÃ§Ãµes de paridade â†’ 4 estados: (p,p)=q0, (p,Ã­)=q1, (Ã­,p)=q2, (Ã­,Ã­)=q3.',
+      onStart: { type: 'theory', title: 'Paridade Dupla: a-par e b-ímpar!', dialog: [
+        'L38: contar a\'s e b\'s separadamente. Aceito quando #a par E #b ímpar.',
+        '"b" ✓ (0a=par, 1b=ímpar). "aab" ✓ (2a=par, 1b=ímpar). "ab" ✗ (1a=ímpar, 1b=ímpar).',
+        '4 combinações de paridade → 4 estados: (p,p)=q0, (p,í)=q1, (í,p)=q2, (í,í)=q3.',
         'Cada \'a\' lido troca a paridade de a. Cada \'b\' lido troca a paridade de b.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '4 Estados em Quadrado', dialog: [
-        'q0(ini)=(p,p), q1(f)=(p,Ã­), q2=(Ã­,p), q3=(Ã­,Ã­). SÃ³ q1 Ã© final.',
-        'Ler \'b\': q0â†”q1 e q2â†”q3 (troca bit-b). Ler \'a\': q0â†”q2 e q1â†”q3 (troca bit-a).',
-        '"aab": q0â€”aâ†’q2â€”aâ†’q0â€”bâ†’q1(f) âœ“. "ab": q0â€”aâ†’q2â€”bâ†’q3 (nÃ£o-final) âœ—.',
+        'q0(ini)=(p,p), q1(f)=(p,í), q2=(í,p), q3=(í,í). Só q1 é final.',
+        'Ler \'b\': q0↔q1 e q2↔q3 (troca bit-b). Ler \'a\': q0↔q2 e q1↔q3 (troca bit-a).',
+        '"aab": q0—a→q2—a→q0—b→q1(f) ✓. "ab": q0—a→q2—b→q3 (não-final) ✗.',
       ] },
     },
     boardWords: ['b', 'bbb', 'aab'],
     guidedLesson: [
-      { text: 'Paridade dupla: #a par AND #b Ã­mpar!<br/>Aceitar: <b>b</b>, <b>bbb</b>, <b>aab</b>. Rejeitar: Î», a, ab.',
+      { text: 'Paridade dupla: #a par AND #b ímpar!<br/>Aceitar: <b>b</b>, <b>bbb</b>, <b>aab</b>. Rejeitar: λ, a, ab.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>b</b> e <b>bbb</b>: raia do b â€” q0(ini)â†”q1(final) via b resolve as duas!',
+      { text: 'Foco em <b>b</b> e <b>bbb</b>: raia do b — q0(ini)↔q1(final) via b resolve as duas!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q1(b,final)â†’q0(b). "b"=q0â†’q1âœ“, "bbb"=q0â†’q1â†’q0â†’q1âœ“. PrÃ³xima: "aab"!',
+      { text: 'Solução: q0→q1(b,final)→q0(b). "b"=q0→q1✓, "bbb"=q0→q1→q0→q1✓. Próxima: "aab"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
@@ -1234,7 +1234,7 @@
             { from: 'q0', to: 'q1', symbol: 'b' },
             { from: 'q1', to: 'q0', symbol: 'b' },
           ] } },
-      { text: 'Foco em <b>aab</b>: q0 lÃª "a" â€” sem seta! Preciso da raia do a (q2, q3).',
+      { text: 'Foco em <b>aab</b>: q0 lê "a" — sem seta! Preciso da raia do a (q2, q3).',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
@@ -1244,7 +1244,7 @@
             { from: 'q0', to: 'q1', symbol: 'b' },
             { from: 'q1', to: 'q0', symbol: 'b' },
           ] } },
-      { text: 'Solução: q0â†”q2(a), q1â†”q3(a), q2â†”q3(b). "aab"=q0â†’q2â†’q0â†’q1âœ“. "ab"â†’q3(nÃ£o-final)âœ—. ConcluÃ­do!',
+      { text: 'Solução: q0↔q2(a), q1↔q3(a), q2↔q3(b). "aab"=q0→q2→q0→q1✓. "ab"→q3(não-final)✗. Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
@@ -1263,27 +1263,27 @@
             { from: 'q3', to: 'q2', symbol: 'b' },
           ] } },
     ] },
-  { id: 40, label: "L39", formula: "L = { (a+b)* | qtd de 'a' Ã© Ã­mpar, qtd de 'b' Ã© Ã­mpar }",          desc: "",                                                                 shortestWord: "ab",       regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===1 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["ab","abbb","aaabbb"],     rejectedWords: ["Î»","a","b"],           hint: "Parecido com a anterior, mas o estado de aceitaÃ§Ã£o muda.",                                                          successMsg: "Paridade Ã­mpar cruzada!",
+  { id: 40, label: "L39", formula: "L = { (a+b)* | qtd de 'a' é ímpar, qtd de 'b' é ímpar }",          desc: "",                                                                 shortestWord: "ab",       regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===1 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["ab","abbb","aaabbb"],     rejectedWords: ["λ","a","b"],           hint: "Parecido com a anterior, mas o estado de aceitação muda.",                                                          successMsg: "Paridade ímpar cruzada!",
     tutorials: {
-      onStart: { type: 'theory', title: 'Paridade Dupla: a-Ã­mpar e b-Ã­mpar!', dialog: [
-        'L39: aceito quando #a Ã­mpar E #b Ã­mpar. Estado final: q3=(Ã­,Ã­) no canto oposto de q0.',
-        '"ab" âœ“ (1a=Ã­mpar, 1b=Ã­mpar). "abbb" âœ“ (1a=Ã­mpar, 3b=Ã­mpar). "a" âœ— (1a=Ã­mpar, 0b=par).',
-        '4 estados de paridade: q0=(p,p), q1=(p,Ã­), q2=(Ã­,p), q3=(Ã­,Ã­). SÃ³ q3 Ã© final.',
-        'Mesmo quadrado da L38, mas o estado de aceitaÃ§Ã£o muda de q1 para q3.',
+      onStart: { type: 'theory', title: 'Paridade Dupla: a-ímpar e b-ímpar!', dialog: [
+        'L39: aceito quando #a ímpar E #b ímpar. Estado final: q3=(í,í) no canto oposto de q0.',
+        '"ab" ✓ (1a=ímpar, 1b=ímpar). "abbb" ✓ (1a=ímpar, 3b=ímpar). "a" ✗ (1a=ímpar, 0b=par).',
+        '4 estados de paridade: q0=(p,p), q1=(p,í), q2=(í,p), q3=(í,í). Só q3 é final.',
+        'Mesmo quadrado da L38, mas o estado de aceitação muda de q1 para q3.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '4 Estados â€” Quadrante Oposto!', dialog: [
-        'q0(ini)=(p,p), q1=(p,Ã­), q2=(Ã­,p), q3(f)=(Ã­,Ã­). SÃ³ q3 Ã© final.',
-        'Ler \'a\': q0â†”q2 e q1â†”q3 (troca bit-a). Ler \'b\': q0â†”q1 e q2â†”q3 (troca bit-b).',
-        '"ab": q0â€”aâ†’q2â€”bâ†’q3(f) âœ“. "aaabbb": 3a e 3b = Ã­mpar/Ã­mpar â†’ q3(f) âœ“.',
+      onDrawGraph: { type: 'mechanic', title: '4 Estados — Quadrante Oposto!', dialog: [
+        'q0(ini)=(p,p), q1=(p,í), q2=(í,p), q3(f)=(í,í). Só q3 é final.',
+        'Ler \'a\': q0↔q2 e q1↔q3 (troca bit-a). Ler \'b\': q0↔q1 e q2↔q3 (troca bit-b).',
+        '"ab": q0—a→q2—b→q3(f) ✓. "aaabbb": 3a e 3b = ímpar/ímpar → q3(f) ✓.',
       ] },
     },
     boardWords: ['ab', 'abbb', 'aaabbb'],
     guidedLesson: [
-      { text: 'Paridade dupla: #a Ã­mpar AND #b Ã­mpar!<br/>Aceitar: <b>ab</b>, <b>abbb</b>, <b>aaabbb</b>. Rejeitar: Î», a, b.',
+      { text: 'Paridade dupla: #a ímpar AND #b ímpar!<br/>Aceitar: <b>ab</b>, <b>abbb</b>, <b>aaabbb</b>. Rejeitar: λ, a, b.',
         boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>ab</b>: 1a e 1b â€” q0â†’q2(a)â†’q3(b,final). Quadrado parcial!',
+      { text: 'Foco em <b>ab</b>: 1a e 1b — q0→q2(a)→q3(b,final). Quadrado parcial!',
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0â†’q2(a)â†’q3(final,b). "ab"=q0â†’q2â†’q3âœ“. PrÃ³ximas: "abbb" e "aaabbb"!',
+      { text: 'Solução: q0→q2(a)→q3(final,b). "ab"=q0→q2→q3✓. Próximas: "abbb" e "aaabbb"!',
         boardDoneUpTo: 1, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },
@@ -1307,7 +1307,7 @@
             { from: 'q0', to: 'q2', symbol: 'a' },
             { from: 'q2', to: 'q3', symbol: 'b' },
           ] } },
-      { text: 'Solução: q0â†”q1(b), q2â†”q0(a), q1â†”q3(a), q2â†”q3(b). "abbb"âœ“, "aaabbb"âœ“ ConcluÃ­do!',
+      { text: 'Solução: q0↔q1(b), q2↔q0(a), q1↔q3(a), q2↔q3(b). "abbb"✓, "aaabbb"✓ Concluído!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 25, y: 35, isInitial: true,  isFinal: false },

@@ -1,235 +1,245 @@
-import { useState } from 'react';
-import { pairKey } from '../utils/dfaAlgorithms';
+import { useState, useMemo } from 'react';
+import { pairKey, computeTrivialTable } from '../utils/dfaAlgorithms';
+import TriangularTable from './TriangularTable';
+
+// Sub-passos da construção da tabela (espelham os passos 2→5 do algoritmo)
+const SUBSTEPS = [
+  { id: 'PARES',      label: '2 · Pares'      },
+  { id: 'TRIVIAL',    label: '3 · Trivial'    },
+  { id: 'PROPAGACAO', label: '4 · Propagação' },
+  { id: 'EQUIV',      label: '5 · Grupos'     },
+];
 
 export default function BuildPhase({
-  states, correctTable, exercise, updateProgress, showBanner, showProf, onResult,
+  states, alphabet, finalStates, transitions, correctTable,
+  exercise, updateProgress, showBanner, showProf, onResult,
 }) {
-  const [buildCells,        setBuildCells]        = useState({});
-  const [buildWrongCells,   setBuildWrongCells]   = useState(new Set());
-  const [buildAxisX,        setBuildAxisX]        = useState(['']);
-  const [buildAxisY,        setBuildAxisY]        = useState(['']);
-  const [buildSelfPairs,    setBuildSelfPairs]    = useState(new Set());
-  const [buildInvalidInputs, setBuildInvalidInputs] = useState(new Set());
+  const [step,        setStep]        = useState('PARES');
+  const [cells,       setCells]       = useState({});            // { pairKey: bool }
+  const [wrongCells,  setWrongCells]  = useState(new Set());
+  const [lockedCells, setLockedCells] = useState(new Set());     // travados pelo passo anterior
 
-  const buildAllFilled = buildAxisX.every(s => s.trim()) && buildAxisY.every(s => s.trim());
-
-  const handleValidateBuild = () => {
-    const xT = buildAxisX.map(s => s.trim());
-    const yT = buildAxisY.map(s => s.trim());
-    const n  = states.length;
-
-    if (xT.length !== n - 1 || yT.length !== n - 1) {
-      showBanner('A tabela triangular deve ter (quantidade de estados − 1) posições em cada eixo.', 'error');
-      return;
+  // δ: from → symbol → to (para a dica de propagação)
+  const transTable = useMemo(() => {
+    const map = {};
+    for (const t of transitions) {
+      (map[t.from] = map[t.from] || {})[t.symbol] = t.to;
     }
+    return map;
+  }, [transitions]);
 
-    const stateSet   = new Set(states);
-    const invalidKeys = new Set();
-    xT.forEach((s, i) => { if (s && !stateSet.has(s)) invalidKeys.add(`x-${i}`); });
-    yT.forEach((s, i) => { if (s && !stateSet.has(s)) invalidKeys.add(`y-${i}`); });
-    if (invalidKeys.size > 0) {
-      setBuildInvalidInputs(invalidKeys);
-      showBanner('Estado inválido — verifique os campos em vermelho.', 'error');
-      return;
-    }
-    setBuildInvalidInputs(new Set());
+  const allPairs = useMemo(() => {
+    const pairs = [];
+    for (let i = 0; i < states.length; i++)
+      for (let j = i + 1; j < states.length; j++)
+        pairs.push(pairKey(states[i], states[j]));
+    return pairs;
+  }, [states]);
 
-    if (new Set(xT).size !== xT.length) { showBanner('O eixo X tem estados repetidos.', 'error'); return; }
-    if (new Set(yT).size !== yT.length) { showBanner('O eixo Y tem estados repetidos.', 'error'); return; }
+  const trivialTable = useMemo(
+    () => computeTrivialTable(states, finalStates),
+    [states, finalStates]
+  );
 
-    const xSet = new Set(xT), ySet = new Set(yT);
-    const setsEq     = (a, b) => a.size === b.size && [...a].every(v => b.has(v));
-    const canonXSet  = new Set(states.slice(0, -1));
-    const canonYSet  = new Set(states.slice(1));
+  const toggleCell = (key) => {
+    setCells(prev => ({ ...prev, [key]: !prev[key] }));
+    setWrongCells(new Set());
+  };
 
-    if (!((setsEq(xSet, canonXSet) && setsEq(ySet, canonYSet)) ||
-          (setsEq(xSet, canonYSet) && setsEq(ySet, canonXSet)))) {
-      showBanner('Eixos incorretos. Um eixo deve excluir o primeiro estado; o outro, o último.', 'error');
-      return;
-    }
-
-    const selfPairs = new Set();
-    for (let ri = 0; ri < yT.length; ri++)
-      for (let ci = 0; ci <= ri; ci++)
-        if (yT[ri] === xT[ci]) selfPairs.add(`${ri},${ci}`);
-
-    if (selfPairs.size > 0) {
-      setBuildSelfPairs(selfPairs);
-      showBanner(
-        `Autopar: ${[...selfPairs].map(k => { const [r,c]=k.split(','); return `${yT[r]}↔${xT[c]}`; }).join(', ')} — a tabela triangular só compara estados DIFERENTES.`,
-        'error'
-      );
-      return;
-    }
-    setBuildSelfPairs(new Set());
-    setBuildInvalidInputs(new Set());
-
+  // Comparação genérica do estado atual contra um gabarito (subconjunto de pares)
+  const diffAgainst = (targetTable, onlyKeys = allPairs) => {
     const wrong = new Set();
-    for (let ri = 0; ri < yT.length; ri++) {
-      for (let ci = 0; ci <= ri; ci++) {
-        const cellKey = `${ri},${ci}`;
-        if (yT[ri] === xT[ci]) continue;
-        const pair     = pairKey(yT[ri], xT[ci]);
-        const shouldBe = !!correctTable[pair];
-        const is       = !!buildCells[cellKey];
-        if (shouldBe !== is) wrong.add(cellKey);
+    for (const key of onlyKeys) {
+      const should = !!targetTable[key];
+      const is     = !!cells[key];
+      if (should !== is) wrong.add(key);
+    }
+    return wrong;
+  };
+
+  const feedbackFor = (wrong) => {
+    const extras  = [...wrong].filter(k => !!cells[k]).length;
+    const missing = wrong.size - extras;
+    const parts = [];
+    if (extras  > 0) parts.push(`${extras} marcação${extras > 1 ? 'ões' : ''} a mais`);
+    if (missing > 0) parts.push(`${missing} par${missing > 1 ? 'es' : ''} faltando`);
+    return parts.join(' · ');
+  };
+
+  // ── Passo 3: marcação trivial ────────────────────────────────────────────────
+  const verifyTrivial = () => {
+    const wrong = diffAgainst(trivialTable);
+    if (wrong.size > 0) {
+      setWrongCells(wrong);
+      showProf(feedbackFor(wrong), 8000);
+      showBanner('Passo 1 incorreto — marque só os pares final × não-final.', 'error');
+      return;
+    }
+    // Trava os pares triviais e segue
+    setWrongCells(new Set());
+    setLockedCells(new Set(allPairs.filter(k => trivialTable[k])));
+    setStep('PROPAGACAO');
+    showBanner('Passo 1 ✓ — pares triviais marcados!', 'success');
+    showProf('Agora propague: pares cujo destino já está marcado também ficam marcados.', 7000);
+  };
+
+  // ── Passo 4: propagação ──────────────────────────────────────────────────────
+  const verifyPropagation = () => {
+    const wrong = diffAgainst(correctTable);
+    if (wrong.size > 0) {
+      setWrongCells(wrong);
+      showProf(feedbackFor(wrong), 8000);
+      showBanner('Passo 2 incompleto — reveja os pares em vermelho.', 'error');
+      return;
+    }
+    setWrongCells(new Set());
+    setLockedCells(new Set(allPairs));      // tabela completa: tudo travado
+    setStep('EQUIV');
+    updateProgress(`afd-min-${exercise.id}`, 3);
+    showBanner('Tabela completa! ★★★', 'success');
+  };
+
+  const propagationHint = () => {
+    for (const key of allPairs) {
+      if (cells[key]) continue;
+      const [p, q] = key.split(',');
+      for (const sym of alphabet) {
+        const tp = transTable[p]?.[sym];
+        const tq = transTable[q]?.[sym];
+        if (!tp || !tq || tp === tq) continue;
+        if (cells[pairKey(tp, tq)]) {
+          showProf(`Veja (${p},${q}): com '${sym}' vão para (${tp},${tq}), que já está marcado × → marque (${p},${q}).`, 9000);
+          return;
+        }
       }
     }
-
-    if (wrong.size > 0) {
-      setBuildWrongCells(wrong);
-      const extras  = [...wrong].filter(k => !!buildCells[k]).length;
-      const missing = wrong.size - extras;
-      const parts = [];
-      if (extras  > 0) parts.push(`${extras} marcação${extras>1?'ões':''} indevida${extras>1?'s':''}`);
-      if (missing > 0) parts.push(`${missing} par${missing>1?'es':''} distinguível${missing>1?'is':''} sem marcação`);
-      showProf(parts.join(' · '), 8000);
-      showBanner('Tabela incorreta — veja as células em vermelho.', 'error');
-      return;
-    }
-
-    setBuildWrongCells(new Set());
-    updateProgress(`afd-min-${exercise.id}`, 3);
-    onResult();
-    showBanner('Correto! 3 estrelas! ★★★', 'success');
+    showProf('Nenhuma propagação restante — se marcou todos, clique em Verificar Passo 2.', 7000);
   };
+
+  // ── Passo 5: grupos de equivalência (pares NÃO marcados) ──────────────────────
+  const groups = useMemo(() => {
+    if (step !== 'EQUIV') return [];
+    const parent = {};
+    states.forEach(s => { parent[s] = s; });
+    const find = s => { while (parent[s] !== s) { parent[s] = parent[parent[s]]; s = parent[s]; } return s; };
+    const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[rb] = ra; };
+    for (const key of allPairs) {
+      if (!cells[key]) { const [p, q] = key.split(','); union(p, q); }
+    }
+    const byRoot = {};
+    states.forEach(s => { (byRoot[find(s)] = byRoot[find(s)] || []).push(s); });
+    return Object.values(byRoot)
+      .sort((a, b) => states.indexOf(a[0]) - states.indexOf(b[0]));
+  }, [step, cells, states, allPairs]);
+
+  const finalSet = new Set(finalStates);
 
   return (
     <div className="min-panel">
-      <div className="section-header" style={{ fontSize:11 }}>Construir Tabela</div>
-      <p style={{ fontSize:11, color:'#555', marginBottom:0 }}>
-        Monte a tabela triangular: defina o tamanho (+ / −), preencha os eixos com os estados e clique nas células para marcar <b>×</b> os pares distinguíveis. Depois clique em <b>Verificar</b>.
-      </p>
+      <div className="section-header" style={{ fontSize: 11 }}>Construir Tabela de Pares</div>
 
-      {/* Controles de tamanho */}
-      <div style={{ display:'flex', gap:12, fontSize:11, flexWrap:'wrap' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-          <span style={{ fontWeight:900 }}>Linhas (Y):</span>
-          <button onClick={() => { setBuildAxisY(p => [...p, '']); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); setBuildCells({}); setBuildWrongCells(new Set()); }}
-            style={{ width:22, height:22, fontWeight:900, fontSize:14, lineHeight:1,
-              border:'2px solid #000', borderRadius:4, background:'#bbf7d0', cursor:'pointer' }}>+</button>
-          <button onClick={() => { setBuildAxisY(p => p.length > 1 ? p.slice(0, -1) : p); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); setBuildCells({}); setBuildWrongCells(new Set()); }}
-            disabled={buildAxisY.length <= 1}
-            style={{ width:22, height:22, fontWeight:900, fontSize:16, lineHeight:1,
-              border:'2px solid #000', borderRadius:4,
-              background: buildAxisY.length <= 1 ? '#eee' : '#fca5a5',
-              cursor: buildAxisY.length <= 1 ? 'not-allowed' : 'pointer' }}>−</button>
-          <span style={{ fontWeight:700 }}>{buildAxisY.length}</span>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-          <span style={{ fontWeight:900 }}>Colunas (X):</span>
-          <button onClick={() => { setBuildAxisX(p => [...p, '']); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); setBuildCells({}); setBuildWrongCells(new Set()); }}
-            style={{ width:22, height:22, fontWeight:900, fontSize:14, lineHeight:1,
-              border:'2px solid #000', borderRadius:4, background:'#bbf7d0', cursor:'pointer' }}>+</button>
-          <button onClick={() => { setBuildAxisX(p => p.length > 1 ? p.slice(0, -1) : p); setBuildSelfPairs(new Set()); setBuildInvalidInputs(new Set()); setBuildCells({}); setBuildWrongCells(new Set()); }}
-            disabled={buildAxisX.length <= 1}
-            style={{ width:22, height:22, fontWeight:900, fontSize:16, lineHeight:1,
-              border:'2px solid #000', borderRadius:4,
-              background: buildAxisX.length <= 1 ? '#eee' : '#fca5a5',
-              cursor: buildAxisX.length <= 1 ? 'not-allowed' : 'pointer' }}>−</button>
-          <span style={{ fontWeight:700 }}>{buildAxisX.length}</span>
-        </div>
+      {/* Stepper dos sub-passos */}
+      <div className="min-substeps">
+        {SUBSTEPS.map((s, i) => {
+          const curIdx  = SUBSTEPS.findIndex(x => x.id === step);
+          const isCur   = s.id === step;
+          const isDone  = i < curIdx;
+          return (
+            <span key={s.id}
+              className={`min-substep${isCur ? ' current' : ''}${isDone ? ' done' : ''}`}>
+              {s.label}
+            </span>
+          );
+        })}
       </div>
 
-      {/* Tabela triangular com inputs */}
-      <div className="min-table-scroll">
-        <table className="min-tri-table">
-          <tbody>
-            {buildAxisY.map((rowS, ri) => (
-              <tr key={ri}>
-                <th className="min-th" style={{
-                  background: buildInvalidInputs.has(`y-${ri}`) ? '#fca5a5' : '#fef9c3',
-                  padding:0,
-                  border: buildInvalidInputs.has(`y-${ri}`) ? '2.5px solid #dc2626' : undefined,
-                }}>
-                  <input
-                    value={rowS}
-                    onChange={e => {
-                      const v = e.target.value;
-                      setBuildAxisY(prev => { const n=[...prev]; n[ri]=v; return n; });
-                      setBuildSelfPairs(new Set());
-                      setBuildInvalidInputs(new Set());
-                      setBuildCells({});
-                      setBuildWrongCells(new Set());
-                    }}
-                    style={{ width:34, textAlign:'center', border:'none', background:'transparent',
-                      fontFamily:"'Comic Sans MS','Comic Neue',cursive,sans-serif",
-                      fontWeight:900, fontSize:11, outline:'none',
-                      color: buildInvalidInputs.has(`y-${ri}`) ? '#dc2626' : undefined,
-                    }}
-                    placeholder="?"
-                    maxLength={3}
-                  />
-                </th>
-                {Array(ri + 1).fill(0).map((_, ci) => {
-                  const cellKey = `${ri},${ci}`;
-                  const isSelf   = buildSelfPairs.has(cellKey);
-                  const isMarked = !!buildCells[cellKey];
-                  const isWrong  = buildWrongCells.has(cellKey);
-                  return (
-                    <td key={ci}
-                      className={`min-cell${isMarked ? ' marked' : ''}${isWrong ? ' wrong' : ''}`}
-                      style={{
-                        background: isSelf ? '#fca5a5' : undefined,
-                        cursor: isSelf ? 'default' : 'pointer',
-                        color: isSelf ? '#dc2626' : undefined,
-                        border: isSelf ? '2.5px solid #dc2626' : undefined,
-                      }}
-                      onClick={() => {
-                        if (isSelf) return;
-                        setBuildCells(prev => ({ ...prev, [cellKey]: !prev[cellKey] }));
-                        setBuildWrongCells(new Set());
-                      }}
-                    >{isSelf || isMarked ? '×' : ''}</td>
-                  );
-                })}
-              </tr>
+      {/* ── PARES ── */}
+      {step === 'PARES' && (
+        <>
+          <p className="min-step-text">
+            Esta é a <b>tabela triangular</b> com todos os pares {'{p, q}'} de estados
+            distintos alcançáveis ({allPairs.length} pares). Cada célula compara dois estados —
+            vamos descobrir quais são <b>distinguíveis</b>.
+          </p>
+          <TriangularTable states={states} userTable={{}} onToggle={() => {}} readOnly />
+          <button className="add-test-btn min-step-btn" style={{ background: '#4ade80' }}
+            onClick={() => setStep('TRIVIAL')}>
+            Iniciar Passo 1: Marcação Trivial →
+          </button>
+        </>
+      )}
+
+      {/* ── TRIVIAL (Passo 3) ── */}
+      {step === 'TRIVIAL' && (
+        <>
+          <p className="min-step-text">
+            <b>Passo 1 — Marcação trivial.</b> Marque com <b>×</b> todo par em que
+            <b> um estado é final e o outro não</b> (eles nunca serão equivalentes).
+          </p>
+          <div className="min-final-badges">
+            <span style={{ fontWeight: 900, fontSize: 10 }}>Finais:</span>
+            {states.map(s => (
+              <span key={s} className={`min-state-badge${finalSet.has(s) ? ' final' : ''}`}>
+                {s}{finalSet.has(s) ? ' ✓' : ''}
+              </span>
             ))}
-          </tbody>
-          <tfoot>
-            <tr>
-              <th className="min-corner" />
-              {buildAxisX.map((s, i) => (
-                <th key={i} className="min-th" style={{
-                  background: buildInvalidInputs.has(`x-${i}`) ? '#fca5a5' : '#fef9c3',
-                  padding:0,
-                  border: buildInvalidInputs.has(`x-${i}`) ? '2.5px solid #dc2626' : undefined,
-                }}>
-                  <input
-                    value={s}
-                    onChange={e => {
-                      const v = e.target.value;
-                      setBuildAxisX(prev => { const n=[...prev]; n[i]=v; return n; });
-                      setBuildSelfPairs(new Set());
-                      setBuildInvalidInputs(new Set());
-                      setBuildCells({});
-                      setBuildWrongCells(new Set());
-                    }}
-                    style={{ width:34, textAlign:'center', border:'none', background:'transparent',
-                      fontFamily:"'Comic Sans MS','Comic Neue',cursive,sans-serif",
-                      fontWeight:900, fontSize:11, outline:'none',
-                      color: buildInvalidInputs.has(`x-${i}`) ? '#dc2626' : undefined,
-                    }}
-                    placeholder="?"
-                    maxLength={3}
-                  />
-                </th>
-              ))}
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+          </div>
+          <TriangularTable states={states} userTable={cells} onToggle={toggleCell}
+            wrongCells={wrongCells} />
+          <button className="add-test-btn min-step-btn" style={{ background: '#fde047' }}
+            onClick={verifyTrivial}>
+            Verificar Passo 1 ✓
+          </button>
+        </>
+      )}
 
-      <button className="add-test-btn"
-        style={{ alignSelf:'stretch', padding:'10px', fontSize:13,
-          fontWeight:'bold', marginTop:4,
-          background: buildAllFilled ? '#4ade80' : '#d1d5db',
-          cursor: buildAllFilled ? 'pointer' : 'not-allowed' }}
-        onClick={handleValidateBuild}
-        disabled={!buildAllFilled}
-      >
-        Verificar Tabela ✓
-      </button>
+      {/* ── PROPAGACAO (Passo 4) ── */}
+      {step === 'PROPAGACAO' && (
+        <>
+          <p className="min-step-text">
+            <b>Passo 2 — Propagação.</b> Para cada par ainda não marcado, leia cada símbolo:
+            se o par de <b>destino</b> {'{δ(p,a), δ(q,a)}'} já estiver marcado, marque este par
+            também. Repita até nada mudar. <i>(células cinza = travadas do passo 1)</i>
+          </p>
+          <TriangularTable states={states} userTable={cells} onToggle={toggleCell}
+            wrongCells={wrongCells} lockedCells={lockedCells} />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="add-test-btn min-step-btn" style={{ background: '#e0e7ff', flex: '0 0 auto' }}
+              onClick={propagationHint}>
+              💡 Dica
+            </button>
+            <button className="add-test-btn min-step-btn" style={{ background: '#fde047', flex: 1 }}
+              onClick={verifyPropagation}>
+              Verificar Passo 2 ✓
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── EQUIV (Passo 5) ── */}
+      {step === 'EQUIV' && (
+        <>
+          <p className="min-step-text">
+            <b>Passo 3 — Agrupamento.</b> Os pares que sobraram <b>sem ×</b> (marcados ≡) são
+            <b> equivalentes</b>. Estados ligados por equivalência viram um só:
+          </p>
+          <TriangularTable states={states} userTable={cells} onToggle={() => {}}
+            lockedCells={lockedCells} highlightEquiv />
+          <div className="min-groups">
+            {groups.map((members, i) => (
+              <div key={i} className="min-group-row">
+                <span className="min-group-members">{'{'}{members.join(', ')}{'}'}</span>
+                <span className="min-group-arrow">→</span>
+                <span className="min-group-rep">{members.join('')}</span>
+              </div>
+            ))}
+          </div>
+          <button className="add-test-btn min-step-btn" style={{ background: '#a78bfa' }}
+            onClick={onResult}>
+            Ver AFD Minimizado →
+          </button>
+        </>
+      )}
     </div>
   );
 }

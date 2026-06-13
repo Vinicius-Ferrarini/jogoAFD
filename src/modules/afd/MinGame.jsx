@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import './AFDPart1.css';
 import './AFDMinimizer.css';
-import { computeDistTable, computeMinimized } from './utils/dfaAlgorithms';
+import { computeDistTable, computeMinimized, computeReachable } from './utils/dfaAlgorithms';
 import GraphView          from './components/GraphView';
 import RequirementsPhase  from './components/RequirementsPhase';
 import BuildPhase         from './components/BuildPhase';
@@ -45,6 +45,15 @@ export default function MinGame({ exercise, progress, onBack, updateProgress, sh
     return map;
   }, [states, alphabet, transitions]);
 
+  // ── Passo 1: descarta estados inalcançáveis antes de minimizar ──
+  const reachable = useMemo(
+    () => computeReachable(states, initialState, transitions),
+    [states, initialState, transitions]
+  );
+  const rStates      = useMemo(() => states.filter(s => reachable.has(s)),       [states, reachable]);
+  const rFinals      = useMemo(() => finalStates.filter(s => reachable.has(s)),  [finalStates, reachable]);
+  const rTransitions = useMemo(() => transitions.filter(t => reachable.has(t.from)), [transitions, reachable]);
+
   const origNodes = useMemo(() => states.map(s => ({
     id: s, label: s,
     isInitial: s === initialState,
@@ -52,13 +61,13 @@ export default function MinGame({ exercise, progress, onBack, updateProgress, sh
   })), [states, initialState, finalStates]);
 
   const correctTable = useMemo(
-    () => computeDistTable(states, finalStates, transitions, alphabet),
-    [states, finalStates, transitions, alphabet]
+    () => computeDistTable(rStates, rFinals, rTransitions, alphabet),
+    [rStates, rFinals, rTransitions, alphabet]
   );
 
   const minimized = useMemo(
-    () => computeMinimized(states, initialState, finalStates, transitions, alphabet, correctTable),
-    [states, initialState, finalStates, transitions, alphabet, correctTable]
+    () => computeMinimized(rStates, initialState, rFinals, rTransitions, alphabet, correctTable),
+    [rStates, initialState, rFinals, rTransitions, alphabet, correctTable]
   );
 
   const stars = progress[`afd-min-${exercise.id}`]?.stars || 0;
@@ -133,7 +142,10 @@ export default function MinGame({ exercise, progress, onBack, updateProgress, sh
           )}
           {phase === 'BUILD' && (
             <BuildPhase
-              states={states}
+              states={rStates}
+              alphabet={alphabet}
+              finalStates={rFinals}
+              transitions={rTransitions}
               correctTable={correctTable}
               exercise={exercise}
               updateProgress={updateProgress}

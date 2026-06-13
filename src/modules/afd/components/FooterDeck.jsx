@@ -1,6 +1,7 @@
 // ─── FooterDeck: rodapé com a "mão" de cartas de ação/símbolos + HUD Maurílio ─
 // Alterna entre o SimPanel (durante a simulação) e a fileira de cartas. Inclui o
 // professor (balão de fala + figura). CSS: .bottom-hand / .card* / .professor-* .
+import { useRef } from 'react';
 import './FooterDeck.css';
 import SimPanel from './SimPanel';
 import imgMaurilioSerio      from '../../../assets/maurilio1_serio.webp';
@@ -19,7 +20,10 @@ export default function FooterDeck({
   selectedSymbolCard, setSelectedSymbolCard, setConnectingSource, discoveredSymbols,
   // HUD professor
   isDrawingUnlocked, guidedLessonStep, currentLevel, professorMessage, handleProfessorClick,
+  // Drag da carta Estado → canvas
+  onDeckNodeDrag, onDeckNodeDrop, onDeckNodeDragCancel,
 }) {
+  const addNodeDragRef = useRef(null);
   // No modo Aula V2 mostra só o HUD do professor (sem cartas/sim)
   if (isLessonActive) {
     const stepText = currentLevel?.guidedLesson?.[guidedLessonStep]?.text;
@@ -87,7 +91,37 @@ export default function FooterDeck({
                 <div key={card.id}
                   data-icon={iconMap[card.action] || ''}
                   className={`card ${classMap[card.action]} slide-up-fade ${isSelected?'selected-card':''} ${isErr?'error-pulse-severe':''}`}
-                  onClick={() => { if (isSelected) { setInteractionMode('IDLE'); resetMode(); } else { clickMap[card.action](); } }}>
+                  onClick={() => { if (isSelected) { setInteractionMode('IDLE'); resetMode(); } else { clickMap[card.action](); } }}
+                  onPointerDown={(e) => {
+                    if (card.action !== 'addNode') return;
+                    addNodeDragRef.current = { startX: e.clientX, startY: e.clientY, dragging: false };
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                  }}
+                  onPointerMove={(e) => {
+                    if (!addNodeDragRef.current) return;
+                    const dx = e.clientX - addNodeDragRef.current.startX;
+                    const dy = e.clientY - addNodeDragRef.current.startY;
+                    if (!addNodeDragRef.current.dragging && Math.hypot(dx, dy) > 8) {
+                      addNodeDragRef.current.dragging = true;
+                    }
+                    if (addNodeDragRef.current.dragging) {
+                      onDeckNodeDrag?.(e.clientX, e.clientY);
+                    }
+                  }}
+                  onPointerUp={(e) => {
+                    if (!addNodeDragRef.current) return;
+                    const wasDragging = addNodeDragRef.current.dragging;
+                    addNodeDragRef.current = null;
+                    if (wasDragging) {
+                      e.preventDefault();
+                      onDeckNodeDrop?.(e.clientX, e.clientY);
+                    }
+                  }}
+                  onPointerCancel={() => {
+                    if (addNodeDragRef.current?.dragging) onDeckNodeDragCancel?.();
+                    addNodeDragRef.current = null;
+                  }}
+                >
                   <div className="card-header">{card.label}</div>
                   <div className="card-icon">{card.icon}</div>
                 </div>
