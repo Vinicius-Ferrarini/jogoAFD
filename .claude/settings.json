@@ -7,6 +7,9 @@
       "Bash(Find /c/github/jogoAFD -name \"*Canvas*\" -type f)",
       "WebFetch(domain:www.youtube.com)",
       "Bash(npx eslint *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\sg\\.claude\\projects\\c--github-jogoAFD\\memory"
     ]
   }
 }

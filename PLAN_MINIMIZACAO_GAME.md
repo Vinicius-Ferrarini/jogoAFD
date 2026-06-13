@@ -438,13 +438,49 @@ props: { message: string, mood: 'serio'|'explicando'|'feliz', onClick?: () => vo
 
 ---
 
-## 13. Riscos & decisões em aberto
+## 13. Roadmap futuro — Modo Aula (nos moldes do AFD_1)
+
+> **Fora do escopo da primeira entrega**, mas a arquitetura abaixo é desenhada para acomodá-lo
+> sem reescrita. Confirmado como direção do projeto.
+
+O AFD_1 já tem um **Modo Aula** guiado (`GuidedLessonOverlay` + arrays `guidedLesson` com passos
+`{ text, boardWords, boardDoneUpTo, stateUpdate }`, navegação Próximo/Anterior, Maurílio
+explicando cada passo). A minimização ganhará um modo equivalente: **assistir o algoritmo rodar
+sozinho**, em vez de jogá-lo.
+
+**Como o jogo (este plano) habilita o Modo Aula depois:**
+- O **hook `useMinimizationGame`** já expõe todos os gabaritos e auxiliares (`trivialTable`,
+  `distTable`, `inspectPair`, `nextPropagationHint`, `minimized`). O Modo Aula consome **o mesmo
+  hook**, só que dirige a UI automaticamente em vez de esperar cliques.
+- Cada passo da aula é um **snapshot derivável** do algoritmo:
+  1. PREP → mostra δ e aponta total/alcançáveis.
+  2. SETUP → desenha o grid triangular pronto.
+  3. TRIVIAL → preenche os `×` triviais um a um (anima `computeTrivialTable`).
+  4. PROP → para cada rodada de propagação, destaca o par {p,q}, mostra o `inspectPair` e marca o `×` (anima a convergência de `computeDistTable`).
+  5. RESULT → agrupa e exibe o AFD mínimo.
+- **Reuso direto de componentes:** `TriangularTable` (com `lockedCells`/`marks` controlados pela
+  aula), `ProfessorMaurilio` (fala de cada passo) e `GraphView`. A diferença Jogo × Aula é só
+  **quem controla o estado**: o aluno (jogo) ou um cursor de passos (aula).
+
+**Implicação de design já incorporada neste plano:** manter os componentes de passo "burros"
+(UI + estado de edição) e a lógica no hook é justamente o que permite plugar um **driver de aula**
+por cima sem duplicar regra. Um futuro `MinLessonOverlay` injetaria `marks`/`selectedPair`/`step`
+de forma programática, reaproveitando os mesmos `Step*`.
+
+> **Pendência futura:** definir o array de passos da aula por exercício (texto do Maurílio +
+> qual sub-marcação destacar), análogo ao `guidedLesson` do AFD_1.
+
+---
+
+## 14. Riscos & decisões em aberto
 
 - **`pairKey` usa comparação de string** (`'q10' < 'q2'`). Para `q0..q9` é seguro; se algum
   exercício passar de 10 estados, padronizar a ordenação por índice. *(Fora de escopo agora.)*
 - **Refator vs. reescrita:** o plano prefere **extrair** dos componentes atuais (menor risco) a
   reescrever do zero. `BuildPhase` só é removido após paridade.
-- **Granularidade da Dica no PROP:** decidir se a dica é ilimitada ou custa "estrela". Sugestão:
-  ilimitada (foco didático), mas registrar uso para futura pontuação.
+- **Granularidade da Dica no PROP:** **DECIDIDO — dicas ilimitadas.** Foco é didático, não
+  punitivo; o `nextPropagationHint` pode ser acionado quantas vezes o aluno quiser, sem custo de
+  estrela nem cooldown. (Pode-se registrar a contagem de usos só para telemetria futura, mas isso
+  **não** afeta pontuação.)
 - **Estado "feliz" do Maurílio:** depende de existir asset; senão reutiliza `explicando`.
 ```
