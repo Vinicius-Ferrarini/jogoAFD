@@ -83,6 +83,59 @@ export function computeDistTable(states, finalStates, transitions, alphabet) {
   return table;
 }
 
+// ─── Sequência de distinguibilidade (para o Modo Aula) ────────────────────────
+// Mesmo algoritmo de computeDistTable, mas REGISTRA a ordem em que cada par vira
+// distinguível e a "testemunha" (símbolo + par de destino já marcado). Serve para
+// narrar a propagação passo a passo na aula. Não substitui computeDistTable.
+// Retorna { trivial: [{pair,p,q}], steps: [{pair,p,q,sym,dest,dp,dq}] }.
+export function computeDistSequence(states, finalStates, transitions, alphabet) {
+  const table = {};
+  const n = states.length;
+  const delta = (st, sym) => transitions.find(t => t.from === st && t.symbol === sym)?.to;
+
+  for (let i = 0; i < n; i++)
+    for (let j = i + 1; j < n; j++)
+      table[pairKey(states[i], states[j])] = false;
+
+  // Passo 1 — marcações triviais (final × não-final), na ordem i<j
+  const trivial = [];
+  for (let i = 0; i < n; i++)
+    for (let j = i + 1; j < n; j++) {
+      const [p, q] = [states[i], states[j]];
+      if (finalStates.includes(p) !== finalStates.includes(q)) {
+        const key = pairKey(p, q);
+        table[key] = true;
+        trivial.push({ pair: key, p, q });
+      }
+    }
+
+  // Passo 2 — propagação, gravando ordem + testemunha de cada nova marcação
+  const steps = [];
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const [p, q] = [states[i], states[j]];
+        const key = pairKey(p, q);
+        if (table[key]) continue;
+        for (const sym of alphabet) {
+          const tp = delta(p, sym);
+          const tq = delta(q, sym);
+          if (!tp || !tq || tp === tq) continue;
+          if (table[pairKey(tp, tq)]) {
+            table[key] = true;
+            changed = true;
+            steps.push({ pair: key, p, q, sym, dest: pairKey(tp, tq), dp: tp, dq: tq });
+            break;
+          }
+        }
+      }
+    }
+  }
+  return { trivial, steps };
+}
+
 // ─── Union-Find minimization ──────────────────────────────────────────────────
 export function computeMinimized(states, initialState, finalStates, transitions, alphabet, table) {
   const parent = {};

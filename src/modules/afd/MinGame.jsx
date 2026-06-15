@@ -11,12 +11,18 @@ import Step3_TrivialMarking from './components/Step3_TrivialMarking';
 import Step4_Propagation    from './components/Step4_Propagation';
 import Step5_Result         from './components/Step5_Result';
 import MinDrawStep          from './components/MinDrawStep';
+import MinLessonOverlay     from './components/MinLessonOverlay';
 
 // Máquina de 6 passos: PREP → SETUP → TRIVIAL → PROP → GROUPS → DRAW
 const STEP_ORDER  = ['PREP', 'SETUP', 'TRIVIAL', 'PROP', 'GROUPS', 'DRAW'];
 const STEP_LABELS = ['1 Prep', '2 Grid', '3 Trivial', '4 Propag.', '5 Grupos', '6 Desenho'];
+// Nomes completos para a faixa do Modo Aula ("Passo N: <nome>")
+const STEP_NAMES  = {
+  PREP: 'Verificar o AFD', SETUP: 'Montar a tabela de pares', TRIVIAL: 'Marcação trivial',
+  PROP: 'Propagação', GROUPS: 'Grupos de equivalência', DRAW: 'Desenhar o AFD mínimo',
+};
 
-export default function MinGame({ exercise, progress, onBack, updateProgress }) {
+export default function MinGame({ exercise, exNumber, progress, onBack, updateProgress }) {
   // ── Banner / Professor ──
   const [banner,   setBanner]   = useState(null);
   const [profMsg,  setProfMsg]  = useState('');
@@ -50,6 +56,9 @@ export default function MinGame({ exercise, progress, onBack, updateProgress }) 
   const [marks,       setMarks]       = useState({});            // { pairKey: bool }
   const [lockedCells, setLockedCells] = useState(new Set());     // triviais travados no passo 3
   const [showDelta,   setShowDelta]   = useState(true);          // drawer da tabela δ (referência) — começa aberto
+  // Modo Aula — null = fechado. { stepIdx, frameIdx }. NUNCA altera o `step` real
+  // nem o progresso; é só uma demonstração sobreposta (regras 4 e 5 do plano).
+  const [lesson,      setLesson]      = useState(null);
 
   const stars = progress[`afd-min-${exercise.id}`]?.stars || 0;
 
@@ -88,6 +97,19 @@ export default function MinGame({ exercise, progress, onBack, updateProgress }) 
     setStep(prev);
   }, [step, allPairs, trivialTable]);
 
+  // ── Modo Aula — navegação interna (não toca em step/progresso/marks) ──
+  const lessonNav = useCallback((dir) => {
+    setLesson(l => {
+      if (!l) return l;
+      const len = (game.lessonScript[STEP_ORDER[l.stepIdx]] || []).length;
+      return { ...l, frameIdx: Math.max(0, Math.min(len - 1, l.frameIdx + dir)) };
+    });
+  }, [game.lessonScript]);
+  const lessonContinue = useCallback(() => {
+    setLesson(l => (l && l.stepIdx < STEP_ORDER.length - 1) ? { stepIdx: l.stepIdx + 1, frameIdx: 0 } : l);
+  }, []);
+  const lessonExit = useCallback(() => setLesson(null), []);
+
   // 🔧 DEV — navegação livre entre passos (sem validação), só p/ testar.
   //         Remover este bloco (e o controle no header) quando estabilizar.
   const devJump = useCallback((dir) => {
@@ -97,6 +119,9 @@ export default function MinGame({ exercise, progress, onBack, updateProgress }) 
     setStep(target);
   }, [step, allPairs, trivialTable]);
 
+  // Passo destacado nos selos do header: durante a aula, o passo DEMONSTRADO
+  const activeStepIdx = lesson ? lesson.stepIdx : STEP_ORDER.indexOf(step);
+
   return (
     <div className="workspace-wrapper min-screen" style={{ position: 'relative' }}>
       {banner && <div className={`toast-notification ${banner.type}`}>{banner.msg}</div>}
@@ -104,30 +129,49 @@ export default function MinGame({ exercise, progress, onBack, updateProgress }) 
       <header className="game-header">
         <div className="header-left">
           <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
-          {STEP_ORDER.indexOf(step) > 0 && (
+          {!lesson && STEP_ORDER.indexOf(step) > 0 && (
             <button className="back-btn" style={{ background: '#fde68a' }} onClick={goBackStep}>↩ Passo</button>
           )}
         </div>
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
           <span className="mission-label">Minimização</span>
+          {exNumber != null && (
+            <span style={{ fontWeight: 900, fontSize: 12, background: '#fde047',
+              border: '2px solid #000', borderRadius: 6, padding: '1px 8px' }}>
+              Ex. {exNumber}
+            </span>
+          )}
           <span style={{ fontWeight: 'bold', fontSize: 13 }}>{exercise.title}</span>
         </div>
         <div style={{ display: 'flex', gap: 5, marginRight: 10, alignItems: 'center' }}>
+          {!lesson && (
+            <button className="min-lesson-open"
+              onClick={() => setLesson({ stepIdx: STEP_ORDER.indexOf(step), frameIdx: 0 })}
+              title="Assistir o professor demonstrar este passo (não dá estrela)">
+              👨‍🏫 Aula
+            </button>
+          )}
           {STEP_LABELS.map((lbl, i) => {
-            const p = STEP_ORDER[i];
-            const done = STEP_ORDER.indexOf(step) > i;
+            const isCur = i === activeStepIdx;
+            const isDone = activeStepIdx > i;
             return (
-              <span key={p} style={{
+              <span key={STEP_ORDER[i]} style={{
                 padding: '2px 6px', borderRadius: 4, fontSize: 9.5, fontWeight: 'bold',
                 border: '2px solid #000',
-                background: step === p ? '#fde047' : done ? '#bbf7d0' : '#eee',
+                background: isCur ? '#fde047' : isDone ? '#bbf7d0' : '#eee',
               }}>{lbl}</span>
             );
           })}
         </div>
       </header>
 
-      {step === 'DRAW' ? (
+      {lesson ? (
+        <MinLessonOverlay
+          game={game} lesson={lesson}
+          stepOrder={STEP_ORDER} stepNames={STEP_NAMES}
+          onNav={lessonNav} onContinue={lessonContinue} onExit={lessonExit}
+        />
+      ) : step === 'DRAW' ? (
         <MinDrawStep
           game={game} prep={prep} showProf={showProf} stars={stars}
           onSolved={handleDrawSolved} onBack={onBack}
@@ -208,14 +252,17 @@ export default function MinGame({ exercise, progress, onBack, updateProgress }) 
       </div>
       )}
 
-      {/* Professor HUD */}
-      <ProfessorMaurilio
-        message={profMsg}
-        mood={profMood}
-        onClick={() => showProf(exercise.hint, 'explicando')}
-      />
+      {/* Professor HUD (escondido durante a aula — a aula tem o seu próprio) */}
+      {!lesson && (
+        <ProfessorMaurilio
+          message={profMsg}
+          mood={profMood}
+          onClick={() => showProf(exercise.hint, 'explicando')}
+        />
+      )}
 
       {/* 🔧 DEV — navegação livre p/ teste (barra flutuante; remover quando estável) */}
+      {!lesson && (
       <div style={{ position: 'fixed', bottom: 12, left: 12, zIndex: 10001,
         display: 'flex', alignItems: 'center', gap: 6,
         padding: '6px 10px', border: '2px dashed #a78bfa', borderRadius: 8,
@@ -236,6 +283,7 @@ export default function MinGame({ exercise, progress, onBack, updateProgress }) 
             background: '#ddd6fe', cursor: STEP_ORDER.indexOf(step) === STEP_ORDER.length - 1 ? 'not-allowed' : 'pointer',
             opacity: STEP_ORDER.indexOf(step) === STEP_ORDER.length - 1 ? 0.4 : 1 }}>▶</button>
       </div>
+      )}
     </div>
   );
 }

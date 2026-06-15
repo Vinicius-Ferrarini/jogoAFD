@@ -9,7 +9,7 @@ import MinGame from './MinGame';
 // ─── Exercises ────────────────────────────────────────────────────────────────
 export const EXERCISES = [
   {
-    id: 1, level: 'easy', title: 'Lista Ex. 15',
+    id: 1, level: 'easy', title: 'Finais equivalentes',
     desc: 'AFD com 6 estados e alfabeto {a,b}. Estados finais: q2, q3 e q4. Encontre o AFD mínimo.',
     hint: 'Olhe as linhas de q2, q3 e q4 na tabela de transições — elas são idênticas!',
     explanation: 'q2≡q3≡q4 pois têm transições idênticas entre si. q0≡q1 pois ambos vão para o mesmo grupo em cada símbolo. O AFD minimizado tem 3 estados: {q0q1}, {q2q3q4} e {q5}.',
@@ -29,8 +29,8 @@ export const EXERCISES = [
     },
   },
   {
-    id: 2, level: 'medium', title: 'Lista Ex. 17',
-    desc: 'AFD com 6 estados e alfabeto {a,b}. Apenas q2 e q3 são finais (diferente do Ex.15!). Encontre o AFD mínimo.',
+    id: 2, level: 'medium', title: 'Três pares equivalentes',
+    desc: 'AFD com 6 estados e alfabeto {a,b}. Apenas q2 e q3 são finais. Encontre o AFD mínimo.',
     hint: 'Compare as transições de q2 e q3 (finais). Faça o mesmo para q4 e q5 (não-finais).',
     explanation: 'q2≡q3, q0≡q1 e q4≡q5 — três fusões distintas! O AFD minimizado tem 3 estados: {q0q1}, {q2q3} e {q4q5}.',
     initial: {
@@ -49,7 +49,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 3, level: 'hard', title: 'Lista Ex. 16',
+    id: 3, level: 'hard', title: 'Já mínimo com estado morto',
     desc: 'AFD com alfabeto {a,b,c} e finais q2 e q4. O estado qd é o estado morto (transições ausentes no original). O AFD pode ser minimizado?',
     hint: 'Verifique q2 e q4 (ambos finais): δ(q2,a)=qd mas δ(q4,a)=q4. Eles são distinguíveis!',
     explanation: 'Todos os estados são distinguíveis entre si — este AFD já é mínimo! Nenhum par pode ser fundido. O estado morto qd é indispensável para completar as transições ausentes do original.',
@@ -69,7 +69,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 4, level: 'easy', title: 'Extra 1 — Comprimento par',
+    id: 4, level: 'easy', title: 'Comprimento par',
     desc: 'AFD com 4 estados e alfabeto {a,b}. Estados finais: q0 e q3. O AFD aceita strings de comprimento par (incluindo λ). Encontre o AFD mínimo.',
     hint: 'Observe q1 e q2: independente do símbolo lido, ambos levam sempre ao mesmo estado. Eles são distinguíveis entre si?',
     explanation: 'q1≡q2 (ambos não-finais que levam a q3 em qualquer símbolo) e q0≡q3 (ambos finais com transições simétricas). O AFD mínimo tem 2 estados: {q0,q3} e {q1,q2}.',
@@ -87,7 +87,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 5, level: 'easy', title: 'Extra 2 — Subpalavra "ab"',
+    id: 5, level: 'easy', title: 'Subpalavra "ab"',
     desc: 'AFD com 5 estados e alfabeto {a,b}. Estados finais: q2 e q4. O AFD aceita strings que contêm "ab" como subpalavra. Encontre o AFD mínimo.',
     hint: 'Compare q0 e q3: em qual símbolo eles diferem de comportamento? Compare q2 e q4: é possível sair de algum deles para um estado não-final?',
     explanation: 'q0≡q3 (ainda não leram "ab", comportamento idêntico) e q2≡q4 (estados-armadilha finais — nunca saem da classe final). O AFD mínimo tem 3 estados: {q0,q3}, {q1} e {q2,q4}.',
@@ -106,7 +106,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 6, level: 'medium', title: 'Extra 3 — Zeros múltiplos de 3',
+    id: 6, level: 'medium', title: 'Zeros múltiplos de 3',
     desc: 'AFD com 6 estados e alfabeto {0,1}. Estados finais: q0 e q1. O AFD aceita strings onde o número de zeros é divisível por 3. Encontre o AFD mínimo.',
     hint: 'Há 3 pares de estados equivalentes escondidos entre 6 estados. Leia o símbolo "1": ele não muda a contagem de zeros — quais pares têm comportamento simétrico sob "1"?',
     explanation: 'q0≡q1 (finais simétricos), q2≡q3 (precisam de 2 zeros a mais), q4≡q5 (precisam de 1 zero a mais). O AFD mínimo tem 3 estados: {q0,q1}, {q2,q3} e {q4,q5}.',
@@ -126,7 +126,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 7, level: 'hard', title: 'Extra 4 — Paridade dupla',
+    id: 7, level: 'hard', title: 'Paridade dupla',
     desc: 'AFD com 7 estados e alfabeto {a,b}. Estados finais: q0 e q1. O AFD aceita strings onde o número de \'a\'s É par E o número de \'b\'s É par. Encontre o AFD mínimo.',
     hint: 'Identifique quais estados não-finais chegam a um final lendo \'a\' (par de q2/q3) e quais chegam lendo \'b\' (par de q4/q5). O estado q6 é único — por quê?',
     explanation: 'q0≡q1 (finais), q2≡q3 (→a→final, →b→q6) e q4≡q5 (→a→q6, →b→final). q6 é único (→a→classe01, →b→classe10). O AFD mínimo tem 4 estados: {q0,q1}, {q2,q3}, {q4,q5} e {q6}.',
@@ -147,7 +147,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 8, level: 'medium', title: 'Gemini Ex. 1 — Dois pares fundidos',
+    id: 8, level: 'medium', title: 'Dois pares fundidos',
     desc: 'AFD com 6 estados e alfabeto {a,b}. Estados finais: q4 e q5. Dois pares de estados podem ser fundidos. Encontre o AFD mínimo.',
     hint: 'Olhe q2 e q3: ambos vão para finais nos dois símbolos. Agora olhe q4 e q5: para onde vão lendo \'a\' e \'b\'?',
     explanation: 'q2≡q3 (ambos levam a finais em a e b). q4≡q5 (ambos levam para a classe q2q3 em ambos símbolos). q0 e q1 são distinguíveis: q0→a→q2 (classe q2q3), mas q1→a→q1 (própria classe). O AFD mínimo tem 4 estados: {q0}, {q1}, {q2q3}, {q4q5}.',
@@ -167,7 +167,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 9, level: 'easy', title: 'Gemini Ex. 2 — Todos os estados finais',
+    id: 9, level: 'easy', title: 'Todos os estados finais',
     desc: 'AFD com 3 estados e alfabeto {a,b}. TODOS os estados são finais. O que acontece ao minimizar?',
     hint: 'Se todos os estados são finais, nenhum par pode ser distinguido pela condição "um final e um não-final". Olhe apenas as transições: todos os estados chegam ao mesmo grupo?',
     explanation: 'Como todos são finais, a partição inicial é {q0,q1,q2}. Como todos os estados transitam entre si dentro desse único grupo, nenhum par é distinguível. Todos fundem em 1 único estado — o AFD mínimo tem 1 estado.',
@@ -184,7 +184,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 10, level: 'easy', title: 'Gemini Ex. 3 — Dois pares simétricos',
+    id: 10, level: 'easy', title: 'Dois pares simétricos',
     desc: 'AFD com 5 estados e alfabeto {a,b}. Estados finais: q3 e q4. Encontre o AFD mínimo.',
     hint: 'Separe os não-finais {q0,q1,q2}: q0 vai para não-finais nos dois símbolos — isso o distingue de q1 e q2. Agora compare q1 e q2 entre si.',
     explanation: 'q1≡q2 (ambos vão para não-final em \'a\' e para final em \'b\'). q3≡q4 (ambos vão para a classe q1q2 em \'a\' e para a própria classe em \'b\'). q0 é único. O AFD mínimo tem 3 estados: {q0}, {q1q2}, {q3q4}.',
@@ -203,7 +203,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 11, level: 'medium', title: 'Gemini Ex. 4 — Um único par',
+    id: 11, level: 'medium', title: 'Um único par',
     desc: 'AFD com 6 estados e alfabeto {a,b}. Estados finais: q4 e q5. Apenas um par de estados pode ser fundido. Encontre-o.',
     hint: 'Comece separando não-finais {q0,q1,q2,q3} em subgrupos por destino. q0 e q1 são distinguíveis entre si? E q2 e q3?',
     explanation: 'q2≡q3 (únicos não-finais que levam a finais em ambos símbolos). Todos os outros são distinguíveis entre si: q4 e q5 vão a classes diferentes em \'a\'. O AFD mínimo tem 5 estados: {q0}, {q1}, {q2q3}, {q4}, {q5}.',
@@ -223,7 +223,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 12, level: 'medium', title: 'Gemini Ex. 5 — Tripla fusão em {a,b,c}',
+    id: 12, level: 'medium', title: 'Tripla fusão em {a,b,c}',
     desc: 'AFD com 6 estados e alfabeto {a,b,c}. Estados finais: q3, q4 e q5. Encontre o AFD mínimo.',
     hint: 'Os não-finais {q0,q1,q2} são todos distinguíveis entre si (cada um tem perfil único de símbolos que levam a finais). Compare agora os finais {q3,q4,q5} em cada símbolo.',
     explanation: 'q3≡q4≡q5 (todos finais com transições idênticas entre si: →a→final, →b→{q1}, →c→final). Os não-finais q0, q1 e q2 são todos distinguíveis. O AFD mínimo tem 4 estados: {q0}, {q1}, {q2}, {q3q4q5}.',
@@ -243,7 +243,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 13, level: 'hard', title: 'Gemini Ex. 6 — Armadilha: já é mínimo',
+    id: 13, level: 'hard', title: 'Armadilha: já é mínimo',
     desc: 'AFD com 4 estados e alfabeto {a,b}. Estados finais: q2 e q3. Este AFD pode ser minimizado?',
     hint: 'Separe os finais {q2,q3}: δ(q2,a)=q1 (não-final) mas δ(q3,a)=q2 (final). Isso já é suficiente para distingui-los!',
     explanation: 'Nenhum par é equivalente: q0≢q1 (q1 vai a finais em \'a\'), q2≢q3 (q2→a→não-final, q3→a→final), q0≢q2 (classes diferentes), q1≢q3 (classes diferentes). O AFD já está em sua forma mínima com 4 estados.',
@@ -261,7 +261,7 @@ export const EXERCISES = [
     },
   },
   {
-    id: 14, level: 'hard', title: 'Gemini Ex. 7 — Estado de erro explícito',
+    id: 14, level: 'hard', title: 'Estado de erro explícito',
     desc: 'AFD com 6 estados e alfabeto {a,b}. Estados finais: q3 e q4. O estado qe é o estado de erro (adicionado para tornar o AFD completo). Encontre o AFD mínimo.',
     hint: 'Compare q2 e qe: ambos são não-finais com transições que levam a não-finais nos dois símbolos. Verifique se seus destinos pertencem sempre à mesma classe.',
     explanation: 'q2≡qe (ambos não-finais, ambos levam a {q2,qe} em qualquer símbolo — indistinguíveis). q3≡q4 (ambos finais com destinos simétricos). q0 e q1 são únicos. O AFD mínimo tem 4 estados: {q0}, {q1}, {q2qe}, {q3q4}.',
@@ -334,6 +334,7 @@ export default function AFDMinimizer({ onBack, progress, updateProgress, showToa
   if (selected) return (
     <MinGame
       exercise={selected}
+      exNumber={SORTED_EXERCISES.findIndex(e => e.id === selected.id) + 1}
       progress={progress}
       onBack={() => setSelected(null)}
       updateProgress={updateProgress}

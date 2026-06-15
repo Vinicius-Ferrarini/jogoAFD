@@ -2,11 +2,15 @@ import { useState } from 'react';
 import TriangularTable from './TriangularTable';
 
 // Step4_Propagation — passo indutivo de Myhill–Nerode (PROP, desafio principal).
-// O aluno faz TUDO, célula por célula. Ao selecionar um par branco, ele PREENCHE
-// a tabela do Inspetor (δ(p,·), δ(q,·) e o par de destino estilo q0q1) e a VALIDA;
-// só então decide Distinguíveis (×) ou Equivalentes (≡), que também é validado.
-// Acertou a decisão → célula fica VERDE e trava. Só avança com todos os brancos
-// validados. O jogo nunca preenche nem marca nada por ele.
+// O aluno seleciona um par branco, PREENCHE a tabela do Inspetor (δ(p,·), δ(q,·)
+// e o par de destino) e a VALIDA. Depois decide LINHA A LINHA (símbolo a símbolo):
+//   × Distinguível  — se o par de destino daquele símbolo já está marcado ×.
+//   ≡ Equivalente   — se os destinos coincidem ou o destino já é equivalente.
+//   🤔 Pendente     — se o destino ainda não foi decidido.
+// Regra do curto-circuito: UMA linha "×" correta já fecha o par como NÃO-equivalente
+// (basta um símbolo distinguir) — bloqueia o resto e marca × na triangular. Para ≡
+// só conclui quando TODAS as linhas forem equivalentes; se sobrar pendente, o par
+// volta a ficar branco. Todo erro explica onde foi e como corrigir.
 const cellInput = (bad, ro) => ({
   width: 56, textAlign: 'center', borderRadius: 4, padding: '2px',
   border: `1px solid ${bad ? '#dc2626' : '#ccc'}`,
@@ -17,7 +21,7 @@ const cellInput = (bad, ro) => ({
 });
 
 export default function Step4_Propagation({ game, marks, lockedCells, setMarks, showProf, onAdvance }) {
-  const { rStates, alphabet, allPairs, inspectPair, validateInspectorTable, validatePairAction } = game;
+  const { rStates, alphabet, allPairs, validateInspectorTable, validatePairRow } = game;
 
   const [resolved,     setResolved]     = useState(new Set()); // pares validados (verde)
   const [wrongFlash,   setWrongFlash]   = useState(new Set()); // erro de decisão (pisca vermelho)
@@ -27,14 +31,27 @@ export default function Step4_Propagation({ game, marks, lockedCells, setMarks, 
   const [inspErrors,    setInspErrors]    = useState(new Set());     // "sym|p"/"sym|q"/"sym|pair"
   const [inspValidated, setInspValidated] = useState(false);
   const [savedTables,   setSavedTables]   = useState({});            // { pair: inspDelta } já validadas
+  // decisão por linha (símbolo) do par atual — reiniciada a cada abertura
+  const [rowDecisions, setRowDecisions] = useState({});             // { sym: 'x'|'equiv'|'pending' }
+  const [rowFlash,     setRowFlash]     = useState(new Set());      // sym com escolha errada (pisca)
 
   // Brancos = pares não triviais (triviais já vêm travados/cinza)
   const whitePairs = allPairs.filter(k => !lockedCells?.has(k));
   const remaining  = whitePairs.filter(k => !resolved.has(k)).length;
   const allDone    = remaining === 0;
 
+  const closeInspector = () => {
+    setSelectedPair(null);
+    setRowDecisions({});
+    setRowFlash(new Set());
+    setInspErrors(new Set());
+    setInspValidated(false);
+  };
+
   const openInspector = (key) => {
     setSelectedPair(key);
+    setRowDecisions({});
+    setRowFlash(new Set());
     if (wrongFlash.size) setWrongFlash(new Set());
     setInspErrors(new Set());
     if (savedTables[key]) { setInspDelta(savedTables[key]); setInspValidated(true); } // restaura tabela já validada
@@ -55,39 +72,56 @@ export default function Step4_Propagation({ game, marks, lockedCells, setMarks, 
     showProf(r.message, r.ok ? 'feliz' : 'serio');
   };
 
-  // Decisão committal (× ou ≡): validada contra o estado atual do tabuleiro.
-  const decide = (markedX) => {
-    const r = validatePairAction(selectedPair, markedX, marks, resolved);
-    if (r.ok) {
-      setMarks(prev => ({ ...prev, [selectedPair]: markedX }));
-      setResolved(prev => new Set(prev).add(selectedPair));
-      setWrongFlash(new Set());
-      setSelectedPair(null);
-      showProf(r.message, 'feliz');
-    } else {
-      setWrongFlash(new Set([selectedPair]));
+  // Decisão de UMA linha (símbolo), validada contra o estado atual do tabuleiro.
+  const decideRow = (sym, choice) => {
+    const r = validatePairRow(selectedPair, sym, choice, marks, resolved);
+    if (!r.ok) {
+      setRowFlash(new Set([sym]));
       showProf(r.message, 'serio');
+      return;
+    }
+    setRowFlash(new Set());
+
+    // × correta → curto-circuito: 1 símbolo basta para o par ser NÃO-equivalente
+    if (choice === 'x') {
+      setMarks(prev => ({ ...prev, [selectedPair]: true }));
+      setResolved(prev => new Set(prev).add(selectedPair));
+      showProf(r.message + ' As outras linhas nem precisam ser checadas.', 'feliz');
+      closeInspector();
+      return;
+    }
+
+    const next = { ...rowDecisions, [sym]: choice };
+    setRowDecisions(next);
+
+    // ainda faltam linhas a classificar → segue
+    if (Object.keys(next).length < alphabet.length) {
+      showProf(r.message, choice === 'equiv' ? 'feliz' : 'explicando');
+      return;
+    }
+
+    // todas classificadas (nenhuma 'x', senão teria curto-circuitado)
+    if (Object.values(next).every(s => s === 'equiv')) {
+      setMarks(prev => ({ ...prev, [selectedPair]: false }));
+      setResolved(prev => new Set(prev).add(selectedPair));
+      showProf('✓ Nenhum símbolo distingue → o par é EQUIVALENTE (≡).', 'feliz');
+      closeInspector();
+    } else {
+      showProf('🤔 Algum símbolo tem destino indeciso — o par fica PENDENTE. Resolva esses destinos e volte aqui depois.', 'explicando');
+      closeInspector();
     }
   };
 
-  // Deixar pendente: sempre permitido — fecha sem resolver; volta-se depois.
-  const deferPair = () => {
-    showProf('🤔 Par deixado pendente. Resolva os destinos que ainda faltam e volte aqui depois.', 'explicando');
-    setSelectedPair(null);
-  };
-
   const [p, q] = selectedPair ? selectedPair.split(',') : ['', ''];
-  const inspRows = selectedPair ? inspectPair(selectedPair, marks) : []; // p/ coluna "destino ×?" após validar
-  const markedBySym = {};
-  inspRows.forEach(r => { markedBySym[r.sym] = r; });
 
   return (
     <div className="min-panel">
       <div className="section-header" style={{ fontSize: 11 }}>Passo 2 — Propagação</div>
       <p className="min-step-text">
-        Resolva <b>cada quadrado branco</b>: clique nele, <b>preencha</b> a tabela do par (δ de cada
-        estado e o par de destino, ex.: <b>q0q1</b>) e <b>valide</b>. Depois decida — <b>Distinguíveis (×)</b>
-        se algum símbolo leva a um par já distinguível, ou <b>Equivalentes (≡)</b>. <i>(cinza = triviais)</i>
+        Clique num <b>quadrado branco</b>, <b>preencha</b> a tabela do par (δ de cada estado e o
+        par de destino, ex.: <b>q0q1</b>) e <b>valide</b>. Depois decida <b>cada linha</b>: olhe o
+        par de destino na tabela triangular — já está <b>×</b> (distinguível), é <b>≡</b> (equivalente)
+        ou ainda <b>indeciso</b> (pendente)? <i>(cinza = triviais)</i>
       </p>
 
       {/* Progresso de validação */}
@@ -110,7 +144,7 @@ export default function Step4_Propagation({ game, marks, lockedCells, setMarks, 
         onToggle={() => {}}
       />
 
-      {/* Inspetor de Pares — tabela preenchida e validada pelo aluno */}
+      {/* Inspetor de Pares — tabela preenchida/validada + decisão por linha */}
       {selectedPair ? (
         <div className="min-inspector">
           <div className="min-inspector-title">
@@ -124,13 +158,13 @@ export default function Step4_Propagation({ game, marks, lockedCells, setMarks, 
                 <th>δ({p}, ·)</th>
                 <th>δ({q}, ·)</th>
                 <th>par de destino</th>
-                <th>destino ×?</th>
+                <th>sua decisão</th>
               </tr>
             </thead>
             <tbody>
               {alphabet.map(sym => {
                 const cell = inspDelta[sym] || {};
-                const info = markedBySym[sym];
+                const decided = rowDecisions[sym];
                 return (
                   <tr key={sym}>
                     <td className="min-insp-sym">{sym}</td>
@@ -143,14 +177,22 @@ export default function Step4_Propagation({ game, marks, lockedCells, setMarks, 
                     <td><input value={cell.pair || ''} maxLength={7} placeholder="ex: q0q1" readOnly={inspValidated}
                       style={{ ...cellInput(inspErrors.has(`${sym}|pair`), inspValidated), width: 70 }}
                       onChange={e => setInspCell(sym, 'pair', e.target.value)} /></td>
-                    <td>
-                      {!inspValidated
-                        ? <span className="min-insp-neutral">—</span>
-                        : info?.same
-                          ? <span className="min-insp-neutral">— (iguais)</span>
-                          : info?.destMarked
-                            ? <span className="min-insp-marked">❌ marcado!</span>
-                            : <span className="min-insp-empty">não marcado</span>}
+                    <td className={decided === 'pending' ? 'min-insp-pending-cell' : ''}>
+                      {!inspValidated ? (
+                        <span className="min-insp-neutral">—</span>
+                      ) : decided === 'x' ? (
+                        <span className="min-insp-locked-x">× distingue</span>
+                      ) : decided === 'equiv' ? (
+                        <span className="min-insp-locked-eq">≡</span>
+                      ) : decided === 'pending' ? (
+                        <span className="min-insp-locked-pend">🤔 pendente</span>
+                      ) : (
+                        <div className={`min-insp-rowbtns${rowFlash.has(sym) ? ' flash' : ''}`}>
+                          <button className="min-insp-rowbtn x"    title="Distinguíveis (×)" onClick={() => decideRow(sym, 'x')}>×</button>
+                          <button className="min-insp-rowbtn eq"   title="Equivalentes (≡)"  onClick={() => decideRow(sym, 'equiv')}>≡</button>
+                          <button className="min-insp-rowbtn pend" title="Deixar pendente"    onClick={() => decideRow(sym, 'pending')}>🤔</button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
@@ -169,25 +211,11 @@ export default function Step4_Propagation({ game, marks, lockedCells, setMarks, 
               </button>
             </>
           ) : (
-            <>
-              <div className="min-insp-hint">
-                Você decide: algum destino já está marcado ×? Todos já decididos? Ou ainda há um indeciso?
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="add-test-btn min-step-btn" style={{ background: '#fca5a5', flex: 1, marginTop: 0 }}
-                  onClick={() => decide(true)}>
-                  ❌ Distinguíveis (×)
-                </button>
-                <button className="add-test-btn min-step-btn" style={{ background: '#bbf7d0', flex: 1, marginTop: 0 }}
-                  onClick={() => decide(false)}>
-                  ≡ Equivalentes
-                </button>
-                <button className="add-test-btn min-step-btn" style={{ background: '#fde68a', flex: 1, marginTop: 0 }}
-                  onClick={deferPair}>
-                  🤔 Deixar pendente
-                </button>
-              </div>
-            </>
+            <div className="min-insp-hint">
+              Decida <b>cada linha</b>: confira o par de destino na tabela triangular acima.
+              Uma linha <b>×</b> já fecha o par como não-equivalente; <b>≡</b> só vale se TODAS as
+              linhas forem equivalentes.
+            </div>
           )}
         </div>
       ) : (
@@ -198,12 +226,12 @@ export default function Step4_Propagation({ game, marks, lockedCells, setMarks, 
         </div>
       )}
 
-      <button className="add-test-btn min-step-btn"
-        style={{ background: allDone ? '#4ade80' : '#d1d5db', cursor: allDone ? 'pointer' : 'not-allowed' }}
-        onClick={() => { if (allDone) onAdvance(); }}
-        disabled={!allDone}>
-        {allDone ? 'Avançar → Resultado' : `Valide todos os quadrados (${remaining} restante(s))`}
-      </button>
+      {allDone && (
+        <button className="add-test-btn min-step-btn" style={{ background: '#4ade80' }}
+          onClick={onAdvance}>
+          Avançar → Resultado
+        </button>
+      )}
     </div>
   );
 }

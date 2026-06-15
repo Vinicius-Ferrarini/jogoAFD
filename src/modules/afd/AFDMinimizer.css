@@ -149,7 +149,7 @@
   width: 36px;
   height: 36px;
   background: #eee;
-  border: 1px solid #ccc;
+  border: 1px solid #555;
 }
 
 .min-th {
@@ -157,7 +157,7 @@
   height: 36px;
   min-width: 36px;
   background: #f3f4f6;
-  border: 1px solid #ccc;
+  border: 1px solid #555;
   text-align: center;
   font-weight: 900;
   font-size: 11px;
@@ -168,7 +168,7 @@
   width: 36px;
   height: 36px;
   min-width: 36px;
-  border: 1px solid #ccc;
+  border: 1px solid #555;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
@@ -434,6 +434,7 @@
 .min-inspector-table {
   border-collapse: collapse;
   width: 100%;
+  background: #fff;          /* corpo branco mesmo sobre o quadro verde da aula */
   font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
   font-size: 11px;
 }
@@ -458,6 +459,27 @@
 .min-insp-marked  { color: #dc2626; font-weight: 900; }
 .min-insp-empty   { color: #6b7280; }
 .min-insp-neutral { color: #9ca3af; font-style: italic; }
+
+/* Decisão por linha (símbolo) no Inspetor */
+.min-insp-rowbtns { display: flex; gap: 4px; justify-content: center; }
+.min-insp-rowbtns.flash .min-insp-rowbtn { animation: min-shake 0.3s; }
+.min-insp-rowbtn {
+  width: 26px; height: 24px; border: 2px solid #000; border-radius: 5px;
+  font-weight: 900; font-size: 13px; line-height: 1; cursor: pointer;
+  box-shadow: 1.5px 1.5px 0 #000; font-family: inherit; padding: 0;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.min-insp-rowbtn:hover { transform: translate(-1px, -1px); box-shadow: 2.5px 2.5px 0 #000; }
+.min-insp-rowbtn.x    { background: #fca5a5; }
+.min-insp-rowbtn.eq   { background: #bbf7d0; }
+.min-insp-rowbtn.pend { background: #fde68a; }
+
+/* Status travado de uma linha já decidida */
+.min-insp-locked-x    { color: #dc2626; font-weight: 900; }
+.min-insp-locked-eq   { color: #16a34a; font-weight: 900; font-size: 15px; }
+.min-insp-locked-pend { color: #92400e; font-weight: 900; }
+/* "somente aquele quadrado específico" fica amarelo quando pendente */
+.min-insp-pending-cell { background: #fde047 !important; }
 
 .min-insp-hint {
   font-size: 11px;
@@ -798,3 +820,102 @@
   border: 2.5px solid #000; border-radius: 10px; background: #f9fafb;
   padding: 6px; height: 250px; margin-top: 6px;
 }
+
+/* ── Modo Aula da minimização (painel opaco abaixo do cabeçalho) ─────────────
+   Substitui a área de conteúdo do jogo (o cabeçalho da página continua visível
+   e seus selos destacam o passo demonstrado). Grafo à esquerda (igual ao jogo),
+   demonstração à direita, Maurílio explicando no canto inferior esquerdo. */
+.min-lesson-panel {
+  flex: 1; position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+  background: #fff9c4;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+.min-lesson-bar {
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  background: #fde047; border-bottom: 3px solid #000;
+  padding: 6px 16px; font-weight: 900; font-size: 14px; color: #000;
+  box-shadow: 0 2px 0 #000;
+}
+.min-lesson-step { font-size: 12px; white-space: nowrap; flex: 1; }
+.min-lesson-count {
+  font-size: 11px; font-weight: 900; white-space: nowrap;
+  background: #fff; border: 2px solid #000; border-radius: 6px; padding: 1px 8px;
+}
+.min-lesson-x {
+  border: 2px solid #000; border-radius: 6px; background: #fca5a5;
+  font-weight: 900; font-size: 12px; padding: 4px 10px; cursor: pointer;
+  box-shadow: 2px 2px 0 #000; font-family: inherit; color: #000; white-space: nowrap;
+}
+.min-lesson-x:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #000; }
+
+/* Quadro de demonstração — coluna à direita (painel da direita, igual ao jogo) */
+.min-lesson-stage {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px; overflow: hidden;
+}
+.min-lesson-card {
+  flex: 1; overflow: auto;
+  background: #0e9c2b; border: 3px solid #000; border-radius: 12px;
+  box-shadow: 6px 6px 0 #000; padding: 12px 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 10px;
+}
+/* Título do "quadro" (o que está sendo feito) — sublinhado, em branco */
+.min-lesson-card-title {
+  flex-shrink: 0; color: #fff; font-weight: 900; font-size: 15px;
+  text-align: center; text-decoration: underline; text-underline-offset: 3px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
+}
+/* PROP: triangular + tabela do par, empilhadas */
+.min-lesson-inspector {
+  display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;
+}
+
+.min-lesson-controls {
+  display: flex; gap: 10px; justify-content: center; align-items: center;
+  flex-wrap: wrap; flex-shrink: 0;
+}
+.min-lesson-btn {
+  border: 3px solid #000; border-radius: 10px; background: #fff;
+  font-weight: 900; font-size: 12px; padding: 9px 14px; cursor: pointer;
+  box-shadow: 4px 4px 0 #000; font-family: inherit; color: #000;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.min-lesson-btn:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+.min-lesson-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.min-lesson-btn.primary { background: #fde047; }
+.min-lesson-btn.do { background: #34d399; }
+
+/* Maurílio explicando — logo abaixo do quadro (na coluna da direita) + balão */
+.min-lesson-teacher {
+  flex-shrink: 0;
+  display: flex; align-items: flex-end; gap: 8px;
+}
+.min-lesson-teacher-img {
+  height: 115px; flex-shrink: 0;
+  filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4));
+}
+.min-lesson-teacher-bubble {
+  position: relative; flex: 1; margin-bottom: 14px;
+  background: #fff; border: 3px solid #000; border-radius: 14px;
+  box-shadow: 4px 4px 0 #000; padding: 10px 14px;
+  font-size: 12.5px; font-weight: 700; color: #000; line-height: 1.4;
+  max-height: 130px; overflow: auto;
+}
+.min-lesson-teacher-bubble::after {
+  content: ""; position: absolute; left: -12px; bottom: 14px;
+  border-width: 8px 12px 8px 0; border-style: solid;
+  border-color: transparent #000 transparent transparent;
+}
+
+/* Botão que abre a aula (no header do MinGame) */
+.min-lesson-open {
+  border: 2px solid #000; border-radius: 6px; background: #c4b5fd;
+  font-weight: 900; font-size: 11px; padding: 3px 9px; cursor: pointer;
+  box-shadow: 2px 2px 0 #000; color: #000; white-space: nowrap;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.min-lesson-open:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #000; }

@@ -20,11 +20,13 @@ export default function Step1_Preparation({ game, prep, setPrep, showProf, onAdv
   const [errorCells, setErrorCells] = useState(new Set()); // "ri,ci"
   const [errorAxes,  setErrorAxes]  = useState(new Set()); // "row-ri"/"col-ci"
   const [sizeError,  setSizeError]  = useState(null);
+  const [unreachableList, setUnreachableList] = useState([]);
 
   // Qualquer edição zera a verificação (obriga revalidar) e limpa destaques.
   const clearChecks = () => {
     setChecks({ isDFA: null, isTotal: null, unreachable: null });
     setErrorCells(new Set()); setErrorAxes(new Set()); setSizeError(null);
+    setUnreachableList([]);
   };
 
   // ── Mutadores de prep ──────────────────────────────────────────────────────
@@ -54,23 +56,21 @@ export default function Step1_Preparation({ game, prep, setPrep, showProf, onAdv
   const setColLabel = (ci, v) => { setPrep(p => { const n = [...p.cols]; n[ci] = v; return { ...p, cols: n }; }); clearChecks(); };
   const setCell     = (ri, ci, v) => { setPrep(p => ({ ...p, cells: { ...p.cells, [`${ri},${ci}`]: v } })); clearChecks(); };
 
-  // ── Verificações (cada uma com feedback do Maurílio, estilo aula) ──────────
+  // ── Verificações (resultado só inline; Maurílio só fala no "Avançar") ──────
   const verify = (which) => {
     if (which === 'isDFA') {
       const r = validateIsDFA(prep);
       setErrorAxes(r.errorAxes); setErrorCells(new Set()); setSizeError(null);
       setChecks(c => ({ ...c, isDFA: r.ok }));
-      showProf(r.message, r.ok ? 'feliz' : 'serio');
     } else if (which === 'isTotal') {
       const r = validateIsTotal(prep);
       setErrorCells(r.errorCells); setErrorAxes(new Set()); setSizeError(null);
       setChecks(c => ({ ...c, isTotal: r.ok }));
-      showProf(r.message, r.ok ? 'feliz' : 'serio');
     } else if (which === 'unreachable') {
       const r = checkUnreachable(prep);
       setErrorCells(new Set()); setErrorAxes(new Set()); setSizeError(null);
+      setUnreachableList(r.unreachable);
       setChecks(c => ({ ...c, unreachable: r.unreachable.length === 0 }));
-      showProf(r.message, 'explicando');
     }
   };
 
@@ -151,8 +151,8 @@ export default function Step1_Preparation({ game, prep, setPrep, showProf, onAdv
         </table>
       </div>
 
-      {/* Verificação 1 — É AFD? */}
-      <div className="req-check">
+      {/* Verificação 1 — É AFD? (bloco empurrado p/ baixo: mais espaço p/ a tabela) */}
+      <div className="req-check" style={{ marginTop: 'auto' }}>
         <div className="req-check-header">
           <span className="req-check-icon">{checks.isDFA === null ? '🔲' : (checks.isDFA ? '✅' : '❌')}</span>
           <span className="req-check-label">1. É um AFD (determinístico)?</span>
@@ -194,7 +194,7 @@ export default function Step1_Preparation({ game, prep, setPrep, showProf, onAdv
           <div className={`req-result ${checks.unreachable ? 'ok' : 'warn'}`}>
             {checks.unreachable
               ? '✓ Nenhum — todos os estados são alcançáveis a partir do inicial.'
-              : '⚠ Há estados inalcançáveis (veja a fala do Maurílio). Eles não influenciam a linguagem.'}
+              : `⚠ Inalcançáveis: {${unreachableList.join(', ')}}. Eles não influenciam a linguagem e seriam descartados antes de minimizar.`}
           </div>
         )}
       </div>

@@ -17,6 +17,7 @@ import {
   computeReachable,
   computeTrivialTable,
   computeDistTable,
+  computeDistSequence,
   computeMinimized,
   analyzeDrawnDFA,
   productCounterexample,
@@ -77,7 +78,140 @@ export default function useMinimizationGame(exercise) {
   // ── Gabaritos memoizados (recalculados 1× por exercício, nunca expostos) ────
   const trivialTable = useMemo(() => computeTrivialTable(rStates, rFinals),                       [rStates, rFinals]);
   const distTable    = useMemo(() => computeDistTable(rStates, rFinals, rTransitions, alphabet),  [rStates, rFinals, rTransitions, alphabet]);
+  const distSequence = useMemo(() => computeDistSequence(rStates, rFinals, rTransitions, alphabet), [rStates, rFinals, rTransitions, alphabet]);
   const minimized    = useMemo(() => computeMinimized(rStates, initialState, rFinals, rTransitions, alphabet, distTable), [rStates, initialState, rFinals, rTransitions, alphabet, distTable]);
+
+  // ── Roteiro do Modo Aula (gerado do gabarito; 1 motor p/ todos os exercícios) ─
+  // Cada etapa → array de quadros { text, view }. `view.kind`: 'delta' | 'tri' |
+  // 'groups' | 'graph'. O MinLessonOverlay só lê e desenha — sem lógica lá.
+  const lessonScript = useMemo(() => {
+    // PREP — tabela δ: estrutura vazia, depois preenchida pelo gabarito
+    const emptyPrep = { rows: states, cols: alphabet, cells: {} };
+    const fullCells = {};
+    states.forEach((st, ri) => alphabet.forEach((sym, ci) => {
+      fullCells[`${ri},${ci}`] = fullTransTable[st]?.[sym] ?? '';
+    }));
+    const fullPrep = { rows: states, cols: alphabet, cells: fullCells };
+    const PREP = [
+      { text: 'Antes de minimizar, conferimos o AFD numa tabela de transição δ: uma LINHA por estado e uma COLUNA por símbolo do alfabeto.', view: { kind: 'delta', prep: emptyPrep } },
+      { text: 'Em cada célula anotamos para onde o estado vai ao ler aquele símbolo. A δ precisa estar COMPLETA (toda célula preenchida) — isso é ser uma função total.', view: { kind: 'delta', prep: fullPrep } },
+    ];
+
+    // SETUP — tabela triangular vazia (só explicação estrutural)
+    const SETUP = [
+      { text: 'Agora comparamos os estados aos PARES. Como (p,q) é o mesmo que (q,p) e não comparamos um estado com ele mesmo, a tabela é TRIANGULAR — sem diagonal.', view: { kind: 'tri', userTable: {}, readOnly: true } },
+      { text: `Com ${rStates.length} estados alcançáveis, a tabela tem ${rStates.length - 1} linha(s) e ${rStates.length - 1} coluna(s): cada par aparece uma única vez.`, view: { kind: 'tri', userTable: {}, readOnly: true } },
+    ];
+
+    // TRIVIAL — marca final × não-final, um a um
+    const TRIVIAL = [
+      { text: 'Marcação trivial: todo par em que UM estado é final e o outro NÃO já é distinguível (um aceita, o outro rejeita). Vamos marcá-los com ×.', view: { kind: 'tri', userTable: {} } },
+    ];
+    {
+      let acc = {};
+      distSequence.trivial.forEach(({ pair, p, q }) => {
+        acc = { ...acc, [pair]: true };
+        const pf = rFinals.includes(p);
+        const finalOne = pf ? p : q, otherOne = pf ? q : p;
+        TRIVIAL.push({
+          text: `(${p}, ${q}): ${finalOne} é final e ${otherOne} não → distinguíveis. Marca ×.`,
+          view: { kind: 'tri', userTable: { ...acc }, selectedPair: pair },
+        });
+      });
+      if (distSequence.trivial.length === 0)
+        TRIVIAL.push({ text: 'Neste AFD não há par final × não-final para marcar agora — seguimos direto para a propagação.', view: { kind: 'tri', userTable: {} } });
+    }
+
+    // PROP — SIMULA o Inspetor em rodadas (igual ao jogo): para cada par branco,
+    // monta a tabela de transição e decide símbolo a símbolo. × fecha na hora;
+    // pendente é deixado e revisto numa próxima rodada ("voltar depois").
+    const propMarks = {};                                   // × (distinguíveis)
+    allPairs.forEach(k => { if (trivialTable[k]) propMarks[k] = true; });
+    const propEquiv  = new Set();                            // ≡ (resolvidos equivalentes)
+    const propWhite  = allPairs.filter(k => !trivialTable[k]);
+    const propDone   = (k) => propMarks[k] === true || propEquiv.has(k);
+    const snap = (pair, rows) => ({
+      kind: 'inspector', pair,
+      rows: rows.map(r => ({ ...r })),
+      marks: { ...propMarks },
+      resolvedEquiv: [...propEquiv],
+    });
+    const classifyRow = (pair, sym) => {
+      const [a, b] = pair.split(',');
+      const dp = transTable[a]?.[sym] ?? null;
+      const dq = transTable[b]?.[sym] ?? null;
+      if (!dp || !dq || dp === dq) return { decision: 'equiv', dp, dq, dest: null };
+      const dest = pairKey(dp, dq);
+      if (dest === pair)         return { decision: 'equiv', dp, dq, dest };
+      if (propMarks[dest])       return { decision: 'x',     dp, dq, dest };
+      if (propEquiv.has(dest))   return { decision: 'equiv', dp, dq, dest };
+      return { decision: 'pending', dp, dq, dest };
+    };
+
+    const PROP = [
+      { text: 'Agora a propagação — o passo principal. Vou resolver cada par branco como você vai fazer: monto a tabela de transição do par e decido símbolo a símbolo.', view: snap(null, []) },
+    ];
+    let safety = 0, roundNo = 0;
+    while (safety++ < 80) {
+      let changed = false, anyUndecided = false;
+      roundNo++;
+      if (roundNo > 1 && propWhite.some(k => !propDone(k)))
+        PROP.push({ text: `Rodada ${roundNo}: volto aos pares que ficaram pendentes — agora que marquei novos ×, alguns já dá pra decidir.`, view: snap(null, []) });
+      for (const pair of propWhite) {
+        if (propDone(pair)) continue;
+        anyUndecided = true;
+        const [a, b] = pair.split(',');
+        const rows = [];
+        PROP.push({ text: `Par (${a}, ${b}): monto a tabela de transição — para cada símbolo, vejo aonde ${a} e ${b} vão.`, view: snap(pair, rows) });
+        let concluded = null, pendingHere = false;
+        for (const sym of alphabet) {
+          const c = classifyRow(pair, sym);
+          const dl = c.dest ? `(${c.dp}, ${c.dq})` : `${c.dp}`;
+          if (c.decision === 'x') {
+            rows.push({ sym, dp: c.dp, dq: c.dq, dest: c.dest, decision: 'x' });
+            PROP.push({ text: `Lendo '${sym}', caem em ${dl}, que já está ×. Um símbolo que distingue já basta → (${a}, ${b}) são DISTINGUÍVEIS. Marco × e nem preciso ver o resto.`, view: snap(pair, rows) });
+            concluded = 'x'; break;
+          } else if (c.decision === 'pending') {
+            rows.push({ sym, dp: c.dp, dq: c.dq, dest: c.dest, decision: 'pending' });
+            pendingHere = true;
+            PROP.push({ text: `Lendo '${sym}', caem em ${dl}, que eu ainda NÃO decidi. Deixo esta linha pendente (fica amarela) e sigo para o próximo símbolo.`, view: snap(pair, rows) });
+          } else {
+            rows.push({ sym, dp: c.dp, dq: c.dq, dest: c.dest, decision: 'equiv' });
+            const why = c.dest ? `${dl} é equivalente — não distingue` : `os dois vão para ${c.dp} — destino igual, não distingue`;
+            PROP.push({ text: `Lendo '${sym}', ${why}.`, view: snap(pair, rows) });
+          }
+        }
+        if (concluded === 'x') { propMarks[pair] = true; changed = true; }
+        else if (!pendingHere) {
+          propEquiv.add(pair); changed = true;
+          PROP.push({ text: `Nenhum símbolo distinguiu → (${a}, ${b}) são EQUIVALENTES (≡).`, view: snap(pair, rows) });
+        } else {
+          PROP.push({ text: `Ainda há símbolo com destino indeciso → deixo (${a}, ${b}) PENDENTE e volto depois, quando esses destinos estiverem resolvidos.`, view: snap(pair, rows) });
+        }
+      }
+      if (!anyUndecided) break;
+      if (!changed) {
+        const rest = propWhite.filter(k => !propDone(k));
+        rest.forEach(k => propEquiv.add(k));
+        if (rest.length)
+          PROP.push({ text: 'Ninguém mais consegue ser distinguido. Os pares que sobraram pendentes (estão num ciclo) são, então, EQUIVALENTES (≡).', view: snap(null, []) });
+        break;
+      }
+    }
+    PROP.push({ text: 'Tabela completa! Os × são pares distinguíveis; os ≡ são equivalentes. É isso que você vai reproduzir no jogo.', view: snap(null, []) });
+
+    // GROUPS — quais estados se fundem (overlay lê minimized.classMap)
+    const GROUPS = [
+      { text: 'Cada conjunto de estados equivalentes vira UM estado no AFD mínimo. Estes são os grupos:', view: { kind: 'groups' } },
+    ];
+
+    // DRAW — o AFD mínimo pronto (overlay lê minimized.nodes/transitions)
+    const DRAW = [
+      { text: 'O AFD mínimo: um estado por grupo. As transições saem de um representante de cada grupo e vão para o grupo de destino.', view: { kind: 'graph' } },
+    ];
+
+    return { PREP, SETUP, TRIVIAL, PROP, GROUPS, DRAW };
+  }, [states, alphabet, fullTransTable, transTable, rStates, rFinals, allPairs, trivialTable, distSequence]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Auxiliares de mensagem
@@ -351,65 +485,55 @@ export default function useMinimizationGame(exercise) {
     };
   }, [allPairs, distTable, alphabet, transTable, summarize]);
 
-  // PROP por célula — valida a decisão do aluno sobre o par {p,q} contra o
-  // ESTADO ATUAL do tabuleiro (algoritmo em rodadas, não a resposta final):
-  //   markedX === true  → "distinguíveis" (×)  — só vale se algum destino já é ×
-  //   markedX === false → "equivalentes" (≡)  — só vale se todos os destinos já
-  //                        estão decididos (neutros/≡) OU se nada mais pode ser ×
-  //                        (ponto fixo: desempata ciclos como equivalentes)
-  // `marks`: { pairKey: bool } (× = true, inclui triviais); `resolved`: Set de
-  // pares já validados pelo aluno (× ou ≡). Devolve { ok, message }.
-  const validatePairAction = useCallback((pair, markedX, marks, resolved) => {
+  // PROP por LINHA (símbolo) — classifica o destino de UM símbolo do par {p,q}
+  // contra o estado atual do tabuleiro. Decisão da linha:
+  //   'x'       → o destino já é distinguível (×) → este símbolo distingue o par
+  //   'equiv'   → destinos coincidem (mesmo estado / auto-ref) OU destino já ≡
+  //   'pending' → destino ainda indeciso (nem × nem ≡)
+  // `display` separa "iguais" (mesmo estado) de "equiv" (par já resolvido como ≡)
+  // só para a dica visual. `marks`: {pairKey:bool}; `resolved`: Set de pares já ≡.
+  const classifyPairRow = useCallback((pair, sym, marks, resolved) => {
     const [p, q] = pair.split(',');
+    const dp = transTable[p]?.[sym] ?? null;
+    const dq = transTable[q]?.[sym] ?? null;
+    if (!dp || !dq || dp === dq) return { decision: 'equiv', display: 'same', dp, dq, dest: null };
+    const dest = pairKey(dp, dq);
+    if (dest === pair)            return { decision: 'equiv', display: 'same', dp, dq, dest };
+    if (marks[dest] === true)     return { decision: 'x',     display: 'x',    dp, dq, dest };
+    if (resolved.has(dest))       return { decision: 'equiv', display: 'equiv', dp, dq, dest };
+    return { decision: 'pending', display: 'pending', dp, dq, dest };
+  }, [transTable]);
 
-    // status de um par de destino (a,b) no estado atual, em relação ao dono `owner`
-    const destStatus = (a, b, owner) => {
-      if (!a || !b || a === b) return 'neutral';
-      const dk = pairKey(a, b);
-      if (dk === owner) return 'neutral';            // auto-referência
-      if (marks[dk] === true) return 'x';            // já distinguível (trivial ou ×)
-      if (resolved.has(dk)) return 'equiv';          // já validado como equivalente
-      return 'pending';                              // ainda indeciso
-    };
+  // Valida a escolha do aluno para UMA linha (símbolo). `choice` ∈ 'x'|'equiv'|
+  // 'pending'. Toda mensagem de erro diz ONDE (símbolo/destino) e COMO corrigir.
+  const validatePairRow = useCallback((pair, sym, choice, marks, resolved) => {
+    const [p, q] = pair.split(',');
+    const { decision, display, dp, dq, dest } = classifyPairRow(pair, sym, marks, resolved);
+    const D = dest ? `(${dp},${dq})` : (dp ? `${dp}` : '—');
 
-    // o tabuleiro ainda permite marcar × em algum par não resolvido? (ponto fixo?)
-    const boardCanMarkX = () => {
-      for (const key of allPairs) {
-        if (marks[key] === true || resolved.has(key)) continue;
-        const [a, b] = key.split(',');
-        for (const sym of alphabet)
-          if (destStatus(transTable[a]?.[sym], transTable[b]?.[sym], key) === 'x') return true;
-      }
-      return false;
-    };
-
-    // ação correta para ESTE par, dado o estado atual
-    let witnessX = null, pendingDest = null, anyPending = false;
-    for (const sym of alphabet) {
-      const dp = transTable[p]?.[sym], dq = transTable[q]?.[sym];
-      const st = destStatus(dp, dq, pair);
-      if (st === 'x' && !witnessX) witnessX = { sym, dp, dq };
-      if (st === 'pending') { anyPending = true; if (!pendingDest) pendingDest = { sym, dp, dq }; }
-    }
-    const correct = witnessX ? 'x' : (!anyPending ? 'equiv' : (boardCanMarkX() ? 'pending' : 'equiv'));
-
-    if (markedX === true) {
-      if (correct === 'x')
-        return { ok: true, message: `✓ Distinguíveis! Lendo '${witnessX.sym}' caem em (${witnessX.dp},${witnessX.dq}), que já está marcado × — logo (${p},${q}) também é.` };
-      if (correct === 'pending')
-        return { ok: false, message: `Ainda não dá pra afirmar ×: o destino (${pendingDest.dp},${pendingDest.dq}) está indeciso. Deixe (${p},${q}) pendente e resolva o destino primeiro.` };
-      return { ok: false, message: `Nenhum destino de (${p},${q}) está marcado × — não há como distingui-los. Eles são equivalentes (≡).` };
+    if (choice === decision) {
+      const okMsg = {
+        x:       `✓ Em '${sym}', (${p},${q}) caem em ${D}, que já está ×. Um símbolo que distingue basta — o par é NÃO-equivalente (×).`,
+        equiv:   display === 'same'
+          ? `✓ Em '${sym}', os dois vão para ${dp} — destino igual, não distingue.`
+          : `✓ Em '${sym}', o destino ${D} já é equivalente — esse símbolo não distingue.`,
+        pending: `✓ Em '${sym}', o destino ${D} ainda não foi decidido — fica pendente até resolvê-lo.`,
+      }[choice];
+      return { ok: true, decision, display, message: okMsg };
     }
 
-    // markedX === false (≡)
-    if (correct === 'equiv')
-      return { ok: true, message: anyPending
-        ? `✓ Equivalentes! Nada mais pode ser distinguido — os pares restantes (em ciclo) são equivalentes.`
-        : `✓ Equivalentes! Todos os destinos coincidem ou já são equivalentes.` };
-    if (correct === 'x')
-      return { ok: false, message: `Olhe de novo: lendo '${witnessX.sym}', (${p},${q}) vão para (${witnessX.dp},${witnessX.dq}), que já está × → distinguíveis. Marque com ×.` };
-    return { ok: false, message: `Cedo demais: o destino (${pendingDest.dp},${pendingDest.dq}) ainda não foi decidido. Deixe (${p},${q}) pendente e resolva o destino antes.` };
-  }, [alphabet, transTable, allPairs]);
+    // ERRO — sempre aponta o porquê + o que fazer
+    let message;
+    if (decision === 'x')
+      message = `❌ Em '${sym}', (${p},${q}) caem em ${D}, que JÁ está marcado × → esse símbolo distingue. Corrija a linha '${sym}' para Distinguível (×).`;
+    else if (decision === 'equiv' && display === 'same')
+      message = `❌ Em '${sym}', os dois vão para o MESMO estado ${dp} — não há como distinguir por aqui. Corrija a linha '${sym}' para Equivalente (≡).`;
+    else if (decision === 'equiv')
+      message = `❌ Em '${sym}', o destino ${D} já está decidido como equivalente (não é ×, nem está pendente). Corrija a linha '${sym}' para Equivalente (≡).`;
+    else // decision === 'pending'
+      message = `❌ Em '${sym}', o destino ${D} ainda NÃO foi decidido — não dá pra afirmar ${choice === 'x' ? 'que distingue' : 'que é equivalente'} agora. Corrija para Pendente e resolva ${D} antes.`;
+    return { ok: false, decision, display, message };
+  }, [classifyPairRow]);
 
   // PROP — valida a TABELA do Inspetor preenchida pelo aluno para o par {p,q}.
   // inspDelta = { [sym]: { p, q, pair } } com o que o aluno digitou.
@@ -559,10 +683,12 @@ export default function useMinimizationGame(exercise) {
     rStates, rFinals, rTransitions, unreachable,
     transTable, fullTransTable, origNodes, allPairs,
     // gabaritos memoizados
-    trivialTable, distTable, minimized, isAlreadyMinimal,
+    trivialTable, distTable, distSequence, minimized, isAlreadyMinimal,
+    // roteiro do Modo Aula (derivado do gabarito)
+    lessonScript,
     // validadores puros → { ok, errorCells, message, ... }
     validateIsDFA, validateIsTotal, checkUnreachable, validateTransitionTable,
-    validateGrid, validateTrivial, validatePropagation, validatePairAction,
+    validateGrid, validateTrivial, validatePropagation, classifyPairRow, validatePairRow,
     validateInspectorTable, validateDrawnMinimized,
     // auxiliares de UX
     inspectPair, nextPropagationHint,
