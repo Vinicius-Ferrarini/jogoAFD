@@ -4,7 +4,12 @@ import { lote3 } from './levels_data/lote3.js';
 
 export const GAME_LEVELS = [...lote1, ...lote2, ...lote3];
 
-export const DIFF_COLOR = { easy: '#4ade80', medium: '#facc15', hard: '#f87171', impossible: '#ddd6fe' };
+export const DIFF_COLOR = { easy: '#4ade80', medium: '#facc15', hard: '#f87171', impossible: '#ddd6fe', unavailable: '#d1d5db' };
+
+// Fases temporariamente INDISPONÍVEIS (complexas de implementar/explicar). Não
+// são clicáveis, não mostram estrelas e não contam no total. Para reativar uma
+// fase, basta removê-la deste conjunto. Vale para AFD_1 (fases) e AFD_2 (exercícios).
+export const UNAVAILABLE_LEVELS = new Set([1, 2, 3, 4]);
 
 export const LEVEL_DIFFICULTY = {
    1:'easy',  2:'easy',  3:'easy',  4:'easy',  5:'easy',

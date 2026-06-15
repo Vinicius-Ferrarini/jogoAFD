@@ -94,6 +94,15 @@ body { color: var(--text-main); }
   box-shadow: 6px 6px 0px #000;
 }
 
+/* Altura uniforme dos botões de fase: o conteúdo (3 estrelas, 1 estrela ou
+   "Indisponível") NÃO deve alterar o tamanho do quadrado. min-height fixa +
+   conteúdo centralizado garantem quadrados idênticos em todas as fases/páginas. */
+.levels-grid .menu-btn {
+  box-sizing: border-box;
+  min-height: 86px;
+  justify-content: center;
+}
+
 /* --- WORKSPACE (TELA DO JOGO) --- */
 .workspace-wrapper {
   display: flex;

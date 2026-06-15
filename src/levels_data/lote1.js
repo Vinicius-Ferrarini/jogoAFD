@@ -2,10 +2,10 @@
   { id: 1,  label: "L01", formula: "L = ∅",                                                               wordOnly: true,  desc: "A linguagem mais simples que existe; não contém palavras.",           shortestWord: null,       regex: /(?!)/,                                                     alphabet: [],                     acceptedWords: [],                         rejectedWords: ["λ","a","0"],           hint: "Uma linguagem vazia não aceita absolutamente nada. Como o grafo deve ficar?",                                       successMsg: "Perfeito! Um autômato sem estados finais não aceita nada.",
     tutorials: {
       onStart: { type: 'theory', title: 'Bem-vindo ao TuringLab!', dialog: [
-        'Olá! Sou Maurílio, seu guia de AFDs! ðŸ¤– Vamos aprender construindo!',
+        'Olá! Sou Maurílio, seu guia de AFDs! 🤖 Vamos aprender construindo!',
         'Um AFD lê uma palavra letra por letra e decide: ACEITA ✅ ou REJEITA ❌.',
         'L = ∅ é a linguagem VAZIA — zero palavras aceitas. Absolutamente nada!',
-        'Sua tarefa: descobrir a menor palavra desta linguagem. Ela é bem especial... ðŸ¤”',
+        'Sua tarefa: descobrir a menor palavra desta linguagem. Ela é bem especial... 🤔',
       ] },
       onFormalDesc: { type: 'theory', title: 'Descrição Formal', dialog: [
         'Um AFD é a quíntupla M = (Q, Σ, δ, q₀, F) — cada campo tem um significado preciso!',
@@ -22,7 +22,7 @@
     allowedCards: ['toggleInitial', 'addNode', 'toggleFinal', 'erase', 'undo', 'redo'],
     tutorials: {
       onStart: { type: 'mechanic', title: 'Seu Primeiro Autômato!', dialog: [
-        'Boa! Hora de construir seu PRIMEIRO autômato! ðŸŽ‰',
+        'Boa! Hora de construir seu PRIMEIRO autômato! 🎉',
         'L = {λ} aceita só a palavra vazia λ (zero letras). Nada mais!',
         'Se λ é aceita, o estado inicial JÁ É o final. Use ▶ e depois ◎ no mesmo estado!',
       ] },
@@ -53,7 +53,7 @@
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Hora de Montar!', dialog: [
         'Você achou a menor palavra! Agora monte o autômato passo a passo.',
-        'Dica: use o botão ðŸ‘¨‍ðŸ« Assistir Aula no topo para ver uma demonstração guiada!',
+        'Dica: use o botão 👨‍🏫 Assistir Aula no topo para ver uma demonstração guiada!',
       ] },
       onFormalDesc: { type: 'theory', title: 'Descrição Formal', dialog: [
         'Este painel mostra a DESCRIÇÃO FORMAL do AFD: estados, alfabeto, função de transição...',
@@ -176,7 +176,7 @@
   { id: 6,  label: "L06", formula: "L = { a^n | n > 0 e n é ímpar }",                                    desc: "",                                                                 shortestWord: "a",        regex: /^a(aa)*$/,                                                  alphabet: ['a'],                  acceptedWords: ["a","aaa","aaaaa"],         rejectedWords: ["λ","aa","aaaa"],       hint: "Ímpar significa 1, 3, 5... Vai e volta entre dois estados!",                                                        successMsg: "Mecânica de paridade dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade: Ímpar vs Par', dialog: [
-        'Novo conceito: PARIDADE! ðŸ”¢ Ímpar = 1,3,5... Par = 0,2,4...',
+        'Novo conceito: PARIDADE! 🔢 Ímpar = 1,3,5... Par = 0,2,4...',
         'Para contar comprimento ímpar, use 2 estados alternando a cada "a" lido.',
         'Comece no estado "ímpar" (1 "a" já aceita). Cada novo "a" inverte: ímpar ↔ par!',
       ] },
@@ -220,7 +220,7 @@
   { id: 7,  label: "L07", formula: "L = { a b^n a | n ≥ 0 e n é par }",                                  desc: "",                                                                 shortestWord: "aa",       regex: /^a(bb)*a$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["aa","abba","abbbba"],      rejectedWords: ["a","aba","abbba"],     hint: "A palavra começa com 'a', termina com 'a', e no meio os 'b's andam em duplas.",                                    successMsg: "Excelente! Você controlou o sanduíche de 'b's pares.",
     tutorials: {
       onStart: { type: 'theory', title: 'Linguagem Sanduíche!', dialog: [
-        'Linguagem SANDUÍCHE! ðŸ¥ª Início e fim fixos, meio variável.',
+        'Linguagem SANDUÍCHE! 🥪 Início e fim fixos, meio variável.',
         'Começa com "a", seguido de um número PAR de "b"s (0, 2, 4...), termina com "a".',
         'Dica: rastreie o "a" inicial, a paridade dos "b"s e feche com o "a" final.',
       ] },

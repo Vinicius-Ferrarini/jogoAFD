@@ -31,6 +31,7 @@ export default function CanvasArea({
   setDrawMode, showToast,
   guidedLessonStep, setGuidedLessonStep, currentLevel,
   userNodesSnapshot, userTransitionsSnapshot, resetHistory,
+  errorNodeIds = null,   // Set<id> opcional: estados a destacar em erro (minimização)
 }) {
   // ── Pointer: canvas ───────────────────────────────────────────────────────
   const handlePointerDownCanvas = useCallback((e) => {
@@ -213,7 +214,7 @@ export default function CanvasArea({
 
   // ── Pointer: up ───────────────────────────────────────────────────────────
   const handlePointerUp = useCallback((e) => {
-    try { e.target.releasePointerCapture(e.pointerId); } catch (_) {}
+    try { e.target.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
 
     if (interactionMode === 'DRAW' && isDrawingRef.current) {
       isDrawingRef.current = false;
@@ -481,7 +482,7 @@ export default function CanvasArea({
                 : '' : '';
             return (
               <div key={node.uid}
-                className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${simCls}`}
+                className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${simCls}`}
                 style={{ top:`${node.y}%`, left:`${node.x}%` }}
                 onPointerDown={e => handlePointerDownNode(e, node.uid)}>
                 <input

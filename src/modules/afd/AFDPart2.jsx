@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import './AFDPart1.css';
 import './AFDPart2.css';
 import { SvgStars, DifficultyLegend } from './SvgStar';
-import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
+import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../levels';
 import ExerciseScreen from './components/ExerciseScreen';
 
 // ── P2 Progress (localStorage, separate from P1) ──────────────────────────────
@@ -20,8 +20,8 @@ function LevelList({ progress, onSelect, onBack }) {
   const perPage    = 20;
   const totalPages = Math.ceil(GAME_LEVELS.length / perPage);
   const pageItems  = GAME_LEVELS.slice((page - 1) * perPage, page * perPage);
-  const maxStars   = GAME_LEVELS.length * 3;
-  const totalStars = GAME_LEVELS.reduce((sum, l) => sum + (progress[l.id]?.stars || 0), 0);
+  const maxStars   = GAME_LEVELS.reduce((s, l) => s + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : 3), 0);
+  const totalStars = GAME_LEVELS.reduce((sum, l) => sum + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : (progress[l.id]?.stars || 0)), 0);
 
   return (
     <div className="menu-screen menu-screen-fases" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
@@ -44,6 +44,16 @@ function LevelList({ progress, onSelect, onBack }) {
 
       <div className="levels-grid">
         {pageItems.map(lvl => {
+          if (UNAVAILABLE_LEVELS.has(lvl.id)) {
+            return (
+              <button key={lvl.id} className="menu-btn primary" disabled
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  background: DIFF_COLOR.unavailable, cursor: 'not-allowed', opacity: 0.8 }}>
+                <span>{lvl.label}</span>
+                <span style={{ fontSize: 18, lineHeight: 1, display: 'flex', alignItems: 'center' }}>🔒</span>
+              </button>
+            );
+          }
           const diff = LEVEL_DIFFICULTY[lvl.id] || 'easy';
           const bg   = DIFF_COLOR[diff];
           return (

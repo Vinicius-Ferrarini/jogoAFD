@@ -16,7 +16,7 @@ import useHistory from './hooks/useHistory';
 import useGuidedLesson from './hooks/useGuidedLesson';
 import useAFDGraph, { lvlAccepts } from './hooks/useAFDGraph';
 import useCanvasState from './hooks/useCanvasState';
-import { GAME_LEVELS } from '../../levels';
+import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../../levels';
 
 // ─── Utilitário: gera um UID curto ───────────────────────────────────────────
 let _uidCounter = 0;
@@ -163,17 +163,19 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     isTableFocusedRef.current = false;
   }, [resetHistory, resetDraw, resetZoom]);
 
-  // ── Navegação entre fases ─────────────────────────────────────────────────
+  // ── Navegação entre fases (pula fases indisponíveis) ──────────────────────
   const handlePrevLevel = useCallback(() => {
     if (!currentLevel) return;
     const idx = GAME_LEVELS.findIndex(l => l.id === currentLevel.id);
-    if (idx > 0) loadLevel(GAME_LEVELS[idx - 1]);
+    for (let i = idx - 1; i >= 0; i--)
+      if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { loadLevel(GAME_LEVELS[i]); return; }
   }, [currentLevel, loadLevel]);
 
   const handleNextLevel = useCallback(() => {
     if (!currentLevel) return;
     const idx = GAME_LEVELS.findIndex(l => l.id === currentLevel.id);
-    if (idx < GAME_LEVELS.length - 1) loadLevel(GAME_LEVELS[idx + 1]);
+    for (let i = idx + 1; i < GAME_LEVELS.length; i++)
+      if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { loadLevel(GAME_LEVELS[i]); return; }
   }, [currentLevel, loadLevel]);
 
   // ── Encerrar Aula Guiada (restaura snapshot do aluno) ─────────────────────

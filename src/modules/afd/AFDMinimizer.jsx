@@ -290,7 +290,7 @@ function LevelList({ progress, onSelect, onBack }) {
   const maxStars   = EXERCISES.length * 3;
   const totalStars = EXERCISES.reduce((s, ex) => s + (progress[`afd-min-${ex.id}`]?.stars || 0), 0);
   return (
-    <div className="menu-screen menu-screen-fases" style={{ justifyContent:'flex-start', paddingTop:20 }}>
+    <div className="menu-screen menu-screen-fases min-screen" style={{ justifyContent:'flex-start', paddingTop:20 }}>
       <div style={{ display:'flex', alignItems:'center', marginBottom:14, width:'100%' }}>
         <div style={{ flex:1 }}>
           <button className="back-btn" onClick={onBack}>⬅ Voltar</button>

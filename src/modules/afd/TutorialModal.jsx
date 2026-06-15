@@ -8,12 +8,6 @@ const S = {
     display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column',
     fontFamily: "'Comic Sans MS', 'Comic Neue', cursive, sans-serif",
   },
-  badge: {
-    background: '#fde047', border: '3px solid #000', borderRadius: 10,
-    padding: '7px 26px', fontSize: 18, fontWeight: 900,
-    boxShadow: '4px 4px 0 #000', marginBottom: 22, letterSpacing: 0.3,
-    userSelect: 'none',
-  },
   row: { display: 'flex', alignItems: 'flex-start', justifyContent: 'center' },
   prof: { height: 290, zIndex: 2, marginRight: -58, flexShrink: 0 },
   bubbleWrap: { position: 'relative', width: 380, height: 250, marginTop: -140, zIndex: 1, flexShrink: 0 },
@@ -29,15 +23,11 @@ const S = {
 
 export default function TutorialModal({ tutorial, onClose }) {
   const [step, setStep] = useState(0);
-  const { dialog, title, type } = tutorial;
+  const { dialog } = tutorial;
   const isLast = step === dialog.length - 1;
 
   return (
     <div style={S.overlay} onPointerDown={e => e.stopPropagation()}>
-      <div style={S.badge}>
-        {type === 'theory' ? '📖 Teoria' : '🎮 Mecânica'} — {title}
-      </div>
-
       <div style={S.row}>
         <img src={imgMaurilioExplicando} alt="Professor Maurílio" style={S.prof} />
         <div style={S.bubbleWrap}>

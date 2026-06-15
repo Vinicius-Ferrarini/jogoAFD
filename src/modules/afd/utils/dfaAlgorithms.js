@@ -19,6 +19,19 @@ export function computeReachable(states, initialState, transitions) {
   return reachable;
 }
 
+// ─── Completude de δ (função total) ───────────────────────────────────────────
+// Varre O(|Q|·|Σ|) e devolve os pares (estado, símbolo) SEM transição definida.
+// Lista vazia ⇒ a função δ é total (todo estado tem saída para cada símbolo),
+// pré-requisito para minimizar. Não é algoritmo de minimização — só validação.
+export function isTotalDelta(states, alphabet, transitions) {
+  const missing = [];
+  for (const state of states)
+    for (const symbol of alphabet)
+      if (!transitions.some(t => t.from === state && t.symbol === symbol))
+        missing.push({ state, symbol });
+  return missing;
+}
+
 // ─── Step 3: trivial distinguishability (final × non-final) ───────────────────
 // A par {p,q} is trivially distinguishable when exactly one of them is final.
 export function computeTrivialTable(states, finalStates) {
@@ -126,6 +139,83 @@ export function computeMinimized(states, initialState, finalStates, transitions,
   });
 
   return { nodes: newNodes, transitions: newTransitions, classMap, displayName };
+}
+
+// ─── Desenho do aluno: extrai δ e valida boa-formação do AFD ──────────────────
+// Recebe os nós/transições no formato do canvas (AFDPart1): nó { id, isInitial,
+// isFinal }; transição { from, symbol, to } (symbol pode ser "a,b"). Devolve, em
+// caso de sucesso, { ok:true, delta:{id:{sym:to}}, initial, finals:Set, ids }.
+// Em caso de erro, { ok:false, code, message, errorIds:[] } descrevendo o problema
+// (inicial ausente/duplicado, símbolo fora do alfabeto, não-determinismo, δ
+// incompleta). NÃO compara com o gabarito — só verifica que é um AFD válido.
+export function analyzeDrawnDFA(nodes, transitions, alphabet) {
+  if (!nodes.length)
+    return { ok: false, code: 'empty', message: 'Comece desenhando os estados do AFD mínimo.', errorIds: [] };
+
+  const initials = nodes.filter(n => n.isInitial);
+  if (initials.length === 0)
+    return { ok: false, code: 'no-initial', message: 'Falta o estado inicial (▶). Marque um estado como inicial.', errorIds: [] };
+  if (initials.length > 1)
+    return { ok: false, code: 'multi-initial', message: 'Há mais de um estado inicial. Um AFD tem exatamente um (▶).', errorIds: initials.map(n => n.id) };
+
+  const ids = nodes.map(n => n.id);
+  const delta = {};
+  ids.forEach(id => { delta[id] = {}; });
+
+  for (const t of transitions) {
+    const syms = (t.symbol || '').split(',').map(s => s.trim()).filter(Boolean);
+    for (const sym of syms) {
+      if (!alphabet.includes(sym))
+        return { ok: false, code: 'bad-symbol', message: `O símbolo '${sym}' não pertence ao alfabeto { ${alphabet.join(', ')} }.`, errorIds: [t.from] };
+      if (delta[t.from] === undefined)
+        return { ok: false, code: 'orphan-edge', message: 'Há uma seta saindo de um estado que não existe mais. Refaça-a.', errorIds: [] };
+      if (delta[t.from][sym] !== undefined && delta[t.from][sym] !== t.to)
+        return { ok: false, code: 'nondeterministic', message: `O estado ${t.from} tem dois destinos lendo '${sym}'. Num AFD cada (estado, símbolo) leva a UM só destino.`, errorIds: [t.from] };
+      delta[t.from][sym] = t.to;
+    }
+  }
+
+  const incomplete = new Set();
+  for (const id of ids)
+    for (const sym of alphabet)
+      if (delta[id][sym] === undefined) incomplete.add(id);
+  if (incomplete.size)
+    return { ok: false, code: 'incomplete', message: `δ incompleta: falta(m) transição(ões) em ${[...incomplete].join(', ')}. Todo estado precisa de saída para cada símbolo do alfabeto.`, errorIds: [...incomplete] };
+
+  return {
+    ok: true, delta,
+    initial: initials[0].id,
+    finals: new Set(nodes.filter(n => n.isFinal).map(n => n.id)),
+    ids,
+  };
+}
+
+// ─── Equivalência de linguagem por construção do produto ──────────────────────
+// A/B = { delta:{id:{sym:to}}, initial, finals:Set }. BFS no autômato-produto
+// procurando um par (estado A, estado B) com aceitação divergente; devolve a
+// menor palavra que os separa (contra-exemplo) ou { equivalent:true }. Símbolos
+// sem transição caem num sink não-final implícito, então funciona com δ parcial.
+export function productCounterexample(A, B, alphabet) {
+  const DEAD = Symbol('dead');       // sink não-final implícito (não colide com rótulos)
+  const stepA = (s, sym) => (s === DEAD ? DEAD : (A.delta[s]?.[sym] ?? DEAD));
+  const stepB = (s, sym) => (s === DEAD ? DEAD : (B.delta[s]?.[sym] ?? DEAD));
+  const isFA = s => s !== DEAD && A.finals.has(s);
+  const isFB = s => s !== DEAD && B.finals.has(s);
+  // chave do par livre de colisão (estados podem ter nomes arbitrários)
+  const keyOf = (a, b) => JSON.stringify([a === DEAD ? null : a, b === DEAD ? null : b, a === DEAD, b === DEAD]);
+
+  const seen = new Set([keyOf(A.initial, B.initial)]);
+  const queue = [[A.initial, B.initial, '']];
+  while (queue.length) {
+    const [a, b, word] = queue.shift();
+    if (isFA(a) !== isFB(b)) return { equivalent: false, word, acceptedByDrawn: isFA(a) };
+    for (const sym of alphabet) {
+      const na = stepA(a, sym), nb = stepB(b, sym);
+      const key = keyOf(na, nb);
+      if (!seen.has(key)) { seen.add(key); queue.push([na, nb, word + sym]); }
+    }
+  }
+  return { equivalent: true };
 }
 
 // ─── BFS horizontal layout ────────────────────────────────────────────────────
