@@ -7,6 +7,7 @@ import MainMenu from './pages/MainMenu';
 const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
 const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
+const APPart1     = lazy(() => import('./modules/ap/APPart1'));
 
 export default function App() {
   const [screen, setScreen] = useState('HOME');
@@ -87,6 +88,7 @@ export default function App() {
         case 'afd-p1':  return <AFDPart1 {...moduleProps} onBack={() => goSubmodule('afd')} />;
         case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
         case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
+        case 'ap-pilha': return <APPart1 {...moduleProps} onBack={() => goSubmodule('ap')} />;
         default:        return <div>Módulo não encontrado</div>;
       }
     })();
@@ -107,7 +109,7 @@ function ModuleSelection({ onSelectModule, onBack }) {
     { id: 'afd',     badge: 'AFD',   label: 'Autômatos Finitos',    icon: '🤖', color: '#60a5fa',
       desc: 'Desenhe, analise e minimize AFDs' },
     { id: 'ap',      badge: 'AP',    label: 'Autômatos com Pilha',  icon: '📚', color: '#a78bfa',
-      desc: 'Reconhecimento com memória (pilha)', locked: true },
+      desc: 'Reconhecimento com memória (pilha)' },
     { id: 'mt',      badge: 'MT',    label: 'Máquinas de Turing',   icon: '⚙️', color: '#f97316',
       desc: 'Modelos Reconhecedora e Transdutora', locked: true },
     { id: 'desafio', badge: 'BOSS',  label: 'Desafio de Prova',     icon: '🏆', color: '#f87171',
@@ -162,8 +164,8 @@ function SubmoduleSelection({ moduleId, onSelectGame, onBack }) {
         desc: '14 exercícios de otimização de autômatos', color: '#bbf7d0' },
     ],
     ap: [
-      { id: 'ap-pilha',  icon: '📚', label: 'Autômato com Pilha',  desc: 'Em breve!', locked: true },
-      { id: 'ap-formal', icon: '📝', label: 'Descrição Formal',     desc: 'Em breve!', locked: true },
+      { id: 'ap-pilha',  icon: '📚', label: 'Autômato com Pilha',
+        desc: '15 exercícios — desenhe o AP, valide por pilha vazia e formalize', color: '#ddd6fe' },
     ],
     mt: [
       { id: 'mt-recon', icon: '🔍', label: 'Reconhecedora', desc: 'Em breve!', locked: true },

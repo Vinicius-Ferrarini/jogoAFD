@@ -6,10 +6,14 @@ import imgMaurilioExplicando from '../../../assets/maurilio3_explicando.webp';
 import imgBalaoFala          from '../../../assets/balao_fala_redondo.webp';
 
 export default function EndScreen({
-  currentLevelId, message, balloon, textStyle, nextPrefix, onMenu, onNext,
+  currentLevelId, nextLevel, message, balloon, textStyle, nextPrefix, onMenu, onNext,
 }) {
+  // `nextLevel` (opcional) sobrepõe o cálculo via GAME_LEVELS — usado por módulos
+  // com sua própria lista de fases (ex.: AP). Ausente ⇒ comportamento do AFD.
   const idx  = GAME_LEVELS.findIndex(l => l.id === currentLevelId);
-  const next = idx >= 0 && idx < GAME_LEVELS.length - 1 ? GAME_LEVELS[idx + 1] : null;
+  const next = nextLevel !== undefined
+    ? nextLevel
+    : (idx >= 0 && idx < GAME_LEVELS.length - 1 ? GAME_LEVELS[idx + 1] : null);
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:9999,
       display:'flex', justifyContent:'center', alignItems:'center', flexDirection:'column' }}>

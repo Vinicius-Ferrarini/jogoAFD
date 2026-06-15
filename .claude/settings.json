@@ -6,7 +6,12 @@
       "PowerShell(tail -5)",
       "Bash(Find /c/github/jogoAFD -name \"*Canvas*\" -type f)",
       "WebFetch(domain:www.youtube.com)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(node _pda_test.mjs)",
+      "Bash(node _pda_analyze.mjs)",
+      "Bash(echo \"=== eslint exit: $? ===\")",
+      "Bash(node _ap_truth_test.mjs)",
+      "Bash(echo \"exit=$?\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\sg\\.claude\\projects\\c--github-jogoAFD\\memory"

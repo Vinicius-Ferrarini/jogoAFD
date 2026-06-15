@@ -1,0 +1,101 @@
+/* ═══ Módulo AP (Autômato com Pilha) — estilo neo-brutalista (igual AFD) ═══ */
+/* Professor Maurílio vem do rodapé (APFooterDeck reusa FooterDeck.css). */
+
+/* O menu de exercícios reusa o estilo do AFD_1 (.menu-screen-fases/.levels-grid/
+   .menu-btn de AFDPart1.css) + DifficultyLegend, então não precisa de CSS aqui. */
+
+/* ── Header do jogo ── */
+.ap-header {
+  display: flex; align-items: center; gap: 14px; padding: 8px 16px;
+  background: #fde68a; border-bottom: 3px solid #000;
+  font-family: 'Comic Sans MS','Comic Neue',cursive,sans-serif;
+}
+.ap-header-mid { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.ap-header-id { font-weight: 900; font-size: 20px; }
+.ap-header-lang { font-weight: 700; color: #1e3a8a; font-size: 15px; }
+.ap-header-stars { color: #f59e0b; font-size: 18px; letter-spacing: 2px; margin-left: auto; }
+.ap-header-nav { display: flex; gap: 6px; }
+.ap-header-nav button {
+  width: 34px; height: 32px; border: 2.5px solid #000; border-radius: 8px; background: #fff;
+  box-shadow: 2px 2px 0 #000; cursor: pointer; font-weight: 900; font-size: 14px;
+}
+
+/* ── Painel direito: usa as classes do TestPanel do AFD (.test-panel/.word-input/
+   .validate-btn/.section-header/.test-input-area de AFDPart1.css). Só extras aqui. */
+.ap-formal-toggle {
+  border: 2.5px solid #000; border-radius: 8px; background: #ddd6fe; box-shadow: 2px 2px 0 #000;
+  cursor: pointer; font-weight: 900; font-size: 12px; padding: 6px 10px; white-space: nowrap;
+  font-family: 'Comic Sans MS','Comic Neue',cursive,sans-serif;
+}
+.ap-formal-toggle:disabled { opacity: .45; cursor: not-allowed; }
+.ap-result { border: 3px solid #000; border-radius: 10px; padding: 8px 10px; font-size: 13px; font-weight: 700; margin-top: 8px; }
+.ap-result.err { background: #fecaca; }
+
+/* ── Tabela δ da descrição formal (2 colunas: destino, empilha) ── */
+.ap-delta-table input { width: 46px; text-align: center; }
+
+/* ── Dica no canvas vazio ── */
+.ap-empty-hint {
+  position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%);
+  background: rgba(255,255,255,.92); border: 3px dashed #000; border-radius: 12px;
+  padding: 14px 20px; font-size: 15px; font-weight: 700; z-index: 4; text-align: center;
+  font-family: 'Comic Sans MS','Comic Neue',cursive,sans-serif;
+}
+
+/* ── Rótulo de transição (3 campos, multi-tripla) ── */
+.ap-transition-label {
+  position: absolute; transform: translate(-50%,-50%); z-index: 20;
+  font-family: 'Comic Sans MS','Comic Neue',cursive,sans-serif;
+}
+.ap-tl-chips { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.ap-tl-chip {
+  background: #fff; border: 2.5px solid #1e3a8a; border-radius: 6px; padding: 1px 7px;
+  font-size: 13px; font-weight: 900; color: #1e3a8a; cursor: pointer; white-space: nowrap;
+  box-shadow: 2px 2px 0 rgba(30,58,138,.35);
+}
+.ap-tl-chip:hover { background: #dbeafe; }
+.ap-transition-label.erasable .ap-tl-chip { border-color: #dc2626; color: #dc2626; box-shadow: 2px 2px 0 rgba(220,38,38,.35); }
+.ap-tl-add {
+  width: 22px; height: 22px; border: 2.5px solid #16a34a; border-radius: 6px; background: #bbf7d0;
+  font-weight: 900; cursor: pointer; line-height: 1; color: #166534; box-shadow: 2px 2px 0 rgba(22,163,74,.4);
+}
+.ap-tl-editor {
+  display: flex; align-items: center; gap: 4px; background: #fff7ed; border: 2.5px solid #7c3aed;
+  border-radius: 8px; padding: 4px 6px; box-shadow: 3px 3px 0 rgba(124,58,237,.4);
+}
+.ap-tl-fields { display: flex; align-items: center; gap: 3px; }
+.ap-tl-sep { font-weight: 900; color: #7c3aed; }
+.ap-tl-input {
+  width: 30px; border: 2px solid #7c3aed; border-radius: 5px; text-align: center;
+  font-family: inherit; font-size: 13px; font-weight: 900; color: #5b21b6; padding: 1px 2px; outline: none;
+}
+.ap-tl-actions { display: flex; gap: 2px; }
+.ap-tl-ok, .ap-tl-cancel { width: 22px; height: 22px; border: 2px solid #000; border-radius: 5px; cursor: pointer; font-weight: 900; }
+.ap-tl-ok { background: #4ade80; }
+.ap-tl-cancel { background: #fca5a5; }
+
+/* ── Painel de simulação (pilha desenhada) ── */
+.ap-sim { background: #0e9c2b; border: 3px solid #000; border-radius: 12px; box-shadow: 4px 4px 0 #000; padding: 10px; color: #fff; }
+.ap-sim-head { display: flex; align-items: center; justify-content: space-between; }
+.ap-sim-title { font-weight: 900; font-size: 14px; text-decoration: underline; }
+.ap-sim-close { width: 24px; height: 24px; border: 2px solid #000; border-radius: 6px; background: #fca5a5; cursor: pointer; font-weight: 900; }
+.ap-sim-msg { font-size: 12.5px; margin: 6px 0; }
+.ap-sim-word { display: flex; align-items: center; gap: 3px; background: #fff; color: #000; border: 2.5px solid #000; border-radius: 8px; padding: 6px 8px; flex-wrap: wrap; }
+.ap-sim-ch { font-weight: 900; font-size: 16px; padding: 1px 3px; border-radius: 4px; }
+.ap-sim-ch.consumed { color: #9ca3af; }
+.ap-sim-ch.cursor, .ap-sim-end.cursor { background: #fde047; outline: 2px solid #000; }
+.ap-sim-end { font-weight: 900; font-size: 16px; color: #6b7280; }
+.ap-sim-lambda { font-weight: 900; font-size: 16px; color: #6b7280; }
+.ap-sim-body { display: flex; gap: 12px; margin-top: 8px; }
+.ap-sim-info { flex: 1; background: #fff; color: #000; border: 2.5px solid #000; border-radius: 8px; padding: 8px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.ap-sim-rule code { background: #fef9c3; border: 1.5px solid #000; border-radius: 4px; padding: 0 4px; font-weight: 900; }
+.ap-sim-stack { width: 92px; text-align: center; }
+.ap-sim-stack-label { font-size: 11px; font-weight: 900; margin-bottom: 4px; }
+.ap-sim-stack-col { display: flex; flex-direction: column; gap: 0; border: 2.5px solid #000; border-radius: 0 0 8px 8px; background: #fff7ed; min-height: 60px; padding: 4px; }
+.ap-sim-cell { background: #fde68a; color: #000; border: 2px solid #000; font-weight: 900; padding: 4px 0; margin-bottom: 3px; border-radius: 4px; }
+.ap-sim-cell.top { background: #fbbf24; outline: 2px solid #b45309; }
+.ap-sim-empty { color: #166534; font-weight: 900; padding: 14px 0; font-size: 13px; }
+.ap-sim-nav { display: flex; gap: 6px; margin-top: 8px; }
+.ap-sim-nav button { flex: 1; border: 2.5px solid #000; border-radius: 8px; background: #fff; color: #000; cursor: pointer; font-weight: 900; padding: 5px; font-family: inherit; }
+.ap-sim-nav button:disabled { opacity: .45; cursor: default; }
+.ap-sim-accept { margin-top: 8px; background: #bbf7d0; color: #000; border: 2.5px solid #000; border-radius: 8px; padding: 6px; font-weight: 900; font-size: 13px; text-align: center; }
