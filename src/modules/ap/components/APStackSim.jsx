@@ -6,7 +6,16 @@ import { useEffect, useMemo, useState } from 'react';
 
 const show = (v) => (v === '' || v == null ? 'λ' : v);
 
-export default function APStackSim({ run, word, title, message, onHighlight, onClose }) {
+const REJECT_TEXT = {
+  stuck: '✗ Travou: não há transição para (estado, símbolo lido, topo da pilha).',
+  'input-left': '✗ A pilha esvaziou antes de consumir toda a entrada.',
+  'stack-left': '✗ Consumiu a entrada, mas a pilha não esvaziou — REJEITA.',
+  'no-initial': '✗ Sem estado inicial definido.',
+};
+
+export default function APStackSim({
+  run, word, title, message, accepted, reason, onHighlight, onStepNarrate, onClose,
+}) {
   // Reconstrói as configurações (start + uma após cada passo).
   const configs = useMemo(() => {
     if (!run || run.length === 0) return [{ state: null, pos: 0, stack: 'Z', step: null }];
@@ -21,9 +30,11 @@ export default function APStackSim({ run, word, title, message, onHighlight, onC
   const last = i >= configs.length - 1;
 
   useEffect(() => {
-    if (!cur?.state) { onHighlight?.(null, null); return; }
-    onHighlight?.(cur.state, last ? 'done' : 'active');
-  }, [cur, last, onHighlight]);
+    if (!cur?.state) { onHighlight?.(null, null); } else {
+      onHighlight?.(cur.state, last ? 'done' : 'active');
+    }
+    onStepNarrate?.(cur);
+  }, [cur, last, onHighlight, onStepNarrate]);
   useEffect(() => () => onHighlight?.(null, null), [onHighlight]);
 
   const chars = (word || '').split('');
@@ -77,8 +88,11 @@ export default function APStackSim({ run, word, title, message, onHighlight, onC
         <button onClick={() => setI(v => Math.max(0, v - 1))} disabled={i === 0}>◀ Anterior</button>
         <button onClick={() => setI(v => Math.min(configs.length - 1, v + 1))} disabled={last}>Próximo ▶</button>
       </div>
-      {last && cur.stack === '' && cur.pos >= chars.length && (
+      {last && accepted !== false && cur.stack === '' && cur.pos >= chars.length && (
         <div className="ap-sim-accept">✓ Entrada consumida e pilha vazia — ACEITA.</div>
+      )}
+      {last && accepted === false && (
+        <div className="ap-sim-reject">{REJECT_TEXT[reason] || '✗ Não aceita.'}</div>
       )}
     </div>
   );

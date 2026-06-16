@@ -16,15 +16,21 @@ const CARDS = [
 ];
 
 export default function APFooterDeck({
-  mode, onPick, profMessage, profMood, onProfClick,
+  mode, onPick, profMessage, profMood, onProfClick, onCloseBalloon,
   onNodeDrag, onNodeDrop, onNodeDragCancel,
-  canUndo, canRedo, onUndo, onRedo,
+  canUndo, canRedo, onUndo, onRedo, lessonActive,
 }) {
   const dragRef = useRef(null);
   const profImg = profMood === 'serio' ? imgSerio : imgExplicando;
 
   return (
     <footer className="bottom-hand">
+      {lessonActive ? (
+        <div className="cards-scroll-wrapper" style={{ alignItems: 'center', color: '#444',
+          fontFamily: "'Comic Sans MS', cursive", fontWeight: 900, fontSize: 13 }}>
+          👨‍🏫 Aula em andamento — siga o Maurílio e use “Próximo”.
+        </div>
+      ) : (
       <div className="cards-scroll-wrapper">
         {CARDS.map((c, i) => c.sep ? (
           <div key={`sep${i}`} className="card-separator" />
@@ -73,12 +79,16 @@ export default function APFooterDeck({
           </div>
         ))}
       </div>
+      )}
 
       <div className="professor-hud">
         {profMessage && (
-          <div className="professor-balloon">
+          // pointer-events:none garante que o balão NUNCA bloqueie o botão atrás;
+          // só o × (auto) é clicável para fechar.
+          <div className="professor-balloon" style={{ pointerEvents: 'none' }}>
             <img src={imgBalaoFala} alt="" />
             <div className="professor-balloon-text">{profMessage}</div>
+            <button className="ap-balloon-close" onClick={onCloseBalloon} title="Fechar">✕</button>
           </div>
         )}
         <img src={profImg} alt="Professor Maurílio" className="prof-img" onClick={onProfClick} />

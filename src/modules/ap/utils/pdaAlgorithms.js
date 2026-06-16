@@ -160,6 +160,56 @@ export function pdaAcceptingRun(pda, word, limits = DEFAULT_LIMITS) {
   return null;
 }
 
+// ─── pdaRejectingTrace: melhor computação PARCIAL de uma palavra REJEITADA ────
+// Usado no "Testar palavra" para explicar visualmente POR QUE não aceita.
+// Retorna { run, reason } onde run é o caminho até a config que mais avançou
+// (mais entrada consumida; em empate, pilha menor) e reason explica a parada:
+//  'stuck'      — não há transição para (estado, símbolo lido, topo);
+//  'input-left' — a pilha esvaziou antes de consumir toda a entrada;
+//  'stack-left' — consumiu a entrada, mas a pilha não esvaziou.
+export function pdaRejectingTrace(pda, word, limits = DEFAULT_LIMITS) {
+  if (pda.initial == null) return { run: [], reason: 'no-initial' };
+  const maxStack = word.length + limits.extraStack;
+  const start = pda.stackBottom || 'Z';
+  const startKey = `${pda.initial}|0|${start}`;
+  const seen = new Set([startKey]);
+  const parent = new Map();
+  const queue = [{ q: pda.initial, pos: 0, stack: start, key: startKey }];
+  let budget = limits.maxConfigs;
+  let best = { pos: 0, stack: start, key: startKey };
+  const score = (c) => c.pos * 1000 - c.stack.length; // + entrada consumida, − pilha
+
+  while (queue.length) {
+    const cur = queue.shift();
+    if (score(cur) > score(best)) best = cur;
+    if (--budget <= 0) break;
+    for (const nx of stepConfigs(pda, word, cur.q, cur.pos, cur.stack)) {
+      if (nx.stack.length > maxStack) continue;
+      const nKey = `${nx.to}|${nx.pos}|${nx.stack}`;
+      if (seen.has(nKey)) continue;
+      seen.add(nKey);
+      parent.set(nKey, {
+        prevKey: cur.key,
+        step: {
+          from: cur.q, to: nx.to, read: nx.t.read, pop: nx.t.pop, push: nx.t.push,
+          posBefore: cur.pos, posAfter: nx.pos, stackBefore: cur.stack, stackAfter: nx.stack,
+        },
+      });
+      queue.push({ q: nx.to, pos: nx.pos, stack: nx.stack, key: nKey });
+    }
+  }
+
+  const steps = [];
+  let k = best.key;
+  while (parent.has(k)) { const p = parent.get(k); steps.unshift(p.step); k = p.prevKey; }
+
+  let reason;
+  if (best.pos >= word.length && best.stack !== '') reason = 'stack-left';
+  else if (best.stack === '' && best.pos < word.length) reason = 'input-left';
+  else reason = 'stuck';
+  return { run: steps, reason };
+}
+
 // ─── Enumeração de palavras até comprimento N sobre Σ (inclui λ = '') ──────────
 // Cap de segurança: se Σ for grande, reduz N para não estourar a contagem.
 export function enumerateWords(alphabet, maxLen, cap = 6000) {

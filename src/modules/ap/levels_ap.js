@@ -13,6 +13,7 @@
 import {
   parseJff, buildBattery, deriveInputAlphabet, deriveStackAlphabet,
 } from './utils/pdaAlgorithms.js';
+import { buildApLesson } from './utils/buildApLesson.js';
 
 // ── Gabaritos .jff crus (Vite ?raw). Única fonte; se o .jff mudar, o jogo segue. ─
 const RAW = import.meta.glob('../../../gabaritos_jflap/ap/*.jff', {
@@ -83,6 +84,7 @@ export const AP_LEVELS = Object.keys(META)
       language: m.language,
       hint: m.hint,
       truth: m.truth,
+      apLesson: m.apLesson, // narração à mão (opcional); senão auto-derivada
       solution,
       alphabet: deriveInputAlphabet(solution),
       stackAlphabet: deriveStackAlphabet(solution),
@@ -103,4 +105,14 @@ export function getBattery(level) {
   const battery = buildBattery(level.solution, { maxLen, truth: level.truth });
   _batteryCache.set(level.id, battery);
   return battery;
+}
+
+// ── Aula Guiada (memoizada por exercício) ─────────────────────────────────────
+// Usa a narração à mão (level.apLesson) se existir; senão auto-deriva do gabarito.
+const _lessonCache = new Map();
+export function getLesson(level) {
+  if (_lessonCache.has(level.id)) return _lessonCache.get(level.id);
+  const lesson = level.apLesson ?? buildApLesson(level, getBattery(level));
+  _lessonCache.set(level.id, lesson);
+  return lesson;
 }

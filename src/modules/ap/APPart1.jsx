@@ -14,10 +14,12 @@ import APCanvas from './components/APCanvas';
 import APStackSim from './components/APStackSim';
 import APFooterDeck from './components/APFooterDeck';
 import APFormalDescription from './components/APFormalDescription';
+import APBlackboardPanel from './components/APBlackboardPanel';
 import usePDAGraph from './hooks/usePDAGraph';
 import useAPDrawing from './hooks/useAPDrawing';
+import useAPGuidedLesson from './hooks/useAPGuidedLesson';
 import { AP_LEVELS } from './levels_ap';
-import { pdaAcceptingRun } from './utils/pdaAlgorithms';
+import { pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 
 export default function APPart1({ onBack, progress, updateProgress, showToast }) {
@@ -31,6 +33,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null });
   const [simWord, setSimWord] = useState('');
   const [simKey, setSimKey]   = useState(0);
+  const [testedWords, setTestedWords] = useState([]);
   const [formalOpen, setFormalOpen] = useState(false);
   const [deckGhost, setDeckGhost]   = useState(null);
   const [victory, setVictory]       = useState(false);
@@ -38,14 +41,52 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
 
   const g = usePDAGraph();
   const draw = useAPDrawing(canvasRef);
+  const lesson = useAPGuidedLesson(level);
+  const { goTo: lessonGoTo, finish: lessonFinishRaw, reset: lessonReset, steps: lessonSteps } = lesson;
+
+  // Grafo exibido: durante a aula vem dos passos; senão é o grafo real do aluno.
+  const viewNodes = lesson.active ? lesson.displayNodes : g.nodes;
+  const viewTransitions = lesson.active ? lesson.displayTransitions : g.transitions;
 
   const say = useCallback((message, mood = 'serio') => setProf({ message, mood }), []);
+
+  // ── Modo Aula: iniciar / sair / navegar (narração + painel formal sem efeito) ─
+  const applyStep = useCallback((st) => {
+    setProf(st?.prof ?? { message: '', mood: 'serio' });
+    setFormalOpen(st?.phase === 'FORMAL');
+  }, []);
+  const startLesson = useCallback(() => {
+    if (!lesson.hasLesson) return;
+    setMode('IDLE'); setConnectingSource(null);
+    setSim(null); setSimHighlight({ nodeId: null, type: null }); setResult(null);
+    lessonGoTo(0);
+    applyStep(lessonSteps[0]);
+  }, [lesson.hasLesson, lessonGoTo, lessonSteps, applyStep]);
+  const finishLesson = useCallback(() => {
+    lessonFinishRaw();
+    setFormalOpen(false);
+    say('Aula encerrada! Agora monte o seu AP e clique em Validar. 💪', 'explicando');
+  }, [lessonFinishRaw, say]);
+  const lessonGo = useCallback((dir) => {
+    const target = Math.max(0, Math.min(lessonSteps.length - 1, (lesson.step ?? 0) + dir));
+    lessonGoTo(target);
+    applyStep(lessonSteps[target]);
+  }, [lesson.step, lessonSteps, lessonGoTo, applyStep]);
+  // Bifurcação ao fim do grafo: ir para a Aula de Descrição Formal (FASE 2).
+  const formalStart = lessonSteps.findIndex(s => s.phase === 'FORMAL');
+  const goFormal = useCallback(() => {
+    if (formalStart < 0) return;
+    lessonGoTo(formalStart);
+    applyStep(lessonSteps[formalStart]);
+  }, [formalStart, lessonGoTo, lessonSteps, applyStep]);
 
   // Atalhos: Ctrl+Z desfaz (rabisco primeiro, depois grafo), Ctrl+Y/Shift+Z refaz, Esc sai do modo.
   const { undo: gUndo, redo: gRedo } = g;
   const { drawUndo, drawingStack } = draw;
   useEffect(() => {
     const onKey = (e) => {
+      // Durante a aula, o grafo fica congelado: só Esc (sair) responde.
+      if (lesson.active) { if (e.key === 'Escape') finishLesson(); return; }
       const isInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
       const ctrl = e.ctrlKey || e.metaKey;
       const k = e.key.toLowerCase();
@@ -59,7 +100,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [gUndo, gRedo, drawUndo, drawingStack]);
+  }, [gUndo, gRedo, drawUndo, drawingStack, lesson.active, finishLesson]);
   const handleHighlight = useCallback((nodeId, type) => setSimHighlight({ nodeId, type }), []);
   const openSim  = useCallback((s) => { setSim(s); setSimKey(k => k + 1); }, []);
   const closeSim = useCallback(() => { setSim(null); setSimHighlight({ nodeId: null, type: null }); }, []);
@@ -67,12 +108,14 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   // ── Carregar exercício ──────────────────────────────────────────────────────
   const loadLevel = useCallback((lv) => {
     g.reset();
+    lessonReset();
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
     setResult(null); setSim(null); setSimHighlight({ nodeId: null, type: null });
     setSimWord(''); setFormalOpen(false); setDeckGhost(null); setVictory(false);
+    setTestedWords([]);
     draw.resetDrawings();
     say(`Monte o AP que reconhece ${lv.language} por PILHA VAZIA e clique em Validar!`, 'explicando');
-  }, [g, draw, say]);
+  }, [g, draw, say, lessonReset]);
 
   const goLevel = useCallback((dir) => {
     const idx = AP_LEVELS.findIndex(l => l.id === level?.id);
@@ -138,20 +181,35 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     () => g.nodes.some(n => n.isInitial) && g.transitions.length > 0,
     [g.nodes, g.transitions]);
 
-  // ── Simular palavra livre ───────────────────────────────────────────────────
+  // ── Narração da pilha passo a passo (reusa o vocabulário da Aula) ────────────
+  const narrateSim = useCallback((cfg) => {
+    if (!cfg?.step) return; // não narra a config inicial (deixa a mensagem de abertura)
+    const s = cfg.step;
+    const read = s.read === '' ? 'sem ler (λ)' : `leu "${s.read}"`;
+    const pop  = s.pop  === '' ? 'sem desempilhar' : `desempilhou ${s.pop}`;
+    const push = s.push === '' ? 'sem empilhar' : `empilhou ${s.push}`;
+    say(`${read}, ${pop}, ${push}.`, 'explicando');
+  }, [say]);
+
+  // ── Simular palavra livre (aceita: passos; rejeita: melhor tentativa parcial) ─
   const simulate = useCallback(() => {
     if (!level) return;
     const word = simWord.trim();
-    const run = pdaAcceptingRun(g.studentPda, word);
     const show = word === '' ? 'λ' : word;
+    const run = pdaAcceptingRun(g.studentPda, word);
     if (run) {
-      openSim({ run, word, title: `Simulação: "${show}"`, message: 'Computação que ACEITA (pilha esvazia):' });
-      say(`Seu AP aceita "${show}". Veja a pilha passo a passo.`, 'explicando');
+      openSim({ run, word, accepted: true, title: `Simulação: "${show}"`,
+        message: 'Computação que ACEITA (a pilha esvazia):' });
+      say(`Seu AP aceita "${show}". Avance passo a passo para ver a pilha.`, 'explicando');
     } else {
-      closeSim();
-      say(`Seu AP NÃO aceita "${show}" (nenhuma computação esvazia a pilha).`, 'serio');
+      const { run: trace, reason } = pdaRejectingTrace(g.studentPda, word);
+      openSim({ run: trace, word, accepted: false, reason, title: `Simulação: "${show}" (rejeita)`,
+        message: 'Melhor tentativa do seu AP (a pilha não esvazia):' });
+      say(`Seu AP NÃO aceita "${show}". Veja onde a computação trava.`, 'serio');
     }
-  }, [level, simWord, g.studentPda, say, openSim, closeSim]);
+    setTestedWords(prev => (prev.some(t => t.word === word)
+      ? prev : [...prev, { word, accepted: !!run }]));
+  }, [level, simWord, g.studentPda, say, openSim]);
 
   const stars = level ? (progress?.[`ap-${level.id}`]?.stars || 0) : 0;
 
@@ -208,7 +266,11 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           <span className="ap-header-id">{level.label}</span>
           <span className="ap-header-lang">{level.language}</span>
         </div>
-        <button className="ap-formal-toggle" disabled={stars < 1} onClick={() => setFormalOpen(o => !o)}>
+        <button className="ap-formal-toggle" disabled={!lesson.hasLesson}
+          onClick={lesson.active ? finishLesson : startLesson}>
+          {lesson.active ? '✕ Sair da Aula' : '👨‍🏫 Assistir Aula'}
+        </button>
+        <button className="ap-formal-toggle" disabled={stars < 1 || lesson.active} onClick={() => setFormalOpen(o => !o)}>
           📝 Descrição Formal
         </button>
         <div className="ap-header-stars">{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
@@ -222,11 +284,12 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         {/* Sidebar: Descrição Formal */}
         <aside className={`formal-panel ${formalOpen ? 'open' : ''}`}>
           <APFormalDescription
-            key={formalOpen ? 'formal-open' : 'formal-closed'}
+            key={lesson.active ? `demo-${level.id}` : (formalOpen ? 'formal-open' : 'formal-closed')}
             isOpen={formalOpen}
+            demo={lesson.active ? lesson.reveal : null}
             onClose={() => setFormalOpen(false)}
-            nodes={g.nodes}
-            transitions={g.transitions}
+            nodes={viewNodes}
+            transitions={viewTransitions}
             alphabet={level.alphabet}
             onValidateGraph={checkGraph}
             onElementsSuccess={onFormalElements}
@@ -238,12 +301,14 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         {/* Canvas */}
         <APCanvas
           canvasRef={canvasRef}
-          nodes={g.nodes}
-          transitions={g.transitions}
+          nodes={viewNodes}
+          transitions={viewTransitions}
           mode={mode}
           setMode={setMode}
           beginDrag={g.beginDrag}
           draw={draw}
+          lessonActive={lesson.active}
+          highlightEdge={lesson.highlightEdge}
           simHighlight={simHighlight}
           connectingSource={connectingSource}
           setConnectingSource={setConnectingSource}
@@ -259,7 +324,22 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           removeEdge={g.removeEdge}
         />
 
-        {/* Painel direito (estilo TestPanel) */}
+        {/* Painel direito: quadro da Aula (durante a aula) ou TestPanel (normal) */}
+        {lesson.active ? (
+          <APBlackboardPanel
+            boardWords={lesson.boardWords}
+            boardStatus={lesson.boardStatus}
+            phase={lesson.phase}
+            step={lesson.step}
+            steps={lesson.steps}
+            atGraphEnd={lesson.cur?.graphEnd === true}
+            onGoFormal={goFormal}
+            onDoGraph={finishLesson}
+            onNext={() => lessonGo(1)}
+            onPrev={() => lessonGo(-1)}
+            onFinish={finishLesson}
+          />
+        ) : (
         <aside className="test-panel">
           <div className="section-header" style={{ fontSize: 11 }}>Linguagem</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#1e3a8a' }}>{level.language}</div>
@@ -285,28 +365,44 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
             <button className="add-test-btn" onClick={simulate}>▶</button>
           </div>
 
+          {testedWords.length > 0 && (
+            <div className="ap-tested">
+              {testedWords.map((t, i) => (
+                <span key={i} className={`ap-tested-chip ${t.accepted ? 'ok' : 'no'}`}>
+                  {t.accepted ? '✓' : '✗'} {t.word === '' ? 'λ' : t.word}
+                </span>
+              ))}
+            </div>
+          )}
+
           {result && !result.ok && result.reason !== 'counterexample' && (
             <div className="ap-result err">{result.message}</div>
           )}
 
           {sim && (
             <APStackSim key={simKey} run={sim.run} word={sim.word} title={sim.title}
-              message={sim.message} onHighlight={handleHighlight} onClose={closeSim} />
+              message={sim.message} accepted={sim.accepted} reason={sim.reason}
+              onStepNarrate={narrateSim} onHighlight={handleHighlight} onClose={closeSim} />
           )}
         </aside>
+        )}
       </div>
 
       {/* Rodapé: deck de cartas + Maurílio (mesmo visual do AFD) */}
       <APFooterDeck
         mode={mode}
         onPick={pickMode}
+        lessonActive={lesson.active}
         canUndo={g.canUndo}
         canRedo={g.canRedo}
         onUndo={g.undo}
         onRedo={g.redo}
         profMessage={prof.message}
         profMood={prof.mood}
-        onProfClick={() => say(level.hint || 'Lembre: aceita por pilha vazia (esvazie o Z no fim).', 'explicando')}
+        onProfClick={() => setProf(p => p.message
+          ? { ...p, message: '' }
+          : { message: level.hint || 'Lembre: aceita por pilha vazia (esvazie o Z no fim).', mood: 'explicando' })}
+        onCloseBalloon={() => setProf(p => ({ ...p, message: '' }))}
         onNodeDrag={handleDeckDrag}
         onNodeDrop={handleDeckDrop}
         onNodeDragCancel={handleDeckCancel}

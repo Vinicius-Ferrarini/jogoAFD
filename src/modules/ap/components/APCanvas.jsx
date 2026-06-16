@@ -12,7 +12,7 @@ export default function APCanvas({
   connectingSource, setConnectingSource,
   addNode, moveNode, toggleInitial, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
-  draw,
+  draw, lessonActive, highlightEdge,
 }) {
   const [size, setSize] = useState({ w: 1000, h: 600 });
   const dragRef = useRef(null);
@@ -165,7 +165,7 @@ export default function APCanvas({
         </div>
       )}
 
-      {nodes.length === 0 && !isDraw && (
+      {nodes.length === 0 && !isDraw && !lessonActive && (
         <div className="ap-empty-hint">Clique em <b>◯ Novo Estado</b> e comece a montar seu AP!</div>
       )}
 
@@ -228,7 +228,8 @@ export default function APCanvas({
         </defs>
         {edgeRenders.map((er) => (
           <path key={`${er.from}->${er.to}`} d={er.pathD}
-            className={`transition-line ${eraseMode ? 'erasable' : ''}`}
+            className={`transition-line ${eraseMode ? 'erasable' : ''} ${
+              highlightEdge && er.from === highlightEdge.from && er.to === highlightEdge.to ? 'lesson-hl' : ''}`}
             markerEnd={`url(#${er.selfLoop ? 'apahs' : 'apah'})`}
             style={{ pointerEvents: isDraw ? 'none' : 'stroke', cursor: eraseMode ? 'pointer' : 'default' }}
             onClick={(e) => { if (eraseMode) { e.stopPropagation(); removeEdge(er.from, er.to); } }} />
@@ -264,12 +265,17 @@ export default function APCanvas({
             onPointerDown={(e) => onNodeDown(e, node)}>
             <input type="text" className="node-id-input" value={node.label ?? node.id}
               translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
-              readOnly={mode !== 'IDLE'}
+              readOnly={mode !== 'IDLE' || lessonActive}
               onChange={(e) => setNodeLabel(node.uid, e.target.value)}
               onBlur={(e) => renameNode(node.uid, e.target.value)} />
           </div>
         );
       })}
+
+      {/* Bloqueador do Modo Aula: impede editar o grafo enquanto a aula roda */}
+      {lessonActive && (
+        <div className="ap-lesson-blocker" onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); }} />
+      )}
     </section>
   );
 }

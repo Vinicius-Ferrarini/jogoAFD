@@ -5,7 +5,7 @@
 //    aluno preenche (destino, empilha). Tudo validado contra o DESENHO do aluno
 //    (não contra gabarito), então o L1 não exige o λ,Z;λ.
 // Estrelas: validar elementos = ★2; validar transições = ★3.
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import '../../afd/FormalDescriptionModal.css';
 
 const LAMBDA = 'λ';
@@ -13,7 +13,7 @@ const showF = (v) => (v === '' || v == null ? LAMBDA : v);
 const normLambda = (v) => { const t = (v || '').trim(); return (t === '' || t === LAMBDA) ? '' : t; };
 
 export default function APFormalDescription({
-  isOpen, onClose, nodes, transitions, alphabet,
+  isOpen, onClose, nodes, transitions, alphabet, demo,
   onValidateGraph, onElementsSuccess, onSuccess, showToast,
 }) {
   const [inE, setInE]             = useState('');
@@ -27,6 +27,17 @@ export default function APFormalDescription({
   const [cells, setCells] = useState({}); // key -> { dest, push }
   const [fieldErrors, setFieldErrors] = useState({});
   const [cellErrors, setCellErrors]   = useState({});
+
+  // Aula (demo): rola até o campo/linha que está sendo revelado quando ele muda.
+  const currentElRef = useRef(null);
+  const demoKey = demo?.current
+    ? (demo.current.kind === 'delta'
+        ? `d:${demo.current.rowKey}`
+        : `t:${Object.keys(demo.current.fields || {}).join(',')}`)
+    : null;
+  useEffect(() => {
+    if (demoKey) currentElRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [demoKey]);
 
   // O reset ao abrir é por remontagem (o pai passa key ao alternar isOpen).
   if (!isOpen) return null;
@@ -125,6 +136,62 @@ export default function APFormalDescription({
       {fieldErrors[key] && <span className="field-error-msg">✕ {fieldErrors[key]}</span>}
     </div>
   );
+
+  // ── Modo demonstração (Aula Guiada): read-only, revela tupla + δ por passo ──
+  if (demo) {
+    const fields = demo.fields || {};
+    const revealed = (k) => Object.prototype.hasOwnProperty.call(fields, k);
+    const currentField = demo.current?.kind === 'tuple'
+      ? Object.keys(demo.current.fields || {})[0] : null;
+    const demoField = (key, label, placeholder) => (
+      <div ref={key === currentField ? currentElRef : null}
+        className={`form-group ap-demo-group${revealed(key) ? '' : ' ap-demo-dim'}`}>
+        <label>{label}</label>
+        <input type="text" readOnly value={revealed(key) ? fields[key] : ''}
+          placeholder={revealed(key) ? '' : placeholder} translate="no" />
+      </div>
+    );
+    const curRow = demo.current?.kind === 'delta' ? demo.current.rowKey : null;
+    return (
+      <div className="formal-sidebar-content">
+        <h2>Descrição Formal (AP)</h2>
+        <p style={{ fontSize: 12, color: '#555', margin: '0 0 8px' }}>
+          👨‍🏫 <b>Modo Aula</b> — lendo a descrição formal direto do grafo.
+        </p>
+
+        {demoField('E', 'E (Estados):', '…')}
+        {demoField('Sigma', 'Σ (Alfabeto de entrada):', '…')}
+        {demoField('Gamma', 'Γ (Alfabeto da pilha):', '…')}
+        {demoField('initial', 'i (Estado inicial):', '…')}
+        {demoField('bottom', 'B (Fundo da pilha):', '…')}
+
+        <div className="table-section">
+          <h3>Função de transição (δ)</h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="transition-table ap-delta-table">
+              <thead>
+                <tr><th>T(estado, lê, desempilha)</th><th>=&nbsp;( destino,</th><th>empilha )</th></tr>
+              </thead>
+              <tbody>
+                {transitions.map((t, i) => {
+                  const key = String(i);
+                  const shown = demo.rows?.has(key);
+                  return (
+                    <tr key={key} ref={curRow === key ? currentElRef : null}
+                      className={`${shown ? '' : 'ap-demo-dim'}${curRow === key ? ' ap-delta-row-current' : ''}`}>
+                      <td className="row-header">T({fromLabel(t.from)}, {showF(t.read)}, {showF(t.pop)})</td>
+                      <td>{shown ? toLabel(t.to) : '…'}</td>
+                      <td>{shown ? showF(t.push) : '…'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="formal-sidebar-content">
