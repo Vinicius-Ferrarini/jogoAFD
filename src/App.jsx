@@ -4,6 +4,7 @@ import './App.css';
 
 // Importar páginas e módulos
 import MainMenu from './pages/MainMenu';
+import FeedbackButton from './components/FeedbackButton';
 const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
 const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
@@ -148,6 +149,9 @@ function ModuleSelection({ onSelectModule, onBack }) {
           </button>
         ))}
       </div>
+
+      {/* Botão flutuante de feedback (position:fixed — não afeta o layout) */}
+      <FeedbackButton />
     </div>
   );
 }

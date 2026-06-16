@@ -3,6 +3,7 @@ import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
 import { GAME_LEVELS } from '../levels';
 import { EXERCISES } from '../modules/afd/AFDMinimizer';
+import FeedbackButton from '../components/FeedbackButton';
 
 const P1_MAX_STARS = GAME_LEVELS.reduce((a, l) => a + (l.impossible || l.wordOnly ? 1 : 3), 0);
 const MINIMIZER_MAX_STARS = EXERCISES.reduce((a, e) => a + (e.impossible ? 1 : 3), 0);
@@ -71,6 +72,9 @@ export default function MainMenu({ onStart, progress }) {
           <p>🔬 Iniciação Científica | Teoria da Computação</p>
         </div>
       </div> {/* fim main-menu-content */}
+
+      {/* Botão flutuante de feedback (position:fixed — não afeta o layout) */}
+      <FeedbackButton />
     </div>
   );
 }
