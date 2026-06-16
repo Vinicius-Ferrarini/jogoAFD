@@ -144,11 +144,13 @@
 .ap-demo-dim td { opacity: .35; }
 .ap-delta-row-current td { background: #ede9fe !important; box-shadow: inset 0 0 0 2px #7c3aed; }
 
-/* ── Reuso no "Testar palavra": motivo da rejeição + mini-quadro ── */
-.ap-sim-reject {
-  margin-top: 8px; background: #fecaca; color: #000; border: 2.5px solid #000;
-  border-radius: 8px; padding: 6px; font-weight: 900; font-size: 12.5px; text-align: center;
-}
+/* ── Painel de testes do AP: scrollável para exibir a simulação da pilha ── */
+.ap-test-panel { overflow-y: auto !important; }
+/* words-list no AFD usa flex:1 (ocupa todo espaço disponível). No AP, precisamos
+   que o validate-btn e o APStackSim apareçam após a lista, então limitamos a altura. */
+.ap-test-panel .words-list { flex: 0 0 auto; max-height: 140px; }
+
+/* ── Histórico de palavras testadas (chips ✓/✗) ── */
 .ap-tested { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
 .ap-tested-chip {
   border: 2px solid #000; border-radius: 6px; padding: 2px 7px; font-size: 12px;
@@ -172,28 +174,159 @@
   padding: 8px; font-weight: 800; font-size: 12.5px; text-align: center;
 }
 
-/* ── Painel de simulação (pilha desenhada) ── */
-.ap-sim { background: #0e9c2b; border: 3px solid #000; border-radius: 12px; box-shadow: 4px 4px 0 #000; padding: 10px; color: #fff; }
-.ap-sim-head { display: flex; align-items: center; justify-content: space-between; }
-.ap-sim-title { font-weight: 900; font-size: 14px; text-decoration: underline; }
-.ap-sim-close { width: 24px; height: 24px; border: 2px solid #000; border-radius: 6px; background: #fca5a5; cursor: pointer; font-weight: 900; }
-.ap-sim-msg { font-size: 12.5px; margin: 6px 0; }
-.ap-sim-word { display: flex; align-items: center; gap: 3px; background: #fff; color: #000; border: 2.5px solid #000; border-radius: 8px; padding: 6px 8px; flex-wrap: wrap; }
-.ap-sim-ch { font-weight: 900; font-size: 16px; padding: 1px 3px; border-radius: 4px; }
-.ap-sim-ch.consumed { color: #9ca3af; }
-.ap-sim-ch.cursor, .ap-sim-end.cursor { background: #fde047; outline: 2px solid #000; }
-.ap-sim-end { font-weight: 900; font-size: 16px; color: #6b7280; }
-.ap-sim-lambda { font-weight: 900; font-size: 16px; color: #6b7280; }
-.ap-sim-body { display: flex; gap: 12px; margin-top: 8px; }
-.ap-sim-info { flex: 1; background: #fff; color: #000; border: 2.5px solid #000; border-radius: 8px; padding: 8px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
-.ap-sim-rule code { background: #fef9c3; border: 1.5px solid #000; border-radius: 4px; padding: 0 4px; font-weight: 900; }
-.ap-sim-stack { width: 92px; text-align: center; }
-.ap-sim-stack-label { font-size: 11px; font-weight: 900; margin-bottom: 4px; }
-.ap-sim-stack-col { display: flex; flex-direction: column; gap: 0; border: 2.5px solid #000; border-radius: 0 0 8px 8px; background: #fff7ed; min-height: 60px; padding: 4px; }
-.ap-sim-cell { background: #fde68a; color: #000; border: 2px solid #000; font-weight: 900; padding: 4px 0; margin-bottom: 3px; border-radius: 4px; }
-.ap-sim-cell.top { background: #fbbf24; outline: 2px solid #b45309; }
-.ap-sim-empty { color: #166534; font-weight: 900; padding: 14px 0; font-size: 13px; }
-.ap-sim-nav { display: flex; gap: 6px; margin-top: 8px; }
-.ap-sim-nav button { flex: 1; border: 2.5px solid #000; border-radius: 8px; background: #fff; color: #000; cursor: pointer; font-weight: 900; padding: 5px; font-family: inherit; }
-.ap-sim-nav button:disabled { opacity: .45; cursor: default; }
-.ap-sim-accept { margin-top: 8px; background: #bbf7d0; color: #000; border: 2.5px solid #000; border-radius: 8px; padding: 6px; font-weight: 900; font-size: 13px; text-align: center; }
+/* ── Simulação de pilha V2 — estilo cartoon Turma da Mônica ── */
+.ap-sim2 {
+  background: linear-gradient(160deg, #1e3a8a 0%, #1d4ed8 100%);
+  border: 3.5px solid #000; border-radius: 14px; box-shadow: 5px 5px 0 #000;
+  padding: 10px; color: #fff;
+  font-family: 'Comic Sans MS','Comic Neue',cursive,sans-serif;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.ap-sim2-head { display: flex; align-items: center; justify-content: space-between; }
+.ap-sim2-title { font-weight: 900; font-size: 13px; }
+.ap-sim2-close {
+  width: 24px; height: 24px; border: 2.5px solid #000; border-radius: 6px;
+  background: #fca5a5; cursor: pointer; font-weight: 900; color: #000;
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+.ap-sim2-msg { font-size: 12px; margin: 0; opacity: 0.9; }
+
+/* Fita de entrada */
+.ap-sim2-tape-wrap { display: flex; align-items: center; gap: 5px; }
+.ap-sim2-tape-lbl {
+  font-size: 9px; font-weight: 900; background: #fde047; color: #000;
+  border: 2px solid #000; border-radius: 4px; padding: 1px 4px; white-space: nowrap;
+}
+.ap-sim2-tape {
+  display: flex; align-items: center; gap: 1px; flex-wrap: wrap;
+  background: #fff; color: #000; border: 2.5px solid #000; border-radius: 8px;
+  padding: 3px 6px; flex: 1; min-width: 0;
+}
+.ap-sim2-ch {
+  font-weight: 900; font-size: 14px; padding: 1px 3px; border-radius: 4px;
+  transition: all 0.18s;
+}
+.ap-sim2-ch.consumed { color: #9ca3af; text-decoration: line-through; }
+.ap-sim2-ch.reading  { background: #fde047; outline: 2.5px solid #000; transform: scale(1.1); }
+.ap-sim2-lambda { font-weight: 900; font-size: 14px; color: #6b7280; }
+.ap-sim2-end { font-weight: 900; font-size: 14px; color: #6b7280; padding: 1px 3px; }
+.ap-sim2-end.reading { background: #fde047; outline: 2.5px solid #000; border-radius: 4px; color: #000; }
+
+/* Card de regra (from → to | leu | pop | push) */
+.ap-sim2-rule {
+  background: #fff; color: #000; border: 2.5px solid #000; border-radius: 10px;
+  padding: 6px 8px; box-shadow: 3px 3px 0 rgba(0,0,0,0.45);
+}
+.ap-sim2-states { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.ap-sim2-sbadge {
+  font-weight: 900; font-size: 12px; padding: 2px 8px;
+  border: 2.5px solid #000; border-radius: 6px; box-shadow: 2px 2px 0 #000;
+}
+.ap-sim2-sbadge.from { background: #dbeafe; }
+.ap-sim2-sbadge.to   { background: #bbf7d0; }
+.ap-sim2-rule-arrow  { font-weight: 900; color: #555; font-size: 11px; }
+.ap-sim2-triple { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+.ap-sim2-tp {
+  font-size: 11.5px; font-weight: 700; padding: 2px 5px;
+  border-radius: 5px; border: 2px solid #000;
+}
+.ap-sim2-tp.read { background: #fef9c3; }
+.ap-sim2-tp.pop  { background: #fee2e2; }
+.ap-sim2-tp.push { background: #dcfce7; }
+.ap-sim2-tp.dim  { background: #f3f4f6; color: #9ca3af; border-color: #d1d5db; }
+.ap-sim2-tsep { color: #9ca3af; font-weight: 900; font-size: 10px; }
+.ap-sim2-rule-init {
+  background: rgba(255,255,255,0.15); border: 2px dashed rgba(255,255,255,0.4);
+  border-radius: 8px; padding: 5px 8px; font-size: 11.5px; text-align: center;
+  color: rgba(255,255,255,0.85);
+}
+
+/* Pilha visual (barril aberto no topo) */
+.ap-sim2-stack-wrap  { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ap-sim2-topo-lbl  { font-size: 10px; font-weight: 900; color: #fde047; text-transform: uppercase; letter-spacing: 0.5px; }
+.ap-sim2-fundo-lbl { font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+.ap-sim2-barrel {
+  width: 100%; min-height: 44px;
+  border: 3px solid #000; border-top: 3px dashed rgba(255,255,255,0.45);
+  border-radius: 0 0 12px 12px;
+  background: rgba(0,0,0,0.22);
+  display: flex; flex-direction: column; padding: 4px 6px 6px; gap: 3px;
+}
+.ap-sim2-vazia {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900; color: #4ade80;
+  padding: 10px; text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+.ap-sim2-block {
+  border: 3px solid #000; border-radius: 7px;
+  padding: 5px 8px; font-size: 17px; font-weight: 900; text-align: center;
+  position: relative; box-shadow: 3px 3px 0 #000;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.ap-sim2-block.just-pushed {
+  animation: ap-block-push 0.32s ease-out;
+  box-shadow: 0 0 0 3px #4ade80, 3px 3px 0 #000;
+}
+@keyframes ap-block-push {
+  0%   { transform: translateY(-14px) scale(0.78); opacity: 0.4; }
+  65%  { transform: translateY(4px) scale(1.07); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.ap-sim2-badge {
+  font-size: 7.5px; font-weight: 900; position: absolute; right: 3px; top: 2px;
+  white-space: nowrap;
+}
+.ap-sim2-badge.topo-tag { color: rgba(255,255,255,0.75); }
+.ap-sim2-badge.bot-tag  { top: auto; bottom: 2px; opacity: 0.65; }
+.ap-sim2-block.just-pushed .ap-sim2-badge.topo-tag { color: #4ade80; text-shadow: 0 0 5px #000; }
+
+/* Barra de info (estado + contador) */
+.ap-sim2-infobar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.12); border-radius: 7px; padding: 4px 8px;
+  font-size: 12.5px;
+}
+.ap-sim2-step-badge {
+  background: #fde047; color: #000; border: 2px solid #000; border-radius: 5px;
+  padding: 1px 6px; font-weight: 900; font-size: 11px;
+}
+
+/* Navegação */
+.ap-sim2-nav { display: flex; gap: 4px; }
+.ap-sim2-nav button {
+  flex: 1; border: 2.5px solid #000; border-radius: 8px; background: #fff; color: #000;
+  cursor: pointer; font-weight: 900; padding: 5px;
+  font-family: 'Comic Sans MS','Comic Neue',cursive,sans-serif;
+  font-size: 11.5px; box-shadow: 2px 2px 0 #000;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.ap-sim2-nav button:active { transform: translate(2px,2px); box-shadow: 0 0 0 #000; }
+.ap-sim2-nav button:disabled { opacity: .4; cursor: default; box-shadow: 1px 1px 0 #000; }
+
+/* Veredicto final */
+.ap-sim2-verdict {
+  border: 3.5px solid #000; border-radius: 10px;
+  padding: 8px 10px; text-align: center; font-weight: 900; font-size: 16px;
+  box-shadow: 3px 3px 0 #000;
+  animation: ap-verdict-pop 0.32s ease-out;
+}
+.ap-sim2-verdict.accept { background: #4ade80; color: #000; }
+.ap-sim2-verdict.reject { background: #ef4444; color: #fff; }
+.ap-sim2-verdict-sub { font-size: 11px; font-weight: 700; margin-top: 3px; opacity: 0.9; }
+@keyframes ap-verdict-pop {
+  0%   { transform: scale(0.82); opacity: 0; }
+  65%  { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Detalhe de travamento (reason=stuck): mostra o triple sem transição */
+.ap-sim2-stuck-row {
+  display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 5px;
+}
+.ap-sim2-stuck-item {
+  border: 2px solid rgba(255,255,255,0.55); border-radius: 5px;
+  padding: 2px 6px; font-size: 10.5px; font-weight: 900;
+}
+.ap-sim2-stuck-item.state { background: rgba(219,234,254,0.25); }
+.ap-sim2-stuck-item.char  { background: rgba(254,249,195,0.30); }
+.ap-sim2-stuck-item.top   { background: rgba(220,252,231,0.25); }

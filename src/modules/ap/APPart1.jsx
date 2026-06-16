@@ -19,7 +19,7 @@ import usePDAGraph from './hooks/usePDAGraph';
 import useAPDrawing from './hooks/useAPDrawing';
 import useAPGuidedLesson from './hooks/useAPGuidedLesson';
 import { AP_LEVELS } from './levels_ap';
-import { pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
+import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 
 export default function APPart1({ onBack, progress, updateProgress, showToast }) {
@@ -194,7 +194,16 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     say(`${read}, ${pop}, ${push}.`, 'explicando');
   }, [say]);
 
-  // ── Simular palavra livre (aceita: passos; rejeita: melhor tentativa parcial) ─
+  // ── Testar palavra: apenas adiciona à lista (✓/✗), sem abrir simulação ────────
+  const testWord = useCallback(() => {
+    if (!level) return;
+    const word = simWord.trim();
+    setTestedWords(prev => prev.some(t => t.word === word)
+      ? prev : [...prev, { word, accepted: pdaAccepts(g.studentPda, word) }]);
+    setSimWord('');
+  }, [level, simWord, g.studentPda]);
+
+  // ── Simular palavra: abre APStackSim passo a passo + adiciona à lista ────────
   const simulate = useCallback(() => {
     if (!level) return;
     const word = simWord.trim();
@@ -363,44 +372,35 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
             </div>
           </aside>
         ) : (
-        <aside className="test-panel">
-          <div className="section-header" style={{ fontSize: 11 }}>Linguagem</div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#1e3a8a' }}>{level.language}</div>
-          <div style={{ fontSize: 12, color: '#444', marginTop: 4 }}>
-            Σ = {`{ ${level.alphabet.join(', ')} }`} · Γ = {`{ ${level.stackAlphabet.join(', ')} }`}<br />
-            Fundo <b>Z</b> · aceita por <b>pilha vazia</b>
-          </div>
-          {level.hint && (
-            <div style={{ marginTop: 8, fontSize: 12, background: '#fef9c3',
-              border: '2px dashed #ca8a04', borderRadius: 8, padding: '6px 8px' }}>💡 {level.hint}</div>
-          )}
+        <aside className="test-panel ap-test-panel">
+          <div className="section-header" style={{ fontSize: 11 }}>Palavras aceitas pela linguagem</div>
 
-          <button className="validate-btn slide-up-fade" style={{ marginTop: 10 }} onClick={validate}>
-            ✓ Validar AP
-          </button>
-
-          <div className="section-header" style={{ fontSize: 11, marginTop: 12 }}>Testar uma palavra</div>
           <div className="test-input-area">
             <input type="text" className="word-input" placeholder="ex: aabb (vazio = λ)"
               value={simWord} onChange={e => setSimWord(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && simulate()}
+              onKeyDown={e => e.key === 'Enter' && testWord()}
               translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
-            <button className="add-test-btn" onClick={simulate}>▶</button>
+            <button className="add-test-btn" onClick={testWord}>+</button>
           </div>
 
-          {testedWords.length > 0 && (
-            <div className="ap-tested">
-              {testedWords.map((t, i) => (
-                <span key={i} className={`ap-tested-chip ${t.accepted ? 'ok' : 'no'}`}>
-                  {t.accepted ? '✓' : '✗'} {t.word === '' ? 'λ' : t.word}
-                </span>
-              ))}
-            </div>
-          )}
+          <button className="simulate-btn" onClick={simulate}>🔬 Simular</button>
+
+          <div className="words-list">
+            {testedWords.map((t, i) => (
+              <div key={i} className={`word-row ${t.accepted ? 'correct' : 'wrong'}`}>
+                <span>{t.word === '' ? 'λ' : t.word}</span>
+                <span>{t.accepted ? '✓' : '✗'}</span>
+              </div>
+            ))}
+          </div>
 
           {result && !result.ok && result.reason !== 'counterexample' && (
             <div className="ap-result err">{result.message}</div>
           )}
+
+          <button className="validate-btn slide-up-fade" onClick={validate}>
+            ✓ Validar AP
+          </button>
 
           {sim && (
             <APStackSim key={simKey} run={sim.run} word={sim.word} title={sim.title}
