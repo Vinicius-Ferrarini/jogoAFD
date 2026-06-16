@@ -39,6 +39,10 @@ export default function APCanvas({
 
   // ── Pointer no fundo ────────────────────────────────────────────────────────
   const onCanvasDown = useCallback((e) => {
+    // Toques que começam num botão (HUD "Riscar" / toolbar de desenho) NÃO devem
+    // virar traço nem capturar o ponteiro no canvas — senão o ponteiro é roubado
+    // do botão e o clique (fechar lápis / trocar ferramenta) nunca dispara.
+    if (e.target.closest('button')) return;
     if (isDraw) { draw.onDown(e); return; }
     if (e.button !== 0) return;
     if (mode === 'ADD_NODE') {
@@ -134,13 +138,20 @@ export default function APCanvas({
       onPointerUp={onUp}
       onPointerLeave={onUp}
     >
-      {/* HUD: botão Riscar */}
+      {/* HUD: botão Riscar (mesmo visual do AFD) */}
       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
         <button onClick={() => setMode(isDraw ? 'IDLE' : 'DRAW')} title="Riscar"
-          style={{ width: 32, height: 32, fontSize: 16, cursor: 'pointer', borderRadius: 8,
-            background: isDraw ? '#bfdbfe' : '#fef08a',
+          style={{ width: 30, height: 30, background: isDraw ? '#bfdbfe' : '#fef08a',
             border: isDraw ? '2.5px solid #3b82f6' : '2.5px solid #000',
-            boxShadow: isDraw ? '2px 2px 0 #1d4ed8' : '2px 2px 0 #000' }}>✏</button>
+            borderRadius: 8, fontSize: 15, cursor: 'pointer',
+            boxShadow: isDraw ? '2px 2px 0 #1d4ed8' : '2px 2px 0 #000',
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <path d="M3 12 L10 5 L12 7 L5 14 Z" fill="#fbbf24" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
+            <path d="M10 5 L12 3 L14 5 L12 7 Z" fill="#fb923c" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
+            <path d="M3 12 L1.5 14.5 L5 14 Z" fill="#374151" stroke="#000" strokeWidth="1.2" strokeLinejoin="round"/>
+          </svg>
+        </button>
       </div>
 
       <div className="canvas-label">Área de Montagem</div>
@@ -162,11 +173,26 @@ export default function APCanvas({
       {isDraw && (
         <div className="draw-toolbar">
           {[
-            { id: 'pencil', label: '✏' }, { id: 'line', label: '／' },
-            { id: 'arrow', label: '➤' }, { id: 'rect', label: '▭' },
-          ].map(({ id, label }) => (
+            { id: 'pencil', icon: (
+              <svg width="15" height="15" viewBox="0 0 15 15">
+                <path d="M2 13 Q4 8 7 7.5 Q10 7 13 2" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+              </svg>), title: 'Lápis (rabisco livre)' },
+            { id: 'line', icon: (
+              <svg width="15" height="15" viewBox="0 0 15 15">
+                <line x1="2" y1="7.5" x2="13" y2="7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+              </svg>), title: 'Linha reta' },
+            { id: 'arrow', icon: (
+              <svg width="15" height="15" viewBox="0 0 15 15">
+                <line x1="2" y1="7.5" x2="11" y2="7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+                <polygon points="11,4.5 15,7.5 11,10.5" fill="currentColor"/>
+              </svg>), title: 'Seta' },
+            { id: 'rect', icon: (
+              <svg width="14" height="14" viewBox="0 0 14 14">
+                <rect x="2" y="3" width="10" height="8" fill="none" stroke="currentColor" strokeWidth="2" rx="1"/>
+              </svg>), title: 'Retângulo' },
+          ].map(({ id, icon, title }) => (
             <button key={id} className={`draw-tool-btn draw-type-btn${draw.drawTool === id && !draw.isErasing ? ' active' : ''}`}
-              title={id} onClick={() => { draw.setDrawTool(id); draw.setIsErasing(false); }}>{label}</button>
+              title={title} onClick={() => { draw.setDrawTool(id); draw.setIsErasing(false); }}>{icon}</button>
           ))}
           <div className="draw-toolbar-sep" />
           {DRAW_COLORS.map(({ hex, label }) => (

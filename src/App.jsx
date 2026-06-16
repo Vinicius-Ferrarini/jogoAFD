@@ -10,6 +10,10 @@ const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
 const APPart1     = lazy(() => import('./modules/ap/APPart1'));
 
+// Módulos com uma ÚNICA atividade pulam a tela de submódulos e vão direto ao jogo
+// (ex.: AP só tem "Autômato com Pilha" — não faz sentido escolher pilha 2x).
+const DIRECT_GAME = { ap: 'ap-pilha' };
+
 export default function App() {
   const [screen, setScreen] = useState('HOME');
   const [currentModule, setCurrentModule] = useState(null);
@@ -44,10 +48,14 @@ export default function App() {
   // ✨ Navegação
   const goHome = () => setScreen('HOME');
   const goModules = () => { setScreen('MODULES'); setCurrentModule(null); };
-  const goSubmodule = (moduleId) => { setScreen('SUBMODULES'); setCurrentModule(moduleId); };
   const loadGame = (gameId) => {
     setCurrentModule(gameId);
     setScreen('GAME');
+  };
+  const goSubmodule = (moduleId) => {
+    const direct = DIRECT_GAME[moduleId];
+    if (direct) { loadGame(direct); return; }   // pula a tela de submódulos
+    setScreen('SUBMODULES'); setCurrentModule(moduleId);
   };
 
   // ✨ Renderização
@@ -89,7 +97,7 @@ export default function App() {
         case 'afd-p1':  return <AFDPart1 {...moduleProps} onBack={() => goSubmodule('afd')} />;
         case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
         case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
-        case 'ap-pilha': return <APPart1 {...moduleProps} onBack={() => goSubmodule('ap')} />;
+        case 'ap-pilha': return <APPart1 {...moduleProps} onBack={goModules} />;
         default:        return <div>Módulo não encontrado</div>;
       }
     })();
@@ -166,10 +174,6 @@ function SubmoduleSelection({ moduleId, onSelectGame, onBack }) {
         desc: 'Analise um grafo pronto e identifique a linguagem', color: '#bfdbfe' },
       { id: 'afd-min', icon: '⚡', label: 'Minimização',
         desc: '14 exercícios de otimização de autômatos', color: '#bbf7d0' },
-    ],
-    ap: [
-      { id: 'ap-pilha',  icon: '📚', label: 'Autômato com Pilha',
-        desc: '15 exercícios — desenhe o AP, valide por pilha vazia e formalize', color: '#ddd6fe' },
     ],
     mt: [
       { id: 'mt-recon', icon: '🔍', label: 'Reconhecedora', desc: 'Em breve!', locked: true },
