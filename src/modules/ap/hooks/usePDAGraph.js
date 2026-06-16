@@ -10,25 +10,28 @@ let _uid = 0;
 const genUid = () => `_ap${++_uid}_${Math.random().toString(36).slice(2, 6)}`;
 
 const EMPTY = { nodes: [], transitions: [] };
-const initial = { past: [], present: EMPTY, future: [] };
+const initial = { past: [], present: EMPTY, future: [], lastEmptyAdd: null };
 
 // COMMIT = muda com histórico; SET = muda sem histórico (arraste/rascunho);
-// SNAPSHOT = marca um ponto de histórico no estado atual (início do arraste).
+// SNAPSHOT = marca um ponto de histórico no estado atual (início do arraste);
+// SQUASH = funde no commit anterior (preencher a seta recém-criada não vira 2 passos).
+// lastEmptyAdd = índice da seta recém-criada vazia (p/ a fusão); qualquer outra ação zera.
 function reducer(state, action) {
   const { past, present, future } = state;
   switch (action.type) {
-    case 'COMMIT':   return { past: [...past, present], present: action.next, future: [] };
-    case 'SET':      return { ...state, present: action.next };
-    case 'SNAPSHOT': return { past: [...past, present], present, future: [] };
+    case 'COMMIT':   return { past: [...past, present], present: action.next, future: [], lastEmptyAdd: action.emptyAdd ?? null };
+    case 'SET':      return { ...state, present: action.next, lastEmptyAdd: null };
+    case 'SQUASH':   return { ...state, present: action.next, future: [], lastEmptyAdd: null };
+    case 'SNAPSHOT': return { past: [...past, present], present, future: [], lastEmptyAdd: null };
     case 'UNDO': {
       if (!past.length) return state;
-      return { past: past.slice(0, -1), present: past[past.length - 1], future: [present, ...future] };
+      return { past: past.slice(0, -1), present: past[past.length - 1], future: [present, ...future], lastEmptyAdd: null };
     }
     case 'REDO': {
       if (!future.length) return state;
-      return { past: [...past, present], present: future[0], future: future.slice(1) };
+      return { past: [...past, present], present: future[0], future: future.slice(1), lastEmptyAdd: null };
     }
-    case 'RESET':    return { past: [], present: action.next ?? EMPTY, future: [] };
+    case 'RESET':    return { past: [], present: action.next ?? EMPTY, future: [], lastEmptyAdd: null };
     default:         return state;
   }
 }
@@ -50,7 +53,9 @@ export default function usePDAGraph() {
     const used = new Set(nodes.map(p => p.label));
     while (used.has(`q${n}`)) n++;
     const label = `q${n}`;
-    const node = { uid: genUid(), id: label, label, x, y, isInitial: nodes.length === 0 };
+    // O estado inicial é escolhido pelo usuário (carta "▶ Estado Inicial"),
+    // nunca automático — nem o primeiro estado nasce inicial.
+    const node = { uid: genUid(), id: label, label, x, y, isInitial: false };
     dispatch({ type: 'COMMIT', next: { nodes: [...nodes, node], transitions } });
   }, [nodes, transitions]);
 
@@ -98,12 +103,18 @@ export default function usePDAGraph() {
     const exists = transitions.some(t =>
       t.from === from && t.to === to && t.read === triple.read && t.pop === triple.pop && t.push === triple.push);
     if (exists) return;
-    dispatch({ type: 'COMMIT', next: { nodes, transitions: [...transitions, { from, to, ...triple }] } });
+    // Seta criada vazia (modo "Criar Seta") guarda o índice p/ fundir o 1º preenchimento.
+    const isEmpty = !triple.read && !triple.pop && !triple.push;
+    dispatch({ type: 'COMMIT', next: { nodes, transitions: [...transitions, { from, to, ...triple }] },
+      emptyAdd: isEmpty ? transitions.length : null });
   }, [nodes, transitions]);
 
   const editTriple = useCallback((tIdx, triple) => {
-    dispatch({ type: 'COMMIT', next: { nodes, transitions: transitions.map((t, i) => i === tIdx ? { ...t, ...triple } : t) } });
-  }, [nodes, transitions]);
+    const next = { nodes, transitions: transitions.map((t, i) => i === tIdx ? { ...t, ...triple } : t) };
+    // Preencher pela 1ª vez a seta recém-criada (tripla vazia) funde com o "adicionar"
+    // — senão a seta vira 2 entradas de histórico (bug do "desfazer 2 vezes").
+    dispatch(hist.lastEmptyAdd === tIdx ? { type: 'SQUASH', next } : { type: 'COMMIT', next });
+  }, [nodes, transitions, hist.lastEmptyAdd]);
 
   const removeTriple = useCallback((tIdx) => {
     dispatch({ type: 'COMMIT', next: { nodes, transitions: transitions.filter((_, i) => i !== tIdx) } });

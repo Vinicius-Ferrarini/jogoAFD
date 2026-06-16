@@ -18,7 +18,7 @@ const CARDS = [
 export default function APFooterDeck({
   mode, onPick, profMessage, profMood, onProfClick, onCloseBalloon,
   onNodeDrag, onNodeDrop, onNodeDragCancel,
-  canUndo, canRedo, onUndo, onRedo, lessonActive,
+  canUndo, canRedo, onUndo, onRedo, lessonActive, hasNodes,
 }) {
   const dragRef = useRef(null);
   const profImg = profMood === 'serio' ? imgSerio : imgExplicando;
@@ -34,11 +34,16 @@ export default function APFooterDeck({
       <div className="cards-scroll-wrapper">
         {CARDS.map((c, i) => c.sep ? (
           <div key={`sep${i}`} className="card-separator" />
-        ) : (
+        ) : (() => {
+          // Antes do 1º estado, só "Novo Estado" funciona; as demais ficam travadas.
+          const locked = !hasNodes && c.action !== 'ADD_NODE';
+          return (
           <div key={c.action}
             data-icon={c.icon}
-            className={`card ${c.cls} ${mode === c.action ? 'selected-card' : ''}`}
-            onClick={() => onPick(mode === c.action ? 'IDLE' : c.action)}
+            className={`card ${c.cls} ${mode === c.action ? 'selected-card' : ''} ${locked ? 'card-locked' : ''}`}
+            style={locked ? { opacity: 0.4, cursor: 'not-allowed', filter: 'grayscale(0.6)' } : undefined}
+            title={locked ? 'Crie um estado primeiro (◯ Novo Estado)' : undefined}
+            onClick={() => { if (locked) return; onPick(mode === c.action ? 'IDLE' : c.action); }}
             onPointerDown={(e) => {
               if (c.action !== 'ADD_NODE') return;
               dragRef.current = { sx: e.clientX, sy: e.clientY, dragging: false };
@@ -64,7 +69,8 @@ export default function APFooterDeck({
             <div className="card-header">{c.label}</div>
             <div className="card-icon">{c.icon}</div>
           </div>
-        ))}
+          );
+        })())}
 
         <div className="card-separator" />
         {[
@@ -85,9 +91,9 @@ export default function APFooterDeck({
         {profMessage && (
           // pointer-events:none garante que o balão NUNCA bloqueie o botão atrás;
           // só o × (auto) é clicável para fechar.
-          <div className="professor-balloon" style={{ pointerEvents: 'none' }}>
+          <div className="professor-balloon ap-balloon" style={{ pointerEvents: 'none' }}>
             <img src={imgBalaoFala} alt="" />
-            <div className="professor-balloon-text">{profMessage}</div>
+            <div className="professor-balloon-text ap-balloon-text">{profMessage}</div>
             <button className="ap-balloon-close" onClick={onCloseBalloon} title="Fechar">✕</button>
           </div>
         )}

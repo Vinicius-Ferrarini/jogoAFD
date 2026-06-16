@@ -101,13 +101,13 @@ export function buildApLesson(level, battery) {
   steps.push({
     phase: 'GRAPH', stateUpdate: { nodes: [], transitions: [] },
     boardStatus: boardWords.map(() => 'pending'),
-    prof: { message: `Vamos construir o AP de ${level.language}. A meta é ACEITAR POR PILHA VAZIA. No quadro estão as palavras-alvo.`, mood: 'explicando' },
+    prof: { message: `Vamos montar o AP de ${level.language}, aceitando por PILHA VAZIA. No quadro, as palavras-alvo.`, mood: 'explicando' },
   });
 
   steps.push({
     phase: 'GRAPH', stateUpdate: { nodes: fullNodes, transitions: [] },
     boardStatus: boardWords.map(() => 'pending'),
-    prof: { message: `Primeiro os estados. ${initLabel} é o inicial (▶). Não há estado final: o que importa é esvaziar a pilha.`, mood: 'explicando' },
+    prof: { message: `Comece pelos estados. ${initLabel} é o inicial (▶). Sem estado final — basta esvaziar a pilha.`, mood: 'explicando' },
   });
 
   let prevAcc = boardWords.map(() => false);
@@ -129,7 +129,7 @@ export function buildApLesson(level, battery) {
     phase: 'GRAPH', stateUpdate: { nodes: fullNodes, transitions: T },
     boardStatus: boardWords.map(() => 'done'),
     graphEnd: true,
-    prof: { message: `Grafo pronto! Esse AP reconhece ${level.language} por pilha vazia. E agora? Escolha: ver a DESCRIÇÃO FORMAL ou FAZER O GRAFO você mesmo.`, mood: 'feliz' },
+    prof: { message: `Grafo pronto! Reconhece ${level.language} por pilha vazia. E agora? Escolha abaixo 👇`, mood: 'feliz' },
   });
 
   // ── FASE 2: descrição formal (grafo final fixo) ────────────────────────────
@@ -146,7 +146,7 @@ export function buildApLesson(level, battery) {
   steps.push({
     phase: 'FORMAL', stateUpdate: finalUpdate,
     formalReveal: { kind: 'tuple', fields: { Sigma, Gamma } },
-    prof: { message: `Σ = símbolos lidos = ${Sigma}. Γ = símbolos da pilha = ${Gamma} (inclui o fundo Z).`, mood: 'explicando' },
+    prof: { message: `Σ = símbolos lidos = ${Sigma}. Γ = símbolos da pilha = ${Gamma} (com o fundo Z).`, mood: 'explicando' },
   });
   steps.push({
     phase: 'FORMAL', stateUpdate: finalUpdate,
@@ -160,14 +160,14 @@ export function buildApLesson(level, battery) {
       phase: 'FORMAL', stateUpdate: finalUpdate,
       formalReveal: { kind: 'delta', rowKey: String(i) },
       highlightEdge: { from: t.from, to: t.to },
-      prof: { message: `δ, linha ${i + 1}: T(${d.from}, ${t.read || 'λ'}, ${t.pop || 'λ'}) = (${d.to}, ${t.push || 'λ'}). ${cap(d.act)}.`, mood: 'explicando' },
+      prof: { message: `δ ${i + 1}: T(${d.from}, ${t.read || 'λ'}, ${t.pop || 'λ'}) = (${d.to}, ${t.push || 'λ'}). ${cap(d.act)}.`, mood: 'explicando' },
     });
   });
 
   steps.push({
     phase: 'FORMAL', stateUpdate: finalUpdate,
     formalReveal: { kind: 'tuple', fields: {} },
-    prof: { message: `Descrição formal completa: M = (E, Σ, Γ, δ, ${initLabel}, Z). Aula encerrada — agora é a sua vez! 👏`, mood: 'feliz' },
+    prof: { message: `Pronto: M = (E, Σ, Γ, δ, ${initLabel}, Z). Aula encerrada — agora é com você! 👏`, mood: 'feliz' },
   });
 
   return { boardWords, steps };

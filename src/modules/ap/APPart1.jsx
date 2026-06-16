@@ -259,24 +259,29 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         <div className="deck-drag-ghost" style={{ left: deckGhost.x, top: deckGhost.y }} />,
         document.body)}
 
-      {/* Header */}
+      {/* Header (mesmo layout do AFD: Objetivo + linguagem ao centro, L06 junto ao nav) */}
       <div className="ap-header">
         <button className="back-btn" onClick={() => setScreen('MENU')}>⬅ Exercícios</button>
-        <div className="ap-header-mid">
-          <span className="ap-header-id">{level.label}</span>
-          <span className="ap-header-lang">{level.language}</span>
+
+        <div className="ap-header-center">
+          <span className="ap-mission-label">Objetivo</span>
+          <div className="ap-mission-formula">{level.language}</div>
+          <button className="ap-formal-toggle" disabled={!lesson.hasLesson}
+            onClick={lesson.active ? finishLesson : startLesson}>
+            {lesson.active ? '✕ Sair da Aula' : '👨‍🏫 Assistir Aula'}
+          </button>
+          <button className="ap-formal-toggle" disabled={stars < 1 || lesson.active} onClick={() => setFormalOpen(o => !o)}>
+            📝 Descrição Formal
+          </button>
         </div>
-        <button className="ap-formal-toggle" disabled={!lesson.hasLesson}
-          onClick={lesson.active ? finishLesson : startLesson}>
-          {lesson.active ? '✕ Sair da Aula' : '👨‍🏫 Assistir Aula'}
-        </button>
-        <button className="ap-formal-toggle" disabled={stars < 1 || lesson.active} onClick={() => setFormalOpen(o => !o)}>
-          📝 Descrição Formal
-        </button>
-        <div className="ap-header-stars">{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
-        <div className="ap-header-nav">
-          <button onClick={() => goLevel(-1)} title="Anterior">◀</button>
-          <button onClick={() => goLevel(1)} title="Próximo">▶</button>
+
+        <div className="ap-header-right">
+          <div className="ap-header-nav">
+            <button onClick={() => goLevel(-1)} title="Fase anterior">◀</button>
+            <span className="ap-level-label" style={{ background: DIFF_COLOR[level.level] }}>{level.label}</span>
+            <button onClick={() => goLevel(1)} title="Próxima fase">▶</button>
+          </div>
+          <div className="ap-header-stars">{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
         </div>
       </div>
 
@@ -393,6 +398,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         mode={mode}
         onPick={pickMode}
         lessonActive={lesson.active}
+        hasNodes={g.nodes.length > 0}
         canUndo={g.canUndo}
         canRedo={g.canRedo}
         onUndo={g.undo}

@@ -4,6 +4,18 @@
 /* O menu de exercícios reusa o estilo do AFD_1 (.menu-screen-fases/.levels-grid/
    .menu-btn de AFDPart1.css) + DifficultyLegend, então não precisa de CSS aqui. */
 
+/* ── Balão do Maurílio no AP: mensagens da aula são mais longas que as dicas,
+      então o balão é maior e o texto se ajusta (fonte/entrelinha menores,
+      centralizado, com recorte de segurança p/ nunca vazar sobre o professor). ── */
+.ap-balloon { width: 250px; height: 234px; }
+.ap-balloon-text {
+  align-items: center;
+  padding: 30px 22px 70px;
+  font-size: 11.5px;
+  line-height: 1.24;
+  overflow: hidden;
+}
+
 /* ── Botão × para fechar o balão do Maurílio (só ele é clicável no balão) ── */
 .ap-balloon-close {
   position: absolute; top: 16px; right: 14px; width: 22px; height: 22px;
@@ -13,21 +25,43 @@
 }
 .ap-balloon-close:hover { background: #f87171; }
 
-/* ── Header do jogo ── */
+/* ── Header do jogo (espelha o GameHeader do AFD; fundo amarelo do AP) ── */
 .ap-header {
   display: flex; align-items: center; gap: 14px; padding: 8px 16px;
   background: #fde68a; border-bottom: 3px solid #000;
   font-family: 'Comic Sans MS','Comic Neue',cursive,sans-serif;
 }
-.ap-header-mid { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
-.ap-header-id { font-weight: 900; font-size: 20px; }
-.ap-header-lang { font-weight: 700; color: #1e3a8a; font-size: 15px; }
-.ap-header-stars { color: #f59e0b; font-size: 18px; letter-spacing: 2px; margin-left: auto; }
-.ap-header-nav { display: flex; gap: 6px; }
+.ap-header-center {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-width: 0; flex-wrap: wrap;
+}
+.ap-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+/* Badge verde "OBJETIVO" (igual ao .mission-label do AFD) */
+.ap-mission-label {
+  color: #000; font-weight: 800; font-size: 12px; text-transform: uppercase;
+  background: var(--accent-green, #4ade80); padding: 4px 8px;
+  border: 3px solid #000; border-radius: 8px; box-shadow: 2px 2px 0 #000;
+  transform: rotate(-2deg); white-space: nowrap;
+}
+/* Caixa branca da linguagem (igual ao .mission-formula do AFD, fonte menor) */
+.ap-mission-formula {
+  font-size: 14px; font-weight: bold; background: #fff; padding: 4px 14px;
+  border-radius: 8px; border: 3px solid #000; color: #000; box-shadow: 4px 4px 0 #000;
+  white-space: nowrap;
+}
+
+.ap-header-stars { color: #f59e0b; font-size: 18px; letter-spacing: 2px; }
+.ap-header-nav { display: flex; align-items: center; gap: 6px; }
 .ap-header-nav button {
   width: 34px; height: 32px; border: 2.5px solid #000; border-radius: 8px; background: #fff;
   color: #000;
   box-shadow: 2px 2px 0 #000; cursor: pointer; font-weight: 900; font-size: 14px;
+}
+/* Rótulo da fase (L06) entre os botões ◀ ▶, com a cor da dificuldade */
+.ap-level-label {
+  font-weight: 900; font-size: 14px; padding: 3px 10px; border: 2.5px solid #000;
+  border-radius: 8px; box-shadow: 2px 2px 0 #000; white-space: nowrap; color: #000;
 }
 
 /* ── Painel direito: usa as classes do TestPanel do AFD (.test-panel/.word-input/

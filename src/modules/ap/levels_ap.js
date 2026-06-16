@@ -63,9 +63,9 @@ const META = {
          hint: 'O primeiro "a" já empilha TRÊS; cada "a" seguinte empilha mais dois. "b" desempilha.' },
   L13: { level: 'easy',   language: '{ aⁿb²ⁿ⁺² / n > 0 }',
          hint: 'Igual ao L12, mas o primeiro "a" empilha QUATRO (dois a mais).' },
-  L14: { level: 'easy',   language: '{ aⁿbⁿ/² / n > 0 e n é par }',
+  L14: { level: 'easy',   language: '{ aⁿbⁿ⁄² / n > 0 e n é par }',
          hint: 'A cada DOIS "a" sobra um símbolo na pilha; cada "b" desempilha um.' },
-  L15: { level: 'easy',   language: '{ aⁿbⁿ/³ / n > 0 e n é múltiplo de 3 }',
+  L15: { level: 'easy',   language: '{ aⁿbⁿ⁄³ / n > 0 e n é múltiplo de 3 }',
          hint: 'A cada TRÊS "a" sobra um símbolo na pilha; cada "b" desempilha um.' },
 };
 
