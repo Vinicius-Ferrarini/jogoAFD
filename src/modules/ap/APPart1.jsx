@@ -114,7 +114,10 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setSimWord(''); setFormalOpen(false); setDeckGhost(null); setVictory(false);
     setTestedWords([]);
     draw.resetDrawings();
-    say(`Monte o AP que reconhece ${lv.language} por PILHA VAZIA e clique em Validar!`, 'explicando');
+    say(lv.impossible
+      ? `${lv.language} é IMPOSSÍVEL com Autômato com Pilha — precisa de Máquina de Turing (MT).`
+      : `Monte o AP que reconhece ${lv.language} por PILHA VAZIA e clique em Validar!`,
+      lv.impossible ? 'serio' : 'explicando');
   }, [g, draw, say, lessonReset]);
 
   const goLevel = useCallback((dir) => {
@@ -142,7 +145,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
 
   // ── Validar (bateria) = ★1 ──────────────────────────────────────────────────
   const validate = useCallback(() => {
-    if (!level) return;
+    if (!level || level.impossible) return;
     setSim(null); setSimHighlight({ nodeId: null, type: null });
     const res = g.validatePDA(level);
     setResult(res);
@@ -215,7 +218,8 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
 
   // ── Menu de exercícios (padrão AFD_1: TuringLab + grade + legenda) ──────────
   if (screen === 'MENU') {
-    const maxStars   = AP_LEVELS.length * 3;
+    // Níveis impossíveis (só MT) não contam para o total de estrelas.
+    const maxStars   = AP_LEVELS.filter(l => !l.impossible).length * 3;
     const totalStars = AP_LEVELS.reduce((s, l) => s + (progress?.[`ap-${l.id}`]?.stars || 0), 0);
     return (
       <div className="menu-screen menu-screen-fases min-screen" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
@@ -240,11 +244,13 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                 background: DIFF_COLOR[l.level] }}>
               <span>{l.label}</span>
-              <SvgStars count={progress?.[`ap-${l.id}`]?.stars || 0} size={14} max={3} />
+              {l.impossible
+                ? <span style={{ fontSize: 11, fontWeight: 900, color: '#000' }}>🚫 só MT</span>
+                : <SvgStars count={progress?.[`ap-${l.id}`]?.stars || 0} size={14} max={3} />}
             </button>
           ))}
         </div>
-        <DifficultyLegend keys={['easy', 'medium', 'hard']} />
+        <DifficultyLegend keys={['easy', 'medium', 'hard', 'impossible']} />
       </div>
     );
   }
@@ -344,6 +350,18 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
             onPrev={() => lessonGo(-1)}
             onFinish={finishLesson}
           />
+        ) : level.impossible ? (
+          <aside className="test-panel">
+            <div className="section-header" style={{ fontSize: 11 }}>Linguagem</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#6b21a8' }}>{level.language}</div>
+            <div className="ap-impossible-card">
+              <div className="ap-impossible-badge">🚫 Impossível com Autômato com Pilha</div>
+              <p>{level.note}</p>
+              <div className="ap-impossible-mt">
+                Resolve-se só com <b>Máquina de Turing (MT)</b> — que ainda <b>não implementamos</b>. 🛠️⚙️
+              </div>
+            </div>
+          </aside>
         ) : (
         <aside className="test-panel">
           <div className="section-header" style={{ fontSize: 11 }}>Linguagem</div>

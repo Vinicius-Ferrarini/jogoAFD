@@ -10,7 +10,7 @@ import { getLesson } from '../levels_ap';
 export default function useAPGuidedLesson(level) {
   const [step, setStep] = useState(null); // null = fora da aula
 
-  const lesson = level ? getLesson(level) : null;
+  const lesson = level && !level.impossible ? getLesson(level) : null;
   const steps  = useMemo(() => lesson?.steps ?? [], [lesson]);
   const active = step !== null && steps.length > 0;
   const cur    = active ? steps[Math.min(step, steps.length - 1)] : null;

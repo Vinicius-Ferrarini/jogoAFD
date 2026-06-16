@@ -22,7 +22,7 @@ const STEP_NAMES  = {
   PROP: 'Propagação', GROUPS: 'Grupos de equivalência', DRAW: 'Desenhar o AFD mínimo',
 };
 
-export default function MinGame({ exercise, exNumber, progress, onBack, updateProgress }) {
+export default function MinGame({ exercise, exNumber, progress, onBack, onNext, nextLabel, updateProgress }) {
   // ── Banner / Professor ──
   const [banner,   setBanner]   = useState(null);
   const [profMsg,  setProfMsg]  = useState('');
@@ -174,7 +174,7 @@ export default function MinGame({ exercise, exNumber, progress, onBack, updatePr
       ) : step === 'DRAW' ? (
         <MinDrawStep
           game={game} prep={prep} showProf={showProf} stars={stars}
-          onSolved={handleDrawSolved} onBack={onBack}
+          onSolved={handleDrawSolved} onBack={onBack} onNext={onNext} nextLabel={nextLabel}
         />
       ) : (
       <div className="min-main">

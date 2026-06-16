@@ -67,16 +67,20 @@ const META = {
          hint: 'A cada DOIS "a" sobra um símbolo na pilha; cada "b" desempilha um.' },
   L15: { level: 'easy',   language: '{ aⁿbⁿ⁄³ / n > 0 e n é múltiplo de 3 }',
          hint: 'A cada TRÊS "a" sobra um símbolo na pilha; cada "b" desempilha um.' },
+  // ── Nível IMPOSSÍVEL: não é livre de contexto, exige Máquina de Turing ──
+  L16: { level: 'impossible', impossible: true,
+         language: '{ aⁿbⁿcⁿ / n > 0 }',
+         alphabet: ['a', 'b', 'c'], stackAlphabet: ['A', 'Z'],
+         note: 'aⁿbⁿcⁿ NÃO é livre de contexto — nenhum Autômato com Pilha a reconhece. A pilha só "lembra" uma contagem de cada vez: dá para casar aⁿ com bⁿ, mas aí a pilha já esvaziou e não há como conferir os cⁿ. Isso exige uma Máquina de Turing (MT), que ainda não implementamos.' },
 };
 
 // ── Monta a lista de exercícios (combina META + gabarito parseado) ────────────
 // Ordem NUMÉRICA (L1, L2, …, L15); rótulo exibido com zero à esquerda (L01…L15).
 export const AP_LEVELS = Object.keys(META)
   .map((id) => {
-    const solution = gabarito(id);
     const m = META[id];
     const num = Number(id.slice(1));
-    return {
+    const base = {
       id,
       title: id,
       label: 'L' + String(num).padStart(2, '0'),
@@ -85,6 +89,17 @@ export const AP_LEVELS = Object.keys(META)
       hint: m.hint,
       truth: m.truth,
       apLesson: m.apLesson, // narração à mão (opcional); senão auto-derivada
+    };
+    // Nível impossível: sem gabarito .jff (não há AP que o resolva).
+    if (m.impossible) {
+      return {
+        ...base, impossible: true, note: m.note, solution: null,
+        alphabet: m.alphabet ?? [], stackAlphabet: m.stackAlphabet ?? [], stackBottom: 'Z',
+      };
+    }
+    const solution = gabarito(id);
+    return {
+      ...base,
       solution,
       alphabet: deriveInputAlphabet(solution),
       stackAlphabet: deriveStackAlphabet(solution),

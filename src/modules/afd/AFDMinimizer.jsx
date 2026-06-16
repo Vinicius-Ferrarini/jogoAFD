@@ -331,16 +331,22 @@ function LevelList({ progress, onSelect, onBack }) {
 export default function AFDMinimizer({ onBack, progress, updateProgress, showToast }) {
   const [selected, setSelected] = useState(null);
 
-  if (selected) return (
-    <MinGame
-      exercise={selected}
-      exNumber={SORTED_EXERCISES.findIndex(e => e.id === selected.id) + 1}
-      progress={progress}
-      onBack={() => setSelected(null)}
-      updateProgress={updateProgress}
-      showToast={showToast}
-    />
-  );
+  if (selected) {
+    const idx  = SORTED_EXERCISES.findIndex(e => e.id === selected.id);
+    const next = idx < SORTED_EXERCISES.length - 1 ? SORTED_EXERCISES[idx + 1] : null;
+    return (
+      <MinGame
+        exercise={selected}
+        exNumber={idx + 1}
+        progress={progress}
+        onBack={() => setSelected(null)}
+        onNext={next ? () => setSelected(next) : null}
+        nextLabel={next ? `Ex. ${idx + 2}` : null}
+        updateProgress={updateProgress}
+        showToast={showToast}
+      />
+    );
+  }
 
   return (
     <LevelList

@@ -17,7 +17,7 @@ import useAFDGraph from '../hooks/useAFDGraph';
 let _uid = 0;
 const genUid = () => `_md${++_uid}_${Math.random().toString(36).slice(2, 6)}`;
 
-export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, stars }) {
+export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, onNext, nextLabel, stars }) {
   // ── Estado do grafo (vive aqui p/ quebrar o ciclo useHistory ↔ useAFDGraph) ──
   const [nodes, setNodes]             = useState([]);
   const [transitions, setTransitions] = useState([]);
@@ -284,9 +284,16 @@ export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, st
               <GraphView nodes={minimized.nodes} transitions={minimized.transitions}
                 vw={460} vh={250} nr={20} mx={54} my={36} />
             </div>
-            <button className="min-draw-validate" style={{ marginTop: 10 }} onClick={onBack}>
-              ← Ver outros exercícios
-            </button>
+            <div style={{ display: 'flex', gap: 14, marginTop: 10, justifyContent: 'center' }}>
+              <button className="menu-btn" style={{ padding: '12px 22px', fontSize: 17 }} onClick={onBack}>
+                Voltar ao Menu
+              </button>
+              {onNext && (
+                <button className="menu-btn primary" style={{ padding: '12px 22px', fontSize: 17 }} onClick={onNext}>
+                  Próxima: {nextLabel} →
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
