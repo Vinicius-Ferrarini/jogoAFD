@@ -14,7 +14,15 @@ import imgBalaoFala          from '../../../assets/balao_fala_redondo.webp';
 
 const VW = 580, VH = 340;
 
-export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext }) {
+const navBtnStyle = {
+  padding: '2px 8px', fontSize: 13, fontWeight: 900,
+  background: '#fff', color: '#000', border: '2px solid #000', borderRadius: 6,
+  cursor: 'pointer', boxShadow: '2px 2px 0 #000',
+  fontFamily: "'Comic Sans MS', cursive", lineHeight: 1.2,
+};
+const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none' };
+
+export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev }) {
   const graph = LEVEL_GRAPHS[level.id];
 
   const {
@@ -70,6 +78,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
 
   const stars    = progress[level.id]?.stars || 0;
   const levelIdx = GAME_LEVELS.findIndex(l => l.id === level.id);
+  const prevLevel = levelIdx > 0 ? GAME_LEVELS[levelIdx - 1] : null;
   const nextLevel = levelIdx >= 0 && levelIdx < GAME_LEVELS.length - 1
     ? GAME_LEVELS[levelIdx + 1] : null;
 
@@ -114,7 +123,16 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
           <span className="mission-label">Identifique a Linguagem</span>
           <div className="mission-formula">{level.label}</div>
         </div>
-        <div style={{ width: 150, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: 160, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button style={prevLevel ? navBtnStyle : navBtnDisabledStyle}
+              disabled={!prevLevel} onClick={() => prevLevel && onPrev(prevLevel)}
+              title="Fase anterior">◀</button>
+            <span className="mission-label">{level.label}</span>
+            <button style={nextLevel ? navBtnStyle : navBtnDisabledStyle}
+              disabled={!nextLevel} onClick={() => nextLevel && onNext(nextLevel)}
+              title="Próxima fase">▶</button>
+          </div>
           <SvgStars count={stars} size={20} />
         </div>
       </header>

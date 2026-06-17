@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import './AFDPart1.css';
 import FormalDescriptionModal from './FormalDescriptionModal';
-import TutorialModal from './TutorialModal';
 import LevelMenu from './components/LevelMenu';
 import GameHeader from './components/GameHeader';
 import TestPanel from './components/TestPanel';
@@ -80,11 +79,8 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   // ── Aula Guiada + tutoriais contextuais ────────────────────────────────────
   const {
     guidedLessonStep, setGuidedLessonStep,
-    activeTutorial, setActiveTutorial,
-    autoTutorial, toggleAutoTutorial,
-    shownTutorialsRef, userNodesSnapshot, userTransitionsSnapshot,
-    showContextualTutorial,
-  } = useGuidedLesson({ currentLevel });
+    userNodesSnapshot, userTransitionsSnapshot,
+  } = useGuidedLesson();
 
   // ── Estado do canvas (desenho, zoom/pan, modos) ────────────────────────────
   const {
@@ -148,9 +144,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     setSelectedSymbolCard(null);
     setShowVictoryScreen(false);
     setShowImpossibleScreen(false);
-    setActiveTutorial(null);
     setGuidedLessonStep(null);
-    shownTutorialsRef.current = new Set();
     setProfessorMessage('');
     resetZoom();
     setSelectedNodes([]);
@@ -215,7 +209,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         } else {
         setIsDrawingUnlocked(true);
         showToast('Sucesso! Tabuleiro liberado.', 'success');
-        showContextualTutorial('onDrawGraph');
         const allowed = currentLevel.allowedCards;
         const initialCards = [
           { id: 'c0', type: 'action', action: 'toggleInitial', icon: '▶', label: 'Estado Inicial' },
@@ -239,7 +232,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       setTestWords(prev => [{ word: wordDisplay, status: 'wrong' }, ...prev]);
     }
     setNewWord('');
-  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, showContextualTutorial]);
+  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress]);
 
   // Atalhos de teclado: Ctrl+Z, Ctrl+Y, Esc, Delete
   useEffect(() => {
@@ -266,23 +259,12 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo, drawUndo, drawingStack, resetMode, deleteSelected]);
 
-  const toggleSidebar = () => setIsSidebarOpen(o => {
-    const next = !o;
-    if (next) showContextualTutorial('onFormalDesc');
-    return next;
-  });
+  const toggleSidebar = () => setIsSidebarOpen(o => !o);
 
   const handleProfessorClick = useCallback(() => {
     if (guidedLessonStep !== null) return;
-    let key;
-    if (isSidebarOpen && isTableFocusedRef.current) key = 'onTable';
-    else if (isSidebarOpen) key = 'onFormalDesc';
-    else if (isDrawingUnlocked) key = 'onDrawGraph';
-    else key = 'onStart';
-    const tut = currentLevel?.tutorials?.[key];
-    if (tut) setActiveTutorial(tut);
-    else showToast('Você está indo muito bem! Não tenho dicas extras para este passo.', 'info');
-  }, [guidedLessonStep, isSidebarOpen, isDrawingUnlocked, currentLevel, showToast]);
+    showToast('Você está indo muito bem! Use o botão 👨‍🏫 Aula para ver a demonstração.', 'info');
+  }, [guidedLessonStep, showToast]);
 
   const validateAFD = useCallback(() => {
     if (!validateAFDSilent(true)) return;
@@ -370,8 +352,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       <GameHeader
         currentLevel={currentLevel}
         progress={progress}
-        autoTutorial={autoTutorial}
-        toggleAutoTutorial={toggleAutoTutorial}
         toggleSidebar={toggleSidebar}
         onBack={() => setTela('MENU')}
         onPrevLevel={handlePrevLevel}
@@ -379,7 +359,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         onStartLesson={() => {
           userNodesSnapshot.current = JSON.parse(JSON.stringify(nodes));
           userTransitionsSnapshot.current = JSON.parse(JSON.stringify(transitions));
-          setActiveTutorial(null);
           setGuidedLessonStep(0);
         }}
       />
@@ -557,14 +536,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         onDeckNodeDrop={handleDeckNodeDrop}
         onDeckNodeDragCancel={handleDeckNodeDragCancel}
       />
-
-      {/* ── Tutorial Modal ── */}
-      {activeTutorial && (
-        <TutorialModal
-          tutorial={activeTutorial}
-          onClose={() => setActiveTutorial(null)}
-        />
-      )}
 
       {/* ── Tela Impossível ── */}
       {showImpossibleScreen && (

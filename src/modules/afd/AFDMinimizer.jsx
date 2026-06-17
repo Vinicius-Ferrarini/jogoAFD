@@ -333,6 +333,7 @@ export default function AFDMinimizer({ onBack, progress, updateProgress, showToa
 
   if (selected) {
     const idx  = SORTED_EXERCISES.findIndex(e => e.id === selected.id);
+    const prev = idx > 0 ? SORTED_EXERCISES[idx - 1] : null;
     const next = idx < SORTED_EXERCISES.length - 1 ? SORTED_EXERCISES[idx + 1] : null;
     return (
       <MinGame
@@ -340,6 +341,7 @@ export default function AFDMinimizer({ onBack, progress, updateProgress, showToa
         exNumber={idx + 1}
         progress={progress}
         onBack={() => setSelected(null)}
+        onPrev={prev ? () => setSelected(prev) : null}
         onNext={next ? () => setSelected(next) : null}
         nextLabel={next ? `Ex. ${idx + 2}` : null}
         updateProgress={updateProgress}

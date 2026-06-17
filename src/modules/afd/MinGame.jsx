@@ -22,7 +22,15 @@ const STEP_NAMES  = {
   PROP: 'Propagação', GROUPS: 'Grupos de equivalência', DRAW: 'Desenhar o AFD mínimo',
 };
 
-export default function MinGame({ exercise, exNumber, progress, onBack, onNext, nextLabel, updateProgress }) {
+const navBtnStyle = {
+  padding: '2px 8px', fontSize: 13, fontWeight: 900,
+  background: '#fff', color: '#000', border: '2px solid #000', borderRadius: 6,
+  cursor: 'pointer', boxShadow: '2px 2px 0 #000',
+  fontFamily: "'Comic Sans MS', cursive", lineHeight: 1.2,
+};
+const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none' };
+
+export default function MinGame({ exercise, exNumber, progress, onBack, onNext, onPrev, nextLabel, updateProgress }) {
   // ── Banner / Professor ──
   const [banner,   setBanner]   = useState(null);
   const [profMsg,  setProfMsg]  = useState('');
@@ -136,10 +144,16 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
           <span className="mission-label">Minimização</span>
           {exNumber != null && (
-            <span style={{ fontWeight: 900, fontSize: 12, background: '#fde047',
-              border: '2px solid #000', borderRadius: 6, padding: '1px 8px' }}>
-              Ex. {exNumber}
-            </span>
+            <>
+              <button style={onPrev ? navBtnStyle : navBtnDisabledStyle}
+                disabled={!onPrev} onClick={onPrev} title="Exercício anterior">◀</button>
+              <span style={{ fontWeight: 900, fontSize: 12, background: '#fde047',
+                border: '2px solid #000', borderRadius: 6, padding: '1px 8px' }}>
+                Ex. {exNumber}
+              </span>
+              <button style={onNext ? navBtnStyle : navBtnDisabledStyle}
+                disabled={!onNext} onClick={onNext} title="Próximo exercício">▶</button>
+            </>
           )}
           <span style={{ fontWeight: 'bold', fontSize: 13 }}>{exercise.title}</span>
         </div>

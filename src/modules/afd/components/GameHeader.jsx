@@ -1,6 +1,6 @@
 // ─── GameHeader: cabeçalho da tela de jogo ───────────────────────────────────
 // Botões de sidebar/voltar, objetivo (fórmula) + atalho de Aula Guiada, rótulo
-// de dificuldade, estrelas e toggle "Dicas ON/OFF". CSS: .game-header em AFDPart1.css.
+// de dificuldade e estrelas. CSS: .game-header em AFDPart1.css.
 import './GameHeader.css';
 import { SvgStars } from '../SvgStar';
 import { LEVEL_DIFFICULTY, DIFF_COLOR, GAME_LEVELS } from '../../../levels';
@@ -18,7 +18,7 @@ const navBtnDisabledStyle = {
 };
 
 export default function GameHeader({
-  currentLevel, progress, autoTutorial, toggleAutoTutorial,
+  currentLevel, progress,
   toggleSidebar, onBack, onPrevLevel, onNextLevel, onStartLesson,
 }) {
   const diffBg = DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff';
@@ -63,20 +63,6 @@ export default function GameHeader({
           >▶</button>
         </div>
         <SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} max={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3} />
-        <button
-          style={{
-            padding: '2px 7px', fontSize: 10, fontWeight: 900,
-            background: autoTutorial ? '#bbf7d0' : '#fef3c7',
-            border: '2px solid #000', borderRadius: 6,
-            cursor: 'pointer', boxShadow: '2px 2px 0 #000',
-            fontFamily: "'Comic Sans MS', cursive",
-            whiteSpace: 'nowrap',
-          }}
-          onClick={toggleAutoTutorial}
-          title={autoTutorial ? 'Modo Iniciante ativado — clique para desligar' : 'Modo Iniciante desligado — clique para ligar'}
-        >
-          💡 {autoTutorial ? 'Dicas: ON' : 'Dicas: OFF'}
-        </button>
       </div>
     </header>
   );

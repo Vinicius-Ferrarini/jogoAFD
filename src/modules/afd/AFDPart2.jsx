@@ -114,6 +114,7 @@ export default function AFDPart2({ onBack, showToast }) {
         showToast={showToast}
         onBack={() => setSelectedLevel(null)}
         onNext={lvl => setSelectedLevel(lvl)}
+        onPrev={lvl => setSelectedLevel(lvl)}
       />
     );
   }
