@@ -25,14 +25,8 @@ export default function FooterDeck({
 }) {
   const addNodeDragRef = useRef(null);
 
-  // Onboarding guiado: bloqueio gradual de cartas logo após o tabuleiro ser liberado.
-  // Fase 0 (canvas vazio)   → só ADD_NODE habilitado
-  // Fase 1 (sem estado inicial) → só TOGGLE_INITIAL habilitado
-  const hasAddNodeCard  = drawnCards.some(c => c.type === 'action' && c.action === 'addNode');
-  const hasInitialCard  = drawnCards.some(c => c.type === 'action' && c.action === 'toggleInitial');
-  const noNodes   = isDrawingUnlocked && nodes.length === 0 && hasAddNodeCard;
-  const noInitial = isDrawingUnlocked && nodes.length > 0 && !nodes.some(n => n.isInitial) && hasInitialCard;
-  const onlyAllowed = noNodes ? 'addNode' : noInitial ? 'toggleInitial' : null;
+  // Onboarding de 2 passos: canvas vazio → só addNode livre; 1+ estado → tudo livre
+  const isCanvasEmpty = nodes.length === 0;
 
   // No modo Aula V2 mostra só o HUD do professor (sem cartas/sim)
   if (isLessonActive) {
@@ -79,8 +73,7 @@ export default function FooterDeck({
                 return (
                   <div key={card.id}
                     data-icon={card.icon}
-                    className={`card state slide-up-fade`}
-                    style={{ opacity: disabled ? 0.4 : 1, cursor: disabled ? 'not-allowed' : 'pointer', filter: disabled ? 'grayscale(0.6)' : undefined }}
+                    className={`card state slide-up-fade${disabled ? ' disabled' : ''}`}
                     onClick={() => {
                       if (disabled) return;
                       if (isUndo) { drawingStack.length > 0 ? drawUndo() : undo(); }
@@ -97,13 +90,11 @@ export default function FooterDeck({
               const iconMap  = { toggleInitial:'▶', addNode:'◯', addTransition:'↗', toggleFinal:'◎', erase:'🗑', draw:'✏' };
               const isSelected       = interactionMode === modeMap[card.action];
               const isErr            = highlightedError === card.action;
-              const isOnboardLocked  = onlyAllowed !== null && card.action !== onlyAllowed;
-              const isTutorialPulse  = onlyAllowed === card.action;
+              const isOnboardLocked  = card.action !== 'addNode' && isCanvasEmpty;
               return (
                 <div key={card.id}
                   data-icon={iconMap[card.action] || ''}
-                  className={`card ${classMap[card.action]} slide-up-fade ${isSelected?'selected-card':''} ${isErr?'error-pulse-severe':''} ${isTutorialPulse?'tutorial-pulse':''}`}
-                  style={isOnboardLocked ? { opacity: 0.4, cursor: 'not-allowed', filter: 'grayscale(0.6)' } : undefined}
+                  className={`card ${classMap[card.action]} slide-up-fade ${isSelected?'selected-card':''} ${isErr?'error-pulse-severe':''} ${isOnboardLocked?'disabled':''}`}
                   title={isOnboardLocked ? 'Complete o passo atual primeiro' : undefined}
                   onClick={() => { if (isOnboardLocked) return; if (isSelected) { setInteractionMode('IDLE'); resetMode(); } else { clickMap[card.action](); } }}
                   onPointerDown={(e) => {
@@ -145,7 +136,7 @@ export default function FooterDeck({
             if (card.type === 'symbol') {
               const isSel             = selectedSymbolCard === card.symbol;
               const isLocked          = !discoveredSymbols.has(card.symbol);
-              const isSymOnboardLocked = onlyAllowed !== null;
+              const isSymOnboardLocked = isCanvasEmpty;
               return (
                 <div key={card.id}
                   data-icon={isLocked ? '🔒' : card.symbol}

@@ -58,7 +58,15 @@
   box-shadow: 6px 6px 0px #000;
 }
 
-.card.disabled { opacity: 0.55; pointer-events: none; filter: grayscale(80%); }
+.card.disabled {
+  background: #d1d5db !important;
+  border-color: #9ca3af !important;
+  box-shadow: 4px 4px 0 #9ca3af !important;
+  color: #4b5563 !important;
+  opacity: 0.8 !important;
+  cursor: not-allowed !important;
+  filter: none !important;
+}
 
 .card-header {
   font-size: 7.5px;
