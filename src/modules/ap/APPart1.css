@@ -127,6 +127,9 @@
   filter: drop-shadow(0 0 3px rgba(124,58,237,.6));
 }
 
+/* ── Área de navegação do quadro-negro (eleva botões acima do balão do professor) ── */
+.bp-nav { padding-bottom: 130px; }
+
 /* ── Bifurcação ao fim do grafo na Aula (no quadro escuro) ── */
 .bp-fork {
   margin-top: 12px; display: flex; flex-direction: column; gap: 7px;
