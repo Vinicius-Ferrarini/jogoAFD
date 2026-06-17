@@ -22,10 +22,13 @@ function layout(states) {
   let k = Math.min(kx, ky);
   if (!Number.isFinite(k)) k = 1; // 1 estado (ou todos no mesmo ponto)
   const offX = (100 - spanX * k) / 2, offY = (100 - spanY * k) / 2;
+  // Estado único: posiciona mais abaixo para os chips do self-loop crescerem para
+  // cima sem serem cortados pela borda superior do canvas.
+  const singleState = states.length === 1;
   return states.map((s) => ({
     uid: s.id, id: s.id, label: s.name,
     x: spanX > 0 ? offX + (s.x - minX) * k : 50,
-    y: spanY > 0 ? offY + (s.y - minY) * k : 50,
+    y: spanY > 0 ? offY + (s.y - minY) * k : (singleState ? 82 : 50),
     isInitial: !!s.initial,
   }));
 }

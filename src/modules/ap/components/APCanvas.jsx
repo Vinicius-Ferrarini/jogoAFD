@@ -242,7 +242,7 @@ export default function APCanvas({
           key={`lbl-${er.from}->${er.to}`}
           triples={er.triples}
           eraseMode={eraseMode}
-          style={{ left: `${er.lx}px`, top: `${er.ly}px`, pointerEvents: isDraw ? 'none' : undefined }}
+          style={{ left: `${er.lx}px`, top: `${er.ly}px`, pointerEvents: isDraw ? 'none' : undefined, ...(er.selfLoop && { transform: 'translate(-50%, -100%)' }) }}
           onAddTriple={(tr) => addTriple(er.from, er.to, tr)}
           onEditTriple={editTriple}
           onRemoveTriple={removeTriple}
