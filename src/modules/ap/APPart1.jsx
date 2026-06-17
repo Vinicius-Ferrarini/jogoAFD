@@ -276,7 +276,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
 
       {/* Header (mesmo layout do AFD: Objetivo + linguagem ao centro, L06 junto ao nav) */}
       <div className="ap-header">
-        <button className="back-btn" onClick={() => setScreen('MENU')}>⬅ Exercícios</button>
+        <button className="back-btn" onClick={() => setScreen('MENU')}>⬅ Voltar</button>
 
         <div className="ap-header-center">
           <span className="ap-mission-label">Objetivo</span>
