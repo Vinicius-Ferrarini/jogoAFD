@@ -1,16 +1,24 @@
 // MainMenu.jsx – Tela inicial com branding TuringLab
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
-import { GAME_LEVELS } from '../levels';
+import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../levels';
 import FeedbackButton from '../components/FeedbackButton';
 
-const P1_MAX_STARS = GAME_LEVELS.reduce((a, l) => a + (l.impossible || l.wordOnly ? 1 : 3), 0);
-// 14 exercícios de minimização × 3 estrelas; atualizar se exercícios forem adicionados.
-const MINIMIZER_MAX_STARS = 42;
+const AVAILABLE_AFD_LEVELS = GAME_LEVELS.filter(l => !UNAVAILABLE_LEVELS.has(l.id));
+// AFD_1 e AFD_2 usam os mesmos níveis disponíveis, com progresso separado
+const P1P2_MAX_STARS    = AVAILABLE_AFD_LEVELS.length * 3 * 2;
+const MINIMIZER_MAX_STARS = 42; // 14 exercícios × 3
+const AP_MAX_STARS        = 45; // 15 níveis × 3 (L16 impossível excluído)
+const GRAND_MAX_STARS     = P1P2_MAX_STARS + MINIMIZER_MAX_STARS + AP_MAX_STARS;
 
 export default function MainMenu({ onStart, progress }) {
-  const totalStars = Object.values(progress).reduce((sum, p) => sum + (p.stars || 0), 0);
-  const maxStars = P1_MAX_STARS + MINIMIZER_MAX_STARS;
+  const p2Progress = (() => {
+    try { return JSON.parse(localStorage.getItem('turinglab_progress_p2') || '{}'); }
+    catch { return {}; }
+  })();
+  const p2Earned   = AVAILABLE_AFD_LEVELS.reduce((s, l) => s + (p2Progress[l.id]?.stars || 0), 0);
+  const totalStars = Object.values(progress).reduce((sum, p) => sum + (p.stars || 0), 0) + p2Earned;
+  const maxStars   = GRAND_MAX_STARS;
 
   return (
     <div className="main-menu-wrapper">
