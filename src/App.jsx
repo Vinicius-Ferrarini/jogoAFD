@@ -5,6 +5,8 @@ import './App.css';
 // Importar páginas e módulos
 import MainMenu from './pages/MainMenu';
 import FeedbackButton from './components/FeedbackButton';
+import { GAME_LEVELS, UNAVAILABLE_LEVELS } from './levels';
+import { EXERCISES } from './modules/afd/AFDMinimizer';
 const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
 const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
@@ -164,16 +166,48 @@ function ModuleSelection({ onSelectModule, onBack }) {
   );
 }
 
+function ModuleProgress({ earned, total }) {
+  const pct = total > 0 ? Math.round((earned / total) * 100) : 0;
+  const complete = earned === total && total > 0;
+  return (
+    <div className="module-progress">
+      <span className="module-progress-text">⭐ {earned} / {total}</span>
+      <div className="module-progress-bar-bg">
+        <div
+          className={`module-progress-bar-fill${complete ? ' complete' : ''}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ✨ Seleção de Submódulos
-function SubmoduleSelection({ moduleId, onSelectGame, onBack }) {
+function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
+  const p2Progress = (() => {
+    try { return JSON.parse(localStorage.getItem('turinglab_progress_p2') || '{}'); }
+    catch { return {}; }
+  })();
+
+  const availableLevels = GAME_LEVELS.filter(l => !UNAVAILABLE_LEVELS.has(l.id));
+  const p1Total  = availableLevels.length * 3;
+  const p1Earned = availableLevels.reduce((s, l) => s + (progress[l.id]?.stars || 0), 0);
+  const p2Total  = availableLevels.length * 3;
+  const p2Earned = availableLevels.reduce((s, l) => s + (p2Progress[l.id]?.stars || 0), 0);
+  const minTotal  = EXERCISES.length * 3;
+  const minEarned = EXERCISES.reduce((s, ex) => s + (progress[`afd-min-${ex.id}`]?.stars || 0), 0);
+
   const submodules = {
     afd: [
       { id: 'afd-p1',  icon: '🎨', label: 'Desenhar & Formalizar',
-        desc: 'Construa autômatos do zero no canvas interativo', color: '#fde68a' },
+        desc: 'Construa autômatos do zero no canvas interativo', color: '#fde68a',
+        earned: p1Earned, total: p1Total },
       { id: 'afd-p2',  icon: '📊', label: 'Grafo → Linguagem',
-        desc: 'Analise um grafo pronto e identifique a linguagem', color: '#bfdbfe' },
+        desc: 'Analise um grafo pronto e identifique a linguagem', color: '#bfdbfe',
+        earned: p2Earned, total: p2Total },
       { id: 'afd-min', icon: '⚡', label: 'Minimização',
-        desc: '14 exercícios de otimização de autômatos', color: '#bbf7d0' },
+        desc: `${EXERCISES.length} exercícios de otimização`, color: '#bbf7d0',
+        earned: minEarned, total: minTotal },
     ],
     mt: [
       { id: 'mt-recon', icon: '🔍', label: 'Reconhecedora', desc: 'Em breve!', locked: true },
@@ -212,6 +246,9 @@ function SubmoduleSelection({ moduleId, onSelectGame, onBack }) {
             <div className="submodule-card-icon">{sub.icon}</div>
             <div className="submodule-card-name">{sub.label}</div>
             <div className="submodule-card-desc">{sub.desc}</div>
+            {!sub.locked && (
+              <ModuleProgress earned={sub.earned || 0} total={sub.total || 0} />
+            )}
           </button>
         ))}
       </div>

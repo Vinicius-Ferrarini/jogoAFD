@@ -24,6 +24,16 @@ export default function FooterDeck({
   onDeckNodeDrag, onDeckNodeDrop, onDeckNodeDragCancel,
 }) {
   const addNodeDragRef = useRef(null);
+
+  // Onboarding guiado: bloqueio gradual de cartas logo após o tabuleiro ser liberado.
+  // Fase 0 (canvas vazio)   → só ADD_NODE habilitado
+  // Fase 1 (sem estado inicial) → só TOGGLE_INITIAL habilitado
+  const hasAddNodeCard  = drawnCards.some(c => c.type === 'action' && c.action === 'addNode');
+  const hasInitialCard  = drawnCards.some(c => c.type === 'action' && c.action === 'toggleInitial');
+  const noNodes   = isDrawingUnlocked && nodes.length === 0 && hasAddNodeCard;
+  const noInitial = isDrawingUnlocked && nodes.length > 0 && !nodes.some(n => n.isInitial) && hasInitialCard;
+  const onlyAllowed = noNodes ? 'addNode' : noInitial ? 'toggleInitial' : null;
+
   // No modo Aula V2 mostra só o HUD do professor (sem cartas/sim)
   if (isLessonActive) {
     const stepText = currentLevel?.guidedLesson?.[guidedLessonStep]?.text;
@@ -70,7 +80,7 @@ export default function FooterDeck({
                   <div key={card.id}
                     data-icon={card.icon}
                     className={`card state slide-up-fade`}
-                    style={{ opacity: disabled ? 0.35 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+                    style={{ opacity: disabled ? 0.4 : 1, cursor: disabled ? 'not-allowed' : 'pointer', filter: disabled ? 'grayscale(0.6)' : undefined }}
                     onClick={() => {
                       if (disabled) return;
                       if (isUndo) { drawingStack.length > 0 ? drawUndo() : undo(); }
@@ -85,13 +95,17 @@ export default function FooterDeck({
               const clickMap = { toggleInitial: setInitialMode, addNode: addNodeMode, addTransition: addTransitionMode, toggleFinal: toggleFinalStateMode, erase: setEraserMode, draw: setDrawMode };
               const modeMap  = { toggleInitial:'TOGGLE_INITIAL', addNode:'ADD_NODE', addTransition:'CONNECTING', toggleFinal:'TOGGLE_FINAL', erase:'ERASE', draw:'DRAW' };
               const iconMap  = { toggleInitial:'▶', addNode:'◯', addTransition:'↗', toggleFinal:'◎', erase:'🗑', draw:'✏' };
-              const isSelected = interactionMode === modeMap[card.action];
-              const isErr      = highlightedError === card.action;
+              const isSelected       = interactionMode === modeMap[card.action];
+              const isErr            = highlightedError === card.action;
+              const isOnboardLocked  = onlyAllowed !== null && card.action !== onlyAllowed;
+              const isTutorialPulse  = onlyAllowed === card.action;
               return (
                 <div key={card.id}
                   data-icon={iconMap[card.action] || ''}
-                  className={`card ${classMap[card.action]} slide-up-fade ${isSelected?'selected-card':''} ${isErr?'error-pulse-severe':''}`}
-                  onClick={() => { if (isSelected) { setInteractionMode('IDLE'); resetMode(); } else { clickMap[card.action](); } }}
+                  className={`card ${classMap[card.action]} slide-up-fade ${isSelected?'selected-card':''} ${isErr?'error-pulse-severe':''} ${isTutorialPulse?'tutorial-pulse':''}`}
+                  style={isOnboardLocked ? { opacity: 0.4, cursor: 'not-allowed', filter: 'grayscale(0.6)' } : undefined}
+                  title={isOnboardLocked ? 'Complete o passo atual primeiro' : undefined}
+                  onClick={() => { if (isOnboardLocked) return; if (isSelected) { setInteractionMode('IDLE'); resetMode(); } else { clickMap[card.action](); } }}
                   onPointerDown={(e) => {
                     if (card.action !== 'addNode') return;
                     addNodeDragRef.current = { startX: e.clientX, startY: e.clientY, dragging: false };
@@ -129,14 +143,15 @@ export default function FooterDeck({
             }
 
             if (card.type === 'symbol') {
-              const isSel    = selectedSymbolCard === card.symbol;
-              const isLocked = !discoveredSymbols.has(card.symbol);
+              const isSel             = selectedSymbolCard === card.symbol;
+              const isLocked          = !discoveredSymbols.has(card.symbol);
+              const isSymOnboardLocked = onlyAllowed !== null;
               return (
                 <div key={card.id}
                   data-icon={isLocked ? '🔒' : card.symbol}
-                  className={`card symbol-card slide-up-fade ${isSel?'selected-card':''} ${isLocked?'locked-letter':''}`}
+                  className={`card symbol-card slide-up-fade ${isSel?'selected-card':''} ${(isLocked || isSymOnboardLocked)?'locked-letter':''}`}
                   onClick={() => {
-                    if (transitions.length === 0 || isLocked) return;
+                    if (transitions.length === 0 || isLocked || isSymOnboardLocked) return;
                     setInteractionMode('IDLE'); setConnectingSource(null);
                     setSelectedSymbolCard(isSel ? null : card.symbol);
                   }}>

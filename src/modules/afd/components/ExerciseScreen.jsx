@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { LEVEL_GRAPHS } from '../../../levels_graphs';
-import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../../levels';
+import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../../levels';
 import { SvgStars } from '../SvgStar';
 import GraphView       from './GraphView';
 import { DrawStroke }  from './StrokeEl';
@@ -78,9 +78,14 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
 
   const stars    = progress[level.id]?.stars || 0;
   const levelIdx = GAME_LEVELS.findIndex(l => l.id === level.id);
-  const prevLevel = levelIdx > 0 ? GAME_LEVELS[levelIdx - 1] : null;
-  const nextLevel = levelIdx >= 0 && levelIdx < GAME_LEVELS.length - 1
-    ? GAME_LEVELS[levelIdx + 1] : null;
+  let prevLevel = null;
+  for (let i = levelIdx - 1; i >= 0; i--) {
+    if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { prevLevel = GAME_LEVELS[i]; break; }
+  }
+  let nextLevel = null;
+  for (let i = levelIdx + 1; i < GAME_LEVELS.length; i++) {
+    if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { nextLevel = GAME_LEVELS[i]; break; }
+  }
 
   const handleAddSimWord = useCallback(() => {
     if (!graph) { showToast('Grafo não disponível.', 'error'); return; }

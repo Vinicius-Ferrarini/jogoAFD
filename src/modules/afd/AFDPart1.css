@@ -282,6 +282,15 @@ body { color: var(--text-main); }
   white-space: nowrap;
 }
 
+/* ── Dica no canvas vazio (aparece ao liberar o tabuleiro) ── */
+.canvas-empty-hint {
+  position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(255,255,255,.92); border: 3px dashed #000; border-radius: 12px;
+  padding: 14px 20px; font-size: 15px; font-weight: 700; z-index: 4; text-align: center;
+  font-family: 'Comic Sans MS','Comic Neue',cursive,sans-serif;
+  pointer-events: none;
+}
+
 .locked-overlay {
   position: absolute;
   inset: 0;

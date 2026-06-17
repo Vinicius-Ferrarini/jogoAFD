@@ -20,6 +20,7 @@
   overflow-x: auto;
   height: 100%;
   align-items: center;
+  padding-top: 20px;
   padding-right: 150px;
   padding-bottom: 10px;
   -webkit-overflow-scrolling: touch;
@@ -115,6 +116,15 @@
 }
 
 .locked-letter { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+
+/* ── Tutorial Pulse: destaca a ÚNICA carta permitida durante o onboarding ── */
+@keyframes tutorialPulse {
+  0%, 100% { box-shadow: 4px 4px 0 #000; }
+  50%       { box-shadow: 4px 4px 0 #000, 0 0 0 6px #facc15, 0 0 18px rgba(250, 204, 21, 0.6); }
+}
+.card.tutorial-pulse {
+  animation: tutorialPulse 1s ease-in-out infinite;
+}
 
 /* ── HUD Professor Maurílio ── */
 .professor-hud {

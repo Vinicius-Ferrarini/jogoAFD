@@ -330,6 +330,13 @@ export default function CanvasArea({
         </div>
       ) : (
         <>
+        {/* ── Dica de início (canvas vazio, tabuleiro recém-liberado) ── */}
+        {nodes.length === 0 && guidedLessonStep === null && interactionMode !== 'DRAW' && (
+          <div className="canvas-empty-hint">
+            Clique em <b>◯ Novo Estado</b> e comece a montar seu AFD!
+          </div>
+        )}
+
         {/* ── Toolbar de desenho (fora do transform, posição fixa no canvas) ── */}
         {interactionMode === 'DRAW' && (
           <div className="draw-toolbar">
