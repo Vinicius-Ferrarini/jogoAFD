@@ -36,7 +36,7 @@ function reducer(state, action) {
   }
 }
 
-export default function usePDAGraph({ showToast } = {}) {
+export default function usePDAGraph({ showToast, selectedNodes = [], setSelectedNodes = () => {} } = {}) {
   const [hist, dispatch] = useReducer(reducer, initial);
   const { nodes, transitions } = hist.present;
   const canUndo = hist.past.length > 0;
@@ -157,6 +157,15 @@ export default function usePDAGraph({ showToast } = {}) {
     dispatch({ type: 'COMMIT', next: { nodes, transitions: transitions.filter(t => !(t.from === from && t.to === to)) } });
   }, [nodes, transitions]);
 
+  const deleteSelected = useCallback(() => {
+    if (!selectedNodes.length) return;
+    const selectedIds = new Set(nodes.filter(n => selectedNodes.includes(n.uid)).map(n => n.id));
+    const nextNodes = nodes.filter(n => !selectedNodes.includes(n.uid));
+    const nextTrans = transitions.filter(t => !selectedIds.has(t.from) && !selectedIds.has(t.to));
+    dispatch({ type: 'COMMIT', next: { nodes: nextNodes, transitions: nextTrans } });
+    setSelectedNodes([]);
+  }, [nodes, transitions, selectedNodes, setSelectedNodes]);
+
   // ── Modelo do AP do aluno (p/ o simulador) ──────────────────────────────────
   const studentPda = useMemo(() => ({
     states: nodes.map(n => ({ id: n.id, name: n.label, x: n.x, y: n.y, initial: n.isInitial })),
@@ -199,6 +208,6 @@ export default function usePDAGraph({ showToast } = {}) {
     reset, undo, redo, beginDrag,
     addNode, moveNode, toggleInitial, setNodeLabel, renameNode, deleteNode,
     addTriple, editTriple, removeTriple, removeEdge,
-    validatePDA,
+    validatePDA, deleteSelected,
   };
 }

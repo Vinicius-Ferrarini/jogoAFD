@@ -37,9 +37,11 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   const [formalOpen, setFormalOpen] = useState(false);
   const [deckGhost, setDeckGhost]   = useState(null);
   const [victory, setVictory]       = useState(false);
+  const [selectedNodes, setSelectedNodes] = useState([]);
+  const [selectionBox, setSelectionBox]   = useState(null);
   const canvasRef = useRef(null);
 
-  const g = usePDAGraph({ showToast });
+  const g = usePDAGraph({ showToast, selectedNodes, setSelectedNodes });
   const draw = useAPDrawing(canvasRef);
   const lesson = useAPGuidedLesson(level);
   const { goTo: lessonGoTo, finish: lessonFinishRaw, reset: lessonReset, steps: lessonSteps } = lesson;
@@ -81,7 +83,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   }, [formalStart, lessonGoTo, lessonSteps, applyStep]);
 
   // Atalhos: Ctrl+Z desfaz (rabisco primeiro, depois grafo), Ctrl+Y/Shift+Z refaz, Esc sai do modo.
-  const { undo: gUndo, redo: gRedo } = g;
+  const { undo: gUndo, redo: gRedo, deleteSelected: gDeleteSelected } = g;
   const { drawUndo, drawingStack } = draw;
   useEffect(() => {
     const onKey = (e) => {
@@ -96,11 +98,12 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         if (k === 'z' && !e.shiftKey) { drawingStack.length > 0 ? drawUndo() : gUndo(); }
         else { gRedo(); }
       }
+      if (e.key === 'Delete' && !isInput) { gDeleteSelected(); }
       if (e.key === 'Escape') { setMode('IDLE'); setConnectingSource(null); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [gUndo, gRedo, drawUndo, drawingStack, lesson.active, finishLesson]);
+  }, [gUndo, gRedo, gDeleteSelected, drawUndo, drawingStack, lesson.active, finishLesson]);
   const handleHighlight = useCallback((nodeId, type) => setSimHighlight({ nodeId, type }), []);
   const openSim  = useCallback((s) => { setSim(s); setSimKey(k => k + 1); }, []);
   const closeSim = useCallback(() => { setSim(null); setSimHighlight({ nodeId: null, type: null }); }, []);
@@ -112,6 +115,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
     setResult(null); setSim(null); setSimHighlight({ nodeId: null, type: null });
     setSimWord(''); setFormalOpen(false); setDeckGhost(null); setVictory(false);
+    setSelectedNodes([]); setSelectionBox(null);
     setTestedWords([]);
     draw.resetDrawings();
     say(lv.impossible
@@ -342,6 +346,10 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           editTriple={g.editTriple}
           removeTriple={g.removeTriple}
           removeEdge={g.removeEdge}
+          selectedNodes={selectedNodes}
+          setSelectedNodes={setSelectedNodes}
+          selectionBox={selectionBox}
+          setSelectionBox={setSelectionBox}
         />
 
         {/* Painel direito: quadro da Aula (durante a aula) ou TestPanel (normal) */}

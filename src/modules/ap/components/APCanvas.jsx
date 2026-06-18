@@ -13,6 +13,8 @@ export default function APCanvas({
   addNode, moveNode, toggleInitial, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
   draw, lessonActive, highlightEdge,
+  selectedNodes = [], setSelectedNodes,
+  selectionBox, setSelectionBox,
 }) {
   const [size, setSize] = useState({ w: 1000, h: 600 });
   const dragRef = useRef(null);
@@ -48,8 +50,17 @@ export default function APCanvas({
     if (mode === 'ADD_NODE') {
       const { x, y } = pctFromEvent(e);
       addNode(Math.max(3, Math.min(97, x)), Math.max(6, Math.min(94, y)));
+      return;
     }
-  }, [isDraw, draw, mode, addNode]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (mode === 'IDLE') {
+      const { x, y } = pctFromEvent(e);
+      setSelectionBox({ startX: x, startY: y, currentX: x, currentY: y });
+      if (!e.ctrlKey) setSelectedNodes([]);
+      e.target.setPointerCapture?.(e.pointerId);
+      return;
+    }
+    setSelectedNodes([]);
+  }, [isDraw, draw, mode, addNode, setSelectionBox, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onNodeDown = useCallback((e, node) => {
     if (isDraw) return;
@@ -65,14 +76,27 @@ export default function APCanvas({
       return;
     }
     if (mode === 'IDLE') {
-      beginDrag(); // 1 entrada de histórico por arraste
+      const newSel = e.ctrlKey
+        ? (selectedNodes.includes(node.uid) ? selectedNodes.filter(id => id !== node.uid) : [...selectedNodes, node.uid])
+        : (selectedNodes.includes(node.uid) ? selectedNodes : [node.uid]);
+      setSelectedNodes(newSel);
+      beginDrag();
       dragRef.current = { uid: node.uid, sx: e.clientX, sy: e.clientY, ox: node.x, oy: node.y };
       e.target.setPointerCapture?.(e.pointerId);
     }
-  }, [isDraw, mode, connectingSource, nodes, deleteNode, toggleInitial, addTriple, setConnectingSource, beginDrag]);
+  }, [isDraw, mode, connectingSource, nodes, deleteNode, toggleInitial, addTriple, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onMove = useCallback((e) => {
     if (isDraw) { draw.onMove(e); return; }
+    if (selectionBox) {
+      const r = canvasRef.current.getBoundingClientRect();
+      const cssZoom = r.width / canvasRef.current.offsetWidth;
+      setSelectionBox(s => s ? { ...s,
+        currentX: ((e.clientX - r.left) / cssZoom / canvasRef.current.offsetWidth)  * 100,
+        currentY: ((e.clientY - r.top)  / cssZoom / canvasRef.current.offsetHeight) * 100,
+      } : null);
+      return;
+    }
     const d = dragRef.current;
     if (!d) return;
     const r = canvasRef.current.getBoundingClientRect();
@@ -80,12 +104,22 @@ export default function APCanvas({
     const dx = ((e.clientX - d.sx) / cssZoom / canvasRef.current.offsetWidth) * 100;
     const dy = ((e.clientY - d.sy) / cssZoom / canvasRef.current.offsetHeight) * 100;
     moveNode(d.uid, Math.max(3, Math.min(97, d.ox + dx)), Math.max(6, Math.min(94, d.oy + dy)));
-  }, [isDraw, draw, moveNode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDraw, draw, moveNode, selectionBox, setSelectionBox]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onUp = useCallback((e) => {
     if (isDraw) { draw.onUp(e); return; }
+    if (selectionBox) {
+      const minX = Math.min(selectionBox.startX, selectionBox.currentX);
+      const maxX = Math.max(selectionBox.startX, selectionBox.currentX);
+      const minY = Math.min(selectionBox.startY, selectionBox.currentY);
+      const maxY = Math.max(selectionBox.startY, selectionBox.currentY);
+      const sel = nodes.filter(n => n.x >= minX && n.x <= maxX && n.y >= minY && n.y <= maxY).map(n => n.uid);
+      setSelectedNodes(e.ctrlKey ? [...new Set([...selectedNodes, ...sel])] : sel);
+      setSelectionBox(null);
+      return;
+    }
     dragRef.current = null;
-  }, [isDraw, draw]);
+  }, [isDraw, draw, selectionBox, nodes, selectedNodes, setSelectedNodes, setSelectionBox]);
 
   // ── Agrupa transições por aresta (from→to) ──────────────────────────────────
   const groups = [];
@@ -255,12 +289,24 @@ export default function APCanvas({
         {draw.currentStroke && <StrokeEl stroke={draw.currentStroke} idx="cur" />}
       </svg>
 
+      {/* Lasso de seleção */}
+      {selectionBox && (
+        <div style={{
+          position: 'absolute', pointerEvents: 'none', zIndex: 1000,
+          border: '2px dashed #2563eb', backgroundColor: 'rgba(59,130,246,0.15)',
+          left:   `${Math.min(selectionBox.startX, selectionBox.currentX)}%`,
+          top:    `${Math.min(selectionBox.startY, selectionBox.currentY)}%`,
+          width:  `${Math.abs(selectionBox.currentX - selectionBox.startX)}%`,
+          height: `${Math.abs(selectionBox.currentY - selectionBox.startY)}%`,
+        }} />
+      )}
+
       {/* Nós */}
       {nodes.map((node) => {
         const sim = simHighlight?.nodeId === node.id ? `sim-${simHighlight.type}` : '';
         return (
           <div key={node.uid}
-            className={`node ${node.isInitial ? 'initial' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''} ${sim}`}
+            className={`node ${node.isInitial ? 'initial' : ''} ${selectedNodes.includes(node.uid) ? 'selected' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''} ${sim}`}
             style={{ top: `${node.y}%`, left: `${node.x}%`, pointerEvents: isDraw ? 'none' : 'auto' }}
             onPointerDown={(e) => onNodeDown(e, node)}>
             <input type="text" className="node-id-input" value={node.label ?? node.id}
