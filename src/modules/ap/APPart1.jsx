@@ -39,7 +39,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   const [victory, setVictory]       = useState(false);
   const canvasRef = useRef(null);
 
-  const g = usePDAGraph();
+  const g = usePDAGraph({ showToast });
   const draw = useAPDrawing(canvasRef);
   const lesson = useAPGuidedLesson(level);
   const { goTo: lessonGoTo, finish: lessonFinishRaw, reset: lessonReset, steps: lessonSteps } = lesson;

@@ -36,7 +36,7 @@ function reducer(state, action) {
   }
 }
 
-export default function usePDAGraph() {
+export default function usePDAGraph({ showToast } = {}) {
   const [hist, dispatch] = useReducer(reducer, initial);
   const { nodes, transitions } = hist.present;
   const canUndo = hist.past.length > 0;
@@ -100,21 +100,54 @@ export default function usePDAGraph() {
 
   // ── Transições (triplas read,pop;push) ──────────────────────────────────────
   const addTriple = useCallback((from, to, triple = { read: '', pop: '', push: '' }) => {
-    const exists = transitions.some(t =>
-      t.from === from && t.to === to && t.read === triple.read && t.pop === triple.pop && t.push === triple.push);
-    if (exists) return;
-    // Seta criada vazia (modo "Criar Seta") guarda o índice p/ fundir o 1º preenchimento.
-    const isEmpty = !triple.read && !triple.pop && !triple.push;
+    const exactDup = transitions.some(t =>
+      t.from === from && t.to === to &&
+      t.read === triple.read && t.pop === triple.pop && t.push === triple.push);
+    if (exactDup) {
+      showToast?.('Esta transição exata já existe!', 'info');
+      return false;
+    }
+    // Seta criada vazia (modo "Criar Seta") é só um placeholder — checagem de determinismo
+    // é adiada para o editTriple, quando o aluno preenche os campos.
+    const isBlank = !triple.read && !triple.pop && !triple.push;
+    if (!isBlank) {
+      const conflict = transitions.some(t =>
+        t.from === from && t.read === triple.read && t.pop === triple.pop);
+      if (conflict) {
+        showToast?.(`Ação bloqueada: O estado já possui uma transição que lê "${triple.read || 'λ'}" e desempilha "${triple.pop || 'λ'}". O AP deve ser determinístico.`, 'error');
+        return false;
+      }
+    }
     dispatch({ type: 'COMMIT', next: { nodes, transitions: [...transitions, { from, to, ...triple }] },
-      emptyAdd: isEmpty ? transitions.length : null });
-  }, [nodes, transitions]);
+      emptyAdd: isBlank ? transitions.length : null });
+    return true;
+  }, [nodes, transitions, showToast]);
 
   const editTriple = useCallback((tIdx, triple) => {
+    const current = transitions[tIdx];
+    if (!current) return false;
+    const r = triple.read ?? current.read;
+    const p = triple.pop  ?? current.pop;
+    const s = triple.push ?? current.push;
+    const exactDup = transitions.some((t, i) =>
+      i !== tIdx && t.from === current.from && t.to === current.to &&
+      t.read === r && t.pop === p && t.push === s);
+    if (exactDup) {
+      showToast?.('Esta transição exata já existe!', 'info');
+      return false;
+    }
+    const conflict = transitions.some((t, i) =>
+      i !== tIdx && t.from === current.from && t.read === r && t.pop === p);
+    if (conflict) {
+      showToast?.(`Ação bloqueada: O estado já possui uma transição que lê "${r || 'λ'}" e desempilha "${p || 'λ'}". O AP deve ser determinístico.`, 'error');
+      return false;
+    }
     const next = { nodes, transitions: transitions.map((t, i) => i === tIdx ? { ...t, ...triple } : t) };
     // Preencher pela 1ª vez a seta recém-criada (tripla vazia) funde com o "adicionar"
     // — senão a seta vira 2 entradas de histórico (bug do "desfazer 2 vezes").
     dispatch(hist.lastEmptyAdd === tIdx ? { type: 'SQUASH', next } : { type: 'COMMIT', next });
-  }, [nodes, transitions, hist.lastEmptyAdd]);
+    return true;
+  }, [nodes, transitions, hist.lastEmptyAdd, showToast]);
 
   const removeTriple = useCallback((tIdx) => {
     dispatch({ type: 'COMMIT', next: { nodes, transitions: transitions.filter((_, i) => i !== tIdx) } });

@@ -58,7 +58,7 @@ export default function APTransitionLabel({
         {triples.map((t) => (
           editing === t.tIdx ? (
             <TripleEditor key={t.tIdx} initial={t}
-              onCommit={(tr) => { onEditTriple(t.tIdx, tr); setEditing(null); }}
+              onCommit={(tr) => { if (onEditTriple(t.tIdx, tr) !== false) setEditing(null); }}
               onCancel={() => setEditing(null)} />
           ) : (
             <span key={t.tIdx} className="ap-tl-chip" onClick={e => clickChip(e, t)}>
@@ -68,7 +68,7 @@ export default function APTransitionLabel({
         ))}
         {editing === 'new' ? (
           <TripleEditor
-            onCommit={(tr) => { onAddTriple(tr); setEditing(null); }}
+            onCommit={(tr) => { if (onAddTriple(tr) !== false) setEditing(null); }}
             onCancel={() => setEditing(null)} />
         ) : !eraseMode ? (
           <button className="ap-tl-add" onClick={e => { e.stopPropagation(); setEditing('new'); }}
