@@ -271,7 +271,10 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
         <ProfessorMaurilio
           message={profMsg}
           mood={profMood}
-          onClick={() => showProf(exercise.hint, 'explicando')}
+          onClick={() => {
+            if (profMsg) { if (speechRef.current) clearTimeout(speechRef.current); setProfMsg(''); }
+            else showProf(exercise.hint || 'Agrupe os estados equivalentes para simplificar o autômato!', 'explicando');
+          }}
         />
       )}
 

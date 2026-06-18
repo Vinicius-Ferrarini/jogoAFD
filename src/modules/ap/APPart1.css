@@ -16,14 +16,6 @@
   overflow: hidden;
 }
 
-/* ── Botão × para fechar o balão do Maurílio (só ele é clicável no balão) ── */
-.ap-balloon-close {
-  position: absolute; top: 16px; right: 14px; width: 22px; height: 22px;
-  border: 2px solid #000; border-radius: 50%; background: #fca5a5; color: #000;
-  font-weight: 900; font-size: 11px; line-height: 1; cursor: pointer; pointer-events: auto;
-  z-index: 3; display: flex; align-items: center; justify-content: center;
-}
-.ap-balloon-close:hover { background: #f87171; }
 
 /* ── Header do jogo (espelha o GameHeader do AFD; fundo amarelo do AP) ── */
 .ap-header {

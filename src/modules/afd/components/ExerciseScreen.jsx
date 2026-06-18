@@ -38,6 +38,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
     answerInputRef,
     savedCursor,
     showProf,
+    clearProf,
     handleCheck,
     handleReset,
   } = useP2Answer({ level, graph, updateProgress, showToast });
@@ -397,7 +398,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
           src={imgMaurilioSerio}
           alt="Professor Maurílio"
           className="prof-img"
-          onClick={() => showProf(
+          onClick={() => profMsg ? clearProf() : showProf(
             attempts === 0
               ? 'Observe os estados: iniciais, finais e as transições entre eles!'
               : (level.hint || 'Siga o caminho das setas e note onde o autômato aceita!')

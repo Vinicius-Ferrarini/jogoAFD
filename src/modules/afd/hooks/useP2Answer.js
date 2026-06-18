@@ -194,6 +194,11 @@ export default function useP2Answer({ level, graph, updateProgress, showToast })
     speechRef.current = setTimeout(() => setProfMsg(''), dur);
   }, []);
 
+  const clearProf = useCallback(() => {
+    if (speechRef.current) clearTimeout(speechRef.current);
+    setProfMsg('');
+  }, []);
+
   const setAnswerText = useCallback((val) => {
     setAnswer(val);
     setResult(null);
@@ -261,6 +266,7 @@ export default function useP2Answer({ level, graph, updateProgress, showToast })
     answerInputRef,
     savedCursor,
     showProf,
+    clearProf,
     handleCheck,
     handleReset,
   };
