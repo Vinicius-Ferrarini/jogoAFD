@@ -31,6 +31,7 @@ export default function CanvasArea({
   setDrawMode, showToast,
   guidedLessonStep, setGuidedLessonStep, currentLevel,
   userNodesSnapshot, userTransitionsSnapshot, resetHistory,
+  lessonActive = false,
   errorNodeIds = null,   // Set<id> opcional: estados a destacar em erro (minimização)
 }) {
   // ── Pointer: canvas ───────────────────────────────────────────────────────
@@ -467,6 +468,7 @@ export default function CanvasArea({
               interactionMode={interactionMode}
               selectedSymbolCard={selectedSymbolCard}
               isDrawingUnlocked={isDrawingUnlocked}
+              lessonActive={lessonActive}
               isError={highlightedError === `transition-${tr.idx}`}
               style={{
                 left: `${tr.labelPxX}px`,

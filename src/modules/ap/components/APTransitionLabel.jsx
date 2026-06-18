@@ -40,7 +40,7 @@ function TripleEditor({ initial, onCommit, onCancel }) {
 }
 
 export default function APTransitionLabel({
-  triples, style, eraseMode,
+  triples, style, eraseMode, lessonActive,
   onAddTriple, onEditTriple, onRemoveTriple,
 }) {
   const [editing, setEditing] = useState(null); // null | 'new' | tIdx
@@ -70,7 +70,7 @@ export default function APTransitionLabel({
           <TripleEditor
             onCommit={(tr) => { if (onAddTriple(tr) !== false) setEditing(null); }}
             onCancel={() => setEditing(null)} />
-        ) : !eraseMode ? (
+        ) : (!eraseMode && !lessonActive) ? (
           <button className="ap-tl-add" onClick={e => { e.stopPropagation(); setEditing('new'); }}
             title="Adicionar transição (não-determinismo)">＋</button>
         ) : null}

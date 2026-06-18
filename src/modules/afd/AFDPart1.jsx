@@ -481,6 +481,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           userNodesSnapshot={userNodesSnapshot}
           userTransitionsSnapshot={userTransitionsSnapshot}
           resetHistory={resetHistory}
+          lessonActive={lessonActive}
         />
 
         {/* ── Painel Direito: TestPanel normal ou BlackboardPanel (Aula V2) ── */}

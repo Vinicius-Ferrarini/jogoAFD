@@ -3,7 +3,7 @@
 // CSS: classes .transition-label / .transition-chip(-input) em AFDPart1.css.
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
-const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, isError, style, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
+const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, style, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
   const [mode, setMode] = useState(null); // null | 'adding' | { type:'editing', chipIdx:number }
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef(null);
@@ -83,7 +83,7 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
             autoComplete="off" spellCheck={false} />
         ) : symList.length === 0 ? (
           <span className="transition-chip empty">?</span>
-        ) : (isDrawingUnlocked && interactionMode !== 'ERASE' && !selectedSymbolCard) ? (
+        ) : (isDrawingUnlocked && !lessonActive && interactionMode !== 'ERASE' && !selectedSymbolCard) ? (
           <button className="afd-tl-add" title="Adicionar símbolo à transição"
             onClick={e => { e.stopPropagation(); setMode('adding'); setInputVal(''); }}>＋</button>
         ) : null}
