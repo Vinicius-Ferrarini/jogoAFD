@@ -82,8 +82,9 @@ export default function CanvasArea({
 
     if (interactionMode === 'IDLE' && e.button === 0) {
       const rect = canvasRef.current.getBoundingClientRect();
-      const ix = (e.clientX - rect.left - pan.x) / zoom;
-      const iy = (e.clientY - rect.top  - pan.y) / zoom;
+      const cssZoom = rect.width / canvasRef.current.offsetWidth;
+      const ix = ((e.clientX - rect.left) / cssZoom - pan.x) / zoom;
+      const iy = ((e.clientY - rect.top)  / cssZoom - pan.y) / zoom;
       setSelectionBox({ startX: ix, startY: iy, currentX: ix, currentY: iy });
       if (!e.ctrlKey) setSelectedNodes([]);
       e.target.setPointerCapture(e.pointerId);
@@ -199,7 +200,11 @@ export default function CanvasArea({
     }
 
     if (selectionBox) {
-      setSelectionBox(s => ({ ...s, currentX: ix, currentY: iy }));
+      const cssZoom = rect.width / canvasRef.current.offsetWidth;
+      setSelectionBox(s => ({ ...s,
+        currentX: ((e.clientX - rect.left) / cssZoom - pan.x) / zoom,
+        currentY: ((e.clientY - rect.top)  / cssZoom - pan.y) / zoom,
+      }));
     } else if (dragInfo.isDragging) {
       const dxPct = ((ix - dragInfo.startX) / rect.width)  * 100;
       const dyPct = ((iy - dragInfo.startY) / rect.height) * 100;
@@ -253,8 +258,10 @@ export default function CanvasArea({
       const maxX = Math.max(selectionBox.startX, selectionBox.currentX);
       const minY = Math.min(selectionBox.startY, selectionBox.currentY);
       const maxY = Math.max(selectionBox.startY, selectionBox.currentY);
-      const minXP = (minX / rect.width)  * 100, maxXP = (maxX / rect.width)  * 100;
-      const minYP = (minY / rect.height) * 100, maxYP = (maxY / rect.height) * 100;
+      const ow = canvasRef.current.offsetWidth;
+      const oh = canvasRef.current.offsetHeight;
+      const minXP = (minX / ow) * 100, maxXP = (maxX / ow) * 100;
+      const minYP = (minY / oh) * 100, maxYP = (maxY / oh) * 100;
       const sel = nodes.filter(n => n.x >= minXP && n.x <= maxXP && n.y >= minYP && n.y <= maxYP).map(n => n.uid);
       setSelectedNodes(e.ctrlKey ? [...new Set([...selectedNodes, ...sel])] : sel);
       setSelectionBox(null);
