@@ -267,3 +267,12 @@
   color: #ef4444;
   font-weight: 900;
 }
+
+/* ── Modo Aula (demo): reveal progressivo da descrição formal ── */
+.ap-demo-group input { background: #f0fdf4 !important; font-weight: 700; }
+.ap-demo-dim input   { opacity: .35; background: #f3f4f6 !important; }
+.ap-demo-dim td      { opacity: .35; }
+.ap-delta-row-current td {
+  background: #ede9fe !important;
+  box-shadow: inset 0 0 0 2px #7c3aed;
+}

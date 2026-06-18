@@ -28,6 +28,7 @@ export default function useAFDGraph({
   showToast,
   setHighlightedError,
   guidedLessonStep,
+  lessonCurStepData,
   canvasSize,
 }) {
   // ── Validação do grafo ─────────────────────────────────────────────────────
@@ -251,15 +252,20 @@ export default function useAFDGraph({
   // ── Dados de exibição (aula guiada substitui estado real) ─────────────────
   const displayNodes = useMemo(() => {
     if (guidedLessonStep === null) return nodes;
+    // Hook novo provê stateUpdate direto (funciona em GRAPH e FORMAL)
+    if (lessonCurStepData?.nodes?.length > 0)
+      return lessonCurStepData.nodes.map(n => ({ ...n, uid: n.id }));
     const ld = currentLevel?.guidedLesson?.[guidedLessonStep]?.stateUpdate;
     return ld ? ld.nodes.map(n => ({ ...n, uid: n.id })) : nodes;
-  }, [guidedLessonStep, currentLevel, nodes]);
+  }, [guidedLessonStep, lessonCurStepData, currentLevel, nodes]);
 
   const displayTransitions = useMemo(() => {
     if (guidedLessonStep === null) return transitions;
+    if (lessonCurStepData?.nodes?.length > 0)
+      return lessonCurStepData.transitions ?? transitions;
     const ld = currentLevel?.guidedLesson?.[guidedLessonStep]?.stateUpdate;
     return ld ? ld.transitions : transitions;
-  }, [guidedLessonStep, currentLevel, transitions]);
+  }, [guidedLessonStep, lessonCurStepData, currentLevel, transitions]);
 
   // ── Renderização de transições (memoizada) ────────────────────────────────
   const transitionRenders = useMemo(() => {

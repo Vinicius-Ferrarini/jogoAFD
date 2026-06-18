@@ -80,7 +80,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const {
     guidedLessonStep, setGuidedLessonStep,
     userNodesSnapshot, userTransitionsSnapshot,
-  } = useGuidedLesson();
+    lessonActive, lessonPhase, lessonAtGraphEnd,
+    lessonReveal, lessonAllSteps, lessonCurStepData, lessonGoFormal,
+  } = useGuidedLesson(currentLevel);
 
   // ── Estado do canvas (desenho, zoom/pan, modos) ────────────────────────────
   const {
@@ -125,6 +127,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     showToast,
     setHighlightedError,
     guidedLessonStep,
+    lessonCurStepData,
     canvasSize,
   });
 
@@ -172,9 +175,15 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { loadLevel(GAME_LEVELS[i]); return; }
   }, [currentLevel, loadLevel]);
 
+  // Abre o painel lateral automaticamente ao entrar na fase FORMAL da aula.
+  useEffect(() => {
+    if (lessonPhase === 'FORMAL') setIsSidebarOpen(true);
+  }, [lessonPhase]);
+
   // ── Encerrar Aula Guiada (restaura snapshot do aluno) ─────────────────────
   const handleLessonFinish = useCallback(() => {
     setGuidedLessonStep(null);
+    setIsSidebarOpen(false);
     const sn = userNodesSnapshot.current ?? [];
     const st = userTransitionsSnapshot.current ?? [];
     setNodes(sn);
@@ -387,7 +396,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         <aside className={`formal-panel ${isSidebarOpen ? 'open' : ''}`}>
           <FormalDescriptionModal
             isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
+            onClose={() => { setIsSidebarOpen(false); }}
             nodes={nodes}
             transitions={transitions}
             alphabet={currentLevel?.alphabet}
@@ -395,6 +404,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
             onSuccess={handleFormalSuccess}
             showToast={showToast}
             onValidateGraph={() => validateAFDSilent(true)}
+            demo={lessonActive && lessonPhase === 'FORMAL' ? lessonReveal : null}
             onTableFocusChange={v => {
               if (v) {
                 clearTimeout(tableBlurTimeoutRef.current);
@@ -478,9 +488,13 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           <BlackboardPanel
             boardWords={currentLevel.boardWords}
             step={guidedLessonStep}
-            steps={currentLevel.guidedLesson}
-            onNext={() => setGuidedLessonStep(s => s + 1)}
-            onPrev={() => setGuidedLessonStep(s => s - 1)}
+            steps={lessonAllSteps}
+            phase={lessonPhase}
+            atGraphEnd={lessonAtGraphEnd}
+            onGoFormal={() => { lessonGoFormal(); }}
+            onDoGraph={handleLessonFinish}
+            onNext={() => setGuidedLessonStep(s => Math.min(s + 1, lessonAllSteps.length - 1))}
+            onPrev={() => setGuidedLessonStep(s => Math.max(s - 1, 0))}
             onFinish={handleLessonFinish}
           />
         ) : (

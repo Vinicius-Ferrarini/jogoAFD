@@ -1,5 +1,5 @@
-// FormalDescriptionModal.jsx — v4.0
-import { useState, useEffect } from 'react';
+// FormalDescriptionModal.jsx — v5.0 (+ Modo Aula demo com auto-scroll)
+import { useState, useEffect, useRef } from 'react';
 import './FormalDescriptionModal.css';
 
 export default function FormalDescriptionModal({
@@ -13,7 +13,18 @@ export default function FormalDescriptionModal({
   showToast,
   onValidateGraph,
   onTableFocusChange,
+  demo, // { fields, rows, deltaRows, allStates, current } — modo Aula Guiada (read-only)
 }) {
+  // ── Auto-scroll para o elemento ativo no modo demo ─────────────────────────
+  const currentElRef = useRef(null);
+  const demoKey = demo?.current
+    ? (demo.current.kind === 'delta'
+        ? `d:${demo.current.rowKey}`
+        : `t:${Object.keys(demo.current.fields || {}).join(',')}`)
+    : null;
+  useEffect(() => {
+    if (demoKey) currentElRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [demoKey]);
   const [inputQ,       setInputQ]       = useState('');
   const [inputSigma,   setInputSigma]   = useState('');
   const [inputInitial, setInputInitial] = useState('');
@@ -38,6 +49,81 @@ export default function FormalDescriptionModal({
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  // ── Modo demo (Aula Guiada): read-only, revela a tupla + δ passo a passo ───
+  if (demo) {
+    const fields        = demo.fields || {};
+    const allStates     = demo.allStates ?? [];
+    const deltaRows     = demo.deltaRows ?? {};
+    const revealedRows  = demo.rows ?? new Set();
+    const curKind       = demo.current?.kind;
+    const curField      = curKind === 'tuple' ? Object.keys(demo.current.fields || {})[0] : null;
+    const curRow        = curKind === 'delta'  ? demo.current.rowKey : null;
+
+    const revealed  = (k) => Object.prototype.hasOwnProperty.call(fields, k);
+    const demoField = (key, label, placeholder) => (
+      <div
+        ref={key === curField ? currentElRef : null}
+        className={`form-group ap-demo-group${revealed(key) ? '' : ' ap-demo-dim'}`}
+      >
+        <label>{label}</label>
+        <input type="text" readOnly
+          value={revealed(key) ? fields[key] : ''}
+          placeholder={revealed(key) ? '' : placeholder}
+          translate="no"
+        />
+      </div>
+    );
+
+    return (
+      <div className="formal-sidebar-content">
+        <h2>Descrição Formal (AFD)</h2>
+        <p style={{ fontSize: 12, color: '#555', margin: '0 0 8px' }}>
+          👨‍🏫 <b>Modo Aula</b> — M = (Q, Σ, δ, q₀, F) lido direto do grafo.
+        </p>
+
+        {demoField('Q',       'Q (Conjunto de Estados):',  '…')}
+        {demoField('Sigma',   'Σ (Alfabeto):',             '…')}
+        {demoField('initial', 'q₀ (Estado Inicial):',      '…')}
+        {demoField('final',   'F (Estados Finais):',       '…')}
+
+        {allStates.length > 0 && (
+          <div className="table-section">
+            <h3>Tabela de transição (δ)</h3>
+            <div style={{ overflowX: 'auto' }}>
+              <table className="transition-table">
+                <thead>
+                  <tr>
+                    <th>δ</th>
+                    {(alphabet || []).map(s => <th key={s}>{s}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {allStates.map(lbl => {
+                    const shown   = revealedRows.has(lbl);
+                    const isCur   = lbl === curRow;
+                    return (
+                      <tr
+                        key={lbl}
+                        ref={isCur ? currentElRef : null}
+                        className={`${shown ? '' : 'ap-demo-dim'}${isCur ? ' ap-delta-row-current' : ''}`}
+                      >
+                        <td className="row-header">{lbl}</td>
+                        {(alphabet || []).map(sym => (
+                          <td key={sym}>{shown ? (deltaRows[lbl]?.[sym] ?? '') : '…'}</td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
 
   // Strips braces and splits — used only after format validation passes
   const parseInput = (str) => {
