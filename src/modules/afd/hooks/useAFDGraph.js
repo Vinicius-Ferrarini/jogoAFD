@@ -1,12 +1,13 @@
 // ─── useAFDGraph: lógica de grafo do AFDPart1 ────────────────────────────────
 // Mantém a lógica "teórica" e de mutação de nós/transições, isolada da camada de
 // interação do canvas (pan/zoom/rabisco/laço, que vivem no CanvasArea):
-//   • validateAFDSilent — validação determinística + cobertura BFS da linguagem
+//   • validateAFDSilent — validação determinística + fuzzer de equivalência completa
 //   • mutações: deleteSelected, renomear nó, handlers de símbolos das setas
 //   • dados de exibição memoizados (displayNodes/Transitions/transitionRenders)
 // O estado base nodes/transitions vive no orquestrador (AFDPart1) para quebrar a
 // dependência circular com useHistory; aqui ele entra via props.
 import { useState, useRef, useCallback, useMemo } from 'react';
+import { fuzzDFA } from '../utils/dfaFuzzer';
 
 // Aceita palavra contra regex ou função validate do nível.
 export function lvlAccepts(level, word) {
@@ -61,7 +62,11 @@ export default function useAFDGraph({
         .filter(t => t.from === node.id)
         .flatMap(t => t.symbol.split(',').map(s => s.trim()).filter(Boolean));
       if (allSyms.length !== new Set(allSyms).size) {
-        if (showErrors) showToast(`Não determinístico! "${node.label || node.id}" tem símbolo duplicado nas setas.`, 'error');
+        if (showErrors) {
+          setHighlightedError(node.id);
+          setTimeout(() => setHighlightedError(null), 3000);
+          showToast(`Não determinístico! "${node.label || node.id}" tem símbolo duplicado nas setas.`, 'error');
+        }
         return false;
       }
     }
@@ -71,7 +76,11 @@ export default function useAFDGraph({
       for (const t of transitions) {
         for (const sym of t.symbol.split(',').map(s => s.trim()).filter(Boolean)) {
           if (!alphabetSet.has(sym)) {
-            if (showErrors) showToast(`Símbolo "${sym}" não pertence ao alfabeto { ${[...alphabetSet].join(', ')} }!`, 'error');
+            if (showErrors) {
+              setHighlightedError(`transition-${transitions.indexOf(t)}`);
+              setTimeout(() => setHighlightedError(null), 3000);
+              showToast(`Símbolo "${sym}" não pertence ao alfabeto { ${[...alphabetSet].join(', ')} }!`, 'error');
+            }
             return false;
           }
         }
@@ -100,83 +109,22 @@ export default function useAFDGraph({
       }
     }
 
-    // BFS sobre estados alcançáveis do AFD do usuário — testa a palavra mais curta que alcança
-    // cada estado, depois explora dead-states (transições ausentes) até profundidade 3.
-    // Garante cobertura completa independente do tamanho das palavras críticas.
-    if ((currentLevel?.regex || currentLevel?.validate) && (currentLevel?.alphabet || []).length > 0) {
-      const alph = currentLevel.alphabet;
-
-      const getDelta = (sid, sym) => {
-        const tr = transitions.find(t =>
-          t.from === sid && t.symbol.split(',').map(s => s.trim()).includes(sym)
-        );
-        return tr?.to ?? null;
-      };
-
-      const initialId = nodes.find(n => n.isInitial).id;
-
-      // Fase 1: BFS — um representante por estado alcançável
-      const stateWord = new Map([[initialId, '']]);
-      const bfsQ = [initialId];
-      while (bfsQ.length > 0) {
-        const sid = bfsQ.shift();
-        for (const sym of alph) {
-          const nxt = getDelta(sid, sym);
-          if (nxt !== null && !stateWord.has(nxt)) {
-            stateWord.set(nxt, stateWord.get(sid) + sym);
-            bfsQ.push(nxt);
-          }
+    // Verifica equivalência completa por força-bruta: todas as palavras até tamanho 7
+    // (|Σ|≤2 → 255 palavras, |Σ|=3 → 1093, |Σ|=4 → 1364 — todas em <3ms em V8).
+    // Substitui o BFS-por-estado anterior, que não cobria caminhos que voltavam a
+    // estados já visitados (ex.: auto-loops inválidos como q0→b→q0 em L07).
+    if (currentLevel?.regex || typeof currentLevel?.validate === 'function') {
+      const ce = fuzzDFA(
+        currentLevel.alphabet,
+        (w) => lvlAccepts(currentLevel, w),
+        simulateDFA
+      );
+      if (ce !== null) {
+        if (showErrors) {
+          const d = ce.word === '' ? 'λ (palavra vazia)' : `"${ce.word}"`;
+          showToast(`Autômato incorreto! ${d} deveria ser ${ce.shouldAccept ? 'aceita' : 'rejeitada'}.`, 'error');
         }
-      }
-      for (const [sid, word] of stateWord) {
-        const ua = !!nodes.find(n => n.id === sid)?.isFinal;
-        const ra = lvlAccepts(currentLevel, word);
-        if (ua !== ra) {
-          if (showErrors) {
-            const d = word === '' ? 'λ (palavra vazia)' : `"${word}"`;
-            showToast(`Autômato incorreto! ${d} deveria ser ${ra ? 'aceita' : 'rejeitada'}.`, 'error');
-          }
-          return false;
-        }
-      }
-
-      // Fase 2: exploração de dead states (transições ausentes) — profundidade 3
-      const deadSeen = new Set();
-      const deadQ = [];
-      for (const [sid, word] of stateWord) {
-        for (const sym of alph) {
-          if (getDelta(sid, sym) === null) {
-            const dw = word + sym;
-            if (!deadSeen.has(dw)) { deadSeen.add(dw); deadQ.push([dw, 0]); }
-          }
-        }
-      }
-      while (deadQ.length > 0) {
-        const [dw, depth] = deadQ.shift();
-        if (lvlAccepts(currentLevel, dw)) {
-          if (showErrors) showToast(`Autômato incorreto! "${dw}" deveria ser aceita.`, 'error');
-          return false;
-        }
-        if (depth < 3) {
-          for (const sym of alph) {
-            const ext = dw + sym;
-            if (!deadSeen.has(ext)) { deadSeen.add(ext); deadQ.push([ext, depth + 1]); }
-          }
-        }
-      }
-
-      // Fase 3: palavras explícitas do nível (belt-and-suspenders)
-      for (const w of [...(currentLevel.acceptedWords || []), ...(currentLevel.rejectedWords || [])]) {
-        const word = w === 'λ' ? '' : w;
-        const ra = lvlAccepts(currentLevel, word);
-        const ua = simulateDFA(word);
-        if (ra !== ua) {
-          if (showErrors) {
-            const d = word === '' ? 'λ (palavra vazia)' : `"${word}"`;
-            showToast(`Autômato incorreto! ${d} deveria ser ${ra ? 'aceita' : 'rejeitada'}.`, 'error');
-          }
-          return false;
-        }
+        return false;
       }
     }
 

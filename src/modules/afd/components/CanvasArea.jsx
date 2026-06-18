@@ -489,7 +489,7 @@ export default function CanvasArea({
                 : '' : '';
             return (
               <div key={node.uid}
-                className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${simCls}`}
+                className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${highlightedError===node.id?'error-pulse-severe':''} ${simCls}`}
                 style={{ top:`${node.y}%`, left:`${node.x}%` }}
                 onPointerDown={e => handlePointerDownNode(e, node.uid)}>
                 <input
