@@ -740,8 +740,17 @@ body { color: var(--text-main); }
   50%  { box-shadow: 0 0 0 12px rgba(220,38,38,0); background-color: #f87171; transform: scale(1.05); }
   100% { box-shadow: 0 0 0 0 rgba(220,38,38,0);   background-color: #fecaca; transform: scale(1); }
 }
+/* Variante para nós: preserva translate(-50%,-50%) que centraliza o elemento nas coords SVG */
+@keyframes nodeSeverePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(220,38,38,0.8);  background-color: #fecaca; transform: translate(-50%, -50%) scale(1); }
+  50%  { box-shadow: 0 0 0 12px rgba(220,38,38,0); background-color: #f87171; transform: translate(-50%, -50%) scale(1.05); }
+  100% { box-shadow: 0 0 0 0 rgba(220,38,38,0);   background-color: #fecaca; transform: translate(-50%, -50%) scale(1); }
+}
 .error-pulse-severe {
   animation: severePulse 0.8s infinite !important;
   border-color: #991b1b !important;
   color: #991b1b !important;
+}
+.node.error-pulse-severe {
+  animation: nodeSeverePulse 0.8s infinite !important;
 }
