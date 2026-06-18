@@ -7,10 +7,13 @@ import imgSerio      from '../../../assets/maurilio1_serio.webp';
 import imgExplicando from '../../../assets/maurilio3_explicando.webp';
 import imgBalaoFala  from '../../../assets/balao_fala_redondo.webp';
 
-const CARDS = [
+const CARDS_BASE = [
   { action: 'TOGGLE_INITIAL', cls: 'initial',    icon: '▶', label: 'Estado Inicial' },
   { action: 'ADD_NODE',       cls: 'state',      icon: '◯', label: 'Novo Estado' },
   { action: 'CONNECTING',     cls: 'transition', icon: '↗', label: 'Criar Seta' },
+];
+const CARD_FINAL = { action: 'TOGGLE_FINAL', cls: 'final', icon: '◎', label: 'Estado Final' };
+const CARDS_TAIL = [
   { sep: true },
   { action: 'ERASE',          cls: 'erase',      icon: '🗑', label: 'Apagar' },
 ];
@@ -19,7 +22,11 @@ export default function APFooterDeck({
   mode, onPick, profMessage, profMood, onProfClick, onCloseBalloon,
   onNodeDrag, onNodeDrop, onNodeDragCancel,
   canUndo, canRedo, onUndo, onRedo, lessonActive, hasNodes,
+  showFinalCard = false,
 }) {
+  const CARDS = showFinalCard
+    ? [...CARDS_BASE, CARD_FINAL, ...CARDS_TAIL]
+    : [...CARDS_BASE, ...CARDS_TAIL];
   const dragRef = useRef(null);
   const profImg = profMood === 'serio' ? imgSerio : imgExplicando;
 

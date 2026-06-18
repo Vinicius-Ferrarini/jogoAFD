@@ -1,0 +1,76 @@
+/* ═══ Fita Visual da Máquina de Turing ══════════════════════════════════════ */
+
+.turing-tape-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px 6px;
+  background: #f8fafc;
+  border: 3px solid #000;
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 #000;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* ── Linha de células ── */
+.tape-cells {
+  display: flex;
+  gap: 3px;
+  flex-wrap: nowrap;
+}
+
+.tape-cell {
+  width: 40px;
+  height: 40px;
+  border: 2.5px solid #000;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 900;
+  background: #fff;
+  color: #1e293b;
+  flex-shrink: 0;
+  user-select: none;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+/* Branco □ é levemente acinzentado para distinguir de símbolos reais */
+.tape-cell.blank-cell {
+  color: #94a3b8;
+}
+
+/* Célula sob o cabeçote: fundo amarelo + borda vermelha + sombra inferior */
+.tape-cell.head-active {
+  background: #fef08a;
+  border-color: #dc2626;
+  border-width: 3px;
+  color: #991b1b;
+  box-shadow: 0 4px 0 #dc2626;
+}
+
+/* ── Seta do cabeçote ── */
+.tape-head-row {
+  display: flex;
+  gap: 3px;
+  flex-wrap: nowrap;
+}
+
+.tape-head-slot {
+  width: 40px;
+  text-align: center;
+  font-size: 12px;
+  color: transparent;
+  flex-shrink: 0;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tape-head-slot.active {
+  color: #dc2626;
+  font-weight: 900;
+}

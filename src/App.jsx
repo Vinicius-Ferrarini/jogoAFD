@@ -11,10 +11,11 @@ const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
 const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
 const APPart1     = lazy(() => import('./modules/ap/APPart1'));
+const MTPart1     = lazy(() => import('./modules/mt/MTPart1'));
 
 // Módulos com uma ÚNICA atividade pulam a tela de submódulos e vão direto ao jogo
 // (ex.: AP só tem "Autômato com Pilha" — não faz sentido escolher pilha 2x).
-const DIRECT_GAME = { ap: 'ap-pilha' };
+const DIRECT_GAME = { ap: 'ap-pilha', mt: 'mt-trans' };
 
 export default function App() {
   const [screen, setScreen] = useState('HOME');
@@ -99,8 +100,9 @@ export default function App() {
         case 'afd-p1':  return <AFDPart1 {...moduleProps} onBack={() => goSubmodule('afd')} />;
         case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
         case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
-        case 'ap-pilha': return <APPart1 {...moduleProps} onBack={goModules} />;
-        default:        return <div>Módulo não encontrado</div>;
+        case 'ap-pilha':  return <APPart1  {...moduleProps} onBack={goModules} />;
+        case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={goModules} />;
+        default:          return <div>Módulo não encontrado</div>;
       }
     })();
 
@@ -122,7 +124,7 @@ function ModuleSelection({ onSelectModule, onBack }) {
     { id: 'ap',      badge: 'AP',    label: 'Autômatos com Pilha',  icon: '📚', color: '#a78bfa',
       desc: 'Reconhecimento com memória (pilha)' },
     { id: 'mt',      badge: 'MT',    label: 'Máquinas de Turing',   icon: '⚙️', color: '#f97316',
-      desc: 'Modelos Reconhecedora e Transdutora', locked: true },
+      desc: 'Modelos Reconhecedora e Transdutora' },
     { id: 'desafio', badge: 'BOSS',  label: 'Desafio de Prova',     icon: '🏆', color: '#f87171',
       desc: 'Enfrente questões da última prova como desafio final', locked: true },
   ];
@@ -211,7 +213,7 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
     ],
     mt: [
       { id: 'mt-recon', icon: '🔍', label: 'Reconhecedora', desc: 'Em breve!', locked: true },
-      { id: 'mt-trans', icon: '🔄', label: 'Transdutora',   desc: 'Em breve!', locked: true },
+      { id: 'mt-trans', icon: '🔄', label: 'Transdutora',   desc: 'Desenhe a MT e valide', color: '#fed7aa' },
     ],
   };
 

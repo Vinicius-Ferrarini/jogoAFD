@@ -1,0 +1,151 @@
+/* ═══ MT — Rótulo e Editor de Transição ══════════════════════════════════════ */
+/* Usado por TMTransitionLabel e TMTransitionEditor.                            */
+
+/* ── Rótulo (chip sobre a aresta) ── */
+.tm-transition-label {
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  cursor: pointer;
+}
+
+.tm-tl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fff;
+  border: 2.5px solid #065f46;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #065f46;
+  box-shadow: 2px 2px 0 rgba(6, 95, 70, 0.35);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tm-transition-label:hover .tm-tl-chip { background: #d1fae5; }
+
+/* Modo borracha: chip fica vermelho */
+.tm-transition-label.erasable .tm-tl-chip {
+  border-color: #dc2626;
+  color: #dc2626;
+  box-shadow: 2px 2px 0 rgba(220, 38, 38, 0.35);
+}
+.tm-transition-label.erasable:hover .tm-tl-chip { background: #fee2e2; }
+
+.tm-tl-sep  { color: #374151; font-weight: 700; }
+.tm-tl-move { color: #7c3aed; font-weight: 900; }
+.tm-tl-sym  { font-family: monospace; font-size: 14px; }
+
+/* ── Editor de transição (popup) ── */
+.tm-transition-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #fff7ed;
+  border: 2.5px solid #7c3aed;
+  border-radius: 10px;
+  padding: 9px 11px;
+  box-shadow: 3px 3px 0 rgba(124, 58, 237, 0.4);
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  min-width: 168px;
+  z-index: 30;
+}
+
+.tm-te-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tm-te-lbl {
+  font-size: 11px;
+  font-weight: 900;
+  color: #7c3aed;
+  width: 52px;
+  flex-shrink: 0;
+}
+
+.tm-te-input {
+  width: 32px;
+  border: 2px solid #7c3aed;
+  border-radius: 5px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  color: #5b21b6;
+  padding: 2px;
+  outline: none;
+  background: #fff;
+}
+.tm-te-input:focus { border-color: #4c1d95; background: #ede9fe; }
+
+/* Botão rápido □ */
+.tm-te-blank {
+  width: 26px;
+  height: 26px;
+  border: 2px solid #94a3b8;
+  border-radius: 5px;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.tm-te-blank:hover { background: #e2e8f0; border-color: #64748b; }
+
+/* Toggle L / S / R */
+.tm-te-move-btns { display: flex; gap: 3px; }
+
+.tm-te-move {
+  width: 30px;
+  height: 26px;
+  border: 2px solid #94a3b8;
+  border-radius: 5px;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  color: #374151;
+}
+.tm-te-move.active {
+  border-color: #7c3aed;
+  background: #ede9fe;
+  color: #5b21b6;
+  box-shadow: 1px 1px 0 #7c3aed;
+}
+.tm-te-move:hover:not(.active) { background: #e2e8f0; }
+
+/* Botões de ação (✓ 🗑 ✕) */
+.tm-te-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.tm-te-ok,
+.tm-te-del,
+.tm-te-cancel {
+  width: 26px;
+  height: 26px;
+  border: 2px solid #000;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tm-te-ok     { background: #4ade80; }
+.tm-te-ok:hover { background: #22c55e; }
+.tm-te-del    { background: #fca5a5; font-size: 14px; }
+.tm-te-del:hover { background: #f87171; }
+.tm-te-cancel { background: #fde68a; }
+.tm-te-cancel:hover { background: #fbbf24; }
