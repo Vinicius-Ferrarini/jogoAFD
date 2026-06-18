@@ -83,6 +83,9 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
             autoComplete="off" spellCheck={false} />
         ) : symList.length === 0 ? (
           <span className="transition-chip empty">?</span>
+        ) : (isDrawingUnlocked && interactionMode !== 'ERASE' && !selectedSymbolCard) ? (
+          <button className="afd-tl-add" title="Adicionar símbolo à transição"
+            onClick={e => { e.stopPropagation(); setMode('adding'); setInputVal(''); }}>＋</button>
         ) : null}
       </div>
     </div>
