@@ -89,12 +89,9 @@ export default function APFooterDeck({
 
       <div className="professor-hud">
         {profMessage && (
-          // pointer-events:none garante que o balão NUNCA bloqueie o botão atrás;
-          // só o × (auto) é clicável para fechar.
           <div className="professor-balloon ap-balloon" style={{ pointerEvents: 'none' }}>
             <img src={imgBalaoFala} alt="" />
             <div className="professor-balloon-text ap-balloon-text">{profMessage}</div>
-            <button className="ap-balloon-close" onClick={onCloseBalloon} title="Fechar">✕</button>
           </div>
         )}
         <img src={profImg} alt="Professor Maurílio" className="prof-img" onClick={onProfClick} />
