@@ -1152,4 +1152,104 @@
             { from: 'q1', to: 'q0', symbol: 'c' },
           ] } },
     ] },
+  { id: 54, label: "L54", formula: "L = { w ∈ {a,b,c}* | |w|a é ímpar, |w|b é ímpar e |w|c é ímpar }", desc: "",                                                                 shortestWord: "abc",      validate: (w) => { const a = (w.match(/a/g)||[]).length; const b = (w.match(/b/g)||[]).length; const c = (w.match(/c/g)||[]).length; return a%2!==0 && b%2!==0 && c%2!==0; }, alphabet: ['a','b','c'],          acceptedWords: ["abc","abccc","aaabccc"],  rejectedWords: ["","ab","aabc"],         hint: "O cubo oposto ao L46! O único estado aceito é o canto (ímpar, ímpar, ímpar). Cada letra inverte apenas o seu próprio bit de paridade.", successMsg: "Cubo de paridade invertido dominado!",
+    tutorials: {
+      onStart: { type: 'theory', title: 'Cubo ímpar: 3 letras, 8 estados!', dialog: [
+        'L54: contar a, b e c separadamente. Aceito quando TODOS são ímpares.',
+        '"abc" ✓ (1a,1b,1c). "abccc" ✓ (1a,1b,3c). "λ" ✗ (todos pares). "ab" ✗ (0c=par).',
+        '8 combinações de paridade: 2^3 = 8 estados. Apenas iii (ímpar,ímpar,ímpar) aceita.',
+      ] },
+      onDrawGraph: { type: 'mechanic', title: '8 Estados em Cubo Ímpar', dialog: [
+        'Cada letra inverte apenas o seu bit: "a" → muda 1° bit, "b" → 2°, "c" → 3°.',
+        '"a": ppp↔ipp, pip↔iip, ppi↔ipi, pii↔iii.',
+        '"b": ppp↔pip, ipp↔iip, ppi↔pii, ipi↔iii. "c": ppp↔ppi, ipp↔ipi, pip↔pii, iip↔iii.',
+      ] },
+    },
+    boardWords: ['abc', 'abccc', 'aaabccc'],
+    guidedLesson: [
+      { text: 'Cubo ímpar: a, b e c TODOS ímpares!<br/>Aceitar: <b>abc</b>, <b>abccc</b>, <b>aaabccc</b>. Rejeitar: λ, ab, aabc.',
+        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Foco em <b>abc</b>: caminho mínimo ppp→ipp(a)→iip(b)→iii(final,c).',
+        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
+      { text: 'Solução: ppp→ipp(a)→iip(b)→iii(final,c). "abc"✓. Próxima: "abccc"!',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'ppp', label: 'ppp', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'ipp', label: 'ipp', x: 35, y: 50, isInitial: false, isFinal: false },
+            { id: 'iip', label: 'iip', x: 60, y: 50, isInitial: false, isFinal: false },
+            { id: 'iii', label: 'iii', x: 85, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'ppp', to: 'ipp', symbol: 'a' },
+            { from: 'ipp', to: 'iip', symbol: 'b' },
+            { from: 'iip', to: 'iii', symbol: 'c' },
+          ] } },
+      { text: 'Foco em <b>abccc</b>: iii lê segundo "c" — sem seta de volta! Preciso de iii↔iip(c).',
+        boardDoneUpTo: 1, stateUpdate: {
+          nodes: [
+            { id: 'ppp', label: 'ppp', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'ipp', label: 'ipp', x: 35, y: 50, isInitial: false, isFinal: false },
+            { id: 'iip', label: 'iip', x: 60, y: 50, isInitial: false, isFinal: false },
+            { id: 'iii', label: 'iii', x: 85, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'ppp', to: 'ipp', symbol: 'a' },
+            { from: 'ipp', to: 'iip', symbol: 'b' },
+            { from: 'iip', to: 'iii', symbol: 'c' },
+          ] } },
+      { text: 'Solução: iii↔iip(c). "abccc"✓. Próxima: "aaabccc"!',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'ppp', label: 'ppp', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'ipp', label: 'ipp', x: 35, y: 50, isInitial: false, isFinal: false },
+            { id: 'iip', label: 'iip', x: 60, y: 50, isInitial: false, isFinal: false },
+            { id: 'iii', label: 'iii', x: 85, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'ppp', to: 'ipp', symbol: 'a' },
+            { from: 'ipp', to: 'iip', symbol: 'b' },
+            { from: 'iip', to: 'iii', symbol: 'c' },
+            { from: 'iii', to: 'iip', symbol: 'c' },
+          ] } },
+      { text: 'Foco em <b>aaabccc</b>: ipp lê segundo "a" — sem seta de volta! Preciso do cubo completo.',
+        boardDoneUpTo: 2, stateUpdate: {
+          nodes: [
+            { id: 'ppp', label: 'ppp', x: 10, y: 50, isInitial: true,  isFinal: false },
+            { id: 'ipp', label: 'ipp', x: 35, y: 50, isInitial: false, isFinal: false },
+            { id: 'iip', label: 'iip', x: 60, y: 50, isInitial: false, isFinal: false },
+            { id: 'iii', label: 'iii', x: 85, y: 50, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'ppp', to: 'ipp', symbol: 'a' },
+            { from: 'ipp', to: 'iip', symbol: 'b' },
+            { from: 'iip', to: 'iii', symbol: 'c' },
+            { from: 'iii', to: 'iip', symbol: 'c' },
+          ] } },
+      { text: 'Solução: cubo completo +pip,ppi,pii,ipi. "aaabccc"✓ Concluído!',
+        boardDoneUpTo: 3, stateUpdate: {
+          nodes: [
+            { id: 'ppp', label: 'ppp', x: 12, y: 25, isInitial: true,  isFinal: false },
+            { id: 'ipp', label: 'ipp', x: 12, y: 70, isInitial: false, isFinal: false },
+            { id: 'pip', label: 'pip', x: 37, y: 25, isInitial: false, isFinal: false },
+            { id: 'iip', label: 'iip', x: 37, y: 70, isInitial: false, isFinal: false },
+            { id: 'ppi', label: 'ppi', x: 62, y: 25, isInitial: false, isFinal: false },
+            { id: 'ipi', label: 'ipi', x: 62, y: 70, isInitial: false, isFinal: false },
+            { id: 'pii', label: 'pii', x: 87, y: 25, isInitial: false, isFinal: false },
+            { id: 'iii', label: 'iii', x: 87, y: 70, isInitial: false, isFinal: true  },
+          ],
+          transitions: [
+            { from: 'ppp', to: 'ipp', symbol: 'a' }, { from: 'ipp', to: 'ppp', symbol: 'a' },
+            { from: 'pip', to: 'iip', symbol: 'a' }, { from: 'iip', to: 'pip', symbol: 'a' },
+            { from: 'ppi', to: 'ipi', symbol: 'a' }, { from: 'ipi', to: 'ppi', symbol: 'a' },
+            { from: 'pii', to: 'iii', symbol: 'a' }, { from: 'iii', to: 'pii', symbol: 'a' },
+            { from: 'ppp', to: 'pip', symbol: 'b' }, { from: 'pip', to: 'ppp', symbol: 'b' },
+            { from: 'ipp', to: 'iip', symbol: 'b' }, { from: 'iip', to: 'ipp', symbol: 'b' },
+            { from: 'ppi', to: 'pii', symbol: 'b' }, { from: 'pii', to: 'ppi', symbol: 'b' },
+            { from: 'ipi', to: 'iii', symbol: 'b' }, { from: 'iii', to: 'ipi', symbol: 'b' },
+            { from: 'ppp', to: 'ppi', symbol: 'c' }, { from: 'ppi', to: 'ppp', symbol: 'c' },
+            { from: 'ipp', to: 'ipi', symbol: 'c' }, { from: 'ipi', to: 'ipp', symbol: 'c' },
+            { from: 'pip', to: 'pii', symbol: 'c' }, { from: 'pii', to: 'pip', symbol: 'c' },
+            { from: 'iip', to: 'iii', symbol: 'c' }, { from: 'iii', to: 'iip', symbol: 'c' },
+          ] } },
+    ] },
 ];

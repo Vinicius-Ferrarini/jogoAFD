@@ -924,5 +924,31 @@ export const LEVEL_GRAPHS = {
       { from: 'q0', to: 'q1', symbol: 'b' },
       { from: 'q1', to: 'q0', symbol: 'c' }
     ]
+  },
+  54: { // L54: L = {w ∈ {a,b,c}* | |w|a, |w|b, |w|c todos ímpares} — cubo de paridade, único final: iii
+    nodes: [
+      { id: 'ppp', isInitial: true,  isFinal: false },
+      { id: 'ipp', isInitial: false, isFinal: false },
+      { id: 'pip', isInitial: false, isFinal: false },
+      { id: 'iip', isInitial: false, isFinal: false },
+      { id: 'ppi', isInitial: false, isFinal: false },
+      { id: 'ipi', isInitial: false, isFinal: false },
+      { id: 'pii', isInitial: false, isFinal: false },
+      { id: 'iii', isInitial: false, isFinal: true  }
+    ],
+    transitions: [
+      { from: 'ppp', to: 'ipp', symbol: 'a' }, { from: 'ipp', to: 'ppp', symbol: 'a' },
+      { from: 'pip', to: 'iip', symbol: 'a' }, { from: 'iip', to: 'pip', symbol: 'a' },
+      { from: 'ppi', to: 'ipi', symbol: 'a' }, { from: 'ipi', to: 'ppi', symbol: 'a' },
+      { from: 'pii', to: 'iii', symbol: 'a' }, { from: 'iii', to: 'pii', symbol: 'a' },
+      { from: 'ppp', to: 'pip', symbol: 'b' }, { from: 'pip', to: 'ppp', symbol: 'b' },
+      { from: 'ipp', to: 'iip', symbol: 'b' }, { from: 'iip', to: 'ipp', symbol: 'b' },
+      { from: 'ppi', to: 'pii', symbol: 'b' }, { from: 'pii', to: 'ppi', symbol: 'b' },
+      { from: 'ipi', to: 'iii', symbol: 'b' }, { from: 'iii', to: 'ipi', symbol: 'b' },
+      { from: 'ppp', to: 'ppi', symbol: 'c' }, { from: 'ppi', to: 'ppp', symbol: 'c' },
+      { from: 'ipp', to: 'ipi', symbol: 'c' }, { from: 'ipi', to: 'ipp', symbol: 'c' },
+      { from: 'pip', to: 'pii', symbol: 'c' }, { from: 'pii', to: 'pip', symbol: 'c' },
+      { from: 'iip', to: 'iii', symbol: 'c' }, { from: 'iii', to: 'iip', symbol: 'c' }
+    ]
   }
 };
