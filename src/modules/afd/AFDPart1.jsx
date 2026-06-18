@@ -142,6 +142,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     setIsDrawingUnlocked(false);
     setIsSidebarOpen(false);
     setNewWord('');
+    setProfessorMessage('');
     setInteractionMode('IDLE');
     setDrawnCards([]);
     setSelectedSymbolCard(null);
@@ -272,8 +273,12 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
 
   const handleProfessorClick = useCallback(() => {
     if (guidedLessonStep !== null) return;
-    showToast('Você está indo muito bem! Use o botão 👨‍🏫 Aula para ver a demonstração.', 'info');
-  }, [guidedLessonStep, showToast]);
+    setProfessorMessage(msg =>
+      msg
+        ? ''
+        : (currentLevel?.hint || 'Dica: verifique se todos os estados têm transições para cada letra do alfabeto!')
+    );
+  }, [guidedLessonStep, currentLevel]);
 
   const validateAFD = useCallback(() => {
     if (!validateAFDSilent(true)) return;
