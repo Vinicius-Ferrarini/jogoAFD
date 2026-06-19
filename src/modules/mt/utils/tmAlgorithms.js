@@ -60,26 +60,13 @@ export function fuzzTMTransducer(graph, level) {
   let words = level.testWords ?? [];
   if (level.skipEmptyWord) words = words.filter(w => w !== '');
 
+  // Aceitação por LINGUAGEM: a palavra é válida se a MT termina em um estado
+  // final (isFinal), independentemente do conteúdo escrito na fita — coerente
+  // com a natureza transdutora (a transformação é verificada na aba Transdução).
   for (const word of words) {
-    const { status, tape } = simulateTM(graph, word);
-
-    if (status === 'LOOP') {
-      return { ok: false, counterexample: word, reason: 'loop' };
-    }
-    if (status === 'REJECTED') {
-      return { ok: false, counterexample: word, reason: 'rejected' };
-    }
-
-    // Strip □ das bordas
-    let lo = 0, hi = tape.length - 1;
-    while (lo <= hi && tape[lo] === BLANK) lo++;
-    while (hi >= lo && tape[hi] === BLANK) hi--;
-    const output   = tape.slice(lo, hi + 1).join('');
-    const expected = level.validate(word);
-
-    if (output !== expected) {
-      return { ok: false, counterexample: word, reason: 'wrong-output', got: output, expected };
-    }
+    const { status } = simulateTM(graph, word);
+    if (status === 'LOOP')     return { ok: false, counterexample: word, reason: 'loop' };
+    if (status !== 'ACCEPTED') return { ok: false, counterexample: word, reason: 'rejected' };
   }
   return { ok: true };
 }

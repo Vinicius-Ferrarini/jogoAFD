@@ -19,6 +19,10 @@ import { MT_LEVELS } from './levels_mt';
 import { fuzzTMTransducer, simulateTM, BLANK } from './utils/tmAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 
+// Estado inicial vazio do formulário da descrição formal (7-tupla)
+// deltaCells: mapa "estado|símbolo" → "destino, escreve, move" (matriz δ)
+const EMPTY_FORMAL = { states: '', sigma: '', gamma: '', initial: '', blank: '', final: '', deltaCells: {} };
+
 export default function MTPart1({ onBack, progress, updateProgress, showToast }) {
   const [screen, setScreen] = useState('MENU');
   const [level,  setLevel]  = useState(null);
@@ -28,11 +32,16 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const [result, setResult] = useState(null);
   const [simWord, setSimWord]     = useState('');
   const [testedWords, setTestedWords] = useState([]);
+  const [testTab, setTestTab]     = useState('TRANSDUCAO'); // 'TRANSDUCAO' | 'VERIFICACAO'
   const [deckGhost, setDeckGhost] = useState(null);
   const [victory, setVictory]     = useState(false);
   const [selectedNodes, setSelectedNodes]   = useState([]);
   const [selectionBox, setSelectionBox]     = useState(null);
+  const [formalAnswers, setFormalAnswers]   = useState(EMPTY_FORMAL);
+  const [formalMode, setFormalMode]         = useState(false); // jogo: MT válida → preencher descrição formal
+  const [validationError, setValidationError] = useState(null); // banner vermelho de erro estrutural
   const canvasRef = useRef(null);
+  const formalRef = useRef(null); // container rolável do painel formal (auto-scroll)
 
   // ── Aula Guiada ──────────────────────────────────────────────────────────────
   // Storyboard frame a frame: cada passo é um objeto independente (grafo + fita).
@@ -57,6 +66,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const startLesson = useCallback(() => {
     if (!lesson.hasLesson) return;
     setMode('IDLE'); setConnectingSource(null); setResult(null);
+    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
     lesson.goTo(0);
     applyStep(lesson.steps[0]);
   }, [lesson, applyStep]);
@@ -73,6 +83,32 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
     lesson.goTo(next);
     applyStep(lesson.steps[next]);
   }, [lesson, applyStep]);
+
+  // Auto-preenchimento do formulário formal — simula o "Maurílio digitando" cada campo
+  useEffect(() => {
+    const fill = lesson.cur?.formalFill;
+    if (!fill) return;
+    setFormalAnswers(prev => {
+      const next = { ...prev, ...fill };
+      if (fill.delta) {
+        // converte o array de transições na matriz de células δ
+        const cells = {};
+        for (const t of fill.delta) {
+          cells[`${t.from}|${t.read === '' ? '□' : t.read}`] = `${t.to}, ${t.write === '' ? '□' : t.write}, ${t.move}`;
+        }
+        next.deltaCells = cells;
+        delete next.delta;
+      }
+      return next;
+    });
+  }, [lesson.step]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Scroll automático: ao avançar para um novo campo formal, rola até o fim do painel
+  useEffect(() => {
+    if (lesson.phase === 'FORMAL' && formalRef.current) {
+      formalRef.current.scrollTo({ top: formalRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  }, [lesson.step, lesson.phase]);
 
   // ── Atalhos de teclado ───────────────────────────────────────────────────────
   const { undo: gUndo, redo: gRedo, deleteSelected: gDeleteSelected } = g;
@@ -103,6 +139,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
     setResult(null); setSimWord(''); setTestedWords([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
+    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
     draw.resetDrawings();
     say(`Monte a MT Transdutora que ${lv.description.toLowerCase()} e clique em Validar!`, 'explicando');
   }, [g, lesson, draw, say]);
@@ -150,23 +187,39 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   // ── Validar (bateria) = ★★★ ──────────────────────────────────────────────────
   const validate = useCallback(() => {
     if (!level) return;
-    const initial = g.nodes.find(n => n.isInitial);
-    if (!initial) {
-      showToast?.('Defina um estado inicial (▶) antes de validar.', 'error');
+
+    // ── Validações estruturais (banner vermelho no topo) ───────────────────────
+    if (!g.nodes.find(n => n.isInitial)) {
+      setValidationError('Erro Crítico: Defina um Estado Inicial (▶)!');
       return;
     }
     if (!g.nodes.some(n => n.isFinal)) {
-      showToast?.('Defina ao menos um estado final (◎) antes de validar.', 'error');
+      setValidationError('Erro Crítico: Defina um Estado Final (◎)!');
       return;
     }
+    // Não-determinismo: mesmo estado lendo o mesmo símbolo com ações diferentes
+    const seen = new Map();
+    for (const t of g.transitions) {
+      const sym = t.read === '' ? '□' : t.read;
+      const key = `${t.from}|${sym}`;
+      const sig = `${t.to}|${t.write}|${t.move}`;
+      if (seen.has(key) && seen.get(key) !== sig) {
+        const lbl = g.nodes.find(n => n.id === t.from)?.label ?? t.from;
+        setValidationError(`Erro: Transição não-determinística no estado ${lbl} para o símbolo ${sym}`);
+        return;
+      }
+      if (!seen.has(key)) seen.set(key, sig);
+    }
+    setValidationError(null);
+
     const mtGraph = { states: g.nodes, transitions: g.transitions };
     const res = fuzzTMTransducer(mtGraph, level);
     setResult(res);
     if (res.ok) {
       updateProgress?.(`mt-trans-${level.id}`, 3);
-      say('Perfeito! Sua MT computa a função corretamente! 🎉', 'feliz');
-      showToast?.('MT Transdutora validada! ★★★', 'success');
-      setVictory(true);
+      say('Perfeito! Sua MT está correta! Agora preencha a Descrição Formal à esquerda e clique em Concluir. 📝', 'feliz');
+      showToast?.('MT validada! ★★★ — formalize a máquina.', 'success');
+      setFormalMode(true); // abre o painel formal (editável); vitória só ao Concluir
     } else {
       const show = res.counterexample === '' ? 'λ' : res.counterexample;
       const msg = res.reason === 'loop'
@@ -178,6 +231,12 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
       showToast?.(msg, 'error');
     }
   }, [level, g, say, updateProgress, showToast]);
+
+  // Conclui a fase após preencher a Descrição Formal → tela de vitória
+  const concludePhase = useCallback(() => {
+    setFormalMode(false);
+    setVictory(true);
+  }, []);
 
   const stars = level ? (progress?.[`mt-trans-${level.id}`]?.stars || 0) : 0;
 
@@ -220,7 +279,37 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   // ── Tela do jogo ─────────────────────────────────────────────────────────────
   const mtIdx  = MT_LEVELS.findIndex(l => l.id === level.id);
   const nextMt = mtIdx >= 0 && mtIdx < MT_LEVELS.length - 1 ? MT_LEVELS[mtIdx + 1] : null;
-  const formalDesc = level.formalDescription;
+  const isFormal   = lesson.phase === 'FORMAL';
+  const formalOpen = isFormal || formalMode; // mostra o painel formal à esquerda
+
+  // Matriz δ: colunas = Σ depois Γ (sem repetir) incluindo □; linhas = estados de Q
+  const sigmaCols    = level.alphabet ?? [];
+  const formalCols   = [...sigmaCols, ...((level.tapeAlphabet ?? []).filter(s => !sigmaCols.includes(s)))];
+  const formalStateRows = (lesson.active ? (lesson.displayNodes ?? []) : g.nodes).map(n => n.id);
+
+  // ── Formulário da descrição formal (inputs auto-preenchidos / editáveis) ─────
+  const setDeltaCell = (key, value) => setFormalAnswers(prev => ({
+    ...prev, deltaCells: { ...prev.deltaCells, [key]: value },
+  }));
+
+  const formalField = (label, k, placeholder) => {
+    const filled = !!formalAnswers[k];
+    return (
+      <div style={{ marginBottom: 8 }}>
+        <label style={{ display: 'block', fontFamily: "'Comic Sans MS',cursive", fontSize: 11,
+          fontWeight: 900, color: '#065f46', marginBottom: 3 }}>{label}</label>
+        <input type="text" value={formalAnswers[k] ?? ''} placeholder={placeholder}
+          disabled={lesson.active}
+          onChange={e => setFormalAnswers(prev => ({ ...prev, [k]: e.target.value }))}
+          translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
+          style={{ width: '100%', boxSizing: 'border-box', padding: '5px 7px',
+            fontFamily: "'Comic Sans MS',cursive", fontSize: 13, fontWeight: 900,
+            background: filled ? '#f0fdf4' : '#fff',
+            color: filled ? '#111' : '#9ca3af',
+            border: filled ? '2px solid #22c55e' : '2px solid #d1d5db', borderRadius: 6 }} />
+      </div>
+    );
+  };
 
   return (
     <div className="workspace-wrapper">
@@ -252,7 +341,95 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         </div>
       </div>
 
+      {/* Banner de erro estrutural (vermelho, no topo — como no AFD) */}
+      {validationError && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          padding: '8px 14px', background: '#dc2626', color: '#fff',
+          fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, fontSize: 13,
+          borderBottom: '3px solid #7f1d1d' }}>
+          <span>⛔ {validationError}</span>
+          <button onClick={() => setValidationError(null)}
+            style={{ background: '#fff', color: '#dc2626', border: 'none', borderRadius: 6,
+              fontWeight: 900, fontFamily: "'Comic Sans MS',cursive", cursor: 'pointer',
+              padding: '2px 8px', fontSize: 12 }}>✕</button>
+        </div>
+      )}
+
       <div className="workspace">
+        {/* Painel ESQUERDO: Descrição Formal (espelha o AFD) — aula formal OU pós-validação */}
+        {formalOpen && (
+          <aside className="test-panel ap-test-panel" ref={formalRef} style={{
+            width: 300, display: 'flex', flexDirection: 'column', gap: 0,
+            overflowY: 'auto', background: '#fff',
+          }}>
+            <div style={{ padding: '8px 10px', background: '#143823',
+              fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
+              color: '#fbbf24', letterSpacing: 0.5 }}>
+              📝 DESCRIÇÃO FORMAL {formalMode && '— preencha e conclua'}
+            </div>
+
+            <div style={{ padding: '10px' }}>
+              <div style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 13, fontWeight: 900,
+                color: '#065f46', marginBottom: 8 }}>
+                M = (Q, Σ, Γ, δ, q₀, □, F)
+              </div>
+              {formalField('Q (Estados):',          'states',  '{…}')}
+              {formalField('Σ (Alfabeto entrada):', 'sigma',   '{…}')}
+              {formalField('Γ (Alfabeto da fita):', 'gamma',   '{…}')}
+              {formalField('q₀ (Estado inicial):',  'initial', '…')}
+              {formalField('□ (Símbolo branco):',   'blank',   '…')}
+              {formalField('F (Estados finais):',   'final',   '{…}')}
+
+              <div style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
+                color: '#065f46', margin: '10px 0 4px' }}>
+                Função de transição δ: <span style={{ color: '#9ca3af', fontSize: 9 }}>(destino, escreve, move)</span>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ borderCollapse: 'collapse', fontSize: 11 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ border: '1.5px solid #143823', padding: '3px 5px',
+                        background: '#143823', color: '#fde047',
+                        fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>δ</th>
+                      {formalCols.map(sym => (
+                        <th key={sym} style={{ border: '1.5px solid #143823', padding: '3px 5px',
+                          background: '#d1fae5', color: '#065f46',
+                          fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{sym === '' ? '□' : sym}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formalStateRows.map(stId => (
+                      <tr key={stId}>
+                        <td style={{ border: '1.5px solid #143823', padding: '2px 5px', textAlign: 'center',
+                          background: '#d1fae5', color: '#065f46', fontWeight: 900,
+                          fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{stId}</td>
+                        {formalCols.map(sym => {
+                          const key = `${stId}|${sym}`;
+                          const val = formalAnswers.deltaCells?.[key] ?? '';
+                          return (
+                            <td key={sym} style={{ border: '1.5px solid #9ca3af', padding: 1,
+                              background: val ? '#f0fdf4' : '#fff' }}>
+                              <input type="text" value={val} disabled={lesson.active} placeholder="—"
+                                onChange={e => setDeltaCell(key, e.target.value)}
+                                translate="no" spellCheck={false}
+                                style={{ width: 60, boxSizing: 'border-box', textAlign: 'center',
+                                  border: 'none', background: 'transparent',
+                                  color: val ? '#111' : '#cbd5e1',
+                                  fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
+                                  padding: '3px 0' }} />
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </aside>
+        )}
+
         {/* Canvas */}
         <MTCanvas
           canvasRef={canvasRef}
@@ -295,47 +472,31 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
               fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
               color: '#fbbf24', letterSpacing: 0.5,
             }}>
-              👨‍🏫 MODO AULA — MONTANDO O GRAFO
+              👨‍🏫 MODO AULA — {isFormal ? 'DESCRIÇÃO FORMAL' : 'MONTANDO O GRAFO'}
             </div>
 
-            {/* Descrição formal (passo FORMAL) */}
-            {lesson.phase === 'FORMAL' && formalDesc && (
+            {/* Transição grafo → formal: botão grande "Iniciar Descrição Formal" */}
+            {lesson.cur?.formalIntro && (
+              <div style={{ padding: '20px 12px', textAlign: 'center' }}>
+                <button onClick={() => lessonGo(1)}
+                  style={{ width: '100%', padding: '14px 10px', fontFamily: "'Comic Sans MS',cursive",
+                    fontWeight: 900, fontSize: 15, color: '#143823', background: '#fde047',
+                    border: '3px solid #a16207', borderRadius: 12, cursor: 'pointer',
+                    boxShadow: '3px 3px 0 #000' }}>
+                  📝 Iniciar Descrição Formal
+                </button>
+              </div>
+            )}
+
+            {/* Fase FORMAL: a lousa só aponta para o formulário à esquerda */}
+            {isFormal && (
               <div style={{
-                padding: '8px 10px', background: '#fff', margin: '8px 8px 0',
-                borderRadius: 6, border: '2px solid #143823',
-                fontFamily: "'Comic Sans MS',cursive", fontSize: 11,
+                padding: '10px 12px', margin: '8px 8px 0',
+                background: '#143823', borderRadius: 6, border: '1.5px solid #2f5d40',
+                fontFamily: "'Comic Sans MS',cursive", fontSize: 12, fontWeight: 900, color: '#d1d5db',
               }}>
-                <div style={{ fontWeight: 900, marginBottom: 4, color: '#065f46' }}>Descrição Formal</div>
-                <div style={{ color: '#111' }}>M = (Q, Σ, Γ, δ, q₀, □, F)</div>
-                <div style={{ marginTop: 4, color: '#111' }}>
-                  <div><b>Q</b> = {formalDesc.states}</div>
-                  <div><b>Σ</b> = {formalDesc.sigma}</div>
-                  <div><b>Γ</b> = {formalDesc.gamma}</div>
-                  <div><b>q₀</b> = {formalDesc.initial}</div>
-                  <div><b>□</b> = {formalDesc.blank}</div>
-                  <div><b>F</b> = {formalDesc.final}</div>
-                </div>
-                <div style={{ marginTop: 6, fontWeight: 900, color: '#065f46' }}>Tabela δ:</div>
-                <table style={{ borderCollapse: 'collapse', width: '100%', marginTop: 2, fontSize: 10 }}>
-                  <thead>
-                    <tr>
-                      {['Estado', 'Lê', 'Escreve', 'Move', 'Vai para'].map(h => (
-                        <th key={h} style={{ border: '1.5px solid #333', padding: '2px 3px', background: '#d1fae5', color: '#111' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(lesson.displayTransitions ?? []).map((t, i) => (
-                      <tr key={i} style={{ background: i % 2 === 0 ? '#f9fafb' : '#fff' }}>
-                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.from}</td>
-                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.read || '□'}</td>
-                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.write || '□'}</td>
-                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.move}</td>
-                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.to}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                👈 Veja o painel à esquerda revelando a tupla<br />
+                <b style={{ color: '#fde047' }}>M = (Q, Σ, Γ, δ, q₀, □, F)</b> passo a passo.
               </div>
             )}
 
@@ -411,7 +572,36 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
           </aside>
         ) : (
           <aside className="test-panel ap-test-panel">
-            <div className="section-header" style={{ fontSize: 11 }}>Testar palavra</div>
+            {/* Abas: Transdução (azul, saída) vs Linguagem (verde, aceita/rejeita) */}
+            {(() => {
+              const tabBtn = (tab, color, label) => {
+                const on = testTab === tab;
+                return (
+                  <button onClick={() => setTestTab(tab)} style={{
+                    flex: 1, padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
+                    fontSize: 12, cursor: 'pointer', borderRadius: '8px 8px 0 0',
+                    border: `2px solid ${color}`, borderBottom: on ? `2px solid ${color}` : '2px solid transparent',
+                    background: on ? color : '#fff', color: on ? '#fff' : color }}>
+                    {label}
+                  </button>
+                );
+              };
+              return (
+                <div style={{ display: 'flex', gap: 4, padding: '6px 6px 0' }}>
+                  {tabBtn('TRANSDUCAO', '#2563eb', '⚙ Transdução')}
+                  {tabBtn('VERIFICACAO', '#16a34a', '🔤 Linguagem')}
+                </div>
+              );
+            })()}
+
+            {/* Texto auxiliar (só na aba Transdução) */}
+            {testTab === 'TRANSDUCAO' && (
+              <div style={{ padding: '4px 10px 0', fontFamily: "'Comic Sans MS',cursive",
+                fontSize: 11, fontWeight: 900, color: '#2563eb' }}>
+                Entrada ({(level.alphabet ?? []).join(',')}) → Saída ({(level.alphabet ?? []).map(c => c.toUpperCase()).join(',')})
+              </div>
+            )}
+
             <div className="test-input-area">
               <input type="text" className="word-input" placeholder="ex: ab (vazio = λ)"
                 value={simWord} onChange={e => setSimWord(e.target.value)}
@@ -420,16 +610,68 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
               <button className="add-test-btn" onClick={testWord}>+</button>
             </div>
 
-            <div className="words-list">
-              {testedWords.map((t, i) => (
-                <div key={i} className={`word-row ${t.status === 'ACCEPTED' ? 'correct' : 'wrong'}`}>
-                  <span>{t.word === '' ? 'λ' : t.word}</span>
-                  <span style={{ fontSize: 11 }}>
-                    {t.status === 'ACCEPTED' ? `→ ${t.output}` : t.status === 'LOOP' ? '⟳ loop' : '✗'}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {/* Conteúdo da aba */}
+            {testTab === 'TRANSDUCAO' ? (
+              <div className="words-list" style={{ overflowX: 'hidden' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      {['Entrada', 'Saída'].map(h => (
+                        <th key={h} style={{ border: '1.5px solid #2563eb', padding: '3px 4px',
+                          background: '#dbeafe', color: '#1e3a8a',
+                          fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testedWords.map((t, i) => (
+                      <tr key={i} style={{ background: i % 2 === 0 ? '#f8fafc' : '#fff' }}>
+                        <td style={{ border: '1.5px solid #bfdbfe', padding: '3px 6px', textAlign: 'center',
+                          fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, color: '#111' }}>
+                          {t.word === '' ? 'λ' : t.word}
+                        </td>
+                        <td style={{ border: '1.5px solid #bfdbfe', padding: '3px 6px', textAlign: 'center' }}>
+                          {t.status === 'ACCEPTED'
+                            ? <b style={{ color: '#1d4ed8', fontFamily: "'Comic Sans MS',cursive" }}>{t.output}</b>
+                            : <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: 4,
+                                background: '#dc2626', color: '#fff', fontSize: 10, fontWeight: 900,
+                                fontFamily: "'Comic Sans MS',cursive" }}>
+                                {t.status === 'LOOP' ? 'ERRO' : 'REJEITADA'}
+                              </span>}
+                        </td>
+                      </tr>
+                    ))}
+                    {testedWords.length === 0 && (
+                      <tr><td colSpan={2} style={{ border: '1.5px solid #bfdbfe', padding: 8,
+                        textAlign: 'center', color: '#9ca3af', fontFamily: "'Comic Sans MS',cursive",
+                        fontSize: 11 }}>Nenhum teste ainda</td></tr>
+                    )}
+                  </tbody>
+                </table>
+                {testedWords.some(t => t.status === 'ACCEPTED') && (
+                  <div style={{ marginTop: 6, fontFamily: "'Comic Sans MS',cursive", fontSize: 10,
+                    fontWeight: 900, color: '#16a34a' }}>
+                    Status: Aceita pela Máquina
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="words-list">
+                {testedWords.map((t, i) => (
+                  <div key={i} className={`word-row ${t.status === 'ACCEPTED' ? 'correct' : 'wrong'}`}>
+                    <span>{t.word === '' ? 'λ' : t.word}</span>
+                    <span style={{ fontSize: 11, fontWeight: 900,
+                      color: t.status === 'ACCEPTED' ? '#16a34a' : '#dc2626' }}>
+                      {t.status === 'ACCEPTED' ? '✓ ACEITA' : '✗ REJEITADA'}
+                    </span>
+                  </div>
+                ))}
+                {testedWords.length === 0 && (
+                  <div style={{ padding: 8, textAlign: 'center', color: '#9ca3af',
+                    fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>Nenhum teste ainda</div>
+                )}
+              </div>
+            )}
 
             {result && !result.ok && (
               <div className="ap-result err" style={{ fontSize: 11 }}>
@@ -441,8 +683,8 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
               </div>
             )}
 
-            <button className="validate-btn slide-up-fade" onClick={validate}>
-              ✓ Validar MT
+            <button className="validate-btn slide-up-fade" onClick={formalMode ? concludePhase : validate}>
+              {formalMode ? '🏁 Concluir Fase' : '✓ Validar MT'}
             </button>
           </aside>
         )}

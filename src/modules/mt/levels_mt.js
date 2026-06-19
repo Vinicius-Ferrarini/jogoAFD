@@ -43,6 +43,13 @@ const T_FULL = [E_Q0A, E_Q0B, E_Q1A, E_Q1B, E_Q1_BACK, E_Q2A, E_Q2B, E_Q2_FIN]; 
 const L1_N_FULL = N_0123;
 const L1_T_FULL = T_FULL;
 
+// δ revelada aos poucos no formulário formal (cada grupo acrescenta linhas)
+const D1 = [E_Q0A, E_Q0B];                          // q0 converte a 1ª letra
+const D2 = [...D1, E_Q1A, E_Q1B];                   // + laços de q1
+const D3 = [...D2, E_Q1_BACK];                      // + q1 → q2 (vira)
+const D4 = [...D3, E_Q2A, E_Q2B];                   // + scan-back de q2
+const D5 = [...D4, E_Q2_FIN];                       // + q2 → q3 (final) = δ completa
+
 // ── Definição dos níveis ──────────────────────────────────────────────────────
 export const MT_LEVELS = [
   {
@@ -226,12 +233,80 @@ export const MT_LEVELS = [
           simulateWord: 'aab', status: 'ACCEPTED', tape: ['□', 'A', 'A', 'B', '□'], head: 1, activeNode: 'q3',
         },
 
-        // ═══ Parte 4 — formal ═══
-        // 25
+        // ═══ Transição grafo → formal ═══
+        // 25 — fork: botão "Iniciar Descrição Formal"
         {
-          prof: { message: "Formalmente: M = (Q, Σ, Γ, δ, q0, □, F), com Q={q0,q1,q2,q3}, Σ={a,b}, Γ={a,b,A,B,□}, q0 inicial e F={q3}. δ converte cada símbolo (R), varre de volta (L) e para na 1ª letra.", mood: 'explicando' },
-          stateUpdate: { nodes: L1_N_FULL, transitions: L1_T_FULL },
-          phase: 'FORMAL',
+          prof: { message: "Grafo finalizado! 🎉 Agora precisamos formalizar matematicamente a nossa Máquina de Turing. Vamos lá?", mood: 'feliz' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          formalIntro: true,
+        },
+
+        // ═══ Parte 4 — descrição formal (7-tupla) auto-preenchida ═══
+        // 26 — Q
+        {
+          prof: { message: "A 7-tupla é M = (Q, Σ, Γ, δ, q0, □, F). Vou preencher campo por campo! Q é o conjunto de ESTADOS: {q0, q1, q2, q3}.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { states: '{q0, q1, q2, q3}' },
+        },
+        // 27 — Σ
+        {
+          prof: { message: "Σ é o alfabeto de ENTRADA — só os símbolos que podem chegar na fita: {a, b}.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { sigma: '{a, b}' },
+        },
+        // 28 — Γ
+        {
+          prof: { message: "Γ é o alfabeto da FITA: a entrada, as maiúsculas que escrevemos e o branco: {a, b, A, B, □}.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { gamma: '{a, b, A, B, □}' },
+        },
+        // 29 — q0
+        {
+          prof: { message: "q0 é o estado INICIAL, onde a máquina começa a ler.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { initial: 'q0' },
+        },
+        // 30 — □
+        {
+          prof: { message: "O símbolo BRANCO (□) marca as células vazias da fita.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { blank: '□' },
+        },
+        // 31 — F
+        {
+          prof: { message: "F é o conjunto de estados de ACEITAÇÃO: {q3}.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { final: '{q3}' },
+        },
+        // 32 — δ parte 1 (q0)
+        {
+          prof: { message: "Agora a função δ, linha por linha. Em q0, a 1ª letra é convertida e o cabeçote anda à direita (R): a→A e b→B, indo para q1.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { delta: D1 },
+        },
+        // 33 — δ parte 2 (laços q1)
+        {
+          prof: { message: "Em q1 ficam os LAÇOS que convertem o resto da palavra: a→A e b→B, sempre à direita.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { delta: D2 },
+        },
+        // 34 — δ parte 3 (q1→q2)
+        {
+          prof: { message: "Quando q1 acha o branco, vai para q2 sem alterar (□→□) e move à ESQUERDA (L): começa o retorno.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { delta: D3 },
+        },
+        // 35 — δ parte 4 (laços q2)
+        {
+          prof: { message: "Em q2, os laços A→A e B→B varrem de volta à esquerda, sem mexer no que já foi convertido.", mood: 'explicando' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { delta: D4 },
+        },
+        // 36 — δ parte 5 (q2→q3) + conclusão
+        {
+          prof: { message: "Por fim, q2 acha o branco inicial, vai para q3 (final) e anda à direita (R), parando na 1ª letra. δ completa — Máquina formalizada! ✓", mood: 'feliz' },
+          stateUpdate: { nodes: N_0123, transitions: T_FULL },
+          phase: 'FORMAL', formalFill: { delta: D5 },
         },
       ],
     },
