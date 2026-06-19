@@ -15,7 +15,7 @@ export default function MTCanvas({
   connectingSource, setConnectingSource,
   addNode, moveNode, toggleInitial, toggleFinal, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
-  draw, lessonActive,
+  draw, lessonActive, activeNodeId,
   selectedNodes = [], setSelectedNodes,
   selectionBox, setSelectionBox,
 }) {
@@ -187,8 +187,8 @@ export default function MTCanvas({
       onPointerUp={onUp}
       onPointerLeave={onUp}
     >
-      {/* HUD: Riscar */}
-      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, display: 'flex', gap: 4 }}>
+      {/* HUD: Riscar — zIndex acima do blocker da aula p/ permitir desenhar durante o Modo Aula */}
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 60, display: 'flex', gap: 4 }}>
         <button
           onClick={() => setMode(isDraw ? 'IDLE' : 'DRAW')}
           title="Riscar"
@@ -279,8 +279,9 @@ export default function MTCanvas({
       {edgeRenders.map((er) => (
         <div key={`lbl-${er.from}->${er.to}`}
           style={{
-            position: 'absolute', left: er.lx, top: er.ly,
-            transform: er.selfLoop ? 'translate(-50%, -100%)' : 'translate(-50%, -50%)',
+            // Empilha os rótulos ACIMA da linha (-100%) para nunca cobrir a seta
+            position: 'absolute', left: er.lx, top: er.ly - 6,
+            transform: 'translate(-50%, -100%)',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             pointerEvents: isDraw ? 'none' : undefined, zIndex: 20,
           }}>
@@ -349,10 +350,16 @@ export default function MTCanvas({
       )}
 
       {/* Nós */}
-      {nodes.map((node) => (
+      {nodes.map((node) => {
+        const isActive = lessonActive && activeNodeId && node.id === activeNodeId;
+        return (
         <div key={node.uid}
           className={`node ${node.isInitial ? 'initial' : ''} ${node.isFinal ? 'final' : ''} ${selectedNodes.includes(node.uid) ? 'selected' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''}`}
-          style={{ top: `${node.y}%`, left: `${node.x}%`, pointerEvents: isDraw ? 'none' : 'auto' }}
+          style={{ top: `${node.y}%`, left: `${node.x}%`, pointerEvents: isDraw ? 'none' : 'auto',
+            ...(isActive ? {
+              background: '#fde047', borderColor: '#a16207', color: '#422006',
+              boxShadow: '0 0 0 5px rgba(253,224,71,.45), 3px 3px 0 #000', zIndex: 6,
+            } : {}) }}
           onPointerDown={(e) => onNodeDown(e, node)}>
           <input type="text" className="node-id-input" value={node.label ?? node.id}
             translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
@@ -360,9 +367,11 @@ export default function MTCanvas({
             onChange={(e) => setNodeLabel(node.uid, e.target.value)}
             onBlur={(e) => renameNode(node.uid, e.target.value)} />
         </div>
-      ))}
+        );
+      })}
 
-      {lessonActive && (
+      {/* Blocker da aula — suspenso em modo DRAW p/ liberar o desenho livre durante a aula */}
+      {lessonActive && !isDraw && (
         <div className="ap-lesson-blocker" onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); }} />
       )}
     </section>

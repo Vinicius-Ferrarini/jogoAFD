@@ -17,7 +17,8 @@
       "Bash(node scripts/test_l15.mjs)",
       "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('src/modules/ap/levels_ap.js','utf8'\\); const m=s.match\\(/L15:.*?language: '\\([^']+\\)'/\\); console.log\\('L15:', m[1]\\); console.log\\('codepoints do trecho bⁿ⁄³:', [...m[1]].filter\\(c=>'bⁿ⁄³²'.includes\\(c\\)\\).map\\(c=>c+'=U+'+c.codePointAt\\(0\\).toString\\(16\\).toUpperCase\\(\\).padStart\\(4,'0'\\)\\).join\\(' '\\)\\);\")",
       "PowerShell(Get-Item c:\\\\github\\\\jogoAFD\\\\src\\\\levels_data\\\\lote1.js, c:\\\\github\\\\jogoAFD\\\\src\\\\levels_data\\\\lote2.js, c:\\\\github\\\\jogoAFD\\\\src\\\\levels_data\\\\lote3.js | Select-Object Name, @{n='KB';e={[math]::Round\\($_.Length/1KB,1\\)}})",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "PowerShell(npm run build)"
     ],
     "additionalDirectories": [
       "c:\\Users\\sg\\.claude\\projects\\c--github-jogoAFD\\memory"

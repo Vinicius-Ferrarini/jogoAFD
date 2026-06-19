@@ -56,7 +56,11 @@ export function simulateTM(graph, inputWord, maxSteps = 2000) {
 // Recebe a MT do aluno e o objeto de nível.
 // Para cada testWord, compara a fita resultante (sem □ das bordas) com level.validate(word).
 export function fuzzTMTransducer(graph, level) {
-  for (const word of (level.testWords ?? [])) {
+  // Remove a palavra vazia da bateria quando o nível pede (skipEmptyWord)
+  let words = level.testWords ?? [];
+  if (level.skipEmptyWord) words = words.filter(w => w !== '');
+
+  for (const word of words) {
     const { status, tape } = simulateTM(graph, word);
 
     if (status === 'LOOP') {

@@ -16,10 +16,8 @@ import useTMGraph from './hooks/useTMGraph';
 import useMTGuidedLesson from './hooks/useMTGuidedLesson';
 import useAPDrawing from '../ap/hooks/useAPDrawing';
 import { MT_LEVELS } from './levels_mt';
-import { fuzzTMTransducer, simulateTM, simulateTMSteps, BLANK } from './utils/tmAlgorithms';
+import { fuzzTMTransducer, simulateTM, BLANK } from './utils/tmAlgorithms';
 import { DIFF_COLOR } from '../../levels';
-
-const ANIM_INTERVAL_MS = 650;
 
 export default function MTPart1({ onBack, progress, updateProgress, showToast }) {
   const [screen, setScreen] = useState('MENU');
@@ -34,16 +32,12 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const [victory, setVictory]     = useState(false);
   const [selectedNodes, setSelectedNodes]   = useState([]);
   const [selectionBox, setSelectionBox]     = useState(null);
-  const [isSimulating, setIsSimulating]     = useState(false);
   const canvasRef = useRef(null);
 
   // ── Aula Guiada ──────────────────────────────────────────────────────────────
+  // Storyboard frame a frame: cada passo é um objeto independente (grafo + fita).
+  // Não há motor de animação interno — a fita é dado puro vindo de lesson.cur.
   const lesson = useMTGuidedLesson(level);
-
-  // Animação da fita durante a aula
-  const [animFrames, setAnimFrames] = useState([]);
-  const [animIdx,    setAnimIdx]    = useState(-1);
-  const [animDone,   setAnimDone]   = useState(true);
 
   const g    = useTMGraph({ showToast, selectedNodes, setSelectedNodes });
   const draw = useAPDrawing(canvasRef);
@@ -63,54 +57,22 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const startLesson = useCallback(() => {
     if (!lesson.hasLesson) return;
     setMode('IDLE'); setConnectingSource(null); setResult(null);
-    setAnimFrames([]); setAnimIdx(-1); setAnimDone(true);
     lesson.goTo(0);
     applyStep(lesson.steps[0]);
   }, [lesson, applyStep]);
 
   const finishLesson = useCallback(() => {
     lesson.finish();
-    setAnimFrames([]); setAnimIdx(-1); setAnimDone(true);
-    setIsSimulating(false);
     say('Aula encerrada! Agora monte a sua MT e clique em Validar. 💪', 'explicando');
   }, [lesson, say]);
 
+  // Navegação estritamente passo a passo (cada clique = um frame do storyboard)
   const lessonGo = useCallback((dir) => {
     if (!lesson.active) return;
     const next = Math.max(0, Math.min(lesson.steps.length - 1, (lesson.step ?? 0) + dir));
     lesson.goTo(next);
     applyStep(lesson.steps[next]);
   }, [lesson, applyStep]);
-
-  // Quando o passo muda, inicia animação se o passo tiver simulateWord
-  useEffect(() => {
-    if (!lesson.active || !lesson.cur) return;
-    const word = lesson.cur.simulateWord;
-    if (word === undefined) {
-      setAnimFrames([]); setAnimIdx(-1); setAnimDone(true); setIsSimulating(false);
-      return;
-    }
-    const graph = { states: lesson.displayNodes, transitions: lesson.displayTransitions };
-    const frames = simulateTMSteps(graph, word, 60);
-    setAnimFrames(frames);
-    setAnimIdx(0);
-    setAnimDone(frames.length <= 1);
-    setIsSimulating(true);
-  }, [lesson.step, lesson.active]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Avança um frame por intervalo
-  useEffect(() => {
-    if (animIdx < 0 || animDone) return;
-    if (animIdx >= animFrames.length - 1) { setAnimDone(true); return; }
-    const t = setTimeout(() => setAnimIdx(i => i + 1), ANIM_INTERVAL_MS);
-    return () => clearTimeout(t);
-  }, [animIdx, animFrames.length, animDone]);
-
-  const curFrame = animIdx >= 0 && animFrames[animIdx] ? animFrames[animIdx] : null;
-  const showTape = isSimulating && curFrame !== null;
-
-  // Bloqueia "Próximo" durante a animação (desbloqueia só quando termina)
-  const nextBlocked = lesson.active && lesson.cur?.simulateWord !== undefined && !animDone;
 
   // ── Atalhos de teclado ───────────────────────────────────────────────────────
   const { undo: gUndo, redo: gRedo, deleteSelected: gDeleteSelected } = g;
@@ -141,7 +103,6 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
     setResult(null); setSimWord(''); setTestedWords([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
-    setAnimFrames([]); setAnimIdx(-1); setAnimDone(true); setIsSimulating(false);
     draw.resetDrawings();
     say(`Monte a MT Transdutora que ${lv.description.toLowerCase()} e clique em Validar!`, 'explicando');
   }, [g, lesson, draw, say]);
@@ -302,6 +263,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
           beginDrag={g.beginDrag}
           draw={draw}
           lessonActive={lesson.active}
+          activeNodeId={lesson.cur?.activeNode}
           connectingSource={connectingSource}
           setConnectingSource={setConnectingSource}
           addNode={g.addNode}
@@ -323,20 +285,29 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
 
         {/* Painel direito: modo aula ou teste */}
         {lesson.active ? (
-          <aside className="test-panel ap-test-panel" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {/* Progresso da aula */}
-            <div style={{ padding: '6px 10px', background: '#fed7aa', borderBottom: '2px solid #000',
-              fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900 }}>
-              Aula — Passo {(lesson.step ?? 0) + 1} / {lesson.steps.length}
+          <aside className="test-panel ap-test-panel" style={{
+            display: 'flex', flexDirection: 'column', gap: 0,
+            background: '#242424', border: '3px solid #143823',
+          }}>
+            {/* Cabeçalho verde-escuro */}
+            <div style={{
+              padding: '8px 10px', background: '#143823',
+              fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
+              color: '#fbbf24', letterSpacing: 0.5,
+            }}>
+              👨‍🏫 MODO AULA — MONTANDO O GRAFO
             </div>
 
             {/* Descrição formal (passo FORMAL) */}
             {lesson.phase === 'FORMAL' && formalDesc && (
-              <div style={{ padding: '8px 10px', background: '#f0fdf4', borderBottom: '2px solid #000',
-                fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>
+              <div style={{
+                padding: '8px 10px', background: '#fff', margin: '8px 8px 0',
+                borderRadius: 6, border: '2px solid #143823',
+                fontFamily: "'Comic Sans MS',cursive", fontSize: 11,
+              }}>
                 <div style={{ fontWeight: 900, marginBottom: 4, color: '#065f46' }}>Descrição Formal</div>
-                <div>M = (Q, Σ, Γ, δ, q₀, □, F)</div>
-                <div style={{ marginTop: 4 }}>
+                <div style={{ color: '#111' }}>M = (Q, Σ, Γ, δ, q₀, □, F)</div>
+                <div style={{ marginTop: 4, color: '#111' }}>
                   <div><b>Q</b> = {formalDesc.states}</div>
                   <div><b>Σ</b> = {formalDesc.sigma}</div>
                   <div><b>Γ</b> = {formalDesc.gamma}</div>
@@ -349,18 +320,18 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
                   <thead>
                     <tr>
                       {['Estado', 'Lê', 'Escreve', 'Move', 'Vai para'].map(h => (
-                        <th key={h} style={{ border: '1.5px solid #000', padding: '2px 3px', background: '#d1fae5' }}>{h}</th>
+                        <th key={h} style={{ border: '1.5px solid #333', padding: '2px 3px', background: '#d1fae5', color: '#111' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {(lesson.displayTransitions ?? []).map((t, i) => (
-                      <tr key={i}>
-                        <td style={{ border: '1.5px solid #000', padding: '2px 3px', textAlign: 'center' }}>{t.from}</td>
-                        <td style={{ border: '1.5px solid #000', padding: '2px 3px', textAlign: 'center' }}>{t.read || '□'}</td>
-                        <td style={{ border: '1.5px solid #000', padding: '2px 3px', textAlign: 'center' }}>{t.write || '□'}</td>
-                        <td style={{ border: '1.5px solid #000', padding: '2px 3px', textAlign: 'center' }}>{t.move}</td>
-                        <td style={{ border: '1.5px solid #000', padding: '2px 3px', textAlign: 'center' }}>{t.to}</td>
+                      <tr key={i} style={{ background: i % 2 === 0 ? '#f9fafb' : '#fff' }}>
+                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.from}</td>
+                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.read || '□'}</td>
+                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.write || '□'}</td>
+                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.move}</td>
+                        <td style={{ border: '1.5px solid #ccc', padding: '2px 3px', textAlign: 'center', color: '#111' }}>{t.to}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -368,49 +339,72 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
               </div>
             )}
 
-            {/* Status da animação */}
+            {/* Status do passo atual — "Simulando: ab" */}
             {lesson.cur?.simulateWord !== undefined && (
-              <div style={{ padding: '6px 10px', background: '#ede9fe', borderBottom: '2px solid #000',
-                fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900 }}>
-                Simulando: "<b>{lesson.cur.simulateWord || 'λ'}</b>"
-                {curFrame?.status && (
-                  <span style={{ marginLeft: 8, color: curFrame.status === 'ACCEPTED' ? '#065f46' : '#dc2626' }}>
-                    → {curFrame.status === 'ACCEPTED' ? '✓ Aceita' : curFrame.status === 'LOOP' ? '⟳ Loop' : '✗ Rejeitada'}
+              <div style={{
+                padding: '6px 10px', margin: '8px 8px 0',
+                background: '#143823', borderRadius: 6, border: '1.5px solid #2f5d40',
+                borderBottom: '2px dashed #4b6a55',
+                fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900, color: '#d1d5db',
+              }}>
+                Simulando: "<b style={{ color: '#fbbf24' }}>{lesson.cur.simulateWord || 'λ'}</b>"
+                {lesson.cur?.status && (
+                  <span style={{ marginLeft: 8, color: lesson.cur.status === 'ACCEPTED' ? '#86efac' : '#fca5a5' }}>
+                    → {lesson.cur.status === 'ACCEPTED' ? '✓ Aceita' : lesson.cur.status === 'LOOP' ? '⟳ Loop' : '✗ Rejeitada'}
                   </span>
                 )}
-                {!animDone && <span style={{ marginLeft: 6, color: '#7c3aed' }}>⏳</span>}
               </div>
             )}
 
             <div style={{ flex: 1 }} />
 
-            {/* Navegação */}
-            <div style={{ padding: '10px 8px', display: 'flex', flexDirection: 'column', gap: 6, borderTop: '2px solid #000' }}>
+            {/* Contador de passos */}
+            <div style={{ textAlign: 'center', fontSize: 13, color: '#9ca3af',
+              fontFamily: "'Comic Sans MS',cursive", marginBottom: 8 }}>
+              Passo {(lesson.step ?? 0) + 1} / {lesson.steps.length}
+            </div>
+
+            {/* Bolinhas de progresso (quebram em linhas p/ roteiros longos) */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 4, padding: '4px 10px' }}>
+              {lesson.steps.map((_, idx) => (
+                <div key={idx} style={{
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: idx === lesson.step ? '#fbbf24' : 'transparent',
+                  border: `2px solid ${idx === lesson.step ? '#fbbf24' : '#555'}`,
+                  transition: 'background 0.2s',
+                }} />
+              ))}
+            </div>
+
+            {/* Navegação — paddingBottom alto mantém os botões acima do balão do professor */}
+            <div style={{ padding: '6px 8px 160px', display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={() => lessonGo(-1)}
                   disabled={(lesson.step ?? 0) === 0}
                   style={{ flex: 1, padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
-                    fontSize: 13, border: '2.5px solid #000', borderRadius: 8, cursor: 'pointer',
-                    background: '#fef9c3', boxShadow: '2px 2px 0 #000',
-                    opacity: (lesson.step ?? 0) === 0 ? 0.4 : 1 }}>
-                  ◀ Anterior
+                    fontSize: 13, border: '2.5px solid #555', borderRadius: 8,
+                    cursor: (lesson.step ?? 0) === 0 ? 'not-allowed' : 'pointer',
+                    background: '#3a3a3a', color: '#e5e7eb', boxShadow: '2px 2px 0 #000',
+                    opacity: (lesson.step ?? 0) === 0 ? 0.35 : 1 }}>
+                  ◀ Ant.
                 </button>
                 <button
                   onClick={() => lessonGo(1)}
-                  disabled={nextBlocked || (lesson.step ?? 0) >= lesson.steps.length - 1}
+                  disabled={(lesson.step ?? 0) >= lesson.steps.length - 1}
                   style={{ flex: 1, padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
-                    fontSize: 13, border: '2.5px solid #000', borderRadius: 8, cursor: nextBlocked ? 'not-allowed' : 'pointer',
-                    background: nextBlocked ? '#e5e7eb' : '#bbf7d0', boxShadow: '2px 2px 0 #000',
-                    opacity: ((lesson.step ?? 0) >= lesson.steps.length - 1 || nextBlocked) ? 0.4 : 1 }}>
-                  {nextBlocked ? '⏳ Aguarde' : 'Próximo ▶'}
+                    fontSize: 13, border: '2.5px solid #166534', borderRadius: 8,
+                    cursor: (lesson.step ?? 0) >= lesson.steps.length - 1 ? 'not-allowed' : 'pointer',
+                    background: '#14532d', color: '#bbf7d0', boxShadow: '2px 2px 0 #000',
+                    opacity: (lesson.step ?? 0) >= lesson.steps.length - 1 ? 0.45 : 1 }}>
+                  Próx. ➔
                 </button>
               </div>
               <button
                 onClick={finishLesson}
                 style={{ padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
-                  fontSize: 12, border: '2.5px solid #dc2626', borderRadius: 8, cursor: 'pointer',
-                  background: '#fee2e2', color: '#dc2626', boxShadow: '2px 2px 0 #dc2626' }}>
+                  fontSize: 12, border: '2.5px solid #7f1d1d', borderRadius: 8, cursor: 'pointer',
+                  background: '#450a0a', color: '#fca5a5', boxShadow: '2px 2px 0 #7f1d1d' }}>
                 ✕ Sair da Aula
               </button>
             </div>
@@ -454,15 +448,15 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         )}
       </div>
 
-      {/* Fita — visível durante animação da aula ou simulação manual */}
-      {showTape && (
-        <div style={{ padding: '8px 16px', background: '#f1f5f9', borderTop: '2px solid #000',
+      {/* Fita — estática, conduzida pelos dados do passo da aula (lesson.cur.tape) */}
+      {lesson.active && lesson.cur?.tape && (
+        <div style={{ padding: '8px 16px', background: '#1a1a2e', borderTop: '2px solid #143823',
           display: 'flex', alignItems: 'center', gap: 12, overflowX: 'auto' }}>
           <span style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 12, fontWeight: 900,
-            whiteSpace: 'nowrap' }}>
-            Fita ({curFrame?.stateId ?? '?'}):
+            whiteSpace: 'nowrap', color: '#fbbf24' }}>
+            Fita:
           </span>
-          <TuringTape tape={curFrame.tape} headPosition={curFrame.head} />
+          <TuringTape tape={lesson.cur.tape} headPosition={lesson.cur.head ?? 0} />
         </div>
       )}
 
