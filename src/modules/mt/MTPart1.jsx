@@ -31,8 +31,9 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const [prof,   setProf]   = useState({ message: '', mood: 'serio' });
   const [result, setResult] = useState(null);
   const [simWord, setSimWord]     = useState('');
-  const [testedWords, setTestedWords] = useState([]);
-  const [testTab, setTestTab]     = useState('TRANSDUCAO'); // 'TRANSDUCAO' | 'VERIFICACAO'
+  const [linguagemTests, setLinguagemTests] = useState([]); // histórico isolado: gabarito estático
+  const [desenhoTests,   setDesenhoTests]   = useState([]); // histórico isolado: simulação do grafo
+  const [activeTab, setActiveTab] = useState('linguagem'); // 'linguagem' | 'desenho'
   const [deckGhost, setDeckGhost] = useState(null);
   const [victory, setVictory]     = useState(false);
   const [selectedNodes, setSelectedNodes]   = useState([]);
@@ -137,7 +138,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
     g.reset();
     lesson.reset();
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
-    setResult(null); setSimWord(''); setTestedWords([]); setDeckGhost(null); setVictory(false);
+    setResult(null); setSimWord(''); setLinguagemTests([]); setDesenhoTests([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
     setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
     draw.resetDrawings();
@@ -168,21 +169,32 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const handleDeckCancel = useCallback(() => setDeckGhost(null), []);
 
   // ── Testar palavra ───────────────────────────────────────────────────────────
+  // Laboratórios independentes: a aba ativa decide contra QUEM a palavra é testada
+  // e em qual histórico isolado o resultado entra.
   const testWord = useCallback(() => {
     if (!level) return;
     const word = simWord.trim();
-    const mtGraph = { states: g.nodes, transitions: g.transitions };
-    const { status, tape } = simulateTM(mtGraph, word);
-    let output = '';
-    if (status === 'ACCEPTED') {
-      let lo = 0, hi = tape.length - 1;
-      while (lo <= hi && tape[lo] === BLANK) lo++;
-      while (hi >= lo && tape[hi] === BLANK) hi--;
-      output = tape.slice(lo, hi + 1).join('') || BLANK;
+
+    if (activeTab === 'linguagem') {
+      // Gabarito estático do nível: saída = level.validate(word). null/undefined → REJEITADA
+      const expected = level.validate?.(word);
+      const status = expected != null ? 'ACCEPTED' : 'REJECTED';
+      setLinguagemTests(prev => [...prev, { word, status, output: expected ?? '' }]);
+    } else {
+      // Simulação contra o grafo atual do aluno
+      const mtGraph = { states: g.nodes, transitions: g.transitions };
+      const { status, tape } = simulateTM(mtGraph, word);
+      let output = '';
+      if (status === 'ACCEPTED') {
+        let lo = 0, hi = tape.length - 1;
+        while (lo <= hi && tape[lo] === BLANK) lo++;
+        while (hi >= lo && tape[hi] === BLANK) hi--;
+        output = tape.slice(lo, hi + 1).join('') || BLANK;
+      }
+      setDesenhoTests(prev => [...prev, { word, status, output }]);
     }
-    setTestedWords(prev => [...prev, { word, status, output }]);
     setSimWord('');
-  }, [level, simWord, g.nodes, g.transitions]);
+  }, [level, simWord, activeTab, g.nodes, g.transitions]);
 
   // ── Validar (bateria) = ★★★ ──────────────────────────────────────────────────
   const validate = useCallback(() => {
@@ -572,105 +584,132 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
           </aside>
         ) : (
           <aside className="test-panel ap-test-panel">
-            {/* Abas: Transdução (azul, saída) vs Linguagem (verde, aceita/rejeita) */}
-            {(() => {
-              const tabBtn = (tab, color, label) => {
-                const on = testTab === tab;
+            {/* Abas: Linguagem (default, azul ativo) vs Desenho (verde inativo) */}
+            <div style={{ display: 'flex', gap: 4, padding: '6px 6px 0' }}>
+              {[['linguagem', '#2563eb', '⚙ Linguagem'], ['desenho', '#16a34a', '✏ Desenho']].map(([tab, color, label]) => {
+                const on = activeTab === tab;
                 return (
-                  <button onClick={() => setTestTab(tab)} style={{
+                  <button key={tab} onClick={() => setActiveTab(tab)} style={{
                     flex: 1, padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
                     fontSize: 12, cursor: 'pointer', borderRadius: '8px 8px 0 0',
-                    border: `2px solid ${color}`, borderBottom: on ? `2px solid ${color}` : '2px solid transparent',
-                    background: on ? color : '#fff', color: on ? '#fff' : color }}>
+                    border: `2px solid ${color}`,
+                    background: on ? '#2563eb' : '#fff',
+                    color: on ? '#fff' : color,
+                  }}>
                     {label}
                   </button>
                 );
-              };
-              return (
-                <div style={{ display: 'flex', gap: 4, padding: '6px 6px 0' }}>
-                  {tabBtn('TRANSDUCAO', '#2563eb', '⚙ Transdução')}
-                  {tabBtn('VERIFICACAO', '#16a34a', '🔤 Linguagem')}
-                </div>
-              );
-            })()}
-
-            {/* Texto auxiliar (só na aba Transdução) */}
-            {testTab === 'TRANSDUCAO' && (
-              <div style={{ padding: '4px 10px 0', fontFamily: "'Comic Sans MS',cursive",
-                fontSize: 11, fontWeight: 900, color: '#2563eb' }}>
-                Entrada ({(level.alphabet ?? []).join(',')}) → Saída ({(level.alphabet ?? []).map(c => c.toUpperCase()).join(',')})
-              </div>
-            )}
-
-            <div className="test-input-area">
-              <input type="text" className="word-input" placeholder="ex: ab (vazio = λ)"
-                value={simWord} onChange={e => setSimWord(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && testWord()}
-                translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
-              <button className="add-test-btn" onClick={testWord}>+</button>
+              })}
             </div>
 
-            {/* Conteúdo da aba */}
-            {testTab === 'TRANSDUCAO' ? (
-              <div className="words-list" style={{ overflowX: 'hidden' }}>
-                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
-                  <thead>
-                    <tr>
-                      {['Entrada', 'Saída'].map(h => (
-                        <th key={h} style={{ border: '1.5px solid #2563eb', padding: '3px 4px',
-                          background: '#dbeafe', color: '#1e3a8a',
-                          fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {testedWords.map((t, i) => (
-                      <tr key={i} style={{ background: i % 2 === 0 ? '#f8fafc' : '#fff' }}>
-                        <td style={{ border: '1.5px solid #bfdbfe', padding: '3px 6px', textAlign: 'center',
-                          fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, color: '#111' }}>
-                          {t.word === '' ? 'λ' : t.word}
-                        </td>
-                        <td style={{ border: '1.5px solid #bfdbfe', padding: '3px 6px', textAlign: 'center' }}>
-                          {t.status === 'ACCEPTED'
-                            ? <b style={{ color: '#1d4ed8', fontFamily: "'Comic Sans MS',cursive" }}>{t.output}</b>
-                            : <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: 4,
-                                background: '#dc2626', color: '#fff', fontSize: 10, fontWeight: 900,
-                                fontFamily: "'Comic Sans MS',cursive" }}>
-                                {t.status === 'LOOP' ? 'ERRO' : 'REJEITADA'}
-                              </span>}
-                        </td>
+            {/* Aba Linguagem: laboratório do GABARITO estático (histórico isolado) */}
+            {activeTab === 'linguagem' && (
+              <>
+                <div style={{ padding: '6px 10px 0', fontFamily: "'Comic Sans MS',cursive",
+                  fontSize: 11, fontWeight: 900, color: '#2563eb' }}>
+                  📋 Objetivo: Entrada ({(level.alphabet ?? []).join(',')}) → Saída esperada
+                </div>
+
+                <div className="test-input-area">
+                  <input type="text" className="word-input" placeholder="ex: ab (vazio = λ)"
+                    value={simWord} onChange={e => setSimWord(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && testWord()}
+                    translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
+                  <button className="add-test-btn" onClick={testWord}>+</button>
+                </div>
+
+                <div className="words-list" style={{ overflowX: 'hidden' }}>
+                  <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
+                    <thead>
+                      <tr>
+                        {['Entrada', 'Saída esperada'].map(h => (
+                          <th key={h} style={{ border: '1.5px solid #2563eb', padding: '3px 4px',
+                            background: '#dbeafe', color: '#1e3a8a',
+                            fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{h}</th>
+                        ))}
                       </tr>
-                    ))}
-                    {testedWords.length === 0 && (
-                      <tr><td colSpan={2} style={{ border: '1.5px solid #bfdbfe', padding: 8,
-                        textAlign: 'center', color: '#9ca3af', fontFamily: "'Comic Sans MS',cursive",
-                        fontSize: 11 }}>Nenhum teste ainda</td></tr>
-                    )}
-                  </tbody>
-                </table>
-                {testedWords.some(t => t.status === 'ACCEPTED') && (
-                  <div style={{ marginTop: 6, fontFamily: "'Comic Sans MS',cursive", fontSize: 10,
-                    fontWeight: 900, color: '#16a34a' }}>
-                    Status: Aceita pela Máquina
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="words-list">
-                {testedWords.map((t, i) => (
-                  <div key={i} className={`word-row ${t.status === 'ACCEPTED' ? 'correct' : 'wrong'}`}>
-                    <span>{t.word === '' ? 'λ' : t.word}</span>
-                    <span style={{ fontSize: 11, fontWeight: 900,
-                      color: t.status === 'ACCEPTED' ? '#16a34a' : '#dc2626' }}>
-                      {t.status === 'ACCEPTED' ? '✓ ACEITA' : '✗ REJEITADA'}
-                    </span>
-                  </div>
-                ))}
-                {testedWords.length === 0 && (
-                  <div style={{ padding: 8, textAlign: 'center', color: '#9ca3af',
-                    fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>Nenhum teste ainda</div>
-                )}
-              </div>
+                    </thead>
+                    <tbody>
+                      {linguagemTests.map((t, i) => (
+                        <tr key={`l${i}`} style={{ background: i % 2 === 0 ? '#f0f9ff' : '#fff' }}>
+                          <td style={{ border: '1.5px solid #bfdbfe', padding: '3px 6px', textAlign: 'center',
+                            fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, color: '#111' }}>
+                            {t.word === '' ? 'λ' : t.word}
+                          </td>
+                          <td style={{ border: '1.5px solid #bfdbfe', padding: '3px 6px', textAlign: 'center' }}>
+                            {t.status === 'ACCEPTED'
+                              ? <b style={{ color: '#1d4ed8', fontFamily: "'Comic Sans MS',cursive" }}>{t.output === '' ? 'λ' : t.output}</b>
+                              : <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: 4,
+                                  background: '#dc2626', color: '#fff', fontSize: 10, fontWeight: 900,
+                                  fontFamily: "'Comic Sans MS',cursive" }}>REJEITADA</span>}
+                          </td>
+                        </tr>
+                      ))}
+                      {linguagemTests.length === 0 && (
+                        <tr><td colSpan={2} style={{ border: '1.5px solid #bfdbfe', padding: 8,
+                          textAlign: 'center', color: '#9ca3af', fontFamily: "'Comic Sans MS',cursive",
+                          fontSize: 11 }}>Nenhum teste ainda</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+
+            {/* Aba Desenho: laboratório do SIMULADOR (histórico isolado, grafo atual) */}
+            {activeTab === 'desenho' && (
+              <>
+                <div style={{ padding: '6px 10px 0', fontFamily: "'Comic Sans MS',cursive",
+                  fontSize: 11, fontWeight: 900, color: '#16a34a' }}>
+                  ✏ Saída da SUA máquina (testada no grafo atual)
+                </div>
+
+                <div className="test-input-area">
+                  <input type="text" className="word-input" placeholder="ex: ab (vazio = λ)"
+                    value={simWord} onChange={e => setSimWord(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && testWord()}
+                    translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
+                  <button className="add-test-btn" onClick={testWord}>+</button>
+                </div>
+
+                <div className="words-list" style={{ overflowX: 'hidden' }}>
+                  <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
+                    <thead>
+                      <tr>
+                        {['Entrada', 'Saída gerada'].map(h => (
+                          <th key={h} style={{ border: '1.5px solid #16a34a', padding: '3px 4px',
+                            background: '#dcfce7', color: '#14532d',
+                            fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {desenhoTests.map((t, i) => (
+                        <tr key={`d${i}`} style={{ background: i % 2 === 0 ? '#f0fdf4' : '#fff' }}>
+                          <td style={{ border: '1.5px solid #bbf7d0', padding: '3px 6px', textAlign: 'center',
+                            fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, color: '#111' }}>
+                            {t.word === '' ? 'λ' : t.word}
+                          </td>
+                          <td style={{ border: '1.5px solid #bbf7d0', padding: '3px 6px', textAlign: 'center' }}>
+                            {t.status === 'ACCEPTED'
+                              ? <b style={{ color: '#15803d', fontFamily: "'Comic Sans MS',cursive" }}>{t.output}</b>
+                              : <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: 4,
+                                  background: '#dc2626', color: '#fff', fontSize: 10, fontWeight: 900,
+                                  fontFamily: "'Comic Sans MS',cursive" }}>
+                                  {t.status === 'LOOP' ? 'ERRO' : 'REJEITADA'}
+                                </span>}
+                          </td>
+                        </tr>
+                      ))}
+                      {desenhoTests.length === 0 && (
+                        <tr><td colSpan={2} style={{ border: '1.5px solid #bbf7d0', padding: 8,
+                          textAlign: 'center', color: '#9ca3af', fontFamily: "'Comic Sans MS',cursive",
+                          fontSize: 11 }}>Nenhum teste ainda</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
 
             {result && !result.ok && (
