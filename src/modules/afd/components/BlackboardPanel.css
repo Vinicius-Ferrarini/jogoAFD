@@ -38,6 +38,144 @@
   flex-shrink: 0;
 }
 
+/* ── Texto didático do passo ── */
+.bp-step-text {
+  color: #e5e7eb;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0 0 4px;
+  font-family: 'Comic Sans MS', cursive;
+  background: rgba(0,0,0,0.25);
+  border-left: 3px solid #facc15;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+/* ── Rastreio animado da palavra ── */
+.bp-sim {
+  background: #111827;
+  border: 2px solid #374151;
+  border-radius: 8px;
+  padding: 7px 8px;
+  margin-bottom: 4px;
+}
+.bp-sim-label {
+  color: #fbbf24;
+  font-size: 10px;
+  font-weight: 900;
+  font-family: 'Comic Sans MS', cursive;
+  margin-bottom: 5px;
+}
+.bp-sim-word {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.bp-sim-ch {
+  display: inline-block;
+  min-width: 16px;
+  text-align: center;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #374151;
+  color: #e5e7eb;
+  font-weight: 900;
+  font-family: 'Comic Sans MS', cursive;
+  font-size: 13px;
+  border: 2px solid transparent;
+  transition: transform 0.15s, background 0.15s;
+}
+.bp-sim-ch.past { background: #4b5563; color: #9ca3af; }
+.bp-sim-ch.cur {
+  background: #fde047;
+  color: #000;
+  border-color: #d97706;
+  transform: scale(1.18);
+  box-shadow: 0 0 0 3px rgba(253,224,71,0.35);
+}
+.bp-sim-result {
+  margin-top: 7px;
+  font-weight: 900;
+  font-size: 12px;
+  font-family: 'Comic Sans MS', cursive;
+}
+.bp-sim-result.ok    { color: #86efac; }
+.bp-sim-result.err   { color: #fca5a5; }
+.bp-sim-result.learn { color: #f59e0b; }
+.replay-sim-btn {
+  margin-top: 8px;
+  background: transparent;
+  border: 1.5px solid #6b7280;
+  color: #d1d5db;
+  font-family: 'Comic Sans MS', cursive;
+  font-weight: 900;
+  font-size: 11px;
+  padding: 4px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.replay-sim-btn:hover {
+  background: rgba(253, 224, 71, 0.12);
+  border-color: #fde047;
+  color: #fde047;
+}
+
+/* ── Cabeçalho da caixa de simulação (título + ↺ inline) ── */
+.bp-sim-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.bp-sim-head .bp-sim-label { margin-bottom: 0; }
+.replay-sim-btn.replay-inline {
+  margin-top: 0;
+  padding: 1px 8px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+/* ── Lousa interativa (L57): item com palavra + botão Play ── */
+.bp-word-list .bw-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.bw-text { flex: 1; }
+.bw-focus .bw-text {
+  color: #fde047 !important;
+  text-shadow: 0 0 10px rgba(253, 224, 71, 0.6);
+  text-decoration: none !important;
+}
+.bw-play-btn {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1.5px solid #16a34a;
+  color: #86efac;
+  border-radius: 50%;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+.bw-play-btn:hover:not(:disabled) {
+  background: rgba(134, 239, 172, 0.18);
+  transform: scale(1.12);
+}
+.bw-play-btn:disabled {
+  border-color: #4b5563;
+  color: #4b5563;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .bp-word-list {
   list-style: none;
   display: flex;

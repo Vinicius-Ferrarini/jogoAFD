@@ -130,6 +130,7 @@ export default function useGuidedLesson(currentLevel) {
     lessonReveal,
     lessonAllSteps:    allSteps,
     lessonCurStepData,
+    lessonCur:         cur,
     lessonGoFormal,
   };
 }

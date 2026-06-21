@@ -950,5 +950,211 @@ export const LEVEL_GRAPHS = {
       { from: 'pip', to: 'pii', symbol: 'c' }, { from: 'pii', to: 'pip', symbol: 'c' },
       { from: 'iip', to: 'iii', symbol: 'c' }, { from: 'iii', to: 'iip', symbol: 'c' }
     ]
+  },
+  56: { // L56 "trabalho": a^(n+3) (bc+cb)(ddd)^m aba e^p a(bc)^q | n,m,p≥0, q>0 — DFA determinístico
+    nodes: [
+      { id: 'q0',  isInitial: true,  isFinal: false },
+      { id: 'q1',  isInitial: false, isFinal: false },
+      { id: 'q2',  isInitial: false, isFinal: false },
+      { id: 'q3',  isInitial: false, isFinal: false },
+      { id: 'q4',  isInitial: false, isFinal: false },
+      { id: 'q5',  isInitial: false, isFinal: false },
+      { id: 'q6',  isInitial: false, isFinal: false },
+      { id: 'q7',  isInitial: false, isFinal: false },
+      { id: 'q8',  isInitial: false, isFinal: false },
+      { id: 'q9',  isInitial: false, isFinal: false },
+      { id: 'q10', isInitial: false, isFinal: false },
+      { id: 'q11', isInitial: false, isFinal: false },
+      { id: 'q12', isInitial: false, isFinal: false },
+      { id: 'q13', isInitial: false, isFinal: false },
+      { id: 'q14', isInitial: false, isFinal: true  }
+    ],
+    transitions: [
+      { from: 'q0', to: 'q1', symbol: 'a' },   // prefixo: pelo menos 3 'a'
+      { from: 'q1', to: 'q2', symbol: 'a' },
+      { from: 'q2', to: 'q3', symbol: 'a' },
+      { from: 'q3', to: 'q3', symbol: 'a' },   // a^n extra (n≥0)
+      { from: 'q3', to: 'q4', symbol: 'b' },   // ramo 'bc'
+      { from: 'q4', to: 'q5', symbol: 'c' },
+      { from: 'q3', to: 'q9', symbol: 'c' },   // ramo 'cb'
+      { from: 'q9', to: 'q5', symbol: 'b' },
+      { from: 'q5', to: 'q10', symbol: 'd' },  // ciclo (ddd)^m
+      { from: 'q10', to: 'q11', symbol: 'd' },
+      { from: 'q11', to: 'q5', symbol: 'd' },
+      { from: 'q5', to: 'q6', symbol: 'a' },   // miolo fixo 'aba'
+      { from: 'q6', to: 'q7', symbol: 'b' },
+      { from: 'q7', to: 'q8', symbol: 'a' },
+      { from: 'q8', to: 'q8', symbol: 'e' },   // e^p
+      { from: 'q8', to: 'q12', symbol: 'a' },  // conector 'a'
+      { from: 'q12', to: 'q13', symbol: 'b' }, // (bc)^q, q>0 — aceita após cada 'c'
+      { from: 'q13', to: 'q14', symbol: 'c' },
+      { from: 'q14', to: 'q13', symbol: 'b' }
+    ]
+  },
+  57: { // L57 "trabalho": a w a x a | w,x ∈ {b,c}*, #b par e #c par em cada bloco — paridade dupla
+    nodes: [
+      { id: 'q0', isInitial: true,  isFinal: false },
+      { id: 'q1', isInitial: false, isFinal: false },
+      { id: 'q2', isInitial: false, isFinal: false },
+      { id: 'q3', isInitial: false, isFinal: false },
+      { id: 'q4', isInitial: false, isFinal: false },
+      { id: 'q5', isInitial: false, isFinal: false },
+      { id: 'q6', isInitial: false, isFinal: false },
+      { id: 'q7', isInitial: false, isFinal: false },
+      { id: 'q8', isInitial: false, isFinal: false },
+      { id: 'q9', isInitial: false, isFinal: true  }
+    ],
+    transitions: [
+      { from: 'q0', to: 'q1', symbol: 'a' },   // primeiro 'a'
+      { from: 'q1', to: 'q2', symbol: 'b' },   // bloco w: quadrado de paridade (q1..q4)
+      { from: 'q2', to: 'q1', symbol: 'b' },
+      { from: 'q1', to: 'q3', symbol: 'c' },
+      { from: 'q3', to: 'q1', symbol: 'c' },
+      { from: 'q2', to: 'q4', symbol: 'c' },
+      { from: 'q4', to: 'q2', symbol: 'c' },
+      { from: 'q3', to: 'q4', symbol: 'b' },
+      { from: 'q4', to: 'q3', symbol: 'b' },
+      { from: 'q1', to: 'q5', symbol: 'a' },   // 'a' do meio (só de q1 = par/par)
+      { from: 'q5', to: 'q6', symbol: 'b' },   // bloco x: quadrado de paridade (q5..q8)
+      { from: 'q6', to: 'q5', symbol: 'b' },
+      { from: 'q5', to: 'q7', symbol: 'c' },
+      { from: 'q7', to: 'q5', symbol: 'c' },
+      { from: 'q6', to: 'q8', symbol: 'c' },
+      { from: 'q8', to: 'q6', symbol: 'c' },
+      { from: 'q7', to: 'q8', symbol: 'b' },
+      { from: 'q8', to: 'q7', symbol: 'b' },
+      { from: 'q5', to: 'q9', symbol: 'a' }    // 'a' final (só de q5 = par/par)
+    ]
+  },
+  58: { // L58 "Boss Final": b^n a (bcd)^m a b^p c^q e w e^r a^s b^t c^u | q>0, w∈{a,b,c,d}* sufixo 'ab'
+    nodes: [
+      { id: 'q0',  isInitial: true,  isFinal: false },
+      { id: 'q1',  isInitial: false, isFinal: false },
+      { id: 'q2',  isInitial: false, isFinal: false },
+      { id: 'q3',  isInitial: false, isFinal: false },
+      { id: 'q4',  isInitial: false, isFinal: false },
+      { id: 'q5',  isInitial: false, isFinal: false },
+      { id: 'q6',  isInitial: false, isFinal: false },
+      { id: 'q7',  isInitial: false, isFinal: false },
+      { id: 'q8',  isInitial: false, isFinal: false },
+      { id: 'q9',  isInitial: false, isFinal: true  },
+      { id: 'q10', isInitial: false, isFinal: true  },
+      { id: 'q11', isInitial: false, isFinal: true  },
+      { id: 'q12', isInitial: false, isFinal: true  }
+    ],
+    transitions: [
+      { from: 'q0', to: 'q0', symbol: 'b' },        // b^n
+      { from: 'q0', to: 'q1', symbol: 'a' },        // 1º 'a'
+      { from: 'q1', to: 'q2', symbol: 'b' },        // ciclo (bcd)^m
+      { from: 'q2', to: 'q3', symbol: 'c' },
+      { from: 'q3', to: 'q1', symbol: 'd' },
+      { from: 'q1', to: 'q4', symbol: 'a' },        // 2º 'a'
+      { from: 'q4', to: 'q4', symbol: 'b' },        // b^p
+      { from: 'q4', to: 'q5', symbol: 'c' },        // 1º 'c' obrigatório (q>0)
+      { from: 'q5', to: 'q5', symbol: 'c' },        // c^q restantes
+      { from: 'q5', to: 'q6', symbol: 'e' },        // 'e' → bloco w
+      { from: 'q6', to: 'q6', symbol: 'b,c,d' },    // sub-DFA: sufixo 'ab'
+      { from: 'q6', to: 'q7', symbol: 'a' },
+      { from: 'q7', to: 'q7', symbol: 'a' },
+      { from: 'q7', to: 'q6', symbol: 'c,d' },
+      { from: 'q7', to: 'q8', symbol: 'b' },
+      { from: 'q8', to: 'q7', symbol: 'a' },
+      { from: 'q8', to: 'q6', symbol: 'b,c,d' },
+      { from: 'q8', to: 'q9', symbol: 'e' },        // sai do bloco w (w termina em 'ab')
+      { from: 'q9', to: 'q9', symbol: 'e' },         // e^r
+      { from: 'q9', to: 'q10', symbol: 'a' },        // a^s
+      { from: 'q9', to: 'q11', symbol: 'b' },        // acesso direto a b (s=0)
+      { from: 'q9', to: 'q12', symbol: 'c' },        // acesso direto a c (s=t=0)
+      { from: 'q10', to: 'q10', symbol: 'a' },
+      { from: 'q10', to: 'q11', symbol: 'b' },       // b^t
+      { from: 'q10', to: 'q12', symbol: 'c' },       // acesso a c (t=0)
+      { from: 'q11', to: 'q11', symbol: 'b' },
+      { from: 'q11', to: 'q12', symbol: 'c' },        // c^u
+      { from: 'q12', to: 'q12', symbol: 'c' }
+    ]
+  },
+  59: { // L59 "prova": a^n b^2m c^p d^q = a* (bb)* c* d* — #b par
+    nodes: [
+      { id: 'q0', isInitial: true,  isFinal: true  },
+      { id: 'q1', isInitial: false, isFinal: false },
+      { id: 'q2', isInitial: false, isFinal: true  },
+      { id: 'q3', isInitial: false, isFinal: true  },
+      { id: 'q4', isInitial: false, isFinal: true  }
+    ],
+    transitions: [
+      { from: 'q0', to: 'q0', symbol: 'a' },
+      { from: 'q0', to: 'q1', symbol: 'b' },
+      { from: 'q0', to: 'q3', symbol: 'c' },
+      { from: 'q0', to: 'q4', symbol: 'd' },
+      { from: 'q1', to: 'q2', symbol: 'b' },
+      { from: 'q2', to: 'q1', symbol: 'b' },
+      { from: 'q2', to: 'q3', symbol: 'c' },
+      { from: 'q2', to: 'q4', symbol: 'd' },
+      { from: 'q3', to: 'q3', symbol: 'c' },
+      { from: 'q3', to: 'q4', symbol: 'd' },
+      { from: 'q4', to: 'q4', symbol: 'd' }
+    ]
+  },
+  60: { // L60 "prova": a w a x a | w,x ∈ {b,c}* com #b ímpar e #c ímpar — paridade ímpar dupla
+    nodes: [
+      { id: 'q0', isInitial: true,  isFinal: false },
+      { id: 'q1', isInitial: false, isFinal: false },
+      { id: 'q2', isInitial: false, isFinal: false },
+      { id: 'q3', isInitial: false, isFinal: false },
+      { id: 'q4', isInitial: false, isFinal: false },
+      { id: 'q5', isInitial: false, isFinal: false },
+      { id: 'q6', isInitial: false, isFinal: false },
+      { id: 'q7', isInitial: false, isFinal: false },
+      { id: 'q8', isInitial: false, isFinal: false },
+      { id: 'q9', isInitial: false, isFinal: true  }
+    ],
+    transitions: [
+      { from: 'q0', to: 'q1', symbol: 'a' },   // 1º 'a'
+      { from: 'q1', to: 'q2', symbol: 'b' },   // bloco w (q1..q4)
+      { from: 'q1', to: 'q3', symbol: 'c' },
+      { from: 'q2', to: 'q1', symbol: 'b' },
+      { from: 'q2', to: 'q4', symbol: 'c' },
+      { from: 'q3', to: 'q4', symbol: 'b' },
+      { from: 'q3', to: 'q1', symbol: 'c' },
+      { from: 'q4', to: 'q3', symbol: 'b' },
+      { from: 'q4', to: 'q2', symbol: 'c' },
+      { from: 'q4', to: 'q5', symbol: 'a' },   // 'a' do meio (só de q4 = ímpar/ímpar)
+      { from: 'q5', to: 'q6', symbol: 'b' },   // bloco x (q5..q8)
+      { from: 'q5', to: 'q8', symbol: 'c' },
+      { from: 'q6', to: 'q5', symbol: 'b' },
+      { from: 'q6', to: 'q7', symbol: 'c' },
+      { from: 'q7', to: 'q8', symbol: 'b' },
+      { from: 'q7', to: 'q6', symbol: 'c' },
+      { from: 'q7', to: 'q9', symbol: 'a' },   // 'a' final (só de q7 = ímpar/ímpar)
+      { from: 'q8', to: 'q7', symbol: 'b' },
+      { from: 'q8', to: 'q5', symbol: 'c' }
+    ]
+  },
+  61: { // L61 "prova": w ∈ {0,1}* múltiplo de 6 — autômato mod 6 (q1 = resto 0, final)
+    nodes: [
+      { id: 'q0', isInitial: true,  isFinal: false },
+      { id: 'q1', isInitial: false, isFinal: true  },
+      { id: 'q2', isInitial: false, isFinal: false },
+      { id: 'q3', isInitial: false, isFinal: false },
+      { id: 'q4', isInitial: false, isFinal: false },
+      { id: 'q5', isInitial: false, isFinal: false },
+      { id: 'q6', isInitial: false, isFinal: false }
+    ],
+    transitions: [
+      { from: 'q0', to: 'q1', symbol: '0' },
+      { from: 'q0', to: 'q2', symbol: '1' },
+      { from: 'q1', to: 'q1', symbol: '0' },
+      { from: 'q1', to: 'q2', symbol: '1' },
+      { from: 'q2', to: 'q4', symbol: '0' },
+      { from: 'q2', to: 'q3', symbol: '1' },
+      { from: 'q3', to: 'q1', symbol: '0' },
+      { from: 'q3', to: 'q2', symbol: '1' },
+      { from: 'q4', to: 'q5', symbol: '0' },
+      { from: 'q4', to: 'q6', symbol: '1' },
+      { from: 'q5', to: 'q4', symbol: '0' },
+      { from: 'q5', to: 'q3', symbol: '1' },
+      { from: 'q6', to: 'q5', symbol: '0' },
+      { from: 'q6', to: 'q6', symbol: '1' }
+    ]
   }
 };

@@ -1,6 +1,6 @@
 // TuringLab — App.jsx v3.0
 // v3.0: Undo/Redo, Simulação no Rodapé, Cores Zoom Corrigidas, Validação Duplicata Aprimorada
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import './AFDPart1.css';
 import FormalDescriptionModal from './FormalDescriptionModal';
@@ -20,6 +20,29 @@ import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../../levels';
 // ─── Utilitário: gera um UID curto ───────────────────────────────────────────
 let _uidCounter = 0;
 const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6)}`;
+
+// ─── Rastreio de palavra no Modo Aula ────────────────────────────────────────
+// Simula a palavra no grafo CONGELADO do passo atual e devolve os "quadros" da
+// animação: cada quadro marca o estado ativo, a última letra consumida e o tipo
+// de destaque ('ok' = rastreando/amarelo, 'done' = aceitou/verde, 'error' =
+// travou ou parou em não-final/vermelho).
+function traceWord(nodes, transitions, word) {
+  const initial = (nodes ?? []).find(n => n.isInitial);
+  if (!initial) return [];
+  const frames = [{ nodeId: initial.id, type: 'ok', letter: -1 }];
+  let cur = initial.id;
+  for (let i = 0; i < word.length; i++) {
+    const ch = word[i];
+    const tr = (transitions ?? []).find(t =>
+      t.from === cur && String(t.symbol).split(',').map(s => s.trim()).includes(ch));
+    if (!tr) { frames.push({ nodeId: cur, type: 'error', letter: i }); return frames; }
+    cur = tr.to;
+    frames.push({ nodeId: cur, type: 'ok', letter: i });
+  }
+  const last = nodes.find(n => n.id === cur);
+  frames[frames.length - 1].type = last?.isFinal ? 'done' : 'error';
+  return frames;
+}
 
 // ─── App Principal ────────────────────────────────────────────────────────────
 export default function AFDPart1({ onBack, progress, updateProgress }) {
@@ -81,7 +104,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     guidedLessonStep, setGuidedLessonStep,
     userNodesSnapshot, userTransitionsSnapshot,
     lessonActive, lessonPhase, lessonAtGraphEnd,
-    lessonReveal, lessonAllSteps, lessonCurStepData, lessonGoFormal,
+    lessonReveal, lessonAllSteps, lessonCurStepData, lessonCur, lessonGoFormal,
   } = useGuidedLesson(currentLevel);
 
   // ── Estado do canvas (desenho, zoom/pan, modos) ────────────────────────────
@@ -105,6 +128,10 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const [showSimPanel, setShowSimPanel] = useState(false);
   const [simWord, setSimWord]           = useState('');
   const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null });
+  // Animação de rastreio de palavra no Modo Aula: { word, frames, idx }
+  const [lessonSim, setLessonSim]       = useState(null);
+  const [simReplay, setSimReplay]       = useState(0); // bump → re-roda a animação
+  const [manualTrace, setManualTrace]   = useState(null); // { word, step, key } — ▶ sob demanda (L57)
 
   // ── Lógica de grafo (validação, mutações de nós/setas, dados de exibição) ──
   const {
@@ -113,7 +140,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     handleNodeLabelFocus, handleNodeLabelChange, handleNodeLabelBlur,
     handleAddSymbol, handleEditSymbol, handleEraseTransition, handleAppendCardToTransition,
     transitionLabelRefs, handleTransitionLineClick,
-    displayNodes, transitionRenders,
+    displayNodes, displayTransitions, transitionRenders,
   } = useAFDGraph({
     nodes, setNodes,
     transitions, setTransitions,
@@ -130,6 +157,52 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     lessonCurStepData,
     canvasSize,
   });
+
+  // ── Animação de rastreio (passos da aula com simulateWord) ─────────────────
+  // Quando o passo atual tem simulateWord, percorremos a palavra no grafo
+  // congelado, destacando estado a estado (amarelo → verde/vermelho no fim).
+  const lessonSimWord = lessonCur?.simulateWord;
+  // Trace manual (botão ▶ da lousa, exclusivo L57): vale só no passo em que foi
+  // disparado e tem prioridade sobre a palavra nativa daquele passo.
+  const manualWord = (manualTrace && manualTrace.step === guidedLessonStep) ? manualTrace.word : undefined;
+  const wordToTrace = manualWord !== undefined ? manualWord : lessonSimWord;
+  useEffect(() => {
+    if (guidedLessonStep === null || wordToTrace === undefined) { setLessonSim(null); return; }
+    const frames = traceWord(displayNodes, displayTransitions, wordToTrace);
+    if (frames.length === 0) { setLessonSim(null); return; }
+    setLessonSim({ word: wordToTrace, frames, idx: 0 });
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      if (i >= frames.length) { clearInterval(id); return; }
+      setLessonSim(prev => (prev ? { ...prev, idx: i } : prev));
+    }, 650);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guidedLessonStep, wordToTrace, simReplay, manualTrace]);
+
+  // Reinicia a animação da palavra atual (botão ↺ Repetir).
+  const replayLessonSim = useCallback(() => setSimReplay(k => k + 1), []);
+  // Dispara o rastreio de uma palavra específica clicada na lousa (▶).
+  const onTriggerManualTrace = useCallback((word) => {
+    setManualTrace({ word, step: guidedLessonStep, key: Date.now() });
+  }, [guidedLessonStep]);
+
+  // Palavras já "ensinadas": apareceram como simulateWord no passo atual ou anterior.
+  const unlockedWords = useMemo(() => {
+    const set = new Set();
+    if (guidedLessonStep === null) return set;
+    for (let i = 0; i <= guidedLessonStep && i < lessonAllSteps.length; i++) {
+      const w = lessonAllSteps[i]?.simulateWord;
+      if (w !== undefined) set.add(w);
+    }
+    return set;
+  }, [guidedLessonStep, lessonAllSteps]);
+
+  // Destaque efetivo dos nós: a animação da aula tem prioridade sobre a sim manual.
+  const effectiveSimHighlight = lessonSim
+    ? { nodeId: lessonSim.frames[lessonSim.idx].nodeId, type: lessonSim.frames[lessonSim.idx].type }
+    : simHighlight;
 
   // ── Carrega fase ──────────────────────────────────────────────────────────
   const loadLevel = useCallback((level) => {
@@ -474,7 +547,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           handleEraseTransition={handleEraseTransition}
           handleAppendCardToTransition={handleAppendCardToTransition}
           displayNodes={displayNodes}
-          simHighlight={simHighlight}
+          simHighlight={effectiveSimHighlight}
           handleNodeLabelFocus={handleNodeLabelFocus}
           handleNodeLabelChange={handleNodeLabelChange}
           handleNodeLabelBlur={handleNodeLabelBlur}
@@ -496,11 +569,16 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
             step={guidedLessonStep}
             steps={lessonAllSteps}
             phase={lessonPhase}
+            sim={lessonSim}
+            levelId={currentLevel?.id}
+            unlockedWords={unlockedWords}
+            onReplaySim={replayLessonSim}
+            onTriggerManualTrace={onTriggerManualTrace}
             atGraphEnd={lessonAtGraphEnd}
-            onGoFormal={() => { lessonGoFormal(); }}
+            onGoFormal={() => { setManualTrace(null); lessonGoFormal(); }}
             onDoGraph={handleLessonFinish}
-            onNext={() => setGuidedLessonStep(s => Math.min(s + 1, lessonAllSteps.length - 1))}
-            onPrev={() => setGuidedLessonStep(s => Math.max(s - 1, 0))}
+            onNext={() => { setManualTrace(null); setGuidedLessonStep(s => Math.min(s + 1, lessonAllSteps.length - 1)); }}
+            onPrev={() => { setManualTrace(null); setGuidedLessonStep(s => Math.max(s - 1, 0)); }}
             onFinish={handleLessonFinish}
           />
         ) : (

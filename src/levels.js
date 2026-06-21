@@ -4,7 +4,7 @@ import { lote3 } from './levels_data/lote3.js';
 
 export const GAME_LEVELS = [...lote1, ...lote2, ...lote3];
 
-export const DIFF_COLOR = { easy: '#4ade80', medium: '#facc15', hard: '#f87171', impossible: '#ddd6fe', unavailable: '#d1d5db' };
+export const DIFF_COLOR = { easy: '#4ade80', medium: '#facc15', hard: '#f87171', impossible: '#ddd6fe', unavailable: '#d1d5db', trabalho: '#9333ea', prova: 'rgb(100, 100, 255)' };
 
 // Fases temporariamente INDISPONÍVEIS (complexas de implementar/explicar). Não
 // são clicáveis, não mostram estrelas e não contam no total. Para reativar uma
@@ -23,4 +23,6 @@ export const LEVEL_DIFFICULTY = {
   41:'medium',42:'medium',43:'medium',44:'hard',45:'hard',
   46:'hard', 47:'hard', 48:'medium',49:'hard', 50:'hard',
   51:'hard', 52:'medium',53:'easy', 54:'hard', 55:'impossible',
+  56:'trabalho', 57:'trabalho', 58:'trabalho',
+  59:'prova', 60:'prova', 61:'prova',
 };

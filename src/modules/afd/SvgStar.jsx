@@ -2,7 +2,7 @@ import { DIFF_COLOR } from '../../levels';
 
 // `keys` (opcional): limita quais faixas aparecem. Ausente ⇒ todas (AFD/min).
 export function DifficultyLegend({ keys }) {
-  const all = [['easy','Easy'],['medium','Medium'],['hard','Hard'],['impossible','Impossível'],['unavailable','Indisponível']];
+  const all = [['easy','Easy'],['medium','Medium'],['hard','Hard'],['trabalho','Trabalho'],['prova','Prova'],['impossible','Impossível'],['unavailable','Indisponível']];
   const rows = keys ? all.filter(([k]) => keys.includes(k)) : all;
   return (
     <div style={{ position:'fixed', bottom:16, right:16, background:'#fff', border:'3px solid #000',

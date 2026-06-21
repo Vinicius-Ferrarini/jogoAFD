@@ -1,4 +1,236 @@
-﻿export const lote3 = [
+﻿import { LEVEL_GRAPHS } from '../levels_graphs.js';
+
+// ─── Modo Aula dos níveis avançados (L56+) — desconstrução didática ──────────
+// O Modo Aula do AFD revela o grafo PASSO A PASSO (cada passo carrega um
+// stateUpdate cumulativo com os nós/arestas já apresentados). A fase FORMAL —
+// tupla M=(Q,Σ,δ,q₀,F) + tabela δ — é auto-derivada pelo motor da aula
+// (useGuidedLesson.buildAFDFormalSteps) a partir do stateUpdate do ÚLTIMO passo,
+// que por isso precisa conter o grafo completo.
+//
+// Metodologia (Regra de Ouro): Caminho da Menor Palavra → Laços/Quantificadores
+// → Ramificações/Ciclos → Generalização (grafo completo).
+//
+// makeBuilder injeta as coordenadas (x,y) de um layout fixo nos SUBCONJUNTOS de
+// nós revelados a cada passo, garantindo que os nós não "pulem" de lugar entre
+// os passos. Arestas multi-símbolo (ex.: 'b,c,d') entram uma única vez.
+function makeBuilder(graph, layout) {
+  const byId = Object.fromEntries(graph.nodes.map(n => [n.id, n]));
+  const findEdge = (from, sym, to) => graph.transitions.find(t =>
+    t.from === from && t.to === to &&
+    t.symbol.split(',').map(s => s.trim()).includes(sym));
+  const nodeIds = new Set();
+  const edges = [];
+  const mkNode = (id) => ({
+    id, label: id, x: layout[id][0], y: layout[id][1],
+    isInitial: !!byId[id].isInitial, isFinal: !!byId[id].isFinal,
+  });
+  return {
+    addNodes(...ids) { ids.forEach(id => nodeIds.add(id)); return this; },
+    addEdges(...specs) {
+      for (const [f, s, t] of specs) {
+        const e = findEdge(f, s, t);
+        if (e && !edges.includes(e)) edges.push(e);
+      }
+      return this;
+    },
+    // Passo de DESENHO: revela o grafo recém-montado. NÃO simula.
+    draw(text, boardDoneUpTo = -1) {
+      return { text, boardDoneUpTo, stateUpdate: {
+        nodes: [...nodeIds].map(mkNode),
+        transitions: edges.map(e => ({ ...e })),
+      }};
+    },
+    // Passo de SIMULAÇÃO: grafo CONGELADO (cópia exata do desenho anterior, sem
+    // arestas novas) + palavra a testar. Mantém o canvas estático durante o teste.
+    test(text, simulateWord, boardDoneUpTo = -1) {
+      return { text, boardDoneUpTo, simulateWord, stateUpdate: {
+        nodes: [...nodeIds].map(mkNode),
+        transitions: edges.map(e => ({ ...e })),
+      }};
+    },
+    // Passo de SIMULAÇÃO de REJEIÇÃO DIDÁTICA: a palavra foi escolhida para falhar
+    // de propósito (ensina por que faltam estados). expectedVerdict='reject' faz a
+    // lousa mostrar "Rejeição esperada" (educativo) em vez de "Erro" (vermelho).
+    reject(text, simulateWord, boardDoneUpTo = -1) {
+      return { text, boardDoneUpTo, simulateWord, expectedVerdict: 'reject', stateUpdate: {
+        nodes: [...nodeIds].map(mkNode),
+        transitions: edges.map(e => ({ ...e })),
+      }};
+    },
+    // Transição para a Descrição Formal (grafo completo, congelado).
+    formalIntro(text, boardDoneUpTo = -1) {
+      return { text, boardDoneUpTo, formalIntro: true, stateUpdate: {
+        nodes: [...nodeIds].map(mkNode),
+        transitions: edges.map(e => ({ ...e })),
+      }};
+    },
+  };
+}
+
+// L56 — a^(n+3)(bc+cb)(ddd)^m aba e^p a(bc)+ — menor palavra: "aaabcabaabc"
+function buildLessonL56() {
+  const b = makeBuilder(LEVEL_GRAPHS[56], {
+    q0:[6,50], q1:[14,50], q2:[21,50], q3:[29,50], q4:[36,50], q5:[44,50],
+    q6:[51,50], q7:[59,50], q8:[67,50], q12:[74,50], q13:[82,50], q14:[90,50],
+    q9:[32,22], q10:[40,80], q11:[50,80],
+  });
+  const steps = [];
+  b.addNodes('q0','q1','q2','q3','q4','q5','q6','q7','q8','q12','q13','q14')
+   .addEdges(['q0','a','q1'],['q1','a','q2'],['q2','a','q3'],['q3','b','q4'],
+             ['q4','c','q5'],['q5','a','q6'],['q6','b','q7'],['q7','a','q8'],
+             ['q8','a','q12'],['q12','b','q13'],['q13','c','q14']);
+  steps.push(b.draw('Vamos construir o caminho da menor palavra válida: "aaabcabaabc".', -1));
+  steps.push(b.test('Veja como "aaabcabaabc" percorre essa espinha dorsal.', 'aaabcabaabc', 0));
+  steps.push(b.reject('Mas "aabcabaabc" tem só dois "a": sem um terceiro, a máquina trava em q2!', 'aabcabaabc', 0));
+  b.addEdges(['q3','a','q3'],['q8','e','q8']);
+  steps.push(b.draw('Agora os laços para as repetições: a^n (em q3) e e^p (em q8).', 0));
+  steps.push(b.test('Com os laços, "aaaabcabaeabc" usa um "a" extra e um "e".', 'aaaabcabaeabc', 0));
+  b.addNodes('q9','q10','q11')
+   .addEdges(['q3','c','q9'],['q9','b','q5'],['q5','d','q10'],['q10','d','q11'],['q11','d','q5']);
+  steps.push(b.draw('E os blocos opcionais: o caminho alternativo "cb" (q9) e o ciclo (ddd).', 1));
+  steps.push(b.test('"aaacbdddabaabc" entra pelo "cb" e dá uma volta no ciclo ddd.', 'aaacbdddabaabc', 1));
+  b.addEdges(['q14','b','q13']);
+  steps.push(b.draw('Por fim, o laço que repete o sufixo (bc)+.', 2));
+  steps.push(b.test('"aaabcabaabcbc" repete o bloco "bc" no final.', 'aaabcabaabcbc', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L57 — a w a x a, w,x com #b e #c PARES — menor palavra: "aaa"
+function buildLessonL57() {
+  const b = makeBuilder(LEVEL_GRAPHS[57], {
+    q0:[8,55], q1:[28,55], q2:[18,32], q3:[38,32], q4:[28,12],
+    q5:[60,55], q6:[50,32], q7:[70,32], q8:[60,12], q9:[90,55],
+  });
+  const steps = [];
+  b.addNodes('q0','q1','q5','q9')
+   .addEdges(['q0','a','q1'],['q1','a','q5'],['q5','a','q9']);
+  steps.push(b.draw('Vamos construir o caminho da menor palavra válida: "aaa".', -1));
+  steps.push(b.test('Veja "aaa" percorrer q0→q1→q5→q9.', 'aaa', 0));
+  b.addNodes('q2','q3','q4')
+   .addEdges(['q1','b','q2'],['q2','b','q1'],['q1','c','q3'],['q3','c','q1'],
+             ['q2','c','q4'],['q4','c','q2'],['q3','b','q4'],['q4','b','q3']);
+  steps.push(b.draw('Adicionamos o rastreio de paridade do bloco w (par/par volta a q1).', 1));
+  steps.push(b.test('"abbaa" tem w="bb" (par/par) e volta a q1 antes do "a" do meio.', 'abbaa', 1));
+  steps.push(b.reject('Mas "abaa" tem w="b" (b ÍMPAR): paramos em q2, que não tem saída por "a". Rejeita!', 'abaa', 1));
+  steps.push(b.reject('E "acaa" tem w="c" (c ÍMPAR): a máquina morre em q3. Por isso precisamos rastrear a paridade!', 'acaa', 1));
+  b.addNodes('q6','q7','q8')
+   .addEdges(['q5','b','q6'],['q6','b','q5'],['q5','c','q7'],['q7','c','q5'],
+             ['q6','c','q8'],['q8','c','q6'],['q7','b','q8'],['q8','b','q7']);
+  steps.push(b.draw('E o mesmo rastreio para o bloco x.', 2));
+  steps.push(b.test('"abbabba" exercita os dois blocos, ambos par/par.', 'abbabba', 2));
+  steps.push(b.reject('Já "aabaa" tem x="b" (ímpar): agora trava em q6, dentro do bloco x.', 'aabaa', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L58 — b^n a (bcd)^m a b^p c^q e w e^r a^s b^t c^u — menor palavra: "aaceabe"
+function buildLessonL58() {
+  const b = makeBuilder(LEVEL_GRAPHS[58], {
+    q0:[8,48], q1:[19,48], q2:[14,20], q3:[25,20], q4:[31,48], q5:[42,48],
+    q6:[53,48], q7:[64,48], q8:[75,48], q9:[86,48],
+    q10:[70,80], q11:[80,80], q12:[90,80],
+  });
+  const steps = [];
+  b.addNodes('q0','q1','q4','q5','q6','q7','q8','q9')
+   .addEdges(['q0','a','q1'],['q1','a','q4'],['q4','c','q5'],['q5','e','q6'],
+             ['q6','a','q7'],['q7','b','q8'],['q8','e','q9']);
+  steps.push(b.draw('Vamos construir o caminho da menor palavra válida: "aaceabe".', -1));
+  steps.push(b.test('Veja como "aaceabe" percorre essa espinha dorsal até q9.', 'aaceabe', 0));
+  steps.push(b.reject('Mas "aaeabae" pula o "c" obrigatório (q>0): q4 não tem saída por "e" e trava!', 'aaeabae', 0));
+  b.addEdges(['q0','b','q0'],['q4','b','q4'],['q5','c','q5'],['q9','e','q9']);
+  steps.push(b.draw('Agora os laços das repetições: b^n, b^p, c^q e e^r.', 0));
+  steps.push(b.test('"baabcceabe" usa o "b" inicial, um "b" extra e dois "c".', 'baabcceabe', 0));
+  b.addNodes('q2','q3')
+   .addEdges(['q1','b','q2'],['q2','c','q3'],['q3','d','q1']);
+  steps.push(b.draw('E o bloco opcional complexo: o ciclo (bcd).', 1));
+  steps.push(b.test('"abcdaceabe" dá uma volta completa no ciclo bcd.', 'abcdaceabe', 1));
+  b.addEdges(['q6','b','q6'],['q6','c','q6'],['q6','d','q6'],['q7','a','q7'],
+             ['q7','c','q6'],['q7','d','q6'],['q8','a','q7'],['q8','b','q6'],
+             ['q8','c','q6'],['q8','d','q6']);
+  steps.push(b.draw('Mapeamos as transições restantes do DFA de sufixo "ab" (voltas de q6, q7, q8).', 1));
+  steps.push(b.test('"aaceacabe" quebra e recupera o sufixo: w="acab" termina em "ab".', 'aaceacabe', 1));
+  steps.push(b.reject('Já "aaceabcdae" tem w terminando em "da": sem o "b" final, q7 não sai por "e". Trava!', 'aaceabcdae', 1));
+  b.addNodes('q10','q11','q12')
+   .addEdges(['q9','a','q10'],['q9','b','q11'],['q9','c','q12'],
+             ['q10','a','q10'],['q10','b','q11'],['q10','c','q12'],
+             ['q11','b','q11'],['q11','c','q12'],['q12','c','q12']);
+  steps.push(b.draw('Por fim, a cauda e* a* b* c*.', 2));
+  steps.push(b.test('"aaceabeaabbcc" percorre a cauda com a², b² e c².', 'aaceabeaabbcc', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L59 — a* (bb)* c* d* (#b par) — espinha via "bbcd"
+function buildLessonL59() {
+  const b = makeBuilder(LEVEL_GRAPHS[59], {
+    q0:[12,50], q1:[32,50], q2:[52,50], q3:[72,50], q4:[90,50],
+  });
+  const steps = [];
+  b.addNodes('q0','q1','q2','q3','q4')
+   .addEdges(['q0','b','q1'],['q1','b','q2'],['q2','c','q3'],['q3','d','q4']);
+  steps.push(b.draw('Vamos construir o caminho da palavra "bbcd": b em par, depois c, depois d.', -1));
+  steps.push(b.test('Veja como "bbcd" percorre essa espinha dorsal.', 'bbcd', 0));
+  steps.push(b.reject('Mas "bbb" tem número ímpar de "b": sobra um "b" e a máquina trava em q2!', 'bbb', 0));
+  b.addEdges(['q0','a','q0'],['q3','c','q3'],['q4','d','q4']);
+  steps.push(b.draw('Agora os laços para as repetições: a*, c* e d*.', 1));
+  steps.push(b.test('"aabbccdd" usa os laços de a, c e d (com um par de b).', 'aabbccdd', 1));
+  b.addEdges(['q2','b','q1'],['q0','c','q3'],['q0','d','q4'],['q2','d','q4']);
+  steps.push(b.draw('E as ramificações: o retorno do par de b e os atalhos para c e d.', 2));
+  steps.push(b.test('"bbbb" repete o par de b duas vezes (usa o retorno q2→q1).', 'bbbb', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L60 — a w a x a, w,x com #b e #c ÍMPARES — menor palavra: "abcabca"
+function buildLessonL60() {
+  const b = makeBuilder(LEVEL_GRAPHS[60], {
+    q0:[8,55], q1:[24,55], q2:[16,32], q3:[34,30], q4:[26,80],
+    q5:[58,55], q6:[50,32], q7:[66,30], q8:[58,80], q9:[90,55],
+  });
+  const steps = [];
+  b.addNodes('q0','q1','q2','q4','q5','q6','q7','q9')
+   .addEdges(['q0','a','q1'],['q1','b','q2'],['q2','c','q4'],['q4','a','q5'],
+             ['q5','b','q6'],['q6','c','q7'],['q7','a','q9']);
+  steps.push(b.draw('Vamos construir o caminho da menor palavra válida: "abcabca".', -1));
+  steps.push(b.test('Veja "abcabca" percorrer os dois blocos ímpar/ímpar.', 'abcabca', 0));
+  b.addNodes('q3')
+   .addEdges(['q1','c','q3'],['q2','b','q1'],['q3','b','q4'],['q3','c','q1'],['q4','b','q3'],['q4','c','q2']);
+  steps.push(b.draw('Completamos o rastreio de paridade do bloco w (saída ímpar/ímpar é q4).', 1));
+  steps.push(b.test('"acbabca" tem w="cb" (ímpar/ímpar) chegando a q4.', 'acbabca', 1));
+  steps.push(b.reject('Mas "ababca" tem w="b" (só b, sem c ímpar): paramos em q2. Precisamos de b E c ímpares!', 'ababca', 1));
+  b.addNodes('q8')
+   .addEdges(['q5','c','q8'],['q6','b','q5'],['q7','b','q8'],['q7','c','q6'],['q8','b','q7'],['q8','c','q5']);
+  steps.push(b.draw('E o mesmo rastreio no bloco x (saída ímpar/ímpar é q7).', 2));
+  steps.push(b.test('"abcacba" tem x="cb" (ímpar/ímpar) chegando a q7.', 'abcacba', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L61 — binário múltiplo de 6 (autômato mod 6) — espinha via "110"
+function buildLessonL61() {
+  const b = makeBuilder(LEVEL_GRAPHS[61], {
+    q0:[10,50], q1:[28,50], q2:[46,28], q3:[64,28], q4:[46,72], q5:[64,72], q6:[84,50],
+  });
+  const steps = [];
+  b.addNodes('q0','q1','q2','q3')
+   .addEdges(['q0','1','q2'],['q2','1','q3'],['q3','0','q1']);
+  steps.push(b.draw('Vamos construir o caminho que aceita "110" (valor 6): q0→q2→q3→q1.', -1));
+  steps.push(b.test('Veja "110" terminar em q1 (resto 0 = aceita).', '110', 0));
+  steps.push(b.reject('Mas "1" termina em q2 (resto 1): não é estado final, então rejeita!', '1', 0));
+  b.addEdges(['q0','0','q1'],['q1','0','q1'],['q1','1','q2']);
+  steps.push(b.draw('q1 é o resto 0 (aceita): adicionamos seu laço e a entrada por "0".', 1));
+  steps.push(b.test('"000" fica no laço de q1 (valor 0, múltiplo de 6).', '000', 1));
+  b.addNodes('q4','q5','q6')
+   .addEdges(['q2','0','q4'],['q4','0','q5'],['q4','1','q6'],['q3','1','q2'],
+             ['q5','0','q4'],['q5','1','q3'],['q6','0','q5'],['q6','1','q6']);
+  steps.push(b.draw('Cada estado é um resto mod 6: mapeamos as transições dos restos 2, 4 e 5.', 2));
+  steps.push(b.test('"10010" (valor 18) passa pelos restos 2 e 4 e aceita.', '10010', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+export const lote3 = [
   { id: 41, label: "L40", formula: "L = { a^n b^2m d c^3p d | n, m, p ≥ 0 }",                          desc: "",                                                                 shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccdd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Essa é grande! Blocos de 'b' em duplas, o primeiro 'd' serve de ponte, e 'c' em trios.",                            successMsg: "Sintaxe complexa analisada com sucesso.",
     tutorials: {
       onStart: { type: 'theory', title: 'Blocos: a-block, b-pares, d, c-trios, d!', dialog: [
@@ -1330,4 +1562,65 @@
             { from: 'q5', to: 'q7', symbol: 'd' }, { from: 'q7', to: 'q5', symbol: 'd' },
           ] } },
     ] },
+
+  // L56 "trabalho" — exercício extra (roxo). Prefixo a^(n+3) (3 a's no grafo: q0→q1→q2→q3),
+  // bifurcação bc|cb, ciclo (ddd)^m, trecho fixo "aba", e^p, conector "a" e (bc)^q com q>0.
+  { id: 56, label: "L56", formula: "L = { a^n a a a (bc+cb)(ddd)^m aba e^p a(bc)^q | n,m,p ≥ 0, q > 0 }", desc: "(trabalho)", shortestWord: "aaabcabaabc", regex: /^a{3,}(?:bc|cb)(?:ddd)*abae*a(?:bc)+$/, alphabet: ['a', 'b', 'c', 'd', 'e'], acceptedWords: ["aaabcabaabc","aaaabcabaabc","aaacbabaabc","aaabcdddabaabc","aaabcabaeeabcbc"], rejectedWords: ["aabcabaabc","aaababaabc","aaabcddabaabc","aaabcabaa","aaabcababc"], hint: "Comece com pelo menos três 'a'. Depois bifurque em 'bc' ou 'cb', repita 'ddd' em trios, escreva o miolo fixo 'aba', solte 'e's à vontade e feche com 'a' seguido de pelo menos um 'bc'.", successMsg: "Trabalho concluído — autômato gigante dominado!",
+    boardWords: ['aaabcabaabc', 'aaacbabaabc', 'aaabcdddabaabc'],
+    guidedLesson: buildLessonL56(),
+  },
+
+  // L57 "trabalho" — paridade dupla em dois blocos: a w a x a, com w,x ∈ {b,c}*
+  // tendo #b par e #c par em cada bloco. Caso vazio (w=x=∅) = "aaa" (3 'a's).
+  { id: 57, label: "L57", formula: "L = { a w a x a | w,x ∈ {b,c}*, |w|b é par e |w|c é par, |x|b é par e |x|c é par }", desc: "(trabalho)", shortestWord: "aaa",
+    validate: (s) => { const m = /^a([bc]*)a([bc]*)a$/.exec(s); if (!m) return false; const even = (t) => (t.match(/b/g)||[]).length%2===0 && (t.match(/c/g)||[]).length%2===0; return even(m[1]) && even(m[2]); },
+    alphabet: ['a', 'b', 'c'], acceptedWords: ["aaa","abbaa","aabba","abcbcaa","aabcbca","abbccabbcca"], rejectedWords: ["aabaa","aaaba","aaaa","aaaaaa","acbcaa","bbbaaaaa"], hint: "Estrutura a·w·a·x·a: três 'a's separam dois blocos de b/c. Em cada bloco, a quantidade de 'b' e de 'c' precisa ser PAR. Caso vazio = 'aaa'.", successMsg: "Trabalho concluído — paridade dupla em dois blocos dominada!",
+    boardWords: ['aaa', 'abbaa', 'abbabba'],
+    guidedLesson: buildLessonL57(),
+  },
+
+  // L58 "Boss Final" — b^n a (bcd)^m a b^p c^q e w e^r a^s b^t c^u, q>0, w∈{a,b,c,d}* com sufixo 'ab'.
+  // validate = simulação fiel do DFA do grafo (q9..q12 finais). Caso curto = "aaceabe" (w="ab").
+  { id: 58, label: "L58", formula: "L = { b^n a (bcd)^m a b^p c^q e w e^r a^s b^t c^u | n,m,p,r,s,t,u ≥ 0, q > 0, w ∈ {a,b,c,d}*, w tem 'ab' como sufixo }", desc: "(trabalho — boss final)", shortestWord: "aaceabe",
+    validate: (s) => {
+      const delta = {
+        q0:{b:'q0',a:'q1'}, q1:{b:'q2',a:'q4'}, q2:{c:'q3'}, q3:{d:'q1'},
+        q4:{b:'q4',c:'q5'}, q5:{c:'q5',e:'q6'},
+        q6:{b:'q6',c:'q6',d:'q6',a:'q7'}, q7:{a:'q7',c:'q6',d:'q6',b:'q8'},
+        q8:{a:'q7',b:'q6',c:'q6',d:'q6',e:'q9'},
+        q9:{e:'q9',a:'q10',b:'q11',c:'q12'}, q10:{a:'q10',b:'q11',c:'q12'},
+        q11:{b:'q11',c:'q12'}, q12:{c:'q12'},
+      };
+      const finals = new Set(['q9','q10','q11','q12']);
+      let cur = 'q0';
+      for (const ch of s) { cur = delta[cur] && delta[cur][ch]; if (!cur) return false; }
+      return finals.has(cur);
+    },
+    alphabet: ['a', 'b', 'c', 'd', 'e'], acceptedWords: ["aaceabe","aaceabea","babcdabbcceabcabeeeaab","aaceabeac"], rejectedWords: ["aaceaba","aacbaabce","aaceabcdae","aaeabae"], hint: "Boss final! Estrutura: b* a (bcd)* a b* c+ — depois 'e', um w que termina em 'ab', outro 'e', e a cauda e* a* b* c*. Cada 'e' separa os blocos; o 'c' antes do primeiro 'e' é obrigatório (q>0).", successMsg: "BOSS FINAL DERROTADO! Você dominou o autômato de 13 estados! 🏆",
+    boardWords: ['aaceabe', 'aaceabeac', 'babcdabbcceabcabeeeaab'],
+    guidedLesson: buildLessonL58(),
+  },
+
+  // ── Prova (vermelho) ─────────────────────────────────────────────────────────
+  // L59: a^n b^2m c^p d^q (quantidade de 'b' par) = a* (bb)* c* d*
+  { id: 59, label: "L59", formula: "L = { a^n b^2m c^p d^q | n,m,p,q ≥ 0 }", desc: "(prova)", shortestWord: "", regex: /^a*(bb)*c*d*$/, alphabet: ['a', 'b', 'c', 'd'], acceptedWords: ["a","bb","abbc","bbdd",""], rejectedWords: ["b","bbb","abbcdb","cba"], hint: "Ordem fixa: a's, depois b's (em quantidade PAR), depois c's, depois d's. Um número ímpar de 'b' rejeita.", successMsg: "Prova L59 resolvida!",
+    boardWords: ['λ', 'bb', 'abbc'],
+    guidedLesson: buildLessonL59(),
+  },
+
+  // L60: a w a x a, com w,x ∈ {b,c}* tendo #b ÍMPAR e #c ÍMPAR em cada bloco
+  { id: 60, label: "L60", formula: "L = { a w a x a | w,x ∈ {b,c}*, |w|b e |w|c ímpares, |x|b e |x|c ímpares }", desc: "(prova)", shortestWord: "abcabca",
+    validate: (s) => { const m = /^a([bc]*)a([bc]*)a$/.exec(s); if (!m) return false; const odd = (t) => (t.match(/b/g)||[]).length%2===1 && (t.match(/c/g)||[]).length%2===1; return odd(m[1]) && odd(m[2]); },
+    alphabet: ['a', 'b', 'c'], acceptedWords: ["abcabca","abcacba","abbbcabca"], rejectedWords: ["abcaa","aabca","aba","abcabcaa"], hint: "Estrutura a·w·a·x·a (três 'a's, dois blocos de b/c). Em cada bloco a quantidade de 'b' E de 'c' precisa ser ÍMPAR. Menor palavra: 'abcabca'.", successMsg: "Prova L60 resolvida — paridade ímpar dupla!",
+    boardWords: ['abcabca', 'abcacba', 'abbbcabca'],
+    guidedLesson: buildLessonL60(),
+  },
+
+  // L61: w ∈ {0,1}* | valor binário múltiplo de 6 (autômato mod 6, ignora a palavra vazia)
+  { id: 61, label: "L61", formula: "L = { w ∈ {0,1}* | w é múltiplo de 6 }", desc: "(prova)", shortestWord: "0",
+    validate: (w) => { if (w === '' || !/^[01]+$/.test(w)) return false; let r = 0; for (const ch of w) r = (r*2 + (ch === '1' ? 1 : 0)) % 6; return r === 0; },
+    alphabet: ['0', '1'], acceptedWords: ["0","110","1100","10010"], rejectedWords: ["1","10","101","111"], hint: "Leia da esquerda para a direita acumulando o resto mod 6: a cada bit, resto = (resto×2 + bit) mod 6. Aceita se terminar em resto 0. A palavra vazia não conta.", successMsg: "Prova L61 resolvida — máquina de módulo 6!",
+    boardWords: ['0', '110', '1100'],
+    guidedLesson: buildLessonL61(),
+  },
 ];
