@@ -10,12 +10,11 @@ import '../ap/APPart1.css';
 import { SvgStars, DifficultyLegend } from '../afd/SvgStar';
 import EndScreen from '../afd/components/EndScreen';
 import MTCanvas from './components/MTCanvas';
-import TuringTape from './components/TuringTape';
 import APFooterDeck from '../ap/components/APFooterDeck';
 import useTMGraph from './hooks/useTMGraph';
 import useMTGuidedLesson from './hooks/useMTGuidedLesson';
 import useAPDrawing from '../ap/hooks/useAPDrawing';
-import { MT_LEVELS } from './levels_mt';
+import { MT_LEVELS } from '../../levels_data/mt/index.js';
 import { fuzzTMTransducer, simulateTM, BLANK } from './utils/tmAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 
@@ -41,6 +40,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const [formalAnswers, setFormalAnswers]   = useState(EMPTY_FORMAL);
   const [formalMode, setFormalMode]         = useState(false); // jogo: MT válida → preencher descrição formal
   const [validationError, setValidationError] = useState(null); // banner vermelho de erro estrutural
+  const [inputError, setInputError]           = useState(null); // erro inline no campo de teste de palavra
   const canvasRef = useRef(null);
   const formalRef = useRef(null); // container rolável do painel formal (auto-scroll)
 
@@ -174,6 +174,16 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const testWord = useCallback(() => {
     if (!level) return;
     const word = simWord.trim();
+
+    if (word !== '') {
+      const alphabet = level.alphabet ?? ['a', 'b'];
+      const invalid = [...word].find(ch => !alphabet.includes(ch));
+      if (invalid) {
+        setInputError(`Caractere inválido '${invalid}'! Alfabeto: ${alphabet.join(', ')}`);
+        return;
+      }
+    }
+    setInputError(null);
 
     if (activeTab === 'linguagem') {
       // Gabarito estático do nível: saída = level.validate(word). null/undefined → REJEITADA
@@ -612,11 +622,18 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
 
                 <div className="test-input-area">
                   <input type="text" className="word-input" placeholder="ex: ab (vazio = λ)"
-                    value={simWord} onChange={e => setSimWord(e.target.value)}
+                    value={simWord} onChange={e => { setSimWord(e.target.value); setInputError(null); }}
                     onKeyDown={e => e.key === 'Enter' && testWord()}
-                    translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
+                    translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
+                    style={inputError ? { border: '2px solid #dc2626' } : {}} />
                   <button className="add-test-btn" onClick={testWord}>+</button>
                 </div>
+                {inputError && (
+                  <div style={{ padding: '3px 10px 4px', fontFamily: "'Comic Sans MS',cursive",
+                    fontSize: 11, fontWeight: 900, color: '#dc2626' }}>
+                    ⛔ {inputError}
+                  </div>
+                )}
 
                 <div className="words-list" style={{ overflowX: 'hidden' }}>
                   <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
@@ -666,11 +683,18 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
 
                 <div className="test-input-area">
                   <input type="text" className="word-input" placeholder="ex: ab (vazio = λ)"
-                    value={simWord} onChange={e => setSimWord(e.target.value)}
+                    value={simWord} onChange={e => { setSimWord(e.target.value); setInputError(null); }}
                     onKeyDown={e => e.key === 'Enter' && testWord()}
-                    translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
+                    translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
+                    style={inputError ? { border: '2px solid #dc2626' } : {}} />
                   <button className="add-test-btn" onClick={testWord}>+</button>
                 </div>
+                {inputError && (
+                  <div style={{ padding: '3px 10px 4px', fontFamily: "'Comic Sans MS',cursive",
+                    fontSize: 11, fontWeight: 900, color: '#dc2626' }}>
+                    ⛔ {inputError}
+                  </div>
+                )}
 
                 <div className="words-list" style={{ overflowX: 'hidden' }}>
                   <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
@@ -729,19 +753,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         )}
       </div>
 
-      {/* Fita — estática, conduzida pelos dados do passo da aula (lesson.cur.tape) */}
-      {lesson.active && lesson.cur?.tape && (
-        <div style={{ padding: '8px 16px', background: '#1a1a2e', borderTop: '2px solid #143823',
-          display: 'flex', alignItems: 'center', gap: 12, overflowX: 'auto' }}>
-          <span style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 12, fontWeight: 900,
-            whiteSpace: 'nowrap', color: '#fbbf24' }}>
-            Fita:
-          </span>
-          <TuringTape tape={lesson.cur.tape} headPosition={lesson.cur.head ?? 0} />
-        </div>
-      )}
-
-      {/* Rodapé: deck de cartas + Maurílio */}
+      {/* Rodapé: deck de cartas + Maurílio (fita integrada quando a aula exibir tape) */}
       <APFooterDeck
         mode={mode}
         onPick={pickMode}
@@ -761,6 +773,8 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         onNodeDrag={handleDeckDrag}
         onNodeDrop={handleDeckDrop}
         onNodeDragCancel={handleDeckCancel}
+        tape={lesson.active && lesson.cur?.tape ? lesson.cur.tape : null}
+        tapeHead={lesson.cur?.head ?? 0}
       />
 
       {victory && (

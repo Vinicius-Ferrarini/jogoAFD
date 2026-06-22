@@ -1,15 +1,3 @@
-// ─── Níveis do Módulo MT — Submódulo Transdutora ─────────────────────────────
-// Cada nível define:
-//   validate(word) → string esperada na fita após a MT aceitar
-//   testWords      → bateria que o fuzzTMTransducer usa para validar a MT do aluno
-// Os gabaritos JFLAP (gabaritos_jflap/mt/transdutora/L*.xml) são carregados
-// separadamente na fase de aula guiada via parseJffTM — não são importados aqui.
-
-// ── Storyboard frame a frame da aula guiada ──────────────────────────────────
-// Cada passo da guidedLesson é um objeto independente que revela parte do grafo
-// (nodes/transitions) e/ou move a fita (tape + head). Tudo desenhado à mão para
-// uma animação stop-motion controlada pelos cliques do aluno.
-
 // Estados (revelados incrementalmente). q0→q1 convertem; q2 varre de volta; q3 final.
 const Q0 = { uid: 'q0', id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false };
 const Q1 = { uid: 'q1', id: 'q1', label: 'q1', x: 37, y: 50, isInitial: false, isFinal: false };
@@ -50,9 +38,7 @@ const D3 = [...D2, E_Q1_BACK];                      // + q1 → q2 (vira)
 const D4 = [...D3, E_Q2A, E_Q2B];                   // + scan-back de q2
 const D5 = [...D4, E_Q2_FIN];                       // + q2 → q3 (final) = δ completa
 
-// ── Definição dos níveis ──────────────────────────────────────────────────────
-export const MT_LEVELS = [
-  {
+const MT_L1 = {
     id:          'MT_L1',
     label:       'L1',
     type:        'transducer',
@@ -310,5 +296,6 @@ export const MT_LEVELS = [
         },
       ],
     },
-  },
-];
+  };
+
+export default MT_L1;

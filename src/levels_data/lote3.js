@@ -9,7 +9,7 @@ import { makeBuilder } from './lessonBuilder.js';
 // L40 (id41) — {a^n b^2m d c^3p d | n,m,p ≥ 0} — a* ANTES de (bb)*, c em TRIOS — menor: "dd"
 function buildLessonL41() {
   const b = makeBuilder(LEVEL_GRAPHS[41], {
-    q0: [10, 50], q1: [10, 16], qe: [34, 16], q2: [50, 55], q3: [44, 86], q4: [72, 86], q5: [90, 50],
+    q0: [8, 50], q1: [22, 18], qe: [44, 8], q2: [62, 50], q3: [48, 84], q4: [70, 84], q5: [90, 50],
   });
   const steps = [];
   b.addNodes('q0', 'q2', 'q5').addEdges(['q0', 'd', 'q2'], ['q2', 'd', 'q5']);
@@ -157,7 +157,7 @@ function buildLessonL47() {
 // L47 (id48, revisão L40) — {a^n b^2m d c^3p d} — a* ANTES de (bb)*, c em TRIOS — menor: "dd"
 function buildLessonL48() {
   const b = makeBuilder(LEVEL_GRAPHS[48], {
-    q0: [10, 50], q1: [10, 16], qe: [34, 16], q2: [50, 55], q3: [44, 86], q4: [72, 86], q5: [90, 50],
+    q0: [8, 50], q1: [22, 18], qe: [44, 8], q2: [62, 50], q3: [48, 84], q4: [70, 84], q5: [90, 50],
   });
   const steps = [];
   b.addNodes('q0', 'q2', 'q5').addEdges(['q0', 'd', 'q2'], ['q2', 'd', 'q5']);

@@ -6,6 +6,7 @@ import '../../afd/components/FooterDeck.css';
 import imgSerio      from '../../../assets/maurilio1_serio.webp';
 import imgExplicando from '../../../assets/maurilio3_explicando.webp';
 import imgBalaoFala  from '../../../assets/balao_fala_redondo.webp';
+import TuringTape from '../../mt/components/TuringTape';
 
 const CARDS_BASE = [
   { action: 'TOGGLE_INITIAL', cls: 'initial',    icon: '▶', label: 'Estado Inicial' },
@@ -23,6 +24,7 @@ export default function APFooterDeck({
   onNodeDrag, onNodeDrop, onNodeDragCancel,
   canUndo, canRedo, onUndo, onRedo, lessonActive, hasNodes,
   showFinalCard = false,
+  tape, tapeHead,
 }) {
   const CARDS = showFinalCard
     ? [...CARDS_BASE, CARD_FINAL, ...CARDS_TAIL]
@@ -33,9 +35,21 @@ export default function APFooterDeck({
   return (
     <footer className="bottom-hand">
       {lessonActive ? (
-        <div className="cards-scroll-wrapper" style={{ alignItems: 'center', color: '#444',
-          fontFamily: "'Comic Sans MS', cursive", fontWeight: 900, fontSize: 13 }}>
-          👨‍🏫 Aula em andamento — siga o Maurílio e use “Próximo”.
+        <div className="cards-scroll-wrapper" style={{ alignItems: 'center', padding: '0 16px', minHeight: '85px', maxHeight: '85px', minWidth: 0 }}>
+          {tape ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#1a1a2e', borderRadius: 8, padding: '8px 14px', border: '2px solid #143823', width: '100%', overflowX: 'auto' }}>
+              <span style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 12, fontWeight: 900,
+                whiteSpace: 'nowrap', color: '#fbbf24', flexShrink: 0 }}>
+                Fita:
+              </span>
+              <TuringTape tape={tape} headPosition={tapeHead ?? 0} />
+            </div>
+          ) : (
+            <div style={{ color: '#444',
+              fontFamily: "'Comic Sans MS', cursive", fontWeight: 900, fontSize: 13 }}>
+              👨‍🏫 Aula em andamento — siga o Maurílio e use "Próximo".
+            </div>
+          )}
         </div>
       ) : (
       <div className="cards-scroll-wrapper">

@@ -343,8 +343,8 @@ function buildLessonL37() {
 // L37 (id38) — {contém 'abcd' ou 'dcba'} — menor palavra: "abcd"
 function buildLessonL38() {
   const b = makeBuilder(LEVEL_GRAPHS[38], {
-    q0: [10, 50], qa1: [30, 25], qa2: [50, 25], qa3: [70, 25], qf: [90, 50],
-    qd1: [30, 75], qd2: [50, 75], qd3: [70, 75],
+    q0: [10, 50], qa1: [30, 15], qa2: [52, 15], qa3: [72, 15], qf: [90, 50],
+    qd1: [30, 85], qd2: [52, 85], qd3: [72, 85],
   });
   const steps = [];
   b.addNodes('q0', 'qa1', 'qa2', 'qa3', 'qf')
