@@ -41,7 +41,8 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const [formalMode, setFormalMode]         = useState(false); // jogo: MT válida → preencher descrição formal
   const [validationError, setValidationError] = useState(null); // banner vermelho de erro estrutural
   const [inputError, setInputError]           = useState(null); // erro inline no campo de teste de palavra
-  const canvasRef = useRef(null);
+  const canvasRef      = useRef(null);
+  const innerCanvasRef = useRef(null);
   const formalRef = useRef(null); // container rolável do painel formal (auto-scroll)
 
   // ── Aula Guiada ──────────────────────────────────────────────────────────────
@@ -50,7 +51,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const lesson = useMTGuidedLesson(level);
 
   const g    = useTMGraph({ showToast, selectedNodes, setSelectedNodes });
-  const draw = useAPDrawing(canvasRef);
+  const draw = useAPDrawing(innerCanvasRef);
 
   // O canvas exibe o grafo da aula (overlay) ou o grafo real do aluno
   const viewNodes       = lesson.active ? lesson.displayNodes       : g.nodes;
@@ -157,13 +158,14 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const handleDeckDrag   = useCallback((x, y) => setDeckGhost({ x, y }), []);
   const handleDeckDrop   = useCallback((clientX, clientY) => {
     setDeckGhost(null);
-    const el = canvasRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
+    const outer = canvasRef.current;
+    const inner = innerCanvasRef.current;
+    if (!outer || !inner) return;
+    const r = outer.getBoundingClientRect();
     if (clientX < r.left || clientX > r.right || clientY < r.top || clientY > r.bottom) return;
-    const cssZoom = r.width / el.offsetWidth;
-    const x = ((clientX - r.left) / cssZoom / el.offsetWidth) * 100;
-    const y = ((clientY - r.top)  / cssZoom / el.offsetHeight) * 100;
+    const ri = inner.getBoundingClientRect();
+    const x = ((clientX - ri.left) / ri.width)  * 100;
+    const y = ((clientY - ri.top)  / ri.height) * 100;
     g.addNode(Math.max(3, Math.min(97, x)), Math.max(6, Math.min(94, y)));
   }, [g]);
   const handleDeckCancel = useCallback(() => setDeckGhost(null), []);
@@ -455,6 +457,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         {/* Canvas */}
         <MTCanvas
           canvasRef={canvasRef}
+          innerCanvasRef={innerCanvasRef}
           nodes={viewNodes}
           transitions={viewTransitions}
           mode={mode}

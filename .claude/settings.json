@@ -22,10 +22,18 @@
       "Bash(node -e \"console.log\\(require\\('./package.json'\\).type || 'commonjs'\\)\")",
       "Bash(node mt_debug_test.mjs)",
       "Bash(grep -n \"^  {$\\\\|^  id:\" \"c:/github/jogoAFD/src/modules/mt/levels_mt.js\")",
-      "Bash(node split_mt.js)"
+      "Bash(node split_mt.js)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(curl -s http://localhost:5174/)",
+      "Bash(npx playwright *)",
+      "Bash(npm install *)",
+      "Bash(Remove-Item ss_*.png -ErrorAction SilentlyContinue)",
+      "Bash(rm -f ss_*.png && echo \"cleaned\")"
     ],
     "additionalDirectories": [
-      "c:\\Users\\sg\\.claude\\projects\\c--github-jogoAFD\\memory"
+      "c:\\Users\\sg\\.claude\\projects\\c--github-jogoAFD\\memory",
+      "C:\\github\\jogoAFD"
     ]
   }
 }
