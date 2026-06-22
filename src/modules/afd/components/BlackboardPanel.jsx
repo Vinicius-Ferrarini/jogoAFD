@@ -20,8 +20,10 @@ export default function BlackboardPanel({
   // Aulas com simulação (bosses): a lousa é guiada pela animação "Testando
   // palavra" + texto do professor — escondemos a lista estática de boardWords.
   const isSimLesson = steps.some(s => s?.simulateWord !== undefined);
-  // Lousa interativa (menu de testes gamificado) é EXCLUSIVA do L57 por enquanto.
-  const interactive = levelId === 57;
+  // Lousa interativa (menu de testes gamificado) liberada para toda a grade,
+  // exceto as fases indisponíveis (IDs 1, 2, 3, 4, 14). Em aulas sem simulateWord
+  // a lista aparece normalmente e os botões ▶ ficam apenas desabilitados.
+  const interactive = ![1, 2, 3, 4, 14].includes(levelId);
   // Mostra a lista de palavras: aulas clássicas (não-sim) sempre; nas de sim, só no L57.
   const showWordList = !isSimLesson || interactive;
 

@@ -285,6 +285,17 @@ export default function useAFDGraph({
         const cy = (src.y * sh) / 100;
         pathD = `M ${cx - 16} ${cy - 29} C ${cx - 58} ${cy - 96} ${cx + 58} ${cy - 96} ${cx + 16} ${cy - 29}`;
         lx = cx; ly = cy - 82;
+      } else if (t.curve != null && t.curve !== false) {
+        // Bypass com curvatura explícita (ex.: pontes do L21): arco por cima do
+        // caminho linear. t.curve = deslocamento (px) ao longo da normal; valor
+        // negativo arqueia "para cima" em arestas da esquerda→direita.
+        const dx = tx - sx, dy = ty - sy, dist = Math.sqrt(dx*dx + dy*dy) || 1;
+        const nx = -dy/dist, ny = dx/dist;
+        const off = typeof t.curve === 'number' ? t.curve : -60;
+        const qcx = (sx+tx)/2 + nx*off, qcy = (sy+ty)/2 + ny*off;
+        pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${tx} ${ty}`;
+        lx = (sx+tx)/2 + nx*off*0.55;
+        ly = (sy+ty)/2 + ny*off*0.55;
       } else if (bidir) {
         const dx = tx - sx, dy = ty - sy, dist = Math.sqrt(dx*dx + dy*dy);
         const nx = dist ? -dy/dist : 0, ny = dist ? dx/dist : 0;

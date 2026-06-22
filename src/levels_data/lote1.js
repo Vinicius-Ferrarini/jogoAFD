@@ -1,4 +1,303 @@
-﻿export const lote1 = [
+﻿import { LEVEL_GRAPHS } from '../levels_graphs.js';
+import { makeBuilder } from './lessonBuilder.js';
+
+// ─── Modo Aula do Lote 1 (L05–L12) — padrão "Desenha ➔ Testa ➔ Rejeição" ─────
+// Cada construtor desconstrói o grafo estático (LEVEL_GRAPHS) progressivamente:
+// desenha a espinha da menor palavra → testa → adiciona laços/ramos → mostra a
+// máquina TRAVAR numa palavra que o aluno costuma errar (expectedVerdict:'reject')
+// → testa um sucesso maior → encerra liberando o grafo completo (fase FORMAL).
+// boardWords de cada nível é sincronizado com a ordem dos simulateWord aqui.
+
+// L05 — {a^n | n > 0} — menor palavra: "a"
+function buildLessonL5() {
+  const b = makeBuilder(LEVEL_GRAPHS[5], { q0: [20, 50], q1: [55, 50] });
+  const steps = [];
+  b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
+  steps.push(b.draw('Vamos construir o caminho da menor palavra válida: "a".', -1));
+  steps.push(b.test('Veja "a" percorrer q0—a→q1 (final). Aceita!', 'a', 0));
+  steps.push(b.reject('Mas "aa" trava em q1: sem um laço, não há para onde ir com o 2º "a"!', 'aa', 0));
+  b.addEdges(['q1', 'a', 'q1']);
+  steps.push(b.draw('Agora o laço q1—a→q1, que absorve "a"s extras para sempre.', 1));
+  steps.push(b.test('Com o laço, "aaa" gira em q1 e continua aceitando.', 'aaa', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L06 — {a^n | n > 0, n ímpar} — menor palavra: "a"
+function buildLessonL6() {
+  const b = makeBuilder(LEVEL_GRAPHS[6], { q0: [20, 50], q1: [55, 50] });
+  const steps = [];
+  b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
+  steps.push(b.draw('Vamos construir o caminho da menor palavra ímpar: "a".', -1));
+  steps.push(b.test('Veja "a" (1 = ímpar) chegar a q1 (final). Aceita!', 'a', 0));
+  b.addEdges(['q1', 'a', 'q0']);
+  steps.push(b.draw('Adicionamos o vai-e-volta q1—a→q0, que rastreia a paridade.', 1));
+  steps.push(b.reject('Mas "aa" (2 = par) termina em q0, que NÃO é final. Por isso rastreamos a paridade!', 'aa', 1));
+  steps.push(b.test('Já "aaa" (3 = ímpar) volta a q1 (final). Aceita!', 'aaa', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L07 — {a b^n a | n ≥ 0, n par} — menor palavra: "aa"
+function buildLessonL7() {
+  const b = makeBuilder(LEVEL_GRAPHS[7], {
+    q0: [15, 50], q1: [40, 50], q2: [37, 80], q3: [64, 46],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q1', 'q3').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q3']);
+  steps.push(b.draw('Menor palavra "aa" (zero "b"s no meio): q0—a→q1—a→q3 (final).', -1));
+  steps.push(b.test('Veja "aa" percorrer a espinha até q3 (final). Aceita!', 'aa', 0));
+  b.addNodes('q2').addEdges(['q1', 'b', 'q2'], ['q2', 'b', 'q1']);
+  steps.push(b.draw('Adicionamos o ping-pong q1↔q2 para contar os "b"s em pares.', 1));
+  steps.push(b.reject('Mas "aba" tem 1 "b" (ímpar): para em q2, que não lê "a". B\'s vêm em duplas!', 'aba', 1));
+  steps.push(b.test('Já "abba" tem 2 "b"s (par): volta a q1 e fecha em q3. Aceita!', 'abba', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L08 — {a (bc)^n a | n > 0} — menor palavra: "abca"
+function buildLessonL8() {
+  const b = makeBuilder(LEVEL_GRAPHS[8], {
+    q0: [12, 50], q1: [30, 50], q2: [48, 50], q3: [66, 50], q4: [84, 50],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'a', 'q4']);
+  steps.push(b.draw('Menor palavra "abca" (um ciclo "bc"): cadeia q0→q1→q2→q3→q4 (final).', -1));
+  steps.push(b.test('Veja "abca" percorrer a cadeia até q4 (final). Aceita!', 'abca', 0));
+  steps.push(b.reject('Mas "aa" pula o ciclo "bc" obrigatório (n>0): trava em q1!', 'aa', 0));
+  b.addEdges(['q3', 'b', 'q2']);
+  steps.push(b.draw('Adicionamos o retorno q3—b→q2, que repete o ciclo "bc".', 1));
+  steps.push(b.test('Com o retorno, "abcbca" dá duas voltas no ciclo e fecha em q4. Aceita!', 'abcbca', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L09 — {a^n b^m c^p | n > 0, m ≥ 0, p ≥ 0} — menor palavra: "a"
+function buildLessonL9() {
+  const b = makeBuilder(LEVEL_GRAPHS[9], {
+    q0: [15, 50], q1: [38, 50], q2: [61, 72], q3: [84, 50],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
+  steps.push(b.draw('Menor palavra "a" (n>0): q0—a→q1 (final).', -1));
+  steps.push(b.test('Veja "a" chegar a q1 (final). Aceita!', 'a', 0));
+  steps.push(b.reject('Mas "b" não começa com "a" (n>0): trava logo em q0!', 'b', 0));
+  b.addNodes('q2').addEdges(['q1', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'b', 'q2']);
+  steps.push(b.draw('Adicionamos o laço de "a" e o bloco de "b"s (q1→q2, laço em q2).', 1));
+  steps.push(b.test('"aabb" usa o laço de "a" e o bloco de "b"s, parando em q2 (final). Aceita!', 'aabb', 1));
+  b.addNodes('q3').addEdges(['q2', 'c', 'q3'], ['q3', 'c', 'q3']);
+  steps.push(b.draw('Por fim, o bloco de "c"s (q2→q3, laço em q3).', 2));
+  steps.push(b.test('"aabbcc" percorre os três blocos e fecha em q3 (final). Aceita!', 'aabbcc', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L10 — {a^n bb a^m | n,m ≥ 0 e pares} — menor palavra: "bb"
+function buildLessonL10() {
+  const b = makeBuilder(LEVEL_GRAPHS[10], {
+    q0: [20, 65], q1: [20, 35], q2: [50, 65], q3: [80, 65], q4: [80, 35],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q2', 'q3').addEdges(['q0', 'b', 'q2'], ['q2', 'b', 'q3']);
+  steps.push(b.draw('Menor palavra "bb" (o núcleo fixo): q0—b→q2—b→q3 (final).', -1));
+  steps.push(b.test('Veja "bb" percorrer o núcleo até q3 (final). Aceita!', 'bb', 0));
+  b.addNodes('q1').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q0']);
+  steps.push(b.draw('Adicionamos o vai-e-volta q0↔q1 para o prefixo PAR de "a"s.', 1));
+  steps.push(b.reject('Mas "abb" tem 1 "a" (ímpar) antes do núcleo: trava em q1!', 'abb', 1));
+  steps.push(b.test('Já "aabb" tem 2 "a"s (par): volta a q0 e segue para o núcleo. Aceita!', 'aabb', 1));
+  b.addNodes('q4').addEdges(['q3', 'a', 'q4'], ['q4', 'a', 'q3']);
+  steps.push(b.draw('E o vai-e-volta q3↔q4 para o sufixo PAR de "a"s.', 2));
+  steps.push(b.test('"bbaa" fecha o núcleo e usa o par de "a"s do sufixo. Aceita!', 'bbaa', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L11 — {a^n b^m | (n+m) par} — menor palavra: λ
+function buildLessonL11() {
+  const b = makeBuilder(LEVEL_GRAPHS[11], {
+    ae: [22, 25], ao: [78, 25], bo: [22, 80], be: [78, 80],
+  });
+  const steps = [];
+  b.addNodes('ae');
+  steps.push(b.draw('A menor palavra é λ (0+0 = par): o estado inicial "ae" já é final.', -1));
+  steps.push(b.test('Veja λ ser aceita parada em "ae" (inicial E final).', '', 0));
+  b.addNodes('ao').addEdges(['ae', 'a', 'ao'], ['ao', 'a', 'ae']);
+  steps.push(b.draw('Adicionamos o vai-e-volta ae↔ao para a paridade dos "a"s.', 1));
+  steps.push(b.reject('Mas "a" (1 = ímpar) termina em "ao", que NÃO é final!', 'a', 1));
+  steps.push(b.test('Já "aa" (2 = par) volta a "ae" (final). Aceita!', 'aa', 1));
+  b.addNodes('bo', 'be')
+   .addEdges(['ae', 'b', 'bo'], ['ao', 'b', 'be'], ['be', 'b', 'bo'], ['bo', 'b', 'be']);
+  steps.push(b.draw('Completamos o quadrado com os "b"s (estados "be" par e "bo" ímpar).', 2));
+  steps.push(b.reject('"b" sozinho (1 = ímpar) termina em "bo", que NÃO é final!', 'b', 2));
+  steps.push(b.test('"ab" (1+1 = par) chega a "be" (final). Aceita!', 'ab', 2));
+  steps.push(b.test('E "bb" (0+2 = par) também fecha em "be" (final). Aceita!', 'bb', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L12 — {a^n b^2m | n > 0, m > 0} — menor palavra: "abb"
+function buildLessonL12() {
+  const b = makeBuilder(LEVEL_GRAPHS[12], {
+    q0: [15, 50], q1: [38, 50], q2: [60, 50], q3: [82, 50],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q1', 'q2', 'q3')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'b', 'q3']);
+  steps.push(b.draw('Menor palavra "abb" (1 "a" + 1 dupla de "b"s): q0→q1→q2→q3 (final).', -1));
+  steps.push(b.test('Veja "abb" fechar em q3 (final). Aceita!', 'abb', 0));
+  steps.push(b.reject('Mas "ab" tem 1 "b" só (ímpar): para em q2, que NÃO é final. B\'s vêm em duplas!', 'ab', 0));
+  b.addEdges(['q1', 'a', 'q1']);
+  steps.push(b.draw('Adicionamos o laço q1—a→q1 para "a"s extras (n>0).', 1));
+  steps.push(b.test('"aabb" usa o laço de "a" e fecha a dupla de "b"s em q3. Aceita!', 'aabb', 1));
+  b.addEdges(['q3', 'b', 'q2']);
+  steps.push(b.draw('E o ping-pong q3—b→q2, que repete as duplas de "b"s.', 2));
+  steps.push(b.test('"abbbb" lê duas duplas de "b"s (q2↔q3) e fecha em q3. Aceita!', 'abbbb', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L13 — {(ab)^n (cd)^m | n>0, m>0} — menor palavra: "abcd"
+function buildLessonL13() {
+  const b = makeBuilder(LEVEL_GRAPHS[13], {
+    q0: [12, 50], q1: [30, 50], q2: [50, 50], q3: [68, 50], q4: [85, 50],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4']);
+  steps.push(b.draw('Menor palavra "abcd" (1 bloco ab + 1 bloco cd): cadeia q0→q1→q2→q3→q4 (final).', -1));
+  steps.push(b.test('Veja "abcd" percorrer a cadeia até q4 (final). Aceita!', 'abcd', 0));
+  steps.push(b.reject('Mas "ab" não tem o bloco (cd)+ obrigatório (m>0): para em q2, que NÃO é final!', 'ab', 0));
+  b.addEdges(['q2', 'a', 'q1']);
+  steps.push(b.draw('Adicionamos o retorno q2—a→q1, que repete o ciclo "ab".', 1));
+  steps.push(b.test('Com o retorno, "ababcd" dá duas voltas no ciclo ab e fecha em q4. Aceita!', 'ababcd', 1));
+  b.addEdges(['q4', 'c', 'q3']);
+  steps.push(b.draw('E o retorno q4—c→q3, que repete o ciclo "cd".', 2));
+  steps.push(b.test('"abcdcd" repete o bloco cd e fecha em q4. Aceita!', 'abcdcd', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L15 — {w | |w| par} — menor palavra: λ
+function buildLessonL15() {
+  const b = makeBuilder(LEVEL_GRAPHS[15], { q0: [28, 50], q1: [68, 50] });
+  const steps = [];
+  b.addNodes('q0');
+  steps.push(b.draw('A menor palavra é λ (comprimento 0 = par): q0 é inicial E final.', -1));
+  steps.push(b.test('Veja λ ser aceita parada em q0 (final).', '', 0));
+  b.addNodes('q1').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q0']);
+  steps.push(b.draw('Adicionamos o vai-e-volta q0↔q1 para os "a"s (q1 = comprimento ímpar).', 1));
+  steps.push(b.reject('Mas "a" tem comprimento 1 (ímpar): termina em q1, que NÃO é final!', 'a', 1));
+  steps.push(b.test('Já "aa" tem comprimento 2 (par): volta a q0 (final). Aceita!', 'aa', 1));
+  b.addEdges(['q0', 'b', 'q1'], ['q1', 'b', 'q0']);
+  steps.push(b.draw('O "b" faz o mesmo vai-e-volta: o símbolo não importa, só o comprimento.', 2));
+  steps.push(b.test('"ab" tem comprimento 2 (par) e fecha em q0. Aceita!', 'ab', 2));
+  steps.push(b.test('E "bb" também tem comprimento par. Aceita!', 'bb', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L16 — {u a v b x c y} (subsequência a…b…c em ordem) — menor palavra: "abc"
+function buildLessonL16() {
+  const b = makeBuilder(LEVEL_GRAPHS[16], {
+    q0: [15, 50], q1: [38, 50], q2: [62, 50], q3: [85, 50],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q1', 'q2', 'q3')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3']);
+  steps.push(b.draw('Menor palavra "abc" (um "a", um "b", um "c" em ordem): q0→q1→q2→q3 (final).', -1));
+  steps.push(b.test('Veja "abc" percorrer a cadeia até q3 (final). Aceita!', 'abc', 0));
+  steps.push(b.reject('Mas "ab" não achou o "c": para em q2, que NÃO é final!', 'ab', 0));
+  b.addEdges(['q0', 'b', 'q0'], ['q1', 'a', 'q1'], ['q2', 'a', 'q2'], ['q3', 'a', 'q3']);
+  steps.push(b.draw('Adicionamos os laços de espera: cada estado ignora símbolos que ainda não procura.', 1));
+  steps.push(b.test('"aabc" usa o laço de q1 (ignora o 2º "a") e fecha em q3. Aceita!', 'aabc', 1));
+  steps.push(b.test('"abbc" usa o laço de q2 (ignora o 2º "b") e fecha em q3. Aceita!', 'abbc', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L17 — {w | começa com 'a' e |w| par} — menor palavra: "aa"
+function buildLessonL17() {
+  const b = makeBuilder(LEVEL_GRAPHS[17], {
+    q0: [15, 50], q1: [50, 50], q2: [82, 50],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q1', 'q2').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q2']);
+  steps.push(b.draw('Menor palavra "aa" (começa com "a", comprimento 2): q0—a→q1—a,b→q2 (final).', -1));
+  steps.push(b.test('Veja "aa" chegar a q2 (final). Aceita!', 'aa', 0));
+  steps.push(b.reject('Mas "a" tem comprimento 1 (ímpar): para em q1, que NÃO é final!', 'a', 0));
+  b.addEdges(['q2', 'a', 'q1']);
+  steps.push(b.draw('Adicionamos o vai-e-volta q1↔q2 para manter a paridade do comprimento.', 1));
+  steps.push(b.test('"abba" começa com "a" e tem 4 letras (par): q0→q1→q2→q1→q2 (final). Aceita!', 'abba', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L18 — {w | não contém 'aa' como subpalavra} — menor palavra: λ
+function buildLessonL18() {
+  const b = makeBuilder(LEVEL_GRAPHS[18], {
+    q0: [20, 50], q1: [50, 50], q2: [80, 50],
+  });
+  const steps = [];
+  b.addNodes('q0').addEdges(['q0', 'b', 'q0']);
+  steps.push(b.draw('λ e qualquer sequência de "b"s: q0 é inicial+final, com laço de "b".', -1));
+  steps.push(b.test('Veja λ ser aceita parada em q0 (final).', '', 0));
+  b.addNodes('q1').addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q0']);
+  steps.push(b.draw('Adicionamos q1 (um "a" lido): um "b" reinicia a contagem, voltando a q0.', 1));
+  steps.push(b.test('"ab" lê um "a" e reinicia com "b": q0→q1→q0 (final). Aceita!', 'ab', 1));
+  b.addNodes('q2').addEdges(['q1', 'a', 'q2'], ['q2', 'a', 'q2'], ['q2', 'b', 'q2']);
+  steps.push(b.draw('E a armadilha q2 (não-final): um 2º "a" seguido cai aqui e nunca mais sai.', 2));
+  steps.push(b.reject('"aa" tem dois "a"s seguidos: q0→q1→q2 (armadilha, não-final). Rejeita!', 'aa', 2));
+  steps.push(b.test('Já "aba" intercala com "b": q0→q1→q0→q1 (final). Aceita!', 'aba', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L19 — {w | qtd(a) ímpar E qtd(b) ímpar} — quadrado de paridade — menor: "ab"
+function buildLessonL19() {
+  const b = makeBuilder(LEVEL_GRAPHS[19], {
+    q0: [30, 20], q1: [70, 20], q2: [30, 80], q3: [70, 80],
+  });
+  const steps = [];
+  b.addNodes('q0', 'q1', 'q3').addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3']);
+  steps.push(b.draw('Menor palavra "ab" (1 "a", 1 "b" = ímpar/ímpar): q0—a→q1—b→q3 (final).', -1));
+  steps.push(b.test('Veja "ab" chegar a q3 (final). Aceita!', 'ab', 0));
+  steps.push(b.reject('Mas "a" tem 1 "a" e 0 "b" (b par): para em q1, que NÃO é final!', 'a', 0));
+  b.addNodes('q2').addEdges(['q1', 'a', 'q0'], ['q0', 'b', 'q2'], ['q2', 'b', 'q0'],
+                            ['q2', 'a', 'q3'], ['q3', 'a', 'q2'], ['q3', 'b', 'q1']);
+  steps.push(b.draw('Completamos o quadrado: "a" troca a linha, "b" troca a coluna (q3 = ímpar/ímpar).', 1));
+  steps.push(b.test('"ba" chega a q3 pelo outro lado: q0—b→q2—a→q3 (final). Aceita!', 'ba', 1));
+  steps.push(b.reject('"abab" tem 2 "a"s e 2 "b"s (ambos pares): volta a q0, que NÃO é final!', 'abab', 1));
+  steps.push(b.test('Já "aaab" tem 3 "a"s e 1 "b" (ímpar/ímpar): q0→q1→q0→q1→q3 (final). Aceita!', 'aaab', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+// L20 — {w | |w|≥2 e a's precedem b's} — menor palavra: "ab"
+function buildLessonL20() {
+  const b = makeBuilder(LEVEL_GRAPHS[20], {
+    q0: [10, 50], qa: [33, 28], qaa: [60, 20], qab: [86, 45], qb: [33, 75], qbb: [64, 82],
+  });
+  const steps = [];
+  b.addNodes('q0', 'qa', 'qab').addEdges(['q0', 'a', 'qa'], ['qa', 'b', 'qab']);
+  steps.push(b.draw('Menor palavra "ab" (um "a" depois um "b"): q0→qa→qab (final).', -1));
+  steps.push(b.test('Veja "ab" chegar a qab (final). Aceita!', 'ab', 0));
+  steps.push(b.reject('Mas "a" tem só 1 letra (|w|≥2): para em qa, que NÃO é final!', 'a', 0));
+  b.addNodes('qaa').addEdges(['qa', 'a', 'qaa'], ['qaa', 'a', 'qaa'], ['qaa', 'b', 'qab']);
+  steps.push(b.draw('Adicionamos o caminho dos "a"s repetidos: qa—a→qaa (final, laço a).', 1));
+  steps.push(b.test('"aab" lê dois "a"s e fecha com "b": q0→qa→qaa→qab (final). Aceita!', 'aab', 1));
+  b.addEdges(['qab', 'b', 'qab']);
+  steps.push(b.draw('E o laço qab—b→qab para os "b"s finais repetidos.', 1));
+  steps.push(b.test('"abb" lê "a" e depois "b"s: q0→qa→qab→qab (final). Aceita!', 'abb', 1));
+  b.addNodes('qb', 'qbb').addEdges(['q0', 'b', 'qb'], ['qb', 'b', 'qbb'], ['qbb', 'b', 'qbb']);
+  steps.push(b.draw('Por fim, o caminho só de "b"s: q0→qb→qbb (final). Note: qb não lê "a"!', 2));
+  steps.push(b.reject('"ba" tem "a" depois de "b": qb não lê "a" e a máquina trava!', 'ba', 2));
+  steps.push(b.test('Já "bb" são dois "b"s: q0→qb→qbb (final). Aceita!', 'bb', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  return steps;
+}
+
+export const lote1 = [
   { id: 1,  label: "L01", formula: "L = ∅",                                                               wordOnly: true,  desc: "A linguagem mais simples que existe; não contém palavras.",           shortestWord: null,       regex: /(?!)/,                                                     alphabet: [],                     acceptedWords: [],                         rejectedWords: ["λ","a","0"],           hint: "Uma linguagem vazia não aceita absolutamente nada. Como o grafo deve ficar?",                                       successMsg: "Perfeito! Um autômato sem estados finais não aceita nada.",
     tutorials: {
       onStart: { type: 'theory', title: 'Bem-vindo ao TuringLab!', dialog: [
@@ -143,36 +442,7 @@
       ] },
     },
     boardWords: ['a', 'aa', 'aaa'],
-    guidedLesson: [
-      { text: 'Desafio: L = { a, aa, aaa... }<br/>Aceitar: <b>a</b>, <b>aa</b>, <b>aaa</b>. Rejeitar: λ.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>a</b>: mínimo 1 "a". Preciso de q0—a→q1(final).',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0—a→<b>q1</b>(final). "a" ✓. Próxima: "aa" — q1 sem loop!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 55, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [{ from: 'q0', to: 'q1', symbol: 'a' }] } },
-      { text: 'Foco em <b>aa</b> e <b>aaa</b>: 2° "a" em q1 sem seta — dead state! Preciso de loop.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 55, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [{ from: 'q0', to: 'q1', symbol: 'a' }] } },
-      { text: 'Solução: loop <b>q1—a→q1</b>. "aa" ✓ "aaa" ✓ Gira para sempre!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 55, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-          ] } },
-    ] },
+    guidedLesson: buildLessonL5() },
   { id: 6,  label: "L06", formula: "L = { a^n | n > 0 e n é ímpar }",                                    desc: "",                                                                 shortestWord: "a",        regex: /^a(aa)*$/,                                                  alphabet: ['a'],                  acceptedWords: ["a","aaa","aaaaa"],         rejectedWords: ["λ","aa","aaaa"],       hint: "Ímpar significa 1, 3, 5... Vai e volta entre dois estados!",                                                        successMsg: "Mecânica de paridade dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade: Ímpar vs Par', dialog: [
@@ -186,37 +456,8 @@
         'Leu "a": q0→q1 (aceita, comprimento ímpar). Leu mais "a": q1→q0 (rejeita, par). E assim vai!',
       ] },
     },
-    boardWords: ['a', 'aaa', 'aaaaa'],
-    guidedLesson: [
-      { text: 'Apenas quantidade <u>ímpar</u> de "a"s!<br/>Aceitar: <b>a</b>, <b>aaa</b>, <b>aaaaa</b>. Rejeitar: λ, aa.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>a</b>: ímpar mínimo = 1 "a". Preciso de q0—a→q1(final).',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0—a→<b>q1</b>(final). "a" ✓. Próxima: "aaa" — 3° "a" em q1 sem seta!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 55, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [{ from: 'q0', to: 'q1', symbol: 'a' }] } },
-      { text: 'Foco em <b>aaa</b> e <b>aaaaa</b>: "a" extra em q1 morre! Preciso de <u>vai-e-volta</u>.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 55, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [{ from: 'q0', to: 'q1', symbol: 'a' }] } },
-      { text: 'Solução: <u>vai-e-volta</u> q1—a→q0. Par→q0(rejeita), ímpar→q1(aceita). "aaa" ✓ "aaaaa" ✓',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 55, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-          ] } },
-    ] },
+    boardWords: ['a', 'aa', 'aaa'],
+    guidedLesson: buildLessonL6() },
   { id: 7,  label: "L07", formula: "L = { a b^n a | n ≥ 0 e n é par }",                                  desc: "",                                                                 shortestWord: "aa",       regex: /^a(bb)*a$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["aa","abba","abbbba"],      rejectedWords: ["a","aba","abbba","b","ba","baa","babba","aab","aaba","abbab","aaa"],     hint: "A palavra começa com 'a', termina com 'a', e no meio os 'b's andam em duplas.",                                    successMsg: "Excelente! Você controlou o sanduíche de 'b's pares.",
     tutorials: {
       onStart: { type: 'theory', title: 'Linguagem Sanduíche!', dialog: [
@@ -230,49 +471,8 @@
         'Para cobrir n=0: crie uma transição do estado "b-par" direto para o estado que lê o "a" final.',
       ] },
     },
-    boardWords: ['aa', 'abba', 'abbbba'],
-    guidedLesson: [
-      { text: 'Sanduíche: "a" + b\'s PARES + "a".<br/>Aceitar: <b>aa</b>, <b>abba</b>, <b>abbbba</b>. Rejeitar: a, aba.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>aa</b>: zero b\'s no meio — caminho direto q0—a→q1—a→q3(final).',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0—a→q1—a→<b>q3</b>(final). "aa" ✓. Próxima: "abba" — q1 sem seta para "b"!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 40, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 64, y: 46, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'a' },
-          ] } },
-      { text: 'Foco em <b>abba</b> e <b>abbbba</b>: q1 sem seta para "b" — trava! Preciso de ping-pong.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 40, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 64, y: 46, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'a' },
-          ] } },
-      { text: 'Solução: <u>ping-pong</u> q1↔q2(b). Par de b\'s → volta ao q1 → q3. "abba" ✓ "abbbba" ✓',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 40, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 37, y: 80, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 64, y: 46, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q1', symbol: 'b' },
-            { from: 'q1', to: 'q3', symbol: 'a' },
-          ] } },
-    ] },
+    boardWords: ['aa', 'aba', 'abba'],
+    guidedLesson: buildLessonL7() },
   { id: 8,  label: "L08", formula: "L = { a(bc)^n a | n > 0 }",                                          desc: "",                                                                 shortestWord: "abca",     regex: /^a(bc)+a$/,                                                 alphabet: ['a', 'b', 'c'],        acceptedWords: ["abca","abcbca"],           rejectedWords: ["aa","aca","abba"],     hint: "Começa com 'a', depois exige o ciclo exato 'bc', 'bc', e fecha com 'a'.",                                           successMsg: "Belo ciclo! A sequência foi respeitada.",
     tutorials: {
       onStart: { type: 'theory', title: 'Agrupamento Cíclico (bc)^n', dialog: [
@@ -286,59 +486,8 @@
         'Como n > 0, o ciclo é obrigatório: não existe atalho direto de q0 para o estado final.',
       ] },
     },
-    boardWords: ['abca', 'abcbca'],
-    guidedLesson: [
-      { text: 'Ciclo fixo: a + (bc)^n + a, n&gt;0.<br/>Aceitar: <b>abca</b>, <b>abcbca</b>. Rejeitar: aa, aca.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>abca</b>: 1 ciclo "bc". Cadeia linear q0—a→q1—b→q2—c→q3—a→q4(final).',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: cadeia q0→q1→q2→q3→<b>q4</b>(final). "abca" ✓. Próxima: "abcbca" — q3 sem seta para 2° "b"!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 48, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 66, y: 50, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 84, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q4', symbol: 'a' },
-          ] } },
-      { text: 'Foco em <b>abcbca</b>: "abcbc" chega em q3 — "b" volta mas q3 sem seta!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 48, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 66, y: 50, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 84, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q4', symbol: 'a' },
-          ] } },
-      { text: 'Solução: q3—b→q2. O ciclo (bc) gira de volta! "abcbca" ✓ Concluído!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 48, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 66, y: 50, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 84, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q2', symbol: 'b' },
-            { from: 'q3', to: 'q4', symbol: 'a' },
-          ] } },
-    ] },
+    boardWords: ['abca', 'aa', 'abcbca'],
+    guidedLesson: buildLessonL8() },
   { id: 9,  label: "L09", formula: "L = { a^n b^m c^p | n > 0, m ≥ 0, p ≥ 0 }",                         desc: "",                                                                 shortestWord: "a",        regex: /^a+b*c*$/,                                                  alphabet: ['a', 'b', 'c'],        acceptedWords: ["a","ab","abc"],            rejectedWords: ["λ","b","ba"],          hint: "Os blocos não se misturam. Primeiro só 'a's, depois só 'b's, e por fim só 'c's.",                                  successMsg: "Progresso linear perfeito!",
     tutorials: {
       onStart: { type: 'theory', title: 'Variáveis Independentes!', dialog: [
@@ -352,122 +501,8 @@
         'q1, q2 e q3 são todos finais — após o primeiro "a", qualquer b*c* é válido!',
       ] },
     },
-    boardWords: ['a', 'aa', 'aabb', 'aacc', 'aabbcc'],
-    guidedLesson: [
-      { text: 'Três blocos independentes: a^n, b^m, c^p.<br/>Aceitar: <b>a</b>, <b>aa</b>, <b>aabb</b>, <b>aacc</b>, <b>aabbcc</b>.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>a</b>: 1 "a". Preciso de q0—a→q1(final).',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0—a→<b>q1</b>(final). "a" ✓. Próxima: "aa" — q1 sem loop!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [{ from: 'q0', to: 'q1', symbol: 'a' }] } },
-      { text: 'Foco em <b>aa</b>: 2° "a" em q1 não tem seta — dead state! Preciso de loop.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [{ from: 'q0', to: 'q1', symbol: 'a' }] } },
-      { text: 'Solução: loop q1—a→q1. "aa" ✓. Próxima: "aabb" — q1 sem seta para "b"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-          ] } },
-      { text: 'Foco em <b>aabb</b>: q1 lê "b" — sem seta! Preciso de q2 para o bloco de "b"s.',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-          ] } },
-      { text: 'Solução: q1—b→<b>q2</b>(final, loop b). "aabb" ✓. Próxima: "aacc" — sem caminho direto de a\'s para c\'s!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-            { id: 'q2', label: 'q2', x: 61, y: 72, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q2', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>aacc</b>: q1 lê "c" direto — sem seta! Preciso de q3 para o bloco de "c"s.',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-            { id: 'q2', label: 'q2', x: 61, y: 72, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q2', symbol: 'b' },
-          ] } },
-      { text: 'Solução: q1—c→<b>q3</b>(final, loop c). "aacc" ✓. Próxima: "aabbcc" — q2 sem seta para "c"!',
-        boardDoneUpTo: 4, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-            { id: 'q2', label: 'q2', x: 61, y: 72, isInitial: false, isFinal: true },
-            { id: 'q3', label: 'q3', x: 84, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q2', symbol: 'b' },
-            { from: 'q1', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q3', symbol: 'c' },
-          ] } },
-      { text: 'Foco em <b>aabbcc</b>: q2 lê "c" — sem seta! Preciso de ponte q2—c→q3.',
-        boardDoneUpTo: 4, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-            { id: 'q2', label: 'q2', x: 61, y: 72, isInitial: false, isFinal: true },
-            { id: 'q3', label: 'q3', x: 84, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q2', symbol: 'b' },
-            { from: 'q1', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q3', symbol: 'c' },
-          ] } },
-      { text: 'Solução: q2—c→q3. "aabbcc": ...→q2→q2→q3→q3(final) ✓ Estrutura dos 3 blocos completa!',
-        boardDoneUpTo: 5, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: true },
-            { id: 'q2', label: 'q2', x: 61, y: 72, isInitial: false, isFinal: true },
-            { id: 'q3', label: 'q3', x: 84, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q2', symbol: 'b' },
-            { from: 'q1', to: 'q3', symbol: 'c' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q3', symbol: 'c' },
-          ] } },
-    ] },
+    boardWords: ['a', 'b', 'aabb', 'aabbcc'],
+    guidedLesson: buildLessonL9() },
   { id: 10, label: "L10", formula: "L = { a^n b b a^m | n,m ≥ 0 e pares }",                              desc: "",                                                                 shortestWord: "bb",       regex: /^(aa)*bb(aa)*$/,                                            alphabet: ['a', 'b'],             acceptedWords: ["bb","aabb","bbaa"],        rejectedWords: ["abb","bba","b"],       hint: "Começa com 'a's pares (ou zero), o núcleo é 'bb', termina com 'a's pares.",                                        successMsg: "Núcleo isolado com sucesso!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Vai-e-Volta nos Flancos!', dialog: [
@@ -482,80 +517,8 @@
         'Zona 3 (Direita): <b>q3</b>↔<b>q4</b> com "a" — conta a\'s PARES após o núcleo!',
       ] },
     },
-    boardWords: ['bb', 'aabb', 'bbaa'],
-    guidedLesson: [
-      { text: 'Sanduíche: a\'s PARES + "bb" + a\'s PARES.<br/>Aceitar: <b>bb</b>, <b>aabb</b>, <b>bbaa</b>. Rejeitar: abb.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>bb</b>: núcleo fixo — dois "b"s seguidos. Preciso de q0→q2→q3(final).',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0—b→q2—b→<b>q3</b>(final). "bb" ✓. Próxima: "aabb" — q0 sem seta para "a"!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 65, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 65, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>aabb</b>: "a" trava em q0 — sem seta! Preciso de vai-e-volta para prefixo par de "a"s.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 65, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 65, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Fix A: q0↔q1(a). Par de "a"s volta a q0, que segue para o núcleo. "aabb" ✓. Próxima: "bbaa"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 20, y: 35, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 65, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 65, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>bbaa</b>: q3 lê "a" — sem seta! Sufixo par de "a"s também precisa de controle.',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 20, y: 35, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 65, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 65, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Fix B: q3↔q4(a). Par de "a"s volta a q3(final). "bbaa" ✓ Concluído!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 65, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 20, y: 35, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 65, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 65, isInitial: false, isFinal: true },
-            { id: 'q4', label: 'q4', x: 80, y: 35, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-            { from: 'q3', to: 'q4', symbol: 'a' },
-            { from: 'q4', to: 'q3', symbol: 'a' },
-          ] } },
-    ] },
+    boardWords: ['bb', 'abb', 'aabb', 'bbaa'],
+    guidedLesson: buildLessonL10() },
   { id: 11, label: "L11", formula: "L = { a^n b^m | (n + m) é par e n,m ≥ 0 }",                         desc: "",                                                                 shortestWord: "",         regex: /^((aa)*(bb)*|a(aa)*b(bb)*)$/,                               alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "A soma é par se ambos forem pares, ou se ambos forem ímpares!",                                                    successMsg: "Lógica matemática aplicada no grafo. Lindo!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Casos de Paridade!', dialog: [
@@ -569,51 +532,8 @@
         'Nenhuma seta diagonal — o quadrado garante clareza visual total!',
       ] },
     },
-    boardWords: ['λ', 'aa', 'ab', 'bb'],
-    guidedLesson: [
-      { text: 'n+m par: AMBOS pares ou AMBOS ímpares!<br/>Aceitar: <b>λ</b>, <b>aa</b>, <b>ab</b>, <b>bb</b>. Rejeitar: a, b.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>λ</b> e <b>aa</b>: q0(ini,final) aceita λ; vai-e-volta q0↔q1(a) aceita aa.',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,final)↔q1(a). λ ✓ aa ✓. Próxima: "ab" e "bb" — sem seta para "b"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 20, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 80, y: 20, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-          ] } },
-      { text: 'Foco em <b>ab</b> e <b>bb</b>: q1 lê "b" — sem seta! q0 lê "b" — sem seta! Faltam os lados do quadrado.',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 20, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 80, y: 20, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-          ] } },
-      { text: 'Solução: quadrado completo! q0↔q2(b), q1↔q3(b), q2↔q3(a). "ab" ✓ "bb" ✓ Concluído!',
-        boardDoneUpTo: 4, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 20, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 80, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 20, y: 80, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 80, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-            { from: 'q2', to: 'q3', symbol: 'a' },
-            { from: 'q3', to: 'q2', symbol: 'a' },
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q0', symbol: 'b' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-            { from: 'q3', to: 'q1', symbol: 'b' },
-          ] } },
-    ] },
+    boardWords: ['', 'a', 'aa', 'b', 'ab', 'bb'],
+    guidedLesson: buildLessonL11() },
   { id: 12, label: "L12", formula: "L = { a^n b^2m | n > 0, m > 0 }",                                    desc: "",                                                                 shortestWord: "abb",      regex: /^a+(bb)+$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["abb","aabb","abbbb"],      rejectedWords: ["a","ab","bb"],         hint: "Os 'b's só podem vir em duplas após pelo menos um 'a'.",                                                            successMsg: "Duplas de B controladas.",
     tutorials: {
       onStart: { type: 'theory', title: 'Armadilha Natural dos "b"s Ímpares!', dialog: [
@@ -627,82 +547,8 @@
         'O ping-pong <b>q2↔q3</b> aceita exatamente bb, bbbb, bbbbbb — pares infinitos!',
       ] },
     },
-    boardWords: ['abb', 'aabb', 'abbbb'],
-    guidedLesson: [
-      { text: 'b\'s em DUPLAS obrigatórias! n≥1, m≥1.<br/>Aceitar: <b>abb</b>, <b>aabb</b>, <b>abbbb</b>. Rejeitar: ab.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>abb</b>: 1 "a" + 1 dupla de "b"s. Cadeia q0—a→q1—b→q2—b→q3(final).',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0→q1→q2→<b>q3</b>(final). q2 não-final: "b" avulso rejeita. "abb" ✓. Próxima: "aabb"!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 60, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 82, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>aabb</b>: 2° "a" em q1 — sem seta! Preciso de loop em q1.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 60, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 82, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Solução: loop q1—a→q1. "aabb" ✓. Próxima: "abbbb" — q3 sem seta para 3° "b"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 60, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 82, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>abbbb</b>: 4 "b"s = 2 duplas. q3 lê "b" — morre! Preciso de ping-pong.',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 60, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 82, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Solução: <u>ping-pong</u> q3—b→q2. Duplas infinitas! "abbbb" ✓ Concluído!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 60, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 82, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-            { from: 'q3', to: 'q2', symbol: 'b' },
-          ] } },
-    ] },
+    boardWords: ['abb', 'ab', 'aabb', 'abbbb'],
+    guidedLesson: buildLessonL12() },
   { id: 13, label: "L13", formula: "L = { (ab)^n (cd)^m | n > 0, m > 0 }",                               desc: "",                                                                 shortestWord: "abcd",     regex: /^(ab)+(cd)+$/,                                              alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","ababcd","abcdcd"], rejectedWords: ["ab","cd","abdc"],      hint: "Blocos duplos de 'ab' seguidos por blocos duplos de 'cd'.",                                                        successMsg: "Padrão silábico validado!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Ciclos em Série — Engrenagens!', dialog: [
@@ -716,92 +562,8 @@
         'Como n,m ≥ 1, não há atalho! O ciclo ab gira ao menos UMA vez antes da ponte.',
       ] },
     },
-    boardWords: ['abcd', 'ababcd', 'abcdcd'],
-    guidedLesson: [
-      { text: 'Dois ciclos silábicos: (ab)^n + (cd)^m, n,m≥1.<br/>Aceitar: <b>abcd</b>, <b>ababcd</b>, <b>abcdcd</b>.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>abcd</b>: menor caso — 1 ciclo ab + 1 ciclo cd. Preciso de 5 estados em linha.',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0→q1(a)→q2(b)→q3(c)→<b>q4</b>(final). "abcd" ✓. Próxima: "ababcd"!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 68, y: 50, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 85, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q4', symbol: 'd' },
-          ] } },
-      { text: 'Foco em <b>ababcd</b>: 2° "ab" — q2 lê "a" sem seta! Preciso voltar ao ciclo ab.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 68, y: 50, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 85, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q4', symbol: 'd' },
-          ] } },
-      { text: 'Solução: seta q2—a→q1 (volta ao ciclo ab). "ababcd" ✓. Próxima: "abcdcd"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 68, y: 50, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 85, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q1', symbol: 'a' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q4', symbol: 'd' },
-          ] } },
-      { text: 'Foco em <b>abcdcd</b>: 2° "cd" — q4 lê "c" sem seta! Preciso voltar ao ciclo cd.',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 68, y: 50, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 85, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q1', symbol: 'a' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q4', symbol: 'd' },
-          ] } },
-      { text: 'Solução: seta q4—c→q3 (volta ao ciclo cd). "abcdcd" ✓ Concluído!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 12, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 30, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 50, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 68, y: 50, isInitial: false, isFinal: false },
-            { id: 'q4', label: 'q4', x: 85, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q1', symbol: 'a' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q4', symbol: 'd' },
-            { from: 'q4', to: 'q3', symbol: 'c' },
-          ] } },
-    ] },
+    boardWords: ['abcd', 'ab', 'ababcd', 'abcdcd'],
+    guidedLesson: buildLessonL13() },
   { id: 14, label: "L14", formula: "L = { w ∈ {a,b}* | |w|a = |w|b }", impossible: true,                                  desc: "",                                                                 shortestWord: null,       regex: /^[ab]*$/, validate: w => [...w].filter(c=>c==='a').length === [...w].filter(c=>c==='b').length, alphabet: ['a', 'b'], acceptedWords: [],  rejectedWords: ["a","b","aab"],         hint: "Cuidado, essa é clássica! Garantir quantidade igual pode exigir muitos estados.",                                   successMsg: "Sobreviveu à máquina de estados complexa!",
     tutorials: {
       onStart: { type: 'theory', title: 'Linguagem IMPOSSÍVEL para AFD!', dialog: [
@@ -886,43 +648,8 @@
         'As 4 setas fazem o mesmo vai-e-volta para qualquer símbolo. Elegante e mínimo!',
       ] },
     },
-    boardWords: ['λ', 'aa', 'ab', 'ba'],
-    guidedLesson: [
-      { text: 'Comprimento par! A ordem não importa.<br/>Aceitar: <b>λ</b>, <b>aa</b>, <b>ab</b>, <b>ba</b>. Rejeitar: a, b.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>λ</b> e <b>aa</b>: ambas têm comprimento par (0 e 2). A mesma estrutura vai resolver as duas!',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,final)↔q1 com "a". λ=q0✓, aa=q0→q1→q0✓. Próxima: "ab" e "ba"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 28, y: 50, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 68, y: 50, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-          ] } },
-      { text: 'Foco em <b>ab</b> e <b>ba</b>: q1 lê "b" — sem seta! "b" precisa do mesmo vai-e-volta.',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 28, y: 50, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 68, y: 50, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-          ] } },
-      { text: 'Solução: q0↔q1(b). ab=q0→q1→q0✓, ba=q0→q1→q0✓ ✔ Concluído!',
-        boardDoneUpTo: 4, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 28, y: 50, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 68, y: 50, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a,b' },
-            { from: 'q1', to: 'q0', symbol: 'a,b' },
-          ] } },
-    ] },
+    boardWords: ['', 'a', 'aa', 'ab', 'bb'],
+    guidedLesson: buildLessonL15() },
   { id: 16, label: "L16", formula: "L = { u a v b x c y | u,v,x,y ∈ {a,b,c}* }",                       desc: "",                                                                 shortestWord: "abc",      regex: /^[abc]*a[abc]*b[abc]*c[abc]*$/,                             alphabet: ['a', 'b', 'c'],        acceptedWords: ["abc","aabc","abbc"],       rejectedWords: ["λ","ab","bc"],         hint: "A palavra tem que ter pelo menos um 'a', um 'b' e um 'c', na ordem.",                                               successMsg: "Filtro de caracteres construído.",
     tutorials: {
       onStart: { type: 'theory', title: 'Busca Sequencial de Símbolos!', dialog: [
@@ -936,56 +663,8 @@
         '<b>q0</b> loop b,c; <b>q1</b> loop a,c; <b>q2</b> loop a,b; <b>q3</b> loop a,b,c.',
       ] },
     },
-    boardWords: ['abc', 'aabc', 'abbc'],
-    guidedLesson: [
-      { text: 'Busca em ordem: a → b → c!<br/>Aceitar: <b>abc</b>, <b>aabc</b>, <b>abbc</b>. Rejeitar: λ, ab, bca.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>abc</b>: menor caso — um "a", um "b", um "c" em linha. 4 estados em série.',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0→q1(a)→q2(b)→<b>q3</b>(final). "abc" ✓. Próxima: "aabc" e "abbc"!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 62, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 85, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-          ] } },
-      { text: 'Foco em <b>aabc</b> e <b>abbc</b>: q1 lê 2° "a" — sem seta! q0 e q2 também precisam de loops de espera.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 62, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 85, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-          ] } },
-      { text: 'Solução: loops q0(b,c), q1(a,c), q2(a,b), q3(a,b,c). "aabc" e "abbc" ✓ Concluído!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 38, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 62, y: 50, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 85, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q0', symbol: 'b,c' },
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q1', symbol: 'a,c' },
-            { from: 'q1', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q2', symbol: 'a,b' },
-            { from: 'q2', to: 'q3', symbol: 'c' },
-            { from: 'q3', to: 'q3', symbol: 'a,b,c' },
-          ] } },
-    ] },
+    boardWords: ['abc', 'ab', 'aabc', 'abbc'],
+    guidedLesson: buildLessonL16() },
   { id: 17, label: "L17", formula: "L = { w ∈ {a,b}* | começa com a e tem tamanho par }",               desc: "",                                                                 shortestWord: "aa",       regex: /^a[ab]([ab]{2})*$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["aa","ab","abba"],          rejectedWords: ["a","b","aba"],         hint: "Forçar o início e depois manter a paridade.",                                                                       successMsg: "Paridade e prefixo resolvidos.",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Requisitos Simultâneos!', dialog: [
@@ -999,49 +678,8 @@
         '<b>q2</b> é final: comprimento ≥2, par, iniciou com "a". Cada símbolo inverte a paridade!',
       ] },
     },
-    boardWords: ['aa', 'ab', 'abba'],
-    guidedLesson: [
-      { text: 'Começa com "a" + tamanho PAR!<br/>Aceitar: <b>aa</b>, <b>ab</b>, <b>abba</b>. Rejeitar: a, ba, aba.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>aa</b> e <b>ab</b>: ambas têm 2 letras, começam com "a". A mesma estrutura vai resolver as duas!',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0→q1(a)↔q2(a,b,final). "aa"=q0→q1→q2✓, "ab"=q0→q1→q2✓. Próxima: "abba"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 50, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 82, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'a,b' },
-            { from: 'q2', to: 'q1', symbol: 'a,b' },
-          ] } },
-      { text: 'Foco em <b>abba</b>: 4 letras, começa com "a". Caminho q0→q1→q2→q1→q2. Vai funcionar?',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 50, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 82, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'a,b' },
-            { from: 'q2', to: 'q1', symbol: 'a,b' },
-          ] } },
-      { text: '"abba": q0→q1(a)→q2(b)→q1(b)→q2(a,<b>final</b>)✓ Grafo já aceita! "ba" rejeita por dead-state em q0. Concluído!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 50, y: 50, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 82, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'a,b' },
-            { from: 'q2', to: 'q1', symbol: 'a,b' },
-          ] } },
-    ] },
+    boardWords: ['aa', 'a', 'abba'],
+    guidedLesson: buildLessonL17() },
   { id: 18, label: "L18", formula: "L = { w ∈ {a,b}* | w não contém 'aa' como subpalavra }",         desc: "",                                                                 shortestWord: "",         regex: /^(b|ab)*a?$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["λ","a","b","ab","ba"],     rejectedWords: ["aa","aab","baa"],   hint: "Se dois 'a's aparecerem seguidos, o autômato trava. 'b' reinicia a contagem.",                                      successMsg: "Sem 'aa' consecutivos!",
     tutorials: {
       onStart: { type: 'theory', title: 'Proibido: dois \'a\'s seguidos!', dialog: [
@@ -1055,40 +693,8 @@
         '"ab": q0→q1→q0 ✔ "ba": q0→q0→q1 ✔ "aa": q0→q1→<b>trava</b> ✗',
       ] },
     },
-    boardWords: ['λ', 'a', 'b', 'ab', 'ba'],
-    guidedLesson: [
-      { text: 'Proibido: dois "a"s seguidos!<br/>Aceitar: <b>λ</b>, <b>a</b>, <b>b</b>, <b>ab</b>, <b>ba</b>. Rejeitar: aa, aab, baa.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>λ</b> e <b>b</b>: ambas sem "a". q0 final + loop b resolve as duas de uma vez!',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0(ini,final) + loop b. λ=q0✓, b=q0→q0✓. Próxima: "a", "ab", "ba"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q0', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>a</b>, <b>ab</b>, <b>ba</b>: precisam de q1 para o "a" pendente e retorno com "b".',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q0', symbol: 'b' },
-          ] } },
-      { text: 'Solução: q0→q1(a), q1(final), q1→q0(b). a✓, ab✓, ba✓. "aa"? q1 sem seta para "a" — <u>dead-state</u>! Concluído!',
-        boardDoneUpTo: 5, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 25, y: 50, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 75, y: 50, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q0', symbol: 'b' },
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'b' },
-          ] } },
-    ] },
+    boardWords: ['', 'ab', 'aa', 'aba'],
+    guidedLesson: buildLessonL18() },
   { id: 19, label: "L19", formula: "L = { w ∈ {a,b}* | qtd(a) e qtd(b) são ambas ímpares }",           desc: "",                                                                 shortestWord: "ab",       validate: (w) => { let a=0,b=0; for(const c of w){if(c==='a')a++;else if(c==='b')b++;} return a%2===1&&b%2===1; },                                                                           alphabet: ['a', 'b'],             acceptedWords: ["ab","ba","aaab"],          rejectedWords: ["λ","aa","abab","b"],   hint: "Cada 'a' alterna a paridade do contador de a's; cada 'b' alterna o de b's. Aceite quando os dois forem ímpares.",  successMsg: "Paridade dupla dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade Dupla!', dialog: [
@@ -1102,59 +708,8 @@
         'Zero diagonais — quadrado limpo! "ab": q0→q1(a)→q3(b) ✔ "ba": q0→q2(b)→q3(a) ✔',
       ] },
     },
-    boardWords: ['ab', 'ba', 'aaab'],
-    guidedLesson: [
-      { text: 'a\'s e b\'s em quantidade ímpar!<br/>Aceitar: <b>ab</b>, <b>ba</b>, <b>aaab</b>. Rejeitar: λ, aa, abab.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>ab</b> e <b>ba</b>: um de cada símbolo. Precisam de q3(final) alcançado de dois lados.',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0→q1(a)→q3(b,final), q0→q2(b)→q3(a). "ab" e "ba" ✓. Próxima: "aaab"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 20, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 80, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 20, y: 80, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 80, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'a' },
-          ] } },
-      { text: 'Foco em <b>aaab</b>: 3 "a"s + 1 "b". q1 lê 2° "a" — sem seta! Preciso das arestas de volta.',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 20, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 80, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 20, y: 80, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 80, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'a' },
-          ] } },
-      { text: 'Solução: quadrado bidirecional completo. "aaab": q0→q1→q0→q1→q3 ✓ Concluído!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 20, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 80, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 20, y: 80, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 80, y: 80, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q0', symbol: 'a' },
-            { from: 'q2', to: 'q3', symbol: 'a' },
-            { from: 'q3', to: 'q2', symbol: 'a' },
-            { from: 'q0', to: 'q2', symbol: 'b' },
-            { from: 'q2', to: 'q0', symbol: 'b' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-            { from: 'q3', to: 'q1', symbol: 'b' },
-          ] } },
-    ] },
+    boardWords: ['ab', 'a', 'ba', 'abab', 'aaab'],
+    guidedLesson: buildLessonL19() },
   { id: 20, label: "L20", formula: "L = { w ∈ {a,b}* | |w| ≥ 2 e a's precedem os b's }",              desc: "",                                                                 shortestWord: "aa",       regex: /^(aa+|a+b+|bb+)$/,                                          alphabet: ['a', 'b'],             acceptedWords: ["aa","ab","bb"],            rejectedWords: ["λ","a","ba"],          hint: "Depois que o primeiro 'b' for lido, um 'a' nunca mais poderá aparecer.",                                            successMsg: "Transição irreversível dominada.",
     tutorials: {
       onStart: { type: 'theory', title: 'Transição Irreversível a→b!', dialog: [
@@ -1168,110 +723,6 @@
         'q4 sem seta para "a": dead-state implícito rejeita "ba...". q3 sem seta para "a": rejeita "...ab".',
       ] },
     },
-    boardWords: ['ab', 'aa', 'bb', 'aab', 'abb'],
-    guidedLesson: [
-      { text: 'Tamanho ≥ 2, a\'s antes dos b\'s!<br/>Aceitar: <b>ab</b>, <b>aa</b>, <b>bb</b>, <b>aab</b>, <b>abb</b>. Rejeitar: λ, a, ba.',
-        boardDoneUpTo: -1, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Foco em <b>ab</b>: 1 "a" depois 1 "b". Preciso de q0→q1(a)→q3(b,final).',
-        boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
-      { text: 'Solução: q0→q1(a), q1→q3(b,final). "ab" ✓. Próxima: "aa"!',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 42, y: 20, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 75, y: 78, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>aa</b>: 2 "a"s. q1 lê 2° "a" — sem seta! Preciso de q2(final) via q1.',
-        boardDoneUpTo: 1, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 42, y: 20, isInitial: false, isFinal: false },
-            { id: 'q3', label: 'q3', x: 75, y: 78, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Solução: q1→q2(a,final). "aa" ✓. Próxima: "bb"!',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 42, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 82, y: 20, isInitial: false, isFinal: true },
-            { id: 'q3', label: 'q3', x: 75, y: 78, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>bb</b>: 2 "b"s. q0 lê "b" — sem seta! Preciso de q4 para o caminho b-b.',
-        boardDoneUpTo: 2, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 42, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 82, y: 20, isInitial: false, isFinal: true },
-            { id: 'q3', label: 'q3', x: 75, y: 78, isInitial: false, isFinal: true },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Solução: q0→q4(b)→q3(b). q4 sem "a" — dead rejeita "ba...". "bb" ✓. Próximas: "aab" e "abb"!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 42, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 82, y: 20, isInitial: false, isFinal: true },
-            { id: 'q3', label: 'q3', x: 75, y: 78, isInitial: false, isFinal: true },
-            { id: 'q4', label: 'q4', x: 42, y: 80, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-            { from: 'q0', to: 'q4', symbol: 'b' },
-            { from: 'q4', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Foco em <b>aab</b> e <b>abb</b>: q2 sem seta para "b", q3 sem seta para "b". Precisam de loops!',
-        boardDoneUpTo: 3, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 42, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 82, y: 20, isInitial: false, isFinal: true },
-            { id: 'q3', label: 'q3', x: 75, y: 78, isInitial: false, isFinal: true },
-            { id: 'q4', label: 'q4', x: 42, y: 80, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-            { from: 'q0', to: 'q4', symbol: 'b' },
-            { from: 'q4', to: 'q3', symbol: 'b' },
-          ] } },
-      { text: 'Solução: q2 loop a, q3 loop b, q2→q3(b). "aab"=q1→q2→q3✓, "abb"=q1→q3→q3✓ Concluído!',
-        boardDoneUpTo: 5, stateUpdate: {
-          nodes: [
-            { id: 'q0', label: 'q0', x: 15, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 42, y: 20, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 82, y: 20, isInitial: false, isFinal: true },
-            { id: 'q3', label: 'q3', x: 75, y: 78, isInitial: false, isFinal: true },
-            { id: 'q4', label: 'q4', x: 42, y: 80, isInitial: false, isFinal: false },
-          ],
-          transitions: [
-            { from: 'q0', to: 'q1', symbol: 'a' },
-            { from: 'q1', to: 'q2', symbol: 'a' },
-            { from: 'q2', to: 'q2', symbol: 'a' },
-            { from: 'q1', to: 'q3', symbol: 'b' },
-            { from: 'q2', to: 'q3', symbol: 'b' },
-            { from: 'q3', to: 'q3', symbol: 'b' },
-            { from: 'q0', to: 'q4', symbol: 'b' },
-            { from: 'q4', to: 'q3', symbol: 'b' },
-          ] } },
-    ] },
+    boardWords: ['ab', 'a', 'aab', 'abb', 'ba', 'bb'],
+    guidedLesson: buildLessonL20() },
 ];

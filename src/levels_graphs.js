@@ -209,36 +209,36 @@ export const LEVEL_GRAPHS = {
       { from: 'q2', to: 'q1', symbol: 'a,b' }
     ]
   },
-  18: { // L18: L = {w | nunca mais de dois 'a' seguidos}
+  18: { // L18: L = {w | não contém 'aa' como subpalavra}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: true },
       { id: 'q1', isInitial: false, isFinal: true },
-      { id: 'q2', isInitial: false, isFinal: true }
+      { id: 'q2', isInitial: false, isFinal: false }
     ],
     transitions: [
       { from: 'q0', to: 'q0', symbol: 'b' },
       { from: 'q0', to: 'q1', symbol: 'a' },
       { from: 'q1', to: 'q0', symbol: 'b' },
       { from: 'q1', to: 'q2', symbol: 'a' },
-      { from: 'q2', to: 'q0', symbol: 'b' }
+      { from: 'q2', to: 'q2', symbol: 'a,b' }
     ]
   },
-  19: { // L19: L = {w | número ímpar de 'ab'}
+  19: { // L19: L = {w | qtd(a) ímpar E qtd(b) ímpar} - quadrado de paridade dupla
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
-      { id: 'q2', isInitial: false, isFinal: true },
-      { id: 'q3', isInitial: false, isFinal: false }
+      { id: 'q2', isInitial: false, isFinal: false },
+      { id: 'q3', isInitial: false, isFinal: true }
     ],
     transitions: [
-      { from: 'q0', to: 'q0', symbol: 'b' },
       { from: 'q0', to: 'q1', symbol: 'a' },
-      { from: 'q1', to: 'q1', symbol: 'a' },
-      { from: 'q1', to: 'q2', symbol: 'b' },
-      { from: 'q2', to: 'q2', symbol: 'b' },
+      { from: 'q1', to: 'q0', symbol: 'a' },
       { from: 'q2', to: 'q3', symbol: 'a' },
-      { from: 'q3', to: 'q3', symbol: 'a' },
-      { from: 'q3', to: 'q0', symbol: 'b' }
+      { from: 'q3', to: 'q2', symbol: 'a' },
+      { from: 'q0', to: 'q2', symbol: 'b' },
+      { from: 'q2', to: 'q0', symbol: 'b' },
+      { from: 'q1', to: 'q3', symbol: 'b' },
+      { from: 'q3', to: 'q1', symbol: 'b' }
     ]
   },
   20: { // L20: L = {w | |w|≥2 e a's precedem b's}
@@ -262,21 +262,29 @@ export const LEVEL_GRAPHS = {
       { from: 'qbb', to: 'qbb', symbol: 'b' }
     ]
   },
-  21: { // L21: L = {w | a*b*c*d*}
+  21: { // L21: L = {w | a*b*c*d*} - blocos em ordem, qe armadilha
     nodes: [
       { id: 'q0', isInitial: true, isFinal: true },
       { id: 'q1', isInitial: false, isFinal: true },
       { id: 'q2', isInitial: false, isFinal: true },
-      { id: 'q3', isInitial: false, isFinal: true }
+      { id: 'q3', isInitial: false, isFinal: true },
+      { id: 'qe', isInitial: false, isFinal: false }
     ],
     transitions: [
       { from: 'q0', to: 'q0', symbol: 'a' },
       { from: 'q0', to: 'q1', symbol: 'b' },
+      { from: 'q0', to: 'q2', symbol: 'c' },
+      { from: 'q0', to: 'q3', symbol: 'd' },
       { from: 'q1', to: 'q1', symbol: 'b' },
       { from: 'q1', to: 'q2', symbol: 'c' },
+      { from: 'q1', to: 'q3', symbol: 'd' },
+      { from: 'q1', to: 'qe', symbol: 'a' },
       { from: 'q2', to: 'q2', symbol: 'c' },
       { from: 'q2', to: 'q3', symbol: 'd' },
-      { from: 'q3', to: 'q3', symbol: 'd' }
+      { from: 'q2', to: 'qe', symbol: 'a,b' },
+      { from: 'q3', to: 'q3', symbol: 'd' },
+      { from: 'q3', to: 'qe', symbol: 'a,b,c' },
+      { from: 'qe', to: 'qe', symbol: 'a,b,c,d' }
     ]
   },
   22: { // L22: L = {w | w é número binário par (termina em 0)}
@@ -355,18 +363,21 @@ export const LEVEL_GRAPHS = {
       { from: 'q2', to: 'q0', symbol: '0,1' }
     ]
   },
-  28: { // L28: L = {w | cada 0 é seguido de no mínimo dois 1's}
+  28: { // L28: L = {w | cada 0 é seguido de no mínimo dois 1's} - ^(1*011+)*1*$, q3 armadilha
     nodes: [
       { id: 'q0', isInitial: true, isFinal: true },
       { id: 'q1', isInitial: false, isFinal: false },
-      { id: 'q2', isInitial: false, isFinal: true }
+      { id: 'q2', isInitial: false, isFinal: false },
+      { id: 'q3', isInitial: false, isFinal: false }
     ],
     transitions: [
       { from: 'q0', to: 'q0', symbol: '1' },
       { from: 'q0', to: 'q1', symbol: '0' },
       { from: 'q1', to: 'q2', symbol: '1' },
-      { from: 'q2', to: 'q2', symbol: '1' },
-      { from: 'q2', to: 'q1', symbol: '0' }
+      { from: 'q2', to: 'q0', symbol: '1', curve: 55 },
+      { from: 'q1', to: 'q3', symbol: '0' },
+      { from: 'q2', to: 'q3', symbol: '0' },
+      { from: 'q3', to: 'q3', symbol: '0,1' }
     ]
   },
   29: { // L29: L = {w | primeiros 4 símbolos têm ≥ dois 1's}
@@ -494,7 +505,7 @@ export const LEVEL_GRAPHS = {
       { from: 'q2', to: 'q3', symbol: '1' },
       { from: 'q3', to: 'q4', symbol: '0' },
       { from: 'q3', to: 'q1', symbol: '1' },
-      { from: 'q4', to: 'q1', symbol: '1' },
+      { from: 'q4', to: 'q3', symbol: '1' },
       { from: 'q4', to: 'q0', symbol: '0' }
     ]
   },
@@ -565,16 +576,32 @@ export const LEVEL_GRAPHS = {
       { id: 'qf', isInitial: false, isFinal: true }
     ],
     transitions: [
-      { from: 'q0', to: 'q0', symbol: 'b,c,d' },
-      { from: 'q0', to: 'qa1', symbol: 'a' },
-      { from: 'q0', to: 'qd1', symbol: 'd' },
+      { from: 'q0',  to: 'q0',  symbol: 'b,c' },
+      { from: 'q0',  to: 'qa1', symbol: 'a' },
+      { from: 'q0',  to: 'qd1', symbol: 'd' },
+      { from: 'qa1', to: 'qa1', symbol: 'a' },
       { from: 'qa1', to: 'qa2', symbol: 'b' },
+      { from: 'qa1', to: 'q0',  symbol: 'c' },
+      { from: 'qa1', to: 'qd1', symbol: 'd' },
+      { from: 'qa2', to: 'qa1', symbol: 'a' },
+      { from: 'qa2', to: 'q0',  symbol: 'b' },
       { from: 'qa2', to: 'qa3', symbol: 'c' },
-      { from: 'qa3', to: 'qf', symbol: 'd' },
+      { from: 'qa2', to: 'qd1', symbol: 'd' },
+      { from: 'qa3', to: 'qa1', symbol: 'a' },
+      { from: 'qa3', to: 'q0',  symbol: 'b,c' },
+      { from: 'qa3', to: 'qf',  symbol: 'd' },
+      { from: 'qd1', to: 'qa1', symbol: 'a' },
+      { from: 'qd1', to: 'q0',  symbol: 'b' },
       { from: 'qd1', to: 'qd2', symbol: 'c' },
+      { from: 'qd1', to: 'qd1', symbol: 'd' },
+      { from: 'qd2', to: 'qa1', symbol: 'a' },
       { from: 'qd2', to: 'qd3', symbol: 'b' },
-      { from: 'qd3', to: 'qf', symbol: 'a' },
-      { from: 'qf', to: 'qf', symbol: 'a,b,c,d' }
+      { from: 'qd2', to: 'q0',  symbol: 'c' },
+      { from: 'qd2', to: 'qd1', symbol: 'd' },
+      { from: 'qd3', to: 'qf',  symbol: 'a' },
+      { from: 'qd3', to: 'q0',  symbol: 'b,c' },
+      { from: 'qd3', to: 'qd1', symbol: 'd' },
+      { from: 'qf',  to: 'qf',  symbol: 'a,b,c,d' }
     ]
   },
   39: { // L38: L = {(a+b)* | |a| par, |b| ímpar}
@@ -617,6 +644,7 @@ export const LEVEL_GRAPHS = {
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
+      { id: 'qe', isInitial: false, isFinal: false },
       { id: 'q2', isInitial: false, isFinal: false },
       { id: 'q3', isInitial: false, isFinal: false },
       { id: 'q4', isInitial: false, isFinal: false },
@@ -625,15 +653,14 @@ export const LEVEL_GRAPHS = {
     transitions: [
       { from: 'q0', to: 'q0', symbol: 'a' },
       { from: 'q0', to: 'q1', symbol: 'b' },
-      { from: 'q1', to: 'q2', symbol: 'b' },
-      { from: 'q2', to: 'q1', symbol: 'b' },
-      { from: 'q0', to: 'q3', symbol: 'd' },
-      { from: 'q2', to: 'q3', symbol: 'd' },
+      { from: 'q1', to: 'qe', symbol: 'b' },
+      { from: 'qe', to: 'q1', symbol: 'b' },
+      { from: 'q0', to: 'q2', symbol: 'd' },
+      { from: 'qe', to: 'q2', symbol: 'd' },
+      { from: 'q2', to: 'q5', symbol: 'd' },
+      { from: 'q2', to: 'q3', symbol: 'c' },
       { from: 'q3', to: 'q4', symbol: 'c' },
-      { from: 'q4', to: 'q5', symbol: 'c' },
-      { from: 'q5', to: 'q4', symbol: 'c' },
-      { from: 'q3', to: 'q5', symbol: 'd' },
-      { from: 'q5', to: 'q5', symbol: 'd' }
+      { from: 'q4', to: 'q2', symbol: 'c' }
     ]
   },
   42: { // L41: L = {a(dcb)^n a^m (bb)^p | n>0, m>0, p≥0}
@@ -642,18 +669,18 @@ export const LEVEL_GRAPHS = {
       { id: 'q1', isInitial: false, isFinal: false },
       { id: 'q2', isInitial: false, isFinal: false },
       { id: 'q3', isInitial: false, isFinal: false },
-      { id: 'q4', isInitial: false, isFinal: true },
-      { id: 'q5', isInitial: false, isFinal: false },
-      { id: 'q6', isInitial: false, isFinal: true }
+      { id: 'q4', isInitial: false, isFinal: false },
+      { id: 'q5', isInitial: false, isFinal: true },
+      { id: 'q6', isInitial: false, isFinal: false }
     ],
     transitions: [
       { from: 'q0', to: 'q1', symbol: 'a' },
       { from: 'q1', to: 'q2', symbol: 'd' },
       { from: 'q2', to: 'q3', symbol: 'c' },
-      { from: 'q3', to: 'q1', symbol: 'b' },
-      { from: 'q1', to: 'q4', symbol: 'a' },
-      { from: 'q4', to: 'q4', symbol: 'a' },
-      { from: 'q4', to: 'q5', symbol: 'b' },
+      { from: 'q3', to: 'q4', symbol: 'b' },
+      { from: 'q4', to: 'q2', symbol: 'd' },
+      { from: 'q4', to: 'q5', symbol: 'a' },
+      { from: 'q5', to: 'q5', symbol: 'a' },
       { from: 'q5', to: 'q6', symbol: 'b' },
       { from: 'q6', to: 'q5', symbol: 'b' }
     ]
@@ -690,15 +717,16 @@ export const LEVEL_GRAPHS = {
     transitions: [
       { from: 'q0', to: 'q0', symbol: 'b,c,d' },
       { from: 'q0', to: 'q1', symbol: 'a' },
-      { from: 'q1', to: 'q2', symbol: 'b' },
       { from: 'q1', to: 'q1', symbol: 'a' },
+      { from: 'q1', to: 'q2', symbol: 'b' },
+      { from: 'q1', to: 'q0', symbol: 'c,d' },
       { from: 'q2', to: 'q2', symbol: 'a,b,d' },
       { from: 'q2', to: 'q3', symbol: 'c' },
+      { from: 'q3', to: 'q3', symbol: 'c' },
       { from: 'q3', to: 'q4', symbol: 'd' },
-      { from: 'q3', to: 'q3', symbol: 'a,b,c' },
-      { from: 'q4', to: 'q2', symbol: 'a,b' },
+      { from: 'q3', to: 'q2', symbol: 'a,b' },
       { from: 'q4', to: 'q3', symbol: 'c' },
-      { from: 'q4', to: 'q4', symbol: 'd' }
+      { from: 'q4', to: 'q2', symbol: 'a,b,d' }
     ]
   },
   45: { // L44: L = {w | prefixo 'abcd' e sufixo 'dcba'}
@@ -800,6 +828,7 @@ export const LEVEL_GRAPHS = {
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
+      { id: 'qe', isInitial: false, isFinal: false },
       { id: 'q2', isInitial: false, isFinal: false },
       { id: 'q3', isInitial: false, isFinal: false },
       { id: 'q4', isInitial: false, isFinal: false },
@@ -808,15 +837,14 @@ export const LEVEL_GRAPHS = {
     transitions: [
       { from: 'q0', to: 'q0', symbol: 'a' },
       { from: 'q0', to: 'q1', symbol: 'b' },
-      { from: 'q1', to: 'q2', symbol: 'b' },
-      { from: 'q2', to: 'q1', symbol: 'b' },
-      { from: 'q0', to: 'q3', symbol: 'd' },
-      { from: 'q2', to: 'q3', symbol: 'd' },
+      { from: 'q1', to: 'qe', symbol: 'b' },
+      { from: 'qe', to: 'q1', symbol: 'b' },
+      { from: 'q0', to: 'q2', symbol: 'd' },
+      { from: 'qe', to: 'q2', symbol: 'd' },
+      { from: 'q2', to: 'q5', symbol: 'd' },
+      { from: 'q2', to: 'q3', symbol: 'c' },
       { from: 'q3', to: 'q4', symbol: 'c' },
-      { from: 'q4', to: 'q5', symbol: 'c' },
-      { from: 'q5', to: 'q4', symbol: 'c' },
-      { from: 'q3', to: 'q5', symbol: 'd' },
-      { from: 'q5', to: 'q5', symbol: 'd' }
+      { from: 'q4', to: 'q2', symbol: 'c' }
     ]
   },
   49: { // L48: L = {w ∈ {0,1}* | zeros pares e uns ímpares}
@@ -850,8 +878,8 @@ export const LEVEL_GRAPHS = {
       { id: 'q8', isInitial: false, isFinal: true }
     ],
     transitions: [
-      { from: 'q0', to: 'q0', symbol: 'a' },
       { from: 'q0', to: 'q1', symbol: 'a' },
+      { from: 'q1', to: 'q1', symbol: 'a' },
       { from: 'q1', to: 'q2', symbol: 'c' },
       { from: 'q2', to: 'q2', symbol: 'c' },
       { from: 'q2', to: 'q3', symbol: 'a' },
@@ -895,8 +923,8 @@ export const LEVEL_GRAPHS = {
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'ao', isInitial: false, isFinal: false },
       { id: 'ae', isInitial: false, isFinal: false },
-      { id: 'bo', isInitial: false, isFinal: false },
-      { id: 'be', isInitial: false, isFinal: true },
+      { id: 'bo', isInitial: false, isFinal: true },
+      { id: 'be', isInitial: false, isFinal: false },
       { id: 'co', isInitial: false, isFinal: false },
       { id: 'ce', isInitial: false, isFinal: true }
     ],
@@ -907,9 +935,7 @@ export const LEVEL_GRAPHS = {
       { from: 'ae', to: 'bo', symbol: 'b' },
       { from: 'bo', to: 'be', symbol: 'b' },
       { from: 'be', to: 'bo', symbol: 'b' },
-      { from: 'ae', to: 'co', symbol: 'c' },
       { from: 'bo', to: 'co', symbol: 'c' },
-      { from: 'be', to: 'ce', symbol: 'c' },
       { from: 'co', to: 'ce', symbol: 'c' },
       { from: 'ce', to: 'co', symbol: 'c' }
     ]

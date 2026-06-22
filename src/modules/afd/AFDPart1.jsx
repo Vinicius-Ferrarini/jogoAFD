@@ -131,7 +131,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   // Animação de rastreio de palavra no Modo Aula: { word, frames, idx }
   const [lessonSim, setLessonSim]       = useState(null);
   const [simReplay, setSimReplay]       = useState(0); // bump → re-roda a animação
-  const [manualTrace, setManualTrace]   = useState(null); // { word, step, key } — ▶ sob demanda (L57)
+  const [manualTrace, setManualTrace]   = useState(null); // { word, step, key } — ▶ sob demanda (lousa interativa)
 
   // ── Lógica de grafo (validação, mutações de nós/setas, dados de exibição) ──
   const {
@@ -162,7 +162,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   // Quando o passo atual tem simulateWord, percorremos a palavra no grafo
   // congelado, destacando estado a estado (amarelo → verde/vermelho no fim).
   const lessonSimWord = lessonCur?.simulateWord;
-  // Trace manual (botão ▶ da lousa, exclusivo L57): vale só no passo em que foi
+  // Trace manual (botão ▶ da lousa interativa): vale só no passo em que foi
   // disparado e tem prioridade sobre a palavra nativa daquele passo.
   const manualWord = (manualTrace && manualTrace.step === guidedLessonStep) ? manualTrace.word : undefined;
   const wordToTrace = manualWord !== undefined ? manualWord : lessonSimWord;
