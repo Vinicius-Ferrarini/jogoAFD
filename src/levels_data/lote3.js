@@ -396,7 +396,7 @@ function buildLessonL58() {
 // L59 — a* (bb)* c* d* (#b par) — espinha via "bbcd"
 function buildLessonL59() {
   const b = makeBuilder(LEVEL_GRAPHS[59], {
-    q0:[12,50], q1:[32,50], q2:[52,50], q3:[72,50], q4:[90,50],
+    q0:[10,70], q1:[30,35], q2:[50,15], q3:[70,35], q4:[90,70],
   });
   const steps = [];
   b.addNodes('q0','q1','q2','q3','q4')
