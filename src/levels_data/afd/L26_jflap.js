@@ -1,11 +1,11 @@
 // L26 — grafo extraído de L26.xml por migrador_afd.js
 export default {
   nodes: [
-  { id: 'q0', x: 70, y: 164, isInitial: true, isFinal: false },
-  { id: 'q1', x: 162, y: 161, isInitial: false, isFinal: false },
-  { id: 'q2', x: 267, y: 157, isInitial: false, isFinal: false },
-  { id: 'q3', x: 373, y: 156, isInitial: false, isFinal: false },
-  { id: 'q4', x: 487, y: 172, isInitial: false, isFinal: true }
+  { id: 'q0', x: 200, y: 1000, isInitial: true, isFinal: false },
+  { id: 'q1', x: 600, y: 1000, isInitial: false, isFinal: false },
+  { id: 'q2', x: 1000, y: 1000, isInitial: false, isFinal: false },
+  { id: 'q3', x: 1400, y: 1000, isInitial: false, isFinal: false },
+  { id: 'q4', x: 1800, y: 1000, isInitial: false, isFinal: true }
 ],
   transitions: [
   { from: 'q1', to: 'q2', symbol: '0, 1' },

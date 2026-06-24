@@ -2,7 +2,7 @@
 // Canvas 2000×2000px com viewport scrollável e zoom via CSS transform.
 // Nós posicionados em px absolutos (left/top). Coordenadas de evento calculadas
 // via getBoundingClientRect() do canvas-inner, respeitando o zoom.
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import TransitionLabel from './TransitionLabel';
 import StrokeEl from './StrokeEl';
 import GuidedLessonOverlay from '../GuidedLessonOverlay';
@@ -10,19 +10,16 @@ import { DRAW_COLORS } from '../hooks/useDrawing';
 import imgMaurilioApontando from '../../../assets/maurilio2_apontando_pro_lado.webp';
 import imgBalaoFala         from '../../../assets/balao_fala_redondo.webp';
 
-const INNER_W = 2000;
-const INNER_H = 2000;
+const INNER_W = 8000;
+const INNER_H = 8000;
 
-// Converte evento de pointer em coordenadas lógicas px do canvas-inner.
-// getBoundingClientRect() já retorna o rect visual (escalado), então
-// dividir pelo zoom cancela a escala e devolve px lógicos.
-function pxFromEvent(e, innerRef, zoom) {
+function pxFromEvent(e, innerRef) {
   const el = innerRef.current;
   if (!el) return { x: 0, y: 0 };
   const r = el.getBoundingClientRect();
   return {
-    x: (e.clientX - r.left) / zoom,
-    y: (e.clientY - r.top)  / zoom,
+    x: ((e.clientX - r.left) / r.width)  * INNER_W,
+    y: ((e.clientY - r.top)  / r.height) * INNER_H,
   };
 }
 
@@ -52,12 +49,40 @@ export default function CanvasArea({
   const localInnerRef = useRef(null);
   const innerRef = innerCanvasRef || localInnerRef;
 
+  const actualScale = (zoom / 100) * 0.8;
+
+  const [zoomInput, setZoomInput] = useState(String(zoom));
+  useEffect(() => { setZoomInput(String(zoom)); }, [zoom]);
+
+  const hasAutoCenteredRef = useRef(false);
+  useEffect(() => {
+    if (displayNodes.length === 0) {
+      hasAutoCenteredRef.current = false;
+      return;
+    }
+    if (hasAutoCenteredRef.current) return;
+    hasAutoCenteredRef.current = true;
+    setTimeout(() => {
+      if (!viewportRef?.current) return;
+      const minX = Math.min(...displayNodes.map(n => n.x));
+      const maxX = Math.max(...displayNodes.map(n => n.x));
+      const minY = Math.min(...displayNodes.map(n => n.y));
+      const maxY = Math.max(...displayNodes.map(n => n.y));
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const scale = (zoom / 100) * 0.8;
+      const vp = viewportRef.current;
+      vp.scrollLeft = centerX * scale - vp.clientWidth / 2;
+      vp.scrollTop  = centerY * scale - vp.clientHeight / 2;
+    }, 50);
+  }, [displayNodes, zoom, guidedLessonStep]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Pointer: canvas ───────────────────────────────────────────────────────
   const handlePointerDownCanvas = useCallback((e) => {
     if (!isDrawingUnlocked) return;
 
     if (interactionMode === 'DRAW') {
-      const { x, y } = pxFromEvent(e, innerRef, zoom);
+      const { x, y } = pxFromEvent(e, innerRef);
       if (isErasing) {
         const snapshot = [...drawingsRef.current];
         setDrawingStack(prev => [...prev, snapshot]);
@@ -76,7 +101,7 @@ export default function CanvasArea({
     }
 
     if (interactionMode === 'ADD_NODE') {
-      const { x, y } = pxFromEvent(e, innerRef, zoom);
+      const { x, y } = pxFromEvent(e, innerRef);
       const ix = Math.max(5, Math.min(INNER_W - 5, x));
       const iy = Math.max(5, Math.min(INNER_H - 5, y));
       let num = nodes.length;
@@ -90,7 +115,7 @@ export default function CanvasArea({
     }
 
     if (interactionMode === 'IDLE' && e.button === 0) {
-      const { x, y } = pxFromEvent(e, innerRef, zoom);
+      const { x, y } = pxFromEvent(e, innerRef);
       setSelectionBox({ startX: x, startY: y, currentX: x, currentY: y });
       if (!e.ctrlKey) setSelectedNodes([]);
       e.target.setPointerCapture(e.pointerId);
@@ -150,7 +175,7 @@ export default function CanvasArea({
     if (interactionMode === 'IDLE') {
       const cur = selectedNodes.includes(uid) ? selectedNodes : (e.ctrlKey ? [...selectedNodes, uid] : [uid]);
       setSelectedNodes(cur);
-      const { x, y } = pxFromEvent(e, innerRef, zoom);
+      const { x, y } = pxFromEvent(e, innerRef);
       setDragInfo({
         isDragging: true,
         initialNodes: JSON.parse(JSON.stringify(nodes)),
@@ -165,7 +190,7 @@ export default function CanvasArea({
   const handlePointerMove = useCallback((e) => {
     if (!isDrawingUnlocked) return;
 
-    const { x: ix, y: iy } = pxFromEvent(e, innerRef, zoom);
+    const { x: ix, y: iy } = pxFromEvent(e, innerRef);
 
     if (interactionMode === 'DRAW' && isDrawingRef.current) {
       if (isErasing) {
@@ -280,12 +305,20 @@ export default function CanvasArea({
               </svg>
             </button>
           <div style={{ display:'flex', gap:2, background:'#fff', padding:'3px 6px', border:'2.5px solid #000', borderRadius:8, boxShadow:'3px 3px 0 #000', alignItems:'center' }}>
-            <button onClick={() => setZoom(z => Math.max(0.15, z-0.25))}
+            <button onClick={() => setZoom(z => Math.max(25, z - 10))}
               style={{ fontWeight:'bold', width:20, height:22, cursor:'pointer', border:'none', background:'transparent', fontSize:16, color:'#000', display:'flex', alignItems:'center', justifyContent:'center' }}>−</button>
-            <span style={{ fontWeight:'bold', width:38, textAlign:'center', fontSize:11 }}>{Math.round(zoom*100)}%</span>
-            <button onClick={() => setZoom(z => Math.min(6, z+0.25))}
+            <input
+              type="text"
+              inputMode="numeric"
+              value={zoomInput}
+              onChange={e => { const v = e.target.value; if (v === '' || /^\d+$/.test(v)) setZoomInput(v); }}
+              onBlur={() => { let v = Number(zoomInput); if (isNaN(v) || v < 25) v = 25; else if (v > 200) v = 200; setZoom(v); setZoomInput(String(v)); }}
+              onKeyDown={e => { if (e.key === 'Enter') { let v = Number(zoomInput); if (isNaN(v) || v < 25) v = 25; else if (v > 200) v = 200; setZoom(v); setZoomInput(String(v)); e.target.blur(); } }}
+              style={{ width:'32px', textAlign:'center', border:'none', background:'transparent', outline:'none', fontWeight:'bold', fontSize:'11px', fontFamily:'monospace', color:'#000', padding:0, margin:0 }}
+            /><span style={{ fontSize:11, fontWeight:'bold', color:'#000' }}>%</span>
+            <button onClick={() => setZoom(z => Math.min(200, z + 10))}
               style={{ fontWeight:'bold', width:20, height:22, cursor:'pointer', border:'none', background:'transparent', fontSize:16, color:'#000', display:'flex', alignItems:'center', justifyContent:'center' }}>+</button>
-            <button onClick={() => { setZoom(0.5); const vp = viewportRef?.current; if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; } }}
+            <button onClick={() => { setZoom(100); const vp = viewportRef?.current; if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; } }}
               style={{ fontWeight:'bold', marginLeft:2, cursor:'pointer', border:'none', background:'transparent', color:'var(--accent-blue)', fontSize:11 }}>↺</button>
           </div>
         </div>
@@ -402,7 +435,7 @@ export default function CanvasArea({
         {/* ── Viewport scrollável ── */}
         <div ref={viewportRef} style={{ position:'absolute', inset:0, overflow:'auto' }}>
           {/* Zoom-wrapper: define área de scroll para o tamanho visual do canvas */}
-          <div style={{ position:'relative', width: INNER_W * zoom, height: INNER_H * zoom, overflow:'hidden' }}>
+          <div style={{ position:'relative', width: INNER_W * actualScale, height: INNER_H * actualScale, overflow:'hidden' }}>
             {/* Canvas-inner 2000×2000 escalado */}
             <div
               className="canvas-inner"
@@ -410,7 +443,7 @@ export default function CanvasArea({
               style={{
                 position:'absolute', top:0, left:0,
                 width: INNER_W, height: INNER_H,
-                transform: `scale(${zoom})`,
+                transform: `scale(${actualScale})`,
                 transformOrigin: 'top left',
               }}
               onPointerDown={handlePointerDownCanvas}

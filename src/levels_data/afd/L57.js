@@ -3,8 +3,8 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL57() {
   const b = makeBuilder(LEVEL_GRAPHS[57], {
-    q0:[8,55], q1:[28,55], q2:[18,32], q3:[38,32], q4:[28,12],
-    q5:[60,55], q6:[50,32], q7:[70,32], q8:[60,12], q9:[90,55],
+    q0:[8,50], q1:[28,50], q2:[18,44], q3:[38,44], q4:[28,38],
+    q5:[60,50], q6:[50,44], q7:[70,44], q8:[60,38], q9:[90,50],
   });
   const steps = [];
   b.addNodes('q0','q1','q5','q9')

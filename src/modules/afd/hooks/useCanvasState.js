@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-const INNER_W = 2000;
-const INNER_H = 2000;
+const INNER_W = 8000;
+const INNER_H = 8000;
 
 export { INNER_W, INNER_H };
 
@@ -30,7 +30,7 @@ export default function useCanvasState({
   const drawingsRef      = useRef([]);
 
   // ── Zoom (scroll replaces pan) ──────────────────────────────────────────────
-  const [zoom, setZoom] = useState(0.5);
+  const [zoom, setZoom] = useState(100);
 
   const isUnlockedRef = useRef(false);
   useEffect(() => { isUnlockedRef.current = isDrawingUnlocked; }, [isDrawingUnlocked]);
@@ -49,7 +49,7 @@ export default function useCanvasState({
       const my = e.clientY - rect.top;
       const delta = e.deltaY * -0.002;
       setZoom(z => {
-        const nz = Math.max(0.15, Math.min(6, z + delta * z));
+        const nz = Math.max(25, Math.min(200, z + delta * z));
         // Adjust scroll so the point under cursor stays fixed
         const dz = nz - z;
         const sl = vp.scrollLeft + mx * dz / z;
@@ -106,7 +106,7 @@ export default function useCanvasState({
   }, []);
 
   const resetZoom = useCallback(() => {
-    setZoom(0.5);
+    setZoom(100);
     const vp = viewportRef?.current ?? canvasRef.current;
     if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; }
   }, [viewportRef, canvasRef]); // eslint-disable-line react-hooks/exhaustive-deps

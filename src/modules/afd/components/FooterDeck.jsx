@@ -14,7 +14,7 @@ export default function FooterDeck({
   // Simulação
   showSimPanel, simWord, nodes, transitions, setShowSimPanel, setSimHighlight,
   // Cartas
-  drawnCards, drawingStack, historyIndex, history, drawUndo, undo, redo,
+  drawnCards, drawingStack, historyIndex, historyLen, drawUndo, undo, redo,
   interactionMode, setInteractionMode, highlightedError, resetMode,
   setInitialMode, addNodeMode, addTransitionMode, toggleFinalStateMode, setEraserMode, setDrawMode,
   selectedSymbolCard, setSelectedSymbolCard, setConnectingSource, discoveredSymbols,
@@ -69,7 +69,7 @@ export default function FooterDeck({
                 const isUndo = card.action === 'undo';
                 const disabled = isUndo
                   ? drawingStack.length === 0 && historyIndex <= 0
-                  : historyIndex >= history.length - 1;
+                  : historyIndex >= historyLen - 1;
                 return (
                   <div key={card.id}
                     data-icon={card.icon}

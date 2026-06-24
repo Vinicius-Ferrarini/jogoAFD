@@ -2,50 +2,71 @@
 // Mantém os snapshots; aplica-os via setNodes/setTransitions injetados pelo
 // orquestrador (o estado nodes/transitions vive fora, no AFDPart1, para evitar
 // dependência circular com useAFDGraph que precisa de recordHistory).
-import { useState, useCallback } from 'react';
+//
+// A pilha e o cursor vivem em refs (stackRef/idxRef) para que recordHistory
+// nunca capture valores stale (o bug clássico de "precisa clicar 2× no Undo").
+// Um estado derivado (historyLen, historyIndex) é espelhado para React apenas
+// para disparar re-renders nos componentes que verificam disabled de undo/redo.
+import { useState, useRef, useCallback } from 'react';
 
 export default function useHistory({ setNodes, setTransitions, showToast }) {
-  const [history, setHistory] = useState([]);
+  const stackRef = useRef([]);  // snapshots: [{ nodes, transitions }]
+  const idxRef   = useRef(-1);  // cursor na pilha
+
+  // Estado React mínimo — apenas para forçar re-render quando a pilha muda.
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [historyLen,   setHistoryLen]   = useState(0);
+
+  const syncReact = useCallback((idx, len) => {
+    setHistoryIndex(idx);
+    setHistoryLen(len);
+  }, []);
 
   const recordHistory = useCallback((newNodes, newTransitions, squash = false) => {
-    const snap = { nodes: JSON.parse(JSON.stringify(newNodes)), transitions: JSON.parse(JSON.stringify(newTransitions)) };
-    if (squash && historyIndex >= 0) {
-      setHistory(prev => { const h = [...prev]; h[historyIndex] = snap; return h; });
-      // historyIndex não muda
+    const snap = {
+      nodes:       JSON.parse(JSON.stringify(newNodes)),
+      transitions: JSON.parse(JSON.stringify(newTransitions)),
+    };
+    if (squash && idxRef.current >= 0) {
+      // Substitui o último snapshot sem avançar o cursor — une as duas ações
+      stackRef.current[idxRef.current] = snap;
     } else {
-      const newHistory = history.slice(0, historyIndex + 1);
-      newHistory.push(snap);
-      setHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
+      stackRef.current = stackRef.current.slice(0, idxRef.current + 1);
+      stackRef.current.push(snap);
+      idxRef.current = stackRef.current.length - 1;
     }
-  }, [history, historyIndex]);
+    syncReact(idxRef.current, stackRef.current.length);
+  }, [syncReact]);
 
   const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      const newIdx = historyIndex - 1;
-      setHistoryIndex(newIdx);
-      setNodes(history[newIdx].nodes);
-      setTransitions(history[newIdx].transitions);
-      showToast('↶ Desfeito', 'info');
-    }
-  }, [historyIndex, history, showToast, setNodes, setTransitions]);
+    if (idxRef.current <= 0) return;
+    idxRef.current -= 1;
+    const { nodes, transitions } = stackRef.current[idxRef.current];
+    setNodes(nodes);
+    setTransitions(transitions);
+    syncReact(idxRef.current, stackRef.current.length);
+    showToast('↶ Desfeito', 'info');
+  }, [setNodes, setTransitions, showToast, syncReact]);
 
   const redo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      const newIdx = historyIndex + 1;
-      setHistoryIndex(newIdx);
-      setNodes(history[newIdx].nodes);
-      setTransitions(history[newIdx].transitions);
-      showToast('↷ Refeito', 'info');
-    }
-  }, [historyIndex, history, showToast, setNodes, setTransitions]);
+    if (idxRef.current >= stackRef.current.length - 1) return;
+    idxRef.current += 1;
+    const { nodes, transitions } = stackRef.current[idxRef.current];
+    setNodes(nodes);
+    setTransitions(transitions);
+    syncReact(idxRef.current, stackRef.current.length);
+    showToast('↷ Refeito', 'info');
+  }, [setNodes, setTransitions, showToast, syncReact]);
 
   // Reinicia a pilha com um único snapshot-base (loadLevel / fim de aula guiada).
   const resetHistory = useCallback((nodes, transitions) => {
-    setHistory([{ nodes, transitions }]);
-    setHistoryIndex(0);
-  }, []);
+    stackRef.current = [{ nodes, transitions }];
+    idxRef.current = 0;
+    syncReact(0, 1);
+  }, [syncReact]);
 
-  return { history, historyIndex, recordHistory, undo, redo, resetHistory };
+  // Expõe `history` como array derivado para FooterDeck verificar `.length`.
+  const history = stackRef.current;
+
+  return { history, historyIndex, historyLen, recordHistory, undo, redo, resetHistory };
 }
