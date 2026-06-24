@@ -49,18 +49,21 @@ export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, on
   // Nível "fake" — só o alfabeto importa para o canvas (todo o resto é opcional).
   const currentLevel = useMemo(() => ({ alphabet: game.alphabet }), [game.alphabet]);
 
+  const viewportRef    = useRef(null);
+  const innerCanvasRef = useRef(null);
+
   const {
     drawings, setDrawings, drawingStack, setDrawingStack,
     currentStroke, setCurrentStroke, drawColor, setDrawColor,
     drawSize, setDrawSize, isErasing, setIsErasing, drawTool, setDrawTool,
     isDrawingRef, currentStrokeRef, drawingsRef,
-    drawUndo, zoom, setZoom, pan, setPan, isPanning, setIsPanning, canvasSize,
+    drawUndo, zoom, setZoom,
     resetMode, setDrawMode,
     setInitialMode, addNodeMode, addTransitionMode, toggleFinalStateMode, setEraserMode,
   } = useCanvasState({
     isDrawingUnlocked: true, setInteractionMode, squashNextHistoryRef,
     setConnectingSource, setSelectedSymbolCard, setSelectedNodes,
-    tela: 'JOGO', isSidebarOpen: false, canvasRef,
+    tela: 'JOGO', isSidebarOpen: false, canvasRef, viewportRef,
   });
 
   const {
@@ -76,7 +79,7 @@ export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, on
     isDrawingUnlocked: true, interactionMode,
     selectedSymbolCard, setSelectedSymbolCard,
     currentLevel, testWords: [], showToast,
-    setHighlightedError, guidedLessonStep: null, canvasSize,
+    setHighlightedError, guidedLessonStep: null,
   });
 
   // Pilha de histórico arranca com o grafo vazio; mensagem inicial do Maurílio.
@@ -172,6 +175,8 @@ export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, on
         <div className="min-draw-canvas-host">
           <CanvasArea
             canvasRef={canvasRef}
+            innerCanvasRef={innerCanvasRef}
+            viewportRef={viewportRef}
             genUid={genUid}
             isDrawingUnlocked={true}
             interactionMode={interactionMode}
@@ -186,10 +191,6 @@ export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, on
             setDrawSize={setDrawSize}
             zoom={zoom}
             setZoom={setZoom}
-            pan={pan}
-            setPan={setPan}
-            isPanning={isPanning}
-            setIsPanning={setIsPanning}
             nodes={nodes}
             setNodes={setNodes}
             transitions={transitions}

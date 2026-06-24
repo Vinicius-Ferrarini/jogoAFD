@@ -90,7 +90,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const [dragInfo, setDragInfo] = useState({ isDragging: false, initialNodes: [], startX: 0, startY: 0 });
   const [deckGhostPos, setDeckGhostPos] = useState(null);
 
-  const canvasRef = useRef(null);
+  const canvasRef      = useRef(null);
+  const viewportRef    = useRef(null);
+  const innerCanvasRef = useRef(null);
 
   const [highlightedError, setHighlightedError] = useState(null);
   const [professorMessage, setProfessorMessage] = useState('');
@@ -107,21 +109,21 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     lessonReveal, lessonAllSteps, lessonCurStepData, lessonCur, lessonGoFormal,
   } = useGuidedLesson(currentLevel);
 
-  // ── Estado do canvas (desenho, zoom/pan, modos) ────────────────────────────
+  // ── Estado do canvas (desenho, zoom, modos) ───────────────────────────────
   const {
     drawings, setDrawings, drawingStack, setDrawingStack,
     currentStroke, setCurrentStroke, drawColor, setDrawColor,
     drawSize, setDrawSize, isErasing, setIsErasing, drawTool, setDrawTool,
     isDrawingRef, currentStrokeRef, drawingsRef,
     drawUndo, resetDraw,
-    zoom, setZoom, pan, setPan, isPanning, setIsPanning, canvasSize,
+    zoom, setZoom,
     resetZoom, resetMode,
     setInitialMode, addNodeMode, addTransitionMode,
     toggleFinalStateMode, setEraserMode, setDrawMode,
   } = useCanvasState({
     isDrawingUnlocked, setInteractionMode, squashNextHistoryRef,
     setConnectingSource, setSelectedSymbolCard, setSelectedNodes,
-    tela, isSidebarOpen, canvasRef,
+    tela, isSidebarOpen, canvasRef, viewportRef,
   });
 
   // Simulação no rodapé (não modal)
@@ -155,7 +157,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     setHighlightedError,
     guidedLessonStep,
     lessonCurStepData,
-    canvasSize,
   });
 
   // ── Animação de rastreio (passos da aula com simulateWord) ─────────────────
@@ -382,11 +383,11 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
 
   const handleDeckNodeDrop = useCallback((clientX, clientY) => {
     setDeckGhostPos(null);
-    if (!isDrawingUnlocked || !canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
+    if (!isDrawingUnlocked || !innerCanvasRef.current) return;
+    const rect = innerCanvasRef.current.getBoundingClientRect();
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return;
-    const ix = ((clientX - rect.left - pan.x) / zoom / rect.width)  * 100;
-    const iy = ((clientY - rect.top  - pan.y) / zoom / rect.height) * 100;
+    const ix = Math.max(5, Math.min(1995, (clientX - rect.left) / zoom));
+    const iy = Math.max(5, Math.min(1995, (clientY - rect.top)  / zoom));
     let num = nodes.length;
     const usedLabels = new Set(nodes.map(n => n.label));
     while (usedLabels.has(`q${num}`)) num++;
@@ -394,7 +395,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     const newNodes = [...nodes, { uid: genUid(), id: newLabel, label: newLabel, x: ix, y: iy, isInitial: false, isFinal: false }];
     setNodes(newNodes);
     recordHistory(newNodes, transitions);
-  }, [isDrawingUnlocked, pan, zoom, nodes, transitions, recordHistory]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, zoom, nodes, transitions, recordHistory]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDeckNodeDragCancel = useCallback(() => {
     setDeckGhostPos(null);
@@ -497,6 +498,8 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         {/* ── Canvas ── */}
         <CanvasArea
           canvasRef={canvasRef}
+          innerCanvasRef={innerCanvasRef}
+          viewportRef={viewportRef}
           genUid={genUid}
           isDrawingUnlocked={isDrawingUnlocked}
           interactionMode={interactionMode}
@@ -511,10 +514,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           setDrawSize={setDrawSize}
           zoom={zoom}
           setZoom={setZoom}
-          pan={pan}
-          setPan={setPan}
-          isPanning={isPanning}
-          setIsPanning={setIsPanning}
           nodes={nodes}
           setNodes={setNodes}
           transitions={transitions}

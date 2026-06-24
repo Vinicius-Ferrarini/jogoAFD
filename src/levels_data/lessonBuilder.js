@@ -22,10 +22,15 @@ export function makeBuilder(graph, layout) {
     t.symbol.split(',').map(s => s.trim()).includes(sym));
   const nodeIds = new Set();
   const edges = [];
-  const mkNode = (id) => ({
-    id, label: id, x: layout[id][0], y: layout[id][1],
-    isInitial: !!byId[id].isInitial, isFinal: !!byId[id].isFinal,
-  });
+  // layout values são em % (0-100); converter para px no canvas 2000×2000.
+  const mkNode = (id) => {
+    const nodeData = byId[id] || { isInitial: false, isFinal: false };
+    const pos = layout[id] || [50, 50];
+    return {
+      id, label: id, x: pos[0] * 20, y: pos[1] * 20,
+      isInitial: !!nodeData.isInitial, isFinal: !!nodeData.isFinal,
+    };
+  };
   return {
     addNodes(...ids) { ids.forEach(id => nodeIds.add(id)); return this; },
     addEdges(...specs) {

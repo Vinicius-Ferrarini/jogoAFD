@@ -1,8 +1,9 @@
 // Graph topology for each level in AFDPart2 (Grafo → Linguagem)
-// nodes: [{id, isInitial, isFinal}]
+// nodes: [{id, x, y, isInitial, isFinal}]  — x/y em px (canvas 2000×2000) para L1-L54
 // transitions: [{from, to, symbol}]  (symbol may be "a,b" for multiple)
+import { JFLAP_GRAPHS } from './levels_data/afd/graphs_from_jflap';
 
-export const LEVEL_GRAPHS = {
+const _MANUAL = {
   1: { // L01: L = ∅
     nodes: [{ id: 'q0', isInitial: true, isFinal: false }],
     transitions: []
@@ -1184,3 +1185,7 @@ export const LEVEL_GRAPHS = {
     ]
   }
 };
+
+// Para L1-L54: usar os dados extraídos do JFLAP (incluem x/y em px).
+// Para L55-L61: manter os dados manuais acima (sem gabarito JFLAP).
+export const LEVEL_GRAPHS = { ..._MANUAL, ...JFLAP_GRAPHS };

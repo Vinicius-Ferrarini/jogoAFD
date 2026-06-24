@@ -1,0 +1,41 @@
+// L38 — grafo extraído de L37.xml por migrador_afd.js
+export default {
+  nodes: [
+  { id: 'q0', x: 67, y: 278, isInitial: true, isFinal: false },
+  { id: 'q1', x: 366, y: 110, isInitial: false, isFinal: false },
+  { id: 'q2', x: 191, y: 391, isInitial: false, isFinal: false },
+  { id: 'q3', x: 661, y: 68, isInitial: false, isFinal: false },
+  { id: 'q4', x: 685, y: 417, isInitial: false, isFinal: false },
+  { id: 'q5', x: 968, y: 218, isInitial: false, isFinal: false },
+  { id: 'q6', x: 968, y: 280, isInitial: false, isFinal: false },
+  { id: 'q7', x: 1095, y: 275, isInitial: false, isFinal: true }
+],
+  transitions: [
+  { from: 'q3', to: 'q5', symbol: 'c' },
+  { from: 'q6', to: 'q0', symbol: 'b, c' },
+  { from: 'q3', to: 'q1', symbol: 'a' },
+  { from: 'q1', to: 'q3', symbol: 'b' },
+  { from: 'q6', to: 'q7', symbol: 'a' },
+  { from: 'q0', to: 'q2', symbol: 'd' },
+  { from: 'q2', to: 'q0', symbol: 'b' },
+  { from: 'q4', to: 'q6', symbol: 'b' },
+  { from: 'q2', to: 'q1', symbol: 'a' },
+  { from: 'q1', to: 'q2', symbol: 'd' },
+  { from: 'q3', to: 'q0', symbol: 'b' },
+  { from: 'q4', to: 'q2', symbol: 'd' },
+  { from: 'q2', to: 'q4', symbol: 'c' },
+  { from: 'q7', to: 'q7', symbol: 'a, b, c, d' },
+  { from: 'q1', to: 'q1', symbol: 'a' },
+  { from: 'q0', to: 'q0', symbol: 'b, c' },
+  { from: 'q2', to: 'q2', symbol: 'd' },
+  { from: 'q5', to: 'q1', symbol: 'a' },
+  { from: 'q6', to: 'q2', symbol: 'd' },
+  { from: 'q4', to: 'q1', symbol: 'a' },
+  { from: 'q4', to: 'q0', symbol: 'c' },
+  { from: 'q3', to: 'q2', symbol: 'd' },
+  { from: 'q5', to: 'q7', symbol: 'd' },
+  { from: 'q5', to: 'q0', symbol: 'b, c' },
+  { from: 'q1', to: 'q0', symbol: 'c' },
+  { from: 'q0', to: 'q1', symbol: 'a' }
+],
+};

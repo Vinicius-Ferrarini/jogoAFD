@@ -16,17 +16,17 @@ export default { id: 14, label: "L14", formula: "L = { w ∈ {a,b}* | |w|a = |w|
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
       { text: 'Solução: q0(ini,final). λ ✓. Próxima: "ab"!',
         boardDoneUpTo: 1, stateUpdate: {
-          nodes: [{ id: 'q0', label: 'q0', x: 50, y: 50, isInitial: true, isFinal: true }],
+          nodes: [{ id: 'q0', label: 'q0', x: 1000, y: 1000, isInitial: true, isFinal: true }],
           transitions: [] } },
       { text: 'Foco em <b>ab</b>: 1 "a" depois 1 "b" — precisamos de q1 para "lembrar" o a pendente.',
         boardDoneUpTo: 1, stateUpdate: {
-          nodes: [{ id: 'q0', label: 'q0', x: 50, y: 50, isInitial: true, isFinal: true }],
+          nodes: [{ id: 'q0', label: 'q0', x: 1000, y: 1000, isInitial: true, isFinal: true }],
           transitions: [] } },
       { text: 'Solução: q0→q1(a)→q0(b). "ab" ✓. Próxima: "aabb"!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
-            { id: 'q0', label: 'q0', x: 50, y: 60, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 50, y: 20, isInitial: false, isFinal: false },
+            { id: 'q0', label: 'q0', x: 1000, y: 1200, isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 1000, y: 400, isInitial: false, isFinal: false },
           ],
           transitions: [
             { from: 'q0', to: 'q1', symbol: 'a' },
@@ -35,8 +35,8 @@ export default { id: 14, label: "L14", formula: "L = { w ∈ {a,b}* | |w|a = |w|
       { text: 'Foco em <b>aabb</b>: 2 "a"s seguidos — q1 lê 2° "a", mas q1→q0 era para "b"! Preciso de q2.',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
-            { id: 'q0', label: 'q0', x: 50, y: 60, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 50, y: 20, isInitial: false, isFinal: false },
+            { id: 'q0', label: 'q0', x: 1000, y: 1200, isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 1000, y: 400, isInitial: false, isFinal: false },
           ],
           transitions: [
             { from: 'q0', to: 'q1', symbol: 'a' },
@@ -45,9 +45,9 @@ export default { id: 14, label: "L14", formula: "L = { w ∈ {a,b}* | |w|a = |w|
       { text: 'Solução: q1→q2(a), q2→q1(b). "aabb" ✓. Mas agora... "aaabbb" precisaria de q3!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
-            { id: 'q0', label: 'q0', x: 50, y: 65, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 20, y: 35, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 80, y: 35, isInitial: false, isFinal: false },
+            { id: 'q0', label: 'q0', x: 1000, y: 1300, isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 400, y: 700, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 1600, y: 700, isInitial: false, isFinal: false },
           ],
           transitions: [
             { from: 'q0', to: 'q1', symbol: 'a' },
@@ -58,9 +58,9 @@ export default { id: 14, label: "L14", formula: "L = { w ∈ {a,b}* | |w|a = |w|
       { text: '<b>O Confronto:</b> "aaabbb" exigiria q3, "aaaabbbb" exigiria q4... <u>Infinitos estados</u> para infinitos "a"s pendentes. É o <b>Lema do Bombeamento</b> — AFD sem memória ilimitada não pode fazer isso!',
         boardDoneUpTo: 3, stateUpdate: {
           nodes: [
-            { id: 'q0', label: 'q0', x: 50, y: 65, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 20, y: 35, isInitial: false, isFinal: false },
-            { id: 'q2', label: 'q2', x: 80, y: 35, isInitial: false, isFinal: false },
+            { id: 'q0', label: 'q0', x: 1000, y: 1300, isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 400, y: 700, isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 1600, y: 700, isInitial: false, isFinal: false },
           ],
           transitions: [
             { from: 'q0', to: 'q1', symbol: 'a' },

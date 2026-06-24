@@ -18,17 +18,17 @@ export default { id: 4,  label: "L04", formula: "L = { λ, 0 }",                
         boardDoneUpTo: 0, stateUpdate: { nodes: [], transitions: [] } },
       { text: 'Solução: <b>q0</b> ini+final. "λ": q0(final) ✓. Próxima: "0" — q0 sem seta!',
         boardDoneUpTo: 1, stateUpdate: {
-          nodes: [{ id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true }],
+          nodes: [{ id: 'q0', label: 'q0', x: 400, y: 1000, isInitial: true, isFinal: true }],
           transitions: [] } },
       { text: 'Foco em <b>0</b>: q0 lê "0" — sem seta, vai para dead state!',
         boardDoneUpTo: 1, stateUpdate: {
-          nodes: [{ id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true }],
+          nodes: [{ id: 'q0', label: 'q0', x: 400, y: 1000, isInitial: true, isFinal: true }],
           transitions: [] } },
       { text: 'Solução: <b>q1</b>(final) + q0—0→q1. "0": q0→q1 ✓ Concluído!',
         boardDoneUpTo: 2, stateUpdate: {
           nodes: [
-            { id: 'q0', label: 'q0', x: 20, y: 50, isInitial: true, isFinal: true },
-            { id: 'q1', label: 'q1', x: 55, y: 50, isInitial: false, isFinal: true },
+            { id: 'q0', label: 'q0', x: 400, y: 1000, isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 1100, y: 1000, isInitial: false, isFinal: true },
           ],
           transitions: [{ from: 'q0', to: 'q1', symbol: '0' }] } },
     ] };

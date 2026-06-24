@@ -29,7 +29,6 @@ export default function useAFDGraph({
   setHighlightedError,
   guidedLessonStep,
   lessonCurStepData,
-  canvasSize,
 }) {
   // ── Validação do grafo ─────────────────────────────────────────────────────
   const validateAFDSilent = useCallback((showErrors = true) => {
@@ -268,27 +267,24 @@ export default function useAFDGraph({
   }, [guidedLessonStep, lessonCurStepData, currentLevel, transitions]);
 
   // ── Renderização de transições (memoizada) ────────────────────────────────
+  // Nós armazenam x/y em px absolutos (canvas-inner 2000×2000).
   const transitionRenders = useMemo(() => {
     return displayTransitions.map((t, idx) => {
       const src = displayNodes.find(n => n.id === t.from);
       const tgt = displayNodes.find(n => n.id === t.to);
       if (!src || !tgt) return null;
 
-      const sw = canvasSize.w, sh = canvasSize.h;
-      const sx = (src.x * sw) / 100, sy = (src.y * sh) / 100;
-      const tx = (tgt.x * sw) / 100, ty = (tgt.y * sh) / 100;
+      const sx = src.x, sy = src.y;
+      const tx = tgt.x, ty = tgt.y;
       const bidir = src.uid !== tgt.uid && displayTransitions.some(o => o.from === tgt.id && o.to === src.id);
 
       let pathD = '', lx = 0, ly = 0;
       if (src.uid === tgt.uid) {
-        const cx = (src.x * sw) / 100;
-        const cy = (src.y * sh) / 100;
-        pathD = `M ${cx - 16} ${cy - 29} C ${cx - 58} ${cy - 96} ${cx + 58} ${cy - 96} ${cx + 16} ${cy - 29}`;
-        lx = cx; ly = cy - 82;
+        pathD = `M ${sx - 16} ${sy - 29} C ${sx - 58} ${sy - 96} ${sx + 58} ${sy - 96} ${sx + 16} ${sy - 29}`;
+        lx = sx; ly = sy - 82;
       } else if (t.curve != null && t.curve !== false) {
-        // Bypass com curvatura explícita (ex.: pontes do L21): arco por cima do
-        // caminho linear. t.curve = deslocamento (px) ao longo da normal; valor
-        // negativo arqueia "para cima" em arestas da esquerda→direita.
+        // Bypass com curvatura explícita: arco por cima do caminho linear.
+        // t.curve = deslocamento (px) ao longo da normal.
         const dx = tx - sx, dy = ty - sy, dist = Math.sqrt(dx*dx + dy*dy) || 1;
         const nx = -dy/dist, ny = dx/dist;
         const off = typeof t.curve === 'number' ? t.curve : -60;
@@ -310,7 +306,7 @@ export default function useAFDGraph({
       }
       return { ...t, idx, src, tgt, pathD, labelPxX: lx, labelPxY: ly, bidir };
     }).filter(Boolean);
-  }, [displayTransitions, displayNodes, canvasSize]);
+  }, [displayTransitions, displayNodes]);
 
   return {
     validateAFDSilent,

@@ -1,10 +1,8 @@
 // ─── CanvasArea: o "quadro verde" — montagem visual do AFD ───────────────────
-// Concentra a interação de canvas (pan/zoom/rabisco/laço) e a renderização do
-// grafo: HUD de zoom, toolbar de desenho, SVG das transições, chips de símbolo,
-// camada de rabiscos, nós e o overlay da Aula Guiada. Os 4 handlers de pointer
-// vivem aqui (interação do canvas), enquanto a lógica teórica do grafo está em
-// useAFDGraph. CSS: classes .canvas-area / .node / .draw-* / .transition-* .
-import { useCallback } from 'react';
+// Canvas 2000×2000px com viewport scrollável e zoom via CSS transform.
+// Nós posicionados em px absolutos (left/top). Coordenadas de evento calculadas
+// via getBoundingClientRect() do canvas-inner, respeitando o zoom.
+import { useCallback, useRef } from 'react';
 import TransitionLabel from './TransitionLabel';
 import StrokeEl from './StrokeEl';
 import GuidedLessonOverlay from '../GuidedLessonOverlay';
@@ -12,11 +10,27 @@ import { DRAW_COLORS } from '../hooks/useDrawing';
 import imgMaurilioApontando from '../../../assets/maurilio2_apontando_pro_lado.webp';
 import imgBalaoFala         from '../../../assets/balao_fala_redondo.webp';
 
+const INNER_W = 2000;
+const INNER_H = 2000;
+
+// Converte evento de pointer em coordenadas lógicas px do canvas-inner.
+// getBoundingClientRect() já retorna o rect visual (escalado), então
+// dividir pelo zoom cancela a escala e devolve px lógicos.
+function pxFromEvent(e, innerRef, zoom) {
+  const el = innerRef.current;
+  if (!el) return { x: 0, y: 0 };
+  const r = el.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) / zoom,
+    y: (e.clientY - r.top)  / zoom,
+  };
+}
+
 export default function CanvasArea({
-  canvasRef, genUid,
+  canvasRef, innerCanvasRef, viewportRef, genUid,
   isDrawingUnlocked, interactionMode, setInteractionMode,
   isErasing, setIsErasing, drawTool, setDrawTool, drawColor, setDrawColor, drawSize, setDrawSize,
-  zoom, setZoom, pan, setPan, isPanning, setIsPanning,
+  zoom, setZoom,
   nodes, setNodes, transitions, setTransitions, recordHistory, squashNextHistoryRef,
   selectedNodes, setSelectedNodes, connectingSource, setConnectingSource,
   selectionBox, setSelectionBox, dragInfo, setDragInfo,
@@ -32,17 +46,18 @@ export default function CanvasArea({
   guidedLessonStep, setGuidedLessonStep, currentLevel,
   userNodesSnapshot, userTransitionsSnapshot, resetHistory,
   lessonActive = false,
-  errorNodeIds = null,   // Set<id> opcional: estados a destacar em erro (minimização)
+  errorNodeIds = null,
 }) {
+  // Ref local para o canvas-inner (se não for fornecido externamente)
+  const localInnerRef = useRef(null);
+  const innerRef = innerCanvasRef || localInnerRef;
+
   // ── Pointer: canvas ───────────────────────────────────────────────────────
   const handlePointerDownCanvas = useCallback((e) => {
     if (!isDrawingUnlocked) return;
 
     if (interactionMode === 'DRAW') {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const cssZoom = rect.width / canvasRef.current.offsetWidth;
-      const x = ((e.clientX - rect.left) / cssZoom - pan.x) / zoom;
-      const y = ((e.clientY - rect.top)  / cssZoom - pan.y) / zoom;
+      const { x, y } = pxFromEvent(e, innerRef, zoom);
       if (isErasing) {
         const snapshot = [...drawingsRef.current];
         setDrawingStack(prev => [...prev, snapshot]);
@@ -60,17 +75,10 @@ export default function CanvasArea({
       return;
     }
 
-    if (e.button === 1 || e.shiftKey) {
-      setIsPanning(true);
-      setDragInfo({ isDragging: false, startX: e.clientX, startY: e.clientY });
-      e.target.setPointerCapture(e.pointerId);
-      return;
-    }
-
     if (interactionMode === 'ADD_NODE') {
-      const rect  = canvasRef.current.getBoundingClientRect();
-      const ix    = ((e.clientX - rect.left - pan.x) / zoom / rect.width)  * 100;
-      const iy    = ((e.clientY - rect.top  - pan.y) / zoom / rect.height) * 100;
+      const { x, y } = pxFromEvent(e, innerRef, zoom);
+      const ix = Math.max(5, Math.min(INNER_W - 5, x));
+      const iy = Math.max(5, Math.min(INNER_H - 5, y));
       let num = nodes.length;
       const usedLabels = new Set(nodes.map(n => n.label));
       while (usedLabels.has(`q${num}`)) num++;
@@ -82,17 +90,14 @@ export default function CanvasArea({
     }
 
     if (interactionMode === 'IDLE' && e.button === 0) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const cssZoom = rect.width / canvasRef.current.offsetWidth;
-      const ix = ((e.clientX - rect.left) / cssZoom - pan.x) / zoom;
-      const iy = ((e.clientY - rect.top)  / cssZoom - pan.y) / zoom;
-      setSelectionBox({ startX: ix, startY: iy, currentX: ix, currentY: iy });
+      const { x, y } = pxFromEvent(e, innerRef, zoom);
+      setSelectionBox({ startX: x, startY: y, currentX: x, currentY: y });
       if (!e.ctrlKey) setSelectedNodes([]);
       e.target.setPointerCapture(e.pointerId);
     } else {
       setSelectedNodes([]);
     }
-  }, [isDrawingUnlocked, interactionMode, pan, zoom, nodes, transitions, recordHistory, drawColor, drawSize, isErasing, drawTool]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, interactionMode, zoom, nodes, transitions, recordHistory, drawColor, drawSize, isErasing, drawTool]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer: nó ───────────────────────────────────────────────────────────
   const handlePointerDownNode = useCallback((e, uid) => {
@@ -145,40 +150,29 @@ export default function CanvasArea({
     if (interactionMode === 'IDLE') {
       const cur = selectedNodes.includes(uid) ? selectedNodes : (e.ctrlKey ? [...selectedNodes, uid] : [uid]);
       setSelectedNodes(cur);
-      const rect = canvasRef.current.getBoundingClientRect();
+      const { x, y } = pxFromEvent(e, innerRef, zoom);
       setDragInfo({
         isDragging: true,
         initialNodes: JSON.parse(JSON.stringify(nodes)),
-        startX: (e.clientX - rect.left - pan.x) / zoom,
-        startY: (e.clientY - rect.top  - pan.y) / zoom,
+        startX: x,
+        startY: y,
       });
       e.target.setPointerCapture(e.pointerId);
     }
-  }, [isDrawingUnlocked, interactionMode, connectingSource, selectedNodes, nodes, transitions, recordHistory]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, interactionMode, connectingSource, selectedNodes, nodes, transitions, recordHistory, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer: move ─────────────────────────────────────────────────────────
   const handlePointerMove = useCallback((e) => {
     if (!isDrawingUnlocked) return;
 
-    if (isPanning) {
-      setPan(p => ({ x: p.x + e.movementX, y: p.y + e.movementY }));
-      return;
-    }
-
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const ix = (e.clientX - rect.left - pan.x) / zoom;
-    const iy = (e.clientY - rect.top  - pan.y) / zoom;
+    const { x: ix, y: iy } = pxFromEvent(e, innerRef, zoom);
 
     if (interactionMode === 'DRAW' && isDrawingRef.current) {
-      const cssZoom = rect.width / canvasRef.current.offsetWidth;
-      const dx = ((e.clientX - rect.left) / cssZoom - pan.x) / zoom;
-      const dy = ((e.clientY - rect.top)  / cssZoom - pan.y) / zoom;
       if (isErasing) {
         const ERASE_R = 20;
         setDrawings(prev => {
           const next = prev.filter(s =>
-            !s.points.some(p => Math.hypot(p.x - dx, p.y - dy) < ERASE_R)
+            !s.points.some(p => Math.hypot(p.x - ix, p.y - iy) < ERASE_R)
           );
           drawingsRef.current = next;
           return next;
@@ -187,12 +181,12 @@ export default function CanvasArea({
         if (drawTool === 'pencil') {
           const pts = currentStrokeRef.current.points;
           const last = pts[pts.length - 1];
-          if (Math.hypot(dx - last.x, dy - last.y) < 3) return;
-          const updated = { ...currentStrokeRef.current, points: [...pts, { x: dx, y: dy }] };
+          if (Math.hypot(ix - last.x, iy - last.y) < 3) return;
+          const updated = { ...currentStrokeRef.current, points: [...pts, { x: ix, y: iy }] };
           currentStrokeRef.current = updated;
           setCurrentStroke({ ...updated });
         } else {
-          const updated = { ...currentStrokeRef.current, x2: dx, y2: dy };
+          const updated = { ...currentStrokeRef.current, x2: ix, y2: iy };
           currentStrokeRef.current = updated;
           setCurrentStroke({ ...updated });
         }
@@ -201,22 +195,22 @@ export default function CanvasArea({
     }
 
     if (selectionBox) {
-      const cssZoom = rect.width / canvasRef.current.offsetWidth;
-      setSelectionBox(s => ({ ...s,
-        currentX: ((e.clientX - rect.left) / cssZoom - pan.x) / zoom,
-        currentY: ((e.clientY - rect.top)  / cssZoom - pan.y) / zoom,
-      }));
+      setSelectionBox(s => ({ ...s, currentX: ix, currentY: iy }));
     } else if (dragInfo.isDragging) {
-      const dxPct = ((ix - dragInfo.startX) / rect.width)  * 100;
-      const dyPct = ((iy - dragInfo.startY) / rect.height) * 100;
+      const dx = ix - dragInfo.startX;
+      const dy = iy - dragInfo.startY;
       setNodes(prev => prev.map(n => {
         if (!selectedNodes.includes(n.uid)) return n;
         const init = dragInfo.initialNodes.find(i => i.uid === n.uid);
         if (!init) return n;
-        return { ...n, x: init.x + dxPct, y: init.y + dyPct };
+        return {
+          ...n,
+          x: Math.max(5, Math.min(INNER_W - 5, init.x + dx)),
+          y: Math.max(5, Math.min(INNER_H - 5, init.y + dy)),
+        };
       }));
     }
-  }, [isDrawingUnlocked, isPanning, pan, zoom, selectionBox, dragInfo, selectedNodes, interactionMode, isErasing, drawTool]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, zoom, selectionBox, dragInfo, selectedNodes, interactionMode, isErasing, drawTool]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer: up ───────────────────────────────────────────────────────────
   const handlePointerUp = useCallback((e) => {
@@ -245,29 +239,21 @@ export default function CanvasArea({
       return;
     }
 
-    if (isPanning) setIsPanning(false);
-
     if (dragInfo.isDragging) {
       recordHistory(nodes, transitions);
       setDragInfo({ isDragging: false, initialNodes: [], startX: 0, startY: 0 });
     }
 
     if (selectionBox) {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) { setSelectionBox(null); return; }
       const minX = Math.min(selectionBox.startX, selectionBox.currentX);
       const maxX = Math.max(selectionBox.startX, selectionBox.currentX);
       const minY = Math.min(selectionBox.startY, selectionBox.currentY);
       const maxY = Math.max(selectionBox.startY, selectionBox.currentY);
-      const ow = canvasRef.current.offsetWidth;
-      const oh = canvasRef.current.offsetHeight;
-      const minXP = (minX / ow) * 100, maxXP = (maxX / ow) * 100;
-      const minYP = (minY / oh) * 100, maxYP = (maxY / oh) * 100;
-      const sel = nodes.filter(n => n.x >= minXP && n.x <= maxXP && n.y >= minYP && n.y <= maxYP).map(n => n.uid);
+      const sel = nodes.filter(n => n.x >= minX && n.x <= maxX && n.y >= minY && n.y <= maxY).map(n => n.uid);
       setSelectedNodes(e.ctrlKey ? [...new Set([...selectedNodes, ...sel])] : sel);
       setSelectionBox(null);
     }
-  }, [isPanning, dragInfo, selectionBox, nodes, transitions, selectedNodes, recordHistory, interactionMode, isErasing]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dragInfo, selectionBox, nodes, transitions, selectedNodes, recordHistory, interactionMode, isErasing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <section
@@ -277,14 +263,10 @@ export default function CanvasArea({
         interactionMode === 'DRAW'     ? (isErasing ? 'draw-erase-mode' : 'draw-mode') :
         interactionMode !== 'IDLE'     ? 'connecting-mode' : ''}`}
       ref={canvasRef}
-      onPointerDown={handlePointerDownCanvas}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
     >
-      {/* HUD Zoom + Riscar */}
+      {/* HUD Zoom — absolutamente posicionado na section, acima do viewport */}
       {isDrawingUnlocked && (
-        <div style={{ position:'absolute', top:10, right:10, display:'flex', gap:4, zIndex:10, alignItems:'center' }}>
+        <div style={{ position:'absolute', top:10, right:10, display:'flex', gap:4, zIndex:60, alignItems:'center' }}>
           <button onClick={setDrawMode} title="Riscar"
             style={{ width:30, height:30, background: interactionMode==='DRAW' ? '#bfdbfe' : '#fef08a',
               border: interactionMode==='DRAW' ? '2.5px solid #3b82f6' : '2.5px solid #000',
@@ -303,7 +285,7 @@ export default function CanvasArea({
             <span style={{ fontWeight:'bold', width:38, textAlign:'center', fontSize:11 }}>{Math.round(zoom*100)}%</span>
             <button onClick={() => setZoom(z => Math.min(6, z+0.25))}
               style={{ fontWeight:'bold', width:20, height:22, cursor:'pointer', border:'none', background:'transparent', fontSize:16, color:'#000', display:'flex', alignItems:'center', justifyContent:'center' }}>+</button>
-            <button onClick={() => { setZoom(1); setPan({x:0,y:0}); }}
+            <button onClick={() => { setZoom(0.5); const vp = viewportRef?.current; if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; } }}
               style={{ fontWeight:'bold', marginLeft:2, cursor:'pointer', border:'none', background:'transparent', color:'var(--accent-blue)', fontSize:11 }}>↺</button>
           </div>
         </div>
@@ -338,17 +320,16 @@ export default function CanvasArea({
         </div>
       ) : (
         <>
-        {/* ── Dica de início (canvas vazio, tabuleiro recém-liberado) ── */}
+        {/* ── Dica de início ── */}
         {nodes.length === 0 && guidedLessonStep === null && interactionMode !== 'DRAW' && (
           <div className="canvas-empty-hint">
             Clique em <b>◯ Novo Estado</b> e comece a montar seu AFD!
           </div>
         )}
 
-        {/* ── Toolbar de desenho (fora do transform, posição fixa no canvas) ── */}
+        {/* ── Toolbar de desenho (fora do scroll, posição absoluta) ── */}
         {interactionMode === 'DRAW' && (
           <div className="draw-toolbar">
-            {/* Ferramentas */}
             {[
               { id: 'pencil', icon: (
                 <svg width="15" height="15" viewBox="0 0 15 15">
@@ -376,7 +357,6 @@ export default function CanvasArea({
               </button>
             ))}
             <div className="draw-toolbar-sep" />
-            {/* Cores */}
             {DRAW_COLORS.map(({ hex, label }) => (
               <button key={hex}
                 className={`draw-color-btn${drawColor === hex && !isErasing ? ' active' : ''}`}
@@ -387,7 +367,6 @@ export default function CanvasArea({
               />
             ))}
             <div className="draw-toolbar-sep" />
-            {/* Espessura */}
             <div className="draw-stroke-size">
               {[2, 4, 7].map(sz => (
                 <button key={sz}
@@ -402,7 +381,6 @@ export default function CanvasArea({
               ))}
             </div>
             <div className="draw-toolbar-sep" />
-            {/* Borracha / limpar / fechar */}
             <button className={`draw-tool-btn${isErasing ? ' active' : ''}`}
               title="Borracha"
               onClick={() => setIsErasing(e => !e)}>⌫</button>
@@ -421,104 +399,122 @@ export default function CanvasArea({
           </div>
         )}
 
-        <div style={{ width:'100%', height:'100%',
-          transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`,
-          transformOrigin:'0 0', position:'absolute', top:0, left:0 }}>
-
-          {/* Lasso */}
-          {selectionBox && (
-            <div style={{
-              position:'absolute', border:'2px dashed #2563eb', backgroundColor:'rgba(59,130,246,0.15)',
-              left: Math.min(selectionBox.startX, selectionBox.currentX),
-              top:  Math.min(selectionBox.startY, selectionBox.currentY),
-              width:  Math.abs(selectionBox.currentX - selectionBox.startX),
-              height: Math.abs(selectionBox.currentY - selectionBox.startY),
-              pointerEvents:'none', zIndex:1000 }} />
-          )}
-
-          {/* SVG transições */}
-          <svg className="connections-svg">
-            <defs>
-              <marker id="ah"    markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000"/></marker>
-              <marker id="ahe"   markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#ef4444"/></marker>
-              <marker id="ahr"   markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#dc2626"/></marker>
-              <marker id="ahsl"  markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000"/></marker>
-              <marker id="ahsle" markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#ef4444"/></marker>
-            </defs>
-            {transitionRenders.map(tr => (
-              <path key={tr.idx} d={tr.pathD}
-                className={`transition-line ${interactionMode==='ERASE'?'erasable':''} ${highlightedError===`transition-${tr.idx}`?'line-error':''}`}
-                markerEnd={`url(#${
-                  tr.src.uid === tr.tgt.uid
-                    ? (interactionMode === 'ERASE' ? 'ahsle' : 'ahsl')
-                    : (interactionMode === 'ERASE' ? 'ahe' : highlightedError === `transition-${tr.idx}` ? 'ahr' : 'ah')
-                })`}
-                style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-                onClick={e => handleTransitionLineClick(e, tr.idx)} />
-            ))}
-          </svg>
-
-          {/* Labels das transições (chips inline) */}
-          {transitionRenders.map(tr => (
-            <TransitionLabel
-              key={`lbl-${tr.from}-${tr.to}`}
-              ref={el => { transitionLabelRefs.current[tr.idx] = el; }}
-              idx={tr.idx}
-              symbol={tr.symbol}
-              interactionMode={interactionMode}
-              selectedSymbolCard={selectedSymbolCard}
-              isDrawingUnlocked={isDrawingUnlocked}
-              lessonActive={lessonActive}
-              isError={highlightedError === `transition-${tr.idx}`}
+        {/* ── Viewport scrollável ── */}
+        <div ref={viewportRef} style={{ position:'absolute', inset:0, overflow:'auto' }}>
+          {/* Zoom-wrapper: define área de scroll para o tamanho visual do canvas */}
+          <div style={{ position:'relative', width: INNER_W * zoom, height: INNER_H * zoom, overflow:'hidden' }}>
+            {/* Canvas-inner 2000×2000 escalado */}
+            <div
+              className="canvas-inner"
+              ref={innerRef}
               style={{
-                left: `${tr.labelPxX}px`,
-                top:  `${tr.labelPxY}px`,
+                position:'absolute', top:0, left:0,
+                width: INNER_W, height: INNER_H,
+                transform: `scale(${zoom})`,
+                transformOrigin: 'top left',
               }}
-              onAdd={handleAddSymbol}
-              onEdit={handleEditSymbol}
-              onErase={handleEraseTransition}
-              onAppendCard={handleAppendCardToTransition}
-            />
-          ))}
+              onPointerDown={handlePointerDownCanvas}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
+            >
+              {/* Lasso */}
+              {selectionBox && (
+                <div style={{
+                  position:'absolute', border:'2px dashed #2563eb', backgroundColor:'rgba(59,130,246,0.15)',
+                  left: Math.min(selectionBox.startX, selectionBox.currentX),
+                  top:  Math.min(selectionBox.startY, selectionBox.currentY),
+                  width:  Math.abs(selectionBox.currentX - selectionBox.startX),
+                  height: Math.abs(selectionBox.currentY - selectionBox.startY),
+                  pointerEvents:'none', zIndex:1000 }} />
+              )}
 
-          {/* ── Camada de rabiscos (acima das transições, abaixo dos nós) ── */}
-          <svg style={{ position:'absolute', inset:0, width:'100%', height:'100%',
-            pointerEvents:'none', overflow:'visible' }}>
-            {drawings.map((stroke, i) => <StrokeEl key={i} stroke={stroke} idx={i} />)}
-            {currentStroke && <StrokeEl stroke={currentStroke} idx="cur" />}
-          </svg>
+              {/* SVG transições */}
+              <svg className="connections-svg">
+                <defs>
+                  <marker id="ah"    markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000"/></marker>
+                  <marker id="ahe"   markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#ef4444"/></marker>
+                  <marker id="ahr"   markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#dc2626"/></marker>
+                  <marker id="ahsl"  markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000"/></marker>
+                  <marker id="ahsle" markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#ef4444"/></marker>
+                </defs>
+                {transitionRenders.map(tr => (
+                  <path key={tr.idx} d={tr.pathD}
+                    className={`transition-line ${interactionMode==='ERASE'?'erasable':''} ${highlightedError===`transition-${tr.idx}`?'line-error':''}`}
+                    markerEnd={`url(#${
+                      tr.src.uid === tr.tgt.uid
+                        ? (interactionMode === 'ERASE' ? 'ahsle' : 'ahsl')
+                        : (interactionMode === 'ERASE' ? 'ahe' : highlightedError === `transition-${tr.idx}` ? 'ahr' : 'ah')
+                    })`}
+                    style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                    onClick={e => handleTransitionLineClick(e, tr.idx)} />
+                ))}
+              </svg>
 
-          {/* Nós */}
-          {displayNodes.map(node => {
-            const simCls =
-              simHighlight.nodeId === node.id
-                ? simHighlight.type === 'ok'    ? 'sim-active'
-                : simHighlight.type === 'done'  ? 'sim-done'
-                : simHighlight.type === 'error' ? 'sim-error'
-                : '' : '';
-            return (
-              <div key={node.uid}
-                className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${highlightedError===node.id?'error-pulse-severe':''} ${simCls}`}
-                style={{ top:`${node.y}%`, left:`${node.x}%` }}
-                onPointerDown={e => handlePointerDownNode(e, node.uid)}>
-                <input
-                  type="text"
-                  className="node-id-input"
-                  value={node.label ?? node.id}
-                  translate="no"
-                  spellCheck={false}
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  readOnly={interactionMode === 'ERASE'}
-                  onFocus={() => handleNodeLabelFocus(node.uid, node.label ?? node.id)}
-                  onChange={e => handleNodeLabelChange(node.uid, e.target.value)}
-                  onBlur={e => handleNodeLabelBlur(node.uid, e.target.value)}
+              {/* Labels das transições */}
+              {transitionRenders.map(tr => (
+                <TransitionLabel
+                  key={`lbl-${tr.from}-${tr.to}`}
+                  ref={el => { transitionLabelRefs.current[tr.idx] = el; }}
+                  idx={tr.idx}
+                  symbol={tr.symbol}
+                  interactionMode={interactionMode}
+                  selectedSymbolCard={selectedSymbolCard}
+                  isDrawingUnlocked={isDrawingUnlocked}
+                  lessonActive={lessonActive}
+                  isError={highlightedError === `transition-${tr.idx}`}
+                  style={{
+                    left: `${tr.labelPxX}px`,
+                    top:  `${tr.labelPxY}px`,
+                  }}
+                  onAdd={handleAddSymbol}
+                  onEdit={handleEditSymbol}
+                  onErase={handleEraseTransition}
+                  onAppendCard={handleAppendCardToTransition}
                 />
-              </div>
-            );
-          })}
+              ))}
+
+              {/* Camada de rabiscos */}
+              <svg style={{ position:'absolute', inset:0, width:'100%', height:'100%',
+                pointerEvents:'none', overflow:'visible' }}>
+                {drawings.map((stroke, i) => <StrokeEl key={i} stroke={stroke} idx={i} />)}
+                {currentStroke && <StrokeEl stroke={currentStroke} idx="cur" />}
+              </svg>
+
+              {/* Nós — posicionados em px absolutos */}
+              {displayNodes.map(node => {
+                const simCls =
+                  simHighlight.nodeId === node.id
+                    ? simHighlight.type === 'ok'    ? 'sim-active'
+                    : simHighlight.type === 'done'  ? 'sim-done'
+                    : simHighlight.type === 'error' ? 'sim-error'
+                    : '' : '';
+                return (
+                  <div key={node.uid}
+                    className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${highlightedError===node.id?'error-pulse-severe':''} ${simCls}`}
+                    style={{ top:`${node.y}px`, left:`${node.x}px` }}
+                    onPointerDown={e => handlePointerDownNode(e, node.uid)}>
+                    <input
+                      type="text"
+                      className="node-id-input"
+                      value={node.label ?? node.id}
+                      translate="no"
+                      spellCheck={false}
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      readOnly={interactionMode === 'ERASE'}
+                      onFocus={() => handleNodeLabelFocus(node.uid, node.label ?? node.id)}
+                      onChange={e => handleNodeLabelChange(node.uid, e.target.value)}
+                      onBlur={e => handleNodeLabelBlur(node.uid, e.target.value)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
-        {/* ── Aula Guiada (overlay clássico — só ativa quando não há boardWords) ── */}
+
+        {/* ── Aula Guiada (overlay clássico) ── */}
         {guidedLessonStep !== null && currentLevel?.guidedLesson &&
           (currentLevel?.boardWords?.length ?? 0) === 0 && (
           <GuidedLessonOverlay

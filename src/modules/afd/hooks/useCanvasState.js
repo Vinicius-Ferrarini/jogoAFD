@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
+const INNER_W = 2000;
+const INNER_H = 2000;
+
+export { INNER_W, INNER_H };
+
 export default function useCanvasState({
   isDrawingUnlocked,
   setInteractionMode,
@@ -9,7 +14,8 @@ export default function useCanvasState({
   setSelectedNodes,
   tela,
   isSidebarOpen,
-  canvasRef,
+  canvasRef,      // outer <section> — keep for backwards compat
+  viewportRef,    // <div overflow:auto> — scroll viewport
 }) {
   // ── Desenho livre ────────────────────────────────────────────────────────────
   const [drawings, setDrawings]           = useState([]);
@@ -23,52 +29,41 @@ export default function useCanvasState({
   const currentStrokeRef = useRef(null);
   const drawingsRef      = useRef([]);
 
-  // ── Zoom / Pan / Tamanho do canvas ──────────────────────────────────────────
-  const [zoom, setZoom]             = useState(1);
-  const [pan, setPan]               = useState({ x: 0, y: 0 });
-  const [isPanning, setIsPanning]   = useState(false);
-  const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
+  // ── Zoom (scroll replaces pan) ──────────────────────────────────────────────
+  const [zoom, setZoom] = useState(0.5);
 
-  // Ref auxiliar para o handler de wheel (closure não-reativa)
   const isUnlockedRef = useRef(false);
   useEffect(() => { isUnlockedRef.current = isDrawingUnlocked; }, [isDrawingUnlocked]);
 
-  // Wheel (non-passive) + resize
+  // Wheel: ctrl+wheel → zoom-to-point; plain wheel → scroll (browser default)
   useEffect(() => {
     if (tela !== 'JOGO') return;
-    const update = () => {
-      if (canvasRef.current)
-        setCanvasSize({ w: canvasRef.current.clientWidth, h: canvasRef.current.clientHeight });
-    };
-    const el = canvasRef.current;
-    window.addEventListener('resize', update);
-    const tid = setTimeout(update, 50);
-    const ro = el ? new ResizeObserver(update) : null;
-    if (ro) ro.observe(el);
+    const vp = viewportRef?.current ?? canvasRef.current;
+    if (!vp) return;
     const onWheel = (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return; // let browser scroll normally
       if (!isUnlockedRef.current) return;
       e.preventDefault();
-      if (e.ctrlKey || e.metaKey) {
-        const rect = el.getBoundingClientRect();
-        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-        const delta = e.deltaY * -0.002;
-        setZoom(z => {
-          const nz = Math.max(0.15, Math.min(6, z + delta * z));
-          setPan(p => ({ x: p.x - mx * (nz - z) / z, y: p.y - my * (nz - z) / z }));
-          return nz;
+      const rect = vp.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const delta = e.deltaY * -0.002;
+      setZoom(z => {
+        const nz = Math.max(0.15, Math.min(6, z + delta * z));
+        // Adjust scroll so the point under cursor stays fixed
+        const dz = nz - z;
+        const sl = vp.scrollLeft + mx * dz / z;
+        const st = vp.scrollTop  + my * dz / z;
+        requestAnimationFrame(() => {
+          vp.scrollLeft = sl;
+          vp.scrollTop  = st;
         });
-      } else {
-        setPan(p => ({ x: p.x - e.deltaX, y: p.y - e.deltaY }));
-      }
+        return nz;
+      });
     };
-    if (el) el.addEventListener('wheel', onWheel, { passive: false });
-    return () => {
-      window.removeEventListener('resize', update);
-      clearTimeout(tid);
-      if (ro) ro.disconnect();
-      if (el) el.removeEventListener('wheel', onWheel);
-    };
-  }, [tela, isSidebarOpen, canvasRef]);
+    vp.addEventListener('wheel', onWheel, { passive: false });
+    return () => vp.removeEventListener('wheel', onWheel);
+  }, [tela, isSidebarOpen, canvasRef, viewportRef]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Undo de traço ────────────────────────────────────────────────────────────
   const drawUndo = useCallback(() => {
@@ -111,9 +106,10 @@ export default function useCanvasState({
   }, []);
 
   const resetZoom = useCallback(() => {
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  }, []);
+    setZoom(0.5);
+    const vp = viewportRef?.current ?? canvasRef.current;
+    if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; }
+  }, [viewportRef, canvasRef]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     drawings, setDrawings, drawingStack, setDrawingStack,
@@ -122,7 +118,7 @@ export default function useCanvasState({
     isErasing, setIsErasing, drawTool, setDrawTool,
     isDrawingRef, currentStrokeRef, drawingsRef,
     drawUndo, resetDraw,
-    zoom, setZoom, pan, setPan, isPanning, setIsPanning, canvasSize,
+    zoom, setZoom,
     resetZoom,
     resetMode,
     setInitialMode, addNodeMode, addTransitionMode,

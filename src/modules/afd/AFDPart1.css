@@ -233,11 +233,15 @@ body { color: var(--text-main); }
   overflow: hidden;
   cursor: default;
   min-width: 0;
-  will-change: transform;
-  contain: strict;
 }
 
-.canvas-area::before {
+/* Canvas-inner 2000×2000: grade de fundo via pseudo-element */
+.canvas-inner {
+  width: 2000px;
+  height: 2000px;
+  background: var(--bg-dark);
+}
+.canvas-inner::before {
   content: "";
   position: absolute;
   inset: 0;

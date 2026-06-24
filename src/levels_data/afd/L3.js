@@ -25,7 +25,7 @@ export default { id: 3,  label: "L03", formula: "L = { 0 }",                    
       {
         text: 'Passo 1: Crie o estado inicial. Clique em "Novo Estado" para criar q0, depois em "Estado Inicial" e clique nele.',
         stateUpdate: {
-          nodes: [{ id: 'q0', label: 'q0', x: 30, y: 50, isInitial: true, isFinal: false }],
+          nodes: [{ id: 'q0', label: 'q0', x: 600, y: 1000, isInitial: true, isFinal: false }],
           transitions: [],
         },
       },
@@ -33,8 +33,8 @@ export default { id: 3,  label: "L03", formula: "L = { 0 }",                    
         text: 'Passo 2: Crie o estado final. Clique em "Novo Estado" para criar q1, depois em "Definir Final" e clique nele.',
         stateUpdate: {
           nodes: [
-            { id: 'q0', label: 'q0', x: 30, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 70, y: 50, isInitial: false, isFinal: true },
+            { id: 'q0', label: 'q0', x: 600, y: 1000, isInitial: true, isFinal: false },
+            { id: 'q1', label: 'q1', x: 1400, y: 1000, isInitial: false, isFinal: true },
           ],
           transitions: [],
         },
@@ -43,8 +43,8 @@ export default { id: 3,  label: "L03", formula: "L = { 0 }",                    
         text: 'Passo 3: Conecte q0 → q1. Clique em "Criar Seta", depois em q0 (origem), depois em q1 (destino). Por fim, selecione o símbolo "0".',
         stateUpdate: {
           nodes: [
-            { id: 'q0', label: 'q0', x: 30, y: 50, isInitial: true, isFinal: false },
-            { id: 'q1', label: 'q1', x: 70, y: 50, isInitial: false, isFinal: true },
+            { id: 'q0', label: 'q0', x: 600, y: 1000, isInitial: true, isFinal: false },
+            { id: 'q1', label: 'q1', x: 1400, y: 1000, isInitial: false, isFinal: true },
           ],
           transitions: [{ from: 'q0', to: 'q1', symbol: '0' }],
         },
