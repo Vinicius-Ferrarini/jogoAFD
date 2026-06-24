@@ -12,8 +12,8 @@
 // ════════════════════════════════════════════════════════════════════════════
 import {
   parseJff, buildBattery, deriveInputAlphabet, deriveStackAlphabet,
-} from './utils/pdaAlgorithms.js';
-import { buildApLesson } from './utils/buildApLesson.js';
+} from '../../modules/ap/utils/pdaAlgorithms.js';
+import { buildApLesson } from '../../modules/ap/utils/buildApLesson.js';
 
 // ── Gabaritos .jff crus (Vite ?raw). Única fonte; se o .jff mudar, o jogo segue. ─
 const RAW = import.meta.glob('../../../gabaritos_jflap/ap/*.jff', {
@@ -30,48 +30,41 @@ function gabarito(name) {
 // `truth(word, gabaritoVerdict)` (opcional): a VERDADE da linguagem quando o
 // gabarito .jff diverge do enunciado só nas bordas (λ / contadores em zero).
 // É derivada do veredito do gabarito + ajuste mínimo — sem editar os .jff.
+
+import L1_META from './L1.js';
+import L2_META from './L2.js';
+import L3_META from './L3.js';
+import L4_META from './L4.js';
+import L5_META from './L5.js';
+import L6_META from './L6.js';
+import L7_META from './L7.js';
+import L8_META from './L8.js';
+import L9_META from './L9.js';
+import L10_META from './L10.js';
+import L11_META from './L11.js';
+import L12_META from './L12.js';
+import L13_META from './L13.js';
+import L14_META from './L14.js';
+import L15_META from './L15.js';
+import L16_META from './L16.js';
+
 const META = {
-  L1:  { level: 'easy',   language: '{ aⁿbⁿ / n > 0 }',
-         hint: 'Empilhe um símbolo para cada "a"; desempilhe um para cada "b". Esvazie a pilha no fim.',
-         truth: (w, g) => g && w !== '' },
-  L2:  { level: 'medium', language: '{ aⁿbᵐcⁿ / n > 0, m > 0 }',
-         hint: 'Conte os "a" na pilha, deixe os "b" passarem sem mexer, e gaste a pilha nos "c".' },
-  L3:  { level: 'easy',   language: '{ aⁿb²ⁿ / n > 0 }',
-         hint: 'Cada "a" vale DOIS na pilha; cada "b" desempilha um.' },
-  L4:  { level: 'easy',   language: '{ a²ⁿbⁿ / n ≥ 0 }',
-         hint: 'A cada DOIS "a" empilhe um símbolo; cada "b" desempilha um. Aceita λ.' },
-  L5:  { level: 'hard',   language: '{ aⁿbᵐcᵐdⁿ / n > 0, m > 0 }',
-         hint: 'Pilha em camadas: "a" no fundo, "b" por cima; "c" gasta os "b", "d" gasta os "a".',
-         truth: (w, g) => g && /a/.test(w) && /b/.test(w) && /c/.test(w) && /d/.test(w) },
-  L6:  { level: 'medium', language: '{ w ∈ {a,b}* / w tem quantidade igual de a e de b }',
-         hint: 'Use a pilha como contador com sinal: empilhe o que sobra, cancele com o oposto.' },
-  L7:  { level: 'hard',   language: '{ aⁿb³ᵐcᵐd²ⁿ / n ≥ 0 e m ≥ 0 }',
-         hint: 'Duas contagens independentes: a↔d (1 para 2) e b↔c (3 para 1).',
-         truth: (w, g) => g || w === '' },
-  L8:  { level: 'medium', language: '{ aⁱbʲcᵏ / i = j + k, e j ≥ 0 e k ≥ 0 }',
-         hint: 'Empilhe um por "a"; tanto "b" quanto "c" desempilham um.' },
-  L9:  { level: 'medium', language: '{ aⁱbʲcᵏ / k = i + j, i ≥ 0, j ≥ 0 }',
-         hint: '"a" e "b" empilham; "c" desempilha. A pilha esvazia quando #c = #a+#b.',
-         truth: (w, g) => g || w === '' },
-  L10: { level: 'medium', language: '{ aⁱbʲcᵏ / j = i + k, j ≥ 0, k ≥ 0 }',
-         hint: 'Os "b" primeiro cancelam os "a", depois sobram para os "c" cancelarem.',
-         truth: (w, g) => g || w === '' },
-  L11: { level: 'hard',   language: '{ aⁿbⁿcᵐdᵐ / n ≥ 0, m ≥ 0 }',
-         hint: 'Dois blocos casados em sequência: aⁿbⁿ e depois cᵐdᵐ, cada um esvaziando o seu.',
-         truth: (w, g) => g || w === '' },
-  L12: { level: 'easy',   language: '{ aⁿb²ⁿ⁺¹ / n > 0 }',
-         hint: 'O primeiro "a" já empilha TRÊS; cada "a" seguinte empilha mais dois. "b" desempilha.' },
-  L13: { level: 'easy',   language: '{ aⁿb²ⁿ⁺² / n > 0 }',
-         hint: 'Igual ao L12, mas o primeiro "a" empilha QUATRO (dois a mais).' },
-  L14: { level: 'easy',   language: '{ aⁿbⁿ⁄² / n > 0 e n é par }',
-         hint: 'A cada DOIS "a" sobra um símbolo na pilha; cada "b" desempilha um.' },
-  L15: { level: 'easy',   language: '{ aⁿbⁿ⁄³ / n > 0 e n é múltiplo de 3 }',
-         hint: 'A cada TRÊS "a" sobra um símbolo na pilha; cada "b" desempilha um.' },
-  // ── Nível IMPOSSÍVEL: não é livre de contexto, exige Máquina de Turing ──
-  L16: { level: 'impossible', impossible: true,
-         language: '{ aⁿbⁿcⁿ / n > 0 }',
-         alphabet: ['a', 'b', 'c'], stackAlphabet: ['A', 'Z'],
-         note: 'aⁿbⁿcⁿ NÃO é livre de contexto — nenhum Autômato com Pilha a reconhece. A pilha só "lembra" uma contagem de cada vez: dá para casar aⁿ com bⁿ, mas aí a pilha já esvaziou e não há como conferir os cⁿ. Isso exige uma Máquina de Turing (MT), que ainda não implementamos.' },
+  L1: L1_META,
+  L2: L2_META,
+  L3: L3_META,
+  L4: L4_META,
+  L5: L5_META,
+  L6: L6_META,
+  L7: L7_META,
+  L8: L8_META,
+  L9: L9_META,
+  L10: L10_META,
+  L11: L11_META,
+  L12: L12_META,
+  L13: L13_META,
+  L14: L14_META,
+  L15: L15_META,
+  L16: L16_META,
 };
 
 // ── Monta a lista de exercícios (combina META + gabarito parseado) ────────────

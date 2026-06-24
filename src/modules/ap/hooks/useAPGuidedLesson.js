@@ -5,7 +5,7 @@
 // Expõe os dados derivados do passo atual: grafo a exibir, status do quadro,
 // aresta destacada e o "reveal" acumulado da descrição formal (FASE 2).
 import { useCallback, useMemo, useState } from 'react';
-import { getLesson } from '../levels_ap';
+import { getLesson } from '../../../levels_data/ap/index.js';
 
 export default function useAPGuidedLesson(level) {
   const [step, setStep] = useState(null); // null = fora da aula

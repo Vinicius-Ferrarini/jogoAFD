@@ -29,7 +29,11 @@
       "Bash(npx playwright *)",
       "Bash(npm install *)",
       "Bash(Remove-Item ss_*.png -ErrorAction SilentlyContinue)",
-      "Bash(rm -f ss_*.png && echo \"cleaned\")"
+      "Bash(rm -f ss_*.png && echo \"cleaned\")",
+      "Bash(node split_afd.js)",
+      "Bash(mv split_afd.js split_afd.cjs)",
+      "Bash(node split_afd.cjs)",
+      "Bash(node split_ap.cjs)"
     ],
     "additionalDirectories": [
       "c:\\Users\\sg\\.claude\\projects\\c--github-jogoAFD\\memory",

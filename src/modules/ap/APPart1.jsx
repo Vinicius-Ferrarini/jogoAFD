@@ -18,7 +18,7 @@ import APBlackboardPanel from './components/APBlackboardPanel';
 import usePDAGraph from './hooks/usePDAGraph';
 import useAPDrawing from './hooks/useAPDrawing';
 import useAPGuidedLesson from './hooks/useAPGuidedLesson';
-import { AP_LEVELS } from './levels_ap';
+import { AP_LEVELS } from '../../levels_data/ap/index.js';
 import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 

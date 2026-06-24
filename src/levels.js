@@ -1,8 +1,6 @@
-import { lote1 } from './levels_data/lote1.js';
-import { lote2 } from './levels_data/lote2.js';
-import { lote3 } from './levels_data/lote3.js';
+import { AFD_LEVELS } from './levels_data/afd/index.js';
 
-export const GAME_LEVELS = [...lote1, ...lote2, ...lote3];
+export const GAME_LEVELS = AFD_LEVELS;
 
 export const DIFF_COLOR = { easy: '#4ade80', medium: '#facc15', hard: '#f87171', impossible: '#ddd6fe', unavailable: '#d1d5db', trabalho: '#9333ea', prova: 'rgb(100, 100, 255)' };
 

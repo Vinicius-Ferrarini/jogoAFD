@@ -3,7 +3,7 @@
 // aceitação por PILHA VAZIA. O estado (nós/transições) vive num reducer com
 // past/present/future para dar Undo/Redo. Validação por bateria do gabarito.
 import { useCallback, useMemo, useReducer } from 'react';
-import { getBattery } from '../levels_ap';
+import { getBattery } from '../../../levels_data/ap/index.js';
 import { validateStudentPda, pdaAcceptingRun } from '../utils/pdaAlgorithms';
 
 let _uid = 0;
