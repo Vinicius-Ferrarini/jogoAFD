@@ -3,34 +3,34 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL18() {
   const b = makeBuilder(LEVEL_GRAPHS[18], {
-    q0: [20, 50], q1: [50, 50], q2: [80, 50],
+    q0: [12, 47], q1: [32, 29], q2: [51, 48],
   });
   const steps = [];
   b.addNodes('q0').addEdges(['q0', 'b', 'q0']);
   steps.push(b.draw('λ e qualquer sequência de "b"s: q0 é inicial+final, com laço de "b".', -1));
   steps.push(b.test('Veja λ ser aceita parada em q0 (final).', '', 0));
   b.addNodes('q1').addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q0']);
-  steps.push(b.draw('Adicionamos q1 (um "a" lido): um "b" reinicia a contagem, voltando a q0.', 1));
+  steps.push(b.draw('Adicionamos q1 (um "a" lido, final): "b" reinicia voltando a q0.', 1));
   steps.push(b.test('"ab" lê um "a" e reinicia com "b": q0→q1→q0 (final). Aceita!', 'ab', 1));
-  b.addNodes('q2').addEdges(['q1', 'a', 'q2'], ['q2', 'a', 'q2'], ['q2', 'b', 'q2']);
-  steps.push(b.draw('E a armadilha q2 (não-final): um 2º "a" seguido cai aqui e nunca mais sai.', 2));
-  steps.push(b.reject('"aa" tem dois "a"s seguidos: q0→q1→q2 (armadilha, não-final). Rejeita!', 'aa', 2));
+  b.addNodes('q2').addEdges(['q1', 'a', 'q2'], ['q2', 'b', 'q0']);
+  steps.push(b.draw('Adicionamos q2 (dois "a"s consecutivos, final): "b" volta a q0.', 2));
+  steps.push(b.reject('"aab" não é aceito nesta versão — experimente o grafo completo!', 'aa', 2));
   steps.push(b.test('Já "aba" intercala com "b": q0→q1→q0→q1 (final). Aceita!', 'aba', 2));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
 }
 
-export default { id: 18, label: "L18", formula: "L = { w ∈ {a,b}* | w não contém 'aa' como subpalavra }",         desc: "",                                                                 shortestWord: "",         regex: /^(b|ab)*a?$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["λ","a","b","ab","ba"],     rejectedWords: ["aa","aab","baa"],   hint: "Se dois 'a's aparecerem seguidos, o autômato trava. 'b' reinicia a contagem.",                                      successMsg: "Sem 'aa' consecutivos!",
+export default { id: 18, label: "L18", formula: "L = {w ∈ {a,b}* / w nunca tem mais de dois a's consecutivos}",     desc: "",                                                                 shortestWord: "",         regex: /^(b|ab|aab)*a{0,2}$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["λ","a","b","ab","ba"],     rejectedWords: ["aaa","aaab","baaa"],hint: "Dois 'a's seguidos são permitidos, mas três já não. 'b' reinicia a contagem.",                                      successMsg: "Controle de consecutivos!",
     tutorials: {
-      onStart: { type: 'theory', title: 'Proibido: dois \'a\'s seguidos!', dialog: [
-        'A linguagem L18 aceita qualquer palavra que NÃO contenha "aa" como subpalavra.',
-        '2 estados: q0 (nenhum "a" pendente, inicial e final) e q1 (um "a" pendente, final).',
-        'Um segundo "a" em q1 não tem seta: dead-state implícito rejeita "aa", "aab", "baa"!',
+      onStart: { type: 'theory', title: 'Máximo dois \'a\'s seguidos!', dialog: [
+        'L18 aceita palavras que nunca tenham mais de dois "a"s consecutivos.',
+        '"a", "aa", "aba", "aab" — válidos. "aaa", "baaa" — inválidos!',
+        'Três estados: q0 (zero a pendentes), q1 (um a), q2 (dois a). "b" sempre volta a q0.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Dois Estados, Dead-State Implícito', dialog: [
-        '<b>q0</b>(ini, final): loop de "b". <b>q1</b>(final): "b" volta para q0.',
-        'q0 —a→ q1: leu um "a". q1 —b→ q0: "b" reinicia. q1 sem seta para "a" = dead!',
-        '"ab": q0→q1→q0 ✔ "ba": q0→q0→q1 ✔ "aa": q0→q1→<b>trava</b> ✗',
+      onDrawGraph: { type: 'mechanic', title: 'Contador de A\'s Consecutivos', dialog: [
+        '<b>q0</b>(ini, final): laço "b". Ao ler "a": q0→<b>q1</b>(final).',
+        '<b>q1</b>(final): "b"→q0. Ao ler "a": q1→<b>q2</b>(final).',
+        '<b>q2</b>(final): "b"→q0. "a" não tem seta em q2 — dead-state implícito rejeita "aaa"!',
       ] },
     },
     boardWords: ['', 'ab', 'aa', 'aba'],

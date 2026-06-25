@@ -3,31 +3,31 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL32() {
   const b = makeBuilder(LEVEL_GRAPHS[32], {
-    ppp: [15, 28], pip: [38, 28], ipp: [15, 72], iip: [38, 72],
-    ppi: [62, 28], pii: [85, 28], ipi: [62, 72], iii: [85, 72],
+    q0: [10, 66], q1: [31, 15], q2: [40, 76], q3: [31, 99],
+    q4: [84, 17], q5: [67, 71], q6: [85, 99], q7: [100, 74],
   });
   const steps = [];
-  b.addNodes('ppp');
-  steps.push(b.draw('λ tem 0 de cada símbolo (tudo par): ppp é inicial+final.', -1));
-  steps.push(b.test('Veja λ ser aceita parada em ppp (final).', '', 0));
-  b.addNodes('pip', 'ipp', 'iip')
-   .addEdges(['ppp', '0', 'ipp'], ['ipp', '0', 'ppp'], ['ppp', '1', 'pip'], ['pip', '1', 'ppp'],
-             ['ipp', '1', 'iip'], ['iip', '1', 'ipp'], ['pip', '0', 'iip'], ['iip', '0', 'pip']);
-  steps.push(b.draw('Quadrado das paridades de 0 e 1: cada "0" troca a 1ª paridade, cada "1" a 2ª.', 1));
-  steps.push(b.test('"0011" tem 0\'s e 1\'s pares: volta a ppp (final). Aceita!', '0011', 1));
-  steps.push(b.reject('Mas "0" deixa os 0\'s ímpares: termina em ipp, que NÃO é final!', '0', 1));
-  b.addNodes('ppi', 'pii', 'ipi', 'iii')
-   .addEdges(['ppp', '2', 'ppi'], ['ppi', '2', 'ppp'], ['ipp', '2', 'ipi'], ['ipi', '2', 'ipp'],
-             ['pip', '2', 'pii'], ['pii', '2', 'pip'], ['iip', '2', 'iii'], ['iii', '2', 'iip'],
-             ['ppi', '0', 'ipi'], ['ipi', '0', 'ppi'], ['ppi', '1', 'pii'], ['pii', '1', 'ppi'],
-             ['ipi', '1', 'iii'], ['iii', '1', 'ipi'], ['pii', '0', 'iii'], ['iii', '0', 'pii']);
-  steps.push(b.draw('Duplicamos o quadrado para o símbolo "2": agora é um cubo de 8 estados.', 2));
-  steps.push(b.test('"001122" tem 0\'s, 1\'s e 2\'s pares: volta a ppp (final). Aceita!', '001122', 2));
+  b.addNodes('q0');
+  steps.push(b.draw('λ tem 0 de cada símbolo (tudo par): q0 é inicial+final.', -1));
+  steps.push(b.test('Veja λ ser aceita parada em q0 (final).', '', 0));
+  b.addNodes('q1', 'q2', 'q4')
+   .addEdges(['q0', '0', 'q1'], ['q1', '0', 'q0'], ['q0', '1', 'q2'], ['q2', '1', 'q0'],
+             ['q1', '1', 'q4'], ['q4', '1', 'q1'], ['q2', '0', 'q4'], ['q4', '0', 'q2']);
+  steps.push(b.draw('Quadrado das paridades de 0 e 1: cada "0" troca a paridade dos 0s, cada "1" a dos 1s.', 1));
+  steps.push(b.test('"0011" tem 0s e 1s pares: volta a q0 (final). Aceita!', '0011', 1));
+  steps.push(b.reject('Mas "0" deixa os 0s ímpares: termina em q1, que NÃO é final!', '0', 1));
+  b.addNodes('q3', 'q5', 'q6', 'q7')
+   .addEdges(['q0', '2', 'q3'], ['q3', '2', 'q0'], ['q1', '2', 'q5'], ['q5', '2', 'q1'],
+             ['q2', '2', 'q6'], ['q6', '2', 'q2'], ['q4', '2', 'q7'], ['q7', '2', 'q4'],
+             ['q3', '0', 'q5'], ['q5', '0', 'q3'], ['q3', '1', 'q6'], ['q6', '1', 'q3'],
+             ['q5', '1', 'q7'], ['q7', '1', 'q5'], ['q6', '0', 'q7'], ['q7', '0', 'q6']);
+  steps.push(b.draw('Adicionamos o símbolo "2": cubo completo com 8 estados.', 2));
+  steps.push(b.test('"001122" tem 0s, 1s e 2s pares: volta a q0 (final). Aceita!', '001122', 2));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
 }
 
-export default { id: 32, label: "L32", formula: "L = { w ∈ {0,1,2}* | par de 0's, par de 1's e par de 2's }",      desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
+export default { id: 32, label: "L32", formula: "L = {w ∈ {0,1,2}* / w tem número par de 0's, 1's e 2's}",          desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
     tutorials: {
       onStart: { type: 'theory', title: 'Explosão de Estados — 2³ = 8!', dialog: [
         'Paridade tripla simultânea: par/ímpar de 0s, de 1s e de 2s — totalmente independentes.',

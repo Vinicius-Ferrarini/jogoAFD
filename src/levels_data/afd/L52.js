@@ -3,36 +3,37 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL52() {
   const b = makeBuilder(LEVEL_GRAPHS[52], {
-    q0: [8, 50], ao: [24, 30], ae: [40, 50], bo: [56, 30], be: [70, 55], co: [84, 30], ce: [92, 62],
+    q0: [12, 35], q1: [23, 35], q2: [40, 35], q3: [59, 18], q4: [59, 54],
+    q5: [78, 35], q6: [99, 35], q7: [100, 35], q8: [100, 69],
   });
   const steps = [];
-  b.addNodes('q0', 'ao', 'ae', 'bo')
-   .addEdges(['q0', 'a', 'ao'], ['ao', 'a', 'ae'], ['ae', 'b', 'bo']);
-  steps.push(b.draw('Espinha "aab": dois "a" pares (q0→ao→ae) e um "b" ímpar (ae→bo, final).', -1));
-  steps.push(b.test('Veja "aab" (2 "a" par, 1 "b" ímpar, 0 "c" par) chegar a bo (final). Aceita!', 'aab', 0));
-  b.addNodes('be', 'co', 'ce')
-   .addEdges(['ae', 'a', 'ao'], ['bo', 'b', 'be'], ['be', 'b', 'bo'],
-             ['bo', 'c', 'co'], ['co', 'c', 'ce'], ['ce', 'c', 'co']);
-  steps.push(b.draw('Completamos: vai-e-volta de "a" (ao↔ae), de "b" (bo↔be) e os "c" pares (bo→co→ce). Finais: bo (b ímpar) e ce (b ímpar + c par).', 1));
-  steps.push(b.reject('Mas "aabb" tem 2 "b" (par): para em be, que NÃO é final (a quantidade de "b" precisa ser ímpar)!', 'aabb', 1));
-  steps.push(b.test('"aabcc" fecha o par de "c": bo→co→ce (final). Aceita!', 'aabcc', 1));
-  steps.push(b.test('"aaaabbb" tem 4 "a" (par) e 3 "b" (ímpar): ...→bo→be→bo (final). Aceita!', 'aaaabbb', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  b.addNodes('q0', 'q1', 'q2', 'q3', 'q5', 'q6', 'q7', 'q8')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q2'], ['q2', 'a', 'q3'], ['q3', 'b', 'q5'],
+             ['q5', 'c', 'q6'], ['q6', 'a', 'q7'], ['q7', 'a', 'q8']);
+  steps.push(b.draw('Espinha "acabcaa": a, c, o miolo "ab", c e o par final "aa" (q7→q8 final).', -1));
+  steps.push(b.test('Veja "acabcaa" chegar a q8 (final). Aceita!', 'acabcaa', 0));
+  steps.push(b.reject('Mas "acabca" tem só 1 "a" no fim: para em q7 (os "a" finais vêm em pares)!', 'acabca', 0));
+  b.addNodes('q4')
+   .addEdges(['q1', 'a', 'q1'], ['q2', 'c', 'q2'], ['q2', 'b', 'q4'], ['q4', 'a', 'q5'], ['q8', 'a', 'q7']);
+  steps.push(b.draw('Adicionamos o miolo alternativo "ba" (q2→q4→q5), laços e o par extra de "a".', 1));
+  steps.push(b.test('"acbacaa" usa o miolo "ba": q2→q4→q5→q6→q7→q8 (final). Aceita!', 'acbacaa', 1));
+  steps.push(b.test('"accabcaaaa" usa laço de "c" e dois pares de "a". Aceita!', 'accabcaaaa', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 52, label: "L52", formula: "L = { a^n b^m c^p | n > 0 (par), m (ímpar), p (par) }",            desc: "",                                                                 shortestWord: "aab",      regex: /^(aa)+(bb)*b(cc)*$/,                                        alphabet: ['a', 'b', 'c'],        acceptedWords: ["aab","aabcc","aaaabbb"],  rejectedWords: ["ab","aabb","b"],        hint: "É um trem de paridade. Vá de vagão em vagão cuidando da regra de cada letra.",                                     successMsg: "Combo triplo de paridades concluído.",
+export default { id: 52, label: "L52", formula: "L = {a^n b^m c^p / n > 0, m é impar e p é par}",                   desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)c(aa)+$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
     tutorials: {
-      onStart: { type: 'theory', title: '(aa)+ (bb)*b (cc)*: tres paridades!', dialog: [
-        'L52: a-s em quantidade par (>=2), b-s impares (1,3,5...), c-s pares (0,2,4...).',
-        '"aab" ✓ (2a,1b,0c). "aabcc" ✓ (2a,1b,2c). "aaaabbb" ✓ (4a,3b,0c).',
-        '"ab" ✗ (1a=impar). "aabb" ✗ (2b=par). 7 estados encadeados.',
+      onStart: { type: 'theory', title: 'a+ c+ (ab|ba) c (aa)+!', dialog: [
+        'L52: a-s, c-s, depois "ab" OU "ba", depois c, depois pares de a (min 1 par).',
+        '"acabcaa" ✓ (ab, 1par-a). "aacabcaa" ✓ (2a). "acbacaa" ✓ (ba).',
+        '9 estados: q0-q2 (a/c loops), bifurcação q3/q4, q5-q8 (cauda).',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '7 Estados: Trem de Paridade', dialog: [
-        'aa-chain: q0—a→q1—a→q2. q2—a→q1 (mais pares). q2—b→q4(f,1b-impar).',
-        'b-phase: q4—b→q3(par), q3—b→q4(impar). q4 e final.',
-        'c-phase: q4—c→q5—c→q6(f). q6—c→q5. "aaaabbb": q2→q1→q2—b→q4—b→q3—b→q4(f) ✓.',
+      onDrawGraph: { type: 'mechanic', title: '9 Estados: Loops + Bifurcação', dialog: [
+        'q0—a→q1 loop a. q1—c→q2 loop c. q2—a→q3—b→q5 (ab). q2—b→q4—a→q5 (ba).',
+        'q5—c→q6—a→q7—a→q8(f). q8—a→q7 (mais pares).',
+        '"acbacaa": q2—b→q4—a→q5→q6→q7→q8(f) ✓.',
       ] },
     },
-    boardWords: ['aab', 'aabb', 'aabcc', 'aaaabbb'],
+    boardWords: ['acabcaa', 'acabca', 'acbacaa', 'accabcaaaa'],
     guidedLesson: buildLessonL52() };

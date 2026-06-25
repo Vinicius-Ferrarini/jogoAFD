@@ -68,8 +68,8 @@ export default function BlackboardPanel({
               const msg = accepted
                 ? '✓ Aceita! Parou num estado final.'
                 : didactic
-                ? '🎯 Rejeição esperada: a máquina travou corretamente!'
-                : '✗ Rejeitada — a máquina travou!';
+                ? '🎯 Rejeição esperada: autômato não aceitou, como esperado!'
+                : '✗ Rejeitada — o autômato não aceita esta palavra.';
               return (
                 <>
                   <div className={`bp-sim-result ${cls}`}>{msg}</div>

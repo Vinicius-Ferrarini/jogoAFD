@@ -3,34 +3,39 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL29() {
   const b = makeBuilder(LEVEL_GRAPHS[29], {
-    s00: [12, 50], s01: [35, 28], s10: [35, 74], s11: [62, 50], ok: [86, 50],
+    q0: [10, 51], q1: [28, 31], q2: [29, 57], q3: [43, 19], q4: [44, 39],
+    q5: [63, 24], q6: [81, 49], q7: [44, 67], q8: [65, 67],
   });
   const steps = [];
-  b.addNodes('s00', 's01', 's11').addEdges(['s00', '1', 's01'], ['s01', '1', 's11']);
-  steps.push(b.draw('Espinha para "11": s00—1→s01—1→s11 (final, dois 1\'s vistos).', -1));
-  steps.push(b.test('Veja "11" atingir s11 (final). Aceita!', '11', 0));
-  steps.push(b.reject('Mas "1" tem só um "1": para em s01, que NÃO é final!', '1', 0));
-  b.addNodes('s10', 'ok')
-   .addEdges(['s00', '0', 's00'], ['s01', '0', 's10'], ['s10', '0', 's10'],
-             ['s10', '1', 's11'], ['s11', '0', 'ok'], ['ok', '0', 'ok']);
-  steps.push(b.draw('Adicionamos os laços de "0" e o estado ok: depois de 2 uns, aceita tudo.', 1));
-  steps.push(b.test('"0011" ignora os zeros e acumula dois 1\'s: chega a s11 (final). Aceita!', '0011', 1));
-  steps.push(b.test('"1011" também acumula dois 1\'s (passando por s10): s11 (final). Aceita!', '1011', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  b.addNodes('q0', 'q1', 'q2').addEdges(['q0', '0', 'q1'], ['q0', '1', 'q2']);
+  steps.push(b.draw('q0 ramifica: "0"→q1 (viu 0) e "1"→q2 (viu 1 no pos1).', -1));
+  b.addNodes('q3', 'q4', 'q7')
+   .addEdges(['q1', '0', 'q3'], ['q1', '1', 'q4'], ['q2', '0', 'q4'], ['q2', '1', 'q7']);
+  steps.push(b.draw('Pos2: acumulando 1s vistos. q7 = dois 1s já nos pos1-2!', 1));
+  b.addNodes('q5', 'q8')
+   .addEdges(['q3', '1', 'q5'], ['q4', '0', 'q5'], ['q4', '1', 'q8'], ['q7', '0', 'q8'], ['q7', '1', 'q8']);
+  steps.push(b.draw('Pos3: q8 = dois 1s confirmados nos primeiros 3 símbolos.', 2));
+  b.addNodes('q6')
+   .addEdges(['q5', '1', 'q6'], ['q8', '0', 'q6'], ['q8', '1', 'q6'], ['q6', '0', 'q6'], ['q6', '1', 'q6']);
+  steps.push(b.draw('q6 (final): dois 1s confirmados. Loop {0,1} absorve o resto.', 3));
+  steps.push(b.test('"11" alcança q2→q7→q8→q6 (final). Aceita!', '11', 3));
+  steps.push(b.test('"0011" tem 2 uns nos primeiros 4: q6 (final). Aceita!', '0011', 3));
+  steps.push(b.reject('"0001" tem só 1 un nos primeiros 4: não alcança q6. Rejeita!', '0001', 3));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 3));
   return steps;
 }
 
-export default { id: 29, label: "L29", formula: "L = { w ∈ {0,1}* | w contém pelo menos dois 1's }", desc: "", shortestWord: "11", regex: /1[01]*1/, validate: w => [...w].filter(c => c === '1').length >= 2, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Conte os 1's: assim que aparecerem dois (em qualquer posição), pode aceitar tudo.",                                  successMsg: "Dois uns encontrados!",
+export default { id: 29, label: "L29", formula: "L = {w ∈ {0,1}* / os primeiros 4 símbolos contêm, no mínimo, dois 1's}", desc: "", shortestWord: "11", validate: w => { const first4 = [...w].slice(0,4); return first4.filter(c=>c==='1').length >= 2; }, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Analise apenas os primeiros 4 símbolos e conte os 1s.",                                                              successMsg: "Análise de janela inicial!",
     tutorials: {
-      onStart: { type: 'theory', title: 'Pelo menos dois 1s!', dialog: [
-        'L29: a palavra deve conter no mínimo DOIS "1"s — em qualquer posição.',
-        '"11" ✔ (dois 1s). "0011" ✔. "1011" ✔ (três 1s). "0001" ✗ (só um 1). "00" ✗ (nenhum).',
-        'Estratégia: contar os 1s vistos. Ao chegar a dois, aceitar tudo daí em diante.',
+      onStart: { type: 'theory', title: 'Dois 1s nos primeiros 4 símbolos!', dialog: [
+        'L29: os primeiros 4 símbolos devem conter ao menos dois "1"s.',
+        '"11" ✔, "0011" ✔, "1011" ✔. "0001" ✗ (só um 1 nos primeiros 4). "00" ✗ (sem 2 uns).',
+        'Palavras com menos de 4 símbolos: precisam ter 2 uns neles.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Contador de Uns', dialog: [
-        'Os "0"s são ignorados (laços): só os "1"s fazem o autômato avançar de estado.',
-        'Caminho dos 1s: s00 —1→ s01 —1→ s11 (final). Dois 1s já bastam!',
-        'Depois dos dois 1s, o estado "ok" absorve o resto da palavra (loop em {0,1}).',
+      onDrawGraph: { type: 'mechanic', title: 'Autômato de Janela de 4', dialog: [
+        'q0 é o início. Cada caminho rastreia quantos 1s foram vistos nos primeiros 4 símbolos.',
+        'q6 é o único estado final — só alcançável com ≥2 uns nos primeiros 4.',
+        'Após q6, loop {0,1}: o resto da palavra é aceito sem restrição.',
       ] },
     },
     boardWords: ['11', '1', '0011', '1011'],

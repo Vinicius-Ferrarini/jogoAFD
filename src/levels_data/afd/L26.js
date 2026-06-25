@@ -3,22 +3,23 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL26() {
   const b = makeBuilder(LEVEL_GRAPHS[26], {
-    q0: [10, 50], q1: [30, 50], q2: [50, 50], q3: [70, 50], q4: [90, 50],
+    q0: [12, 48], q1: [28, 47], q2: [46, 46], q3: [64, 46], q4: [84, 51],
   });
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
-   .addEdges(['q0', '0', 'q1'], ['q1', '0', 'q2'], ['q2', '0', 'q3'], ['q3', '0', 'q4']);
+   .addEdges(['q0', '0', 'q1'], ['q0', '1', 'q1'], ['q1', '0', 'q2'], ['q1', '1', 'q2'],
+             ['q2', '0', 'q3'], ['q2', '1', 'q3'], ['q3', '0', 'q4'], ['q3', '1', 'q4']);
   steps.push(b.draw('Trilho de 4 passos: q0→q1→q2→q3→q4 (final), cada seta lê {0,1}.', -1));
   steps.push(b.test('Veja "0000" (4 símbolos) chegar a q4 (final). Aceita!', '0000', 0));
   steps.push(b.reject('Mas "000" tem só 3 símbolos: para em q3, que NÃO é final!', '000', 0));
-  b.addEdges(['q4', '0', 'q4']);
+  b.addEdges(['q4', '0', 'q4'], ['q4', '1', 'q4']);
   steps.push(b.draw('Adicionamos o laço q4—{0,1}→q4 para palavras mais longas.', 1));
   steps.push(b.test('"01010" tem 5 símbolos: usa o laço de q4 e segue final. Aceita!', '01010', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 26, label: "L26", formula: "L = { w ∈ {0,1}* | w tem tamanho maior que 3 }",                   desc: "",                                                                 shortestWord: "0000",     regex: /^[01]{4,}$/,                                                alphabet: ['0', '1'],             acceptedWords: ["0000","1111","01010"],    rejectedWords: ["λ","0","000"],         hint: "Passe pelos primeiros três estados sem aceitar, depois aceite tudo.",                                                successMsg: "Tamanho mínimo garantido.",
+export default { id: 26, label: "L26", formula: "L = {w ∈ {0,1}* / w tem tamanho maior que 3}",                     desc: "",                                                                 shortestWord: "0000",     regex: /^[01]{4,}$/,                                                alphabet: ['0', '1'],             acceptedWords: ["0000","1111","01010"],    rejectedWords: ["λ","0","000"],         hint: "Passe pelos primeiros três estados sem aceitar, depois aceite tudo.",                                                successMsg: "Tamanho mínimo garantido.",
     tutorials: {
       onStart: { type: 'theory', title: 'Tamanho MAIOR que 3!', dialog: [
         'L26: aceitar palavras com 4 ou MAIS símbolos. Rejeitar qualquer coisa menor.',

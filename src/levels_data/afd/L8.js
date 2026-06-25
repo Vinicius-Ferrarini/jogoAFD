@@ -8,11 +8,11 @@ function buildLessonL8() {
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'a', 'q4']);
-  steps.push(b.draw('Menor palavra "abca" (um ciclo "bc"): cadeia q0→q1→q2→q3→q4 (final).', -1));
+  steps.push(b.draw('Menor palavra "abca" (um ciclo "bc"): cadeia q0—a→q1—b→q2—c→q3—a→q4 (final).', -1));
   steps.push(b.test('Veja "abca" percorrer a cadeia até q4 (final). Aceita!', 'abca', 0));
-  steps.push(b.reject('Mas "aa" pula o ciclo "bc" obrigatório (n>0): trava em q1!', 'aa', 0));
+  steps.push(b.reject('Mas "aa" pula o ciclo "bc" obrigatório (n>0): trava em q1 sem transição de "a"!', 'aa', 0));
   b.addEdges(['q3', 'b', 'q2']);
-  steps.push(b.draw('Adicionamos o retorno q3—b→q2, que repete o ciclo "bc".', 1));
+  steps.push(b.draw('Adicionamos o retorno q3—b→q2: o ciclo "bc" pode girar quantas vezes quiser.', 1));
   steps.push(b.test('Com o retorno, "abcbca" dá duas voltas no ciclo e fecha em q4. Aceita!', 'abcbca', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
@@ -23,12 +23,12 @@ export default { id: 8,  label: "L08", formula: "L = { a(bc)^n a | n > 0 }",    
       onStart: { type: 'theory', title: 'Agrupamento Cíclico (bc)^n', dialog: [
         'Parênteses na notação! (bc)^n significa o GRUPO "bc" repetido n vezes, com n > 0.',
         'Cada volta do ciclo consome DOIS símbolos em ordem fixa: primeiro "b", depois "c".',
-        'Para isso, dois estados intermediários formam o ciclo: s→(b)→s2→(c)→s (e volta).',
+        'Para isso, dois estados formam o ciclo: q2→(c)→q3→(b)→q2 — um ping-pong de dois passos.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Ciclo de Dois Passos', dialog: [
-        'Estrutura: q0→(a)→q1→(b)→q2→(c)→q1 (loop do ciclo). Depois q1→(a)→qFinal.',
-        'O ciclo "bc" gira entre q1 e q2 indefinidamente — cada volta completa o grupo!',
-        'Como n > 0, o ciclo é obrigatório: não existe atalho direto de q0 para o estado final.',
+        'Estrutura: q0—(a)→q1—(b)→q2—(c)→q3—(b)→q2 (loop). Depois q3—(a)→q4 (final).',
+        'O ciclo "bc" gira entre q2 e q3 indefinidamente — cada volta completa o grupo!',
+        'Como n > 0, o ciclo é obrigatório: não existe atalho direto de q1 para o estado final.',
       ] },
     },
     boardWords: ['abca', 'aa', 'abcbca'],

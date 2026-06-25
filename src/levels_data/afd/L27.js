@@ -2,21 +2,21 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL27() {
-  const b = makeBuilder(LEVEL_GRAPHS[27], { q0: [15, 68], q1: [50, 20], q2: [85, 68] });
+  const b = makeBuilder(LEVEL_GRAPHS[27], { q0: [12, 48], q1: [28, 26], q2: [46, 46] });
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('λ tem comprimento 0 (múltiplo de 3): q0 é inicial E final.', -1));
   steps.push(b.test('Veja λ ser aceita parada em q0 (final).', '', 0));
-  b.addNodes('q1', 'q2').addEdges(['q0', '0', 'q1'], ['q1', '0', 'q2'], ['q2', '0', 'q0']);
+  b.addNodes('q1', 'q2').addEdges(['q0', '0', 'q1'], ['q0', '1', 'q1'], ['q1', '0', 'q2'], ['q1', '1', 'q2'], ['q2', '0', 'q0'], ['q2', '1', 'q0']);
   steps.push(b.draw('Adicionamos o ciclo q0→q1→q2→q0, cada seta lendo {0,1}.', 1));
   steps.push(b.reject('Mas "00" tem 2 símbolos: para em q2 (não-final). Falta fechar o ciclo!', '00', 1));
   steps.push(b.test('Já "000" fecha o ciclo: q0→q1→q2→q0 (final). Aceita!', '000', 1));
   steps.push(b.test('"010101" dá duas voltas completas no ciclo. Aceita!', '010101', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 27, label: "L27", formula: "L = { w ∈ {0,1}* | w tem tamanho múltiplo de 3 }",                 desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["λ","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemático de tamanho 3.",
+export default { id: 27, label: "L27", formula: "L = {w ∈ {0,1}* / w tem tamanho múltiplo de 3}",                   desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["λ","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemático de tamanho 3.",
     tutorials: {
       onStart: { type: 'theory', title: 'Contagem Modular — Mod 3!', dialog: [
         'Múltiplo de 3: comprimento ≡ 0 (mod 3). Ou seja, palavras de tamanho 0, 3, 6, 9...',

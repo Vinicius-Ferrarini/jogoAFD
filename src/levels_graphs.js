@@ -88,6 +88,7 @@ const _MANUAL = {
       { from: 'q1', to: 'q1', symbol: 'a' },
       { from: 'q1', to: 'q2', symbol: 'b' },
       { from: 'q2', to: 'q2', symbol: 'b' },
+      { from: 'q1', to: 'q3', symbol: 'c' },
       { from: 'q2', to: 'q3', symbol: 'c' },
       { from: 'q3', to: 'q3', symbol: 'c' }
     ]

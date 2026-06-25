@@ -2,7 +2,7 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL22() {
-  const b = makeBuilder(LEVEL_GRAPHS[22], { q0: [30, 50], q1: [70, 50] });
+  const b = makeBuilder(LEVEL_GRAPHS[22], { q0: [12, 48], q1: [36, 49] });
   const steps = [];
   b.addNodes('q0').addEdges(['q0', '0', 'q0']);
   steps.push(b.draw('Termina em "0": q0 é inicial+final, com laço de "0".', -1));
@@ -18,7 +18,7 @@ function buildLessonL22() {
   return steps;
 }
 
-export default { id: 22, label: "L22", formula: "L = { w ∈ {0,1}* | w é um número par }",
+export default { id: 22, label: "L22", formula: "L = {w ∈ {0,1}* / w é um número par}",
     aliases: [
       "L = { w ∈ {0,1}* | w é par }",
       "L = { w ∈ {0,1}* | w termina em 0 }",

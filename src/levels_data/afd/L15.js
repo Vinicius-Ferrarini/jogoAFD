@@ -2,7 +2,7 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL15() {
-  const b = makeBuilder(LEVEL_GRAPHS[15], { q0: [28, 50], q1: [68, 50] });
+  const b = makeBuilder(LEVEL_GRAPHS[15], { q0: [18, 44], q1: [42, 44] });
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('A menor palavra é λ (comprimento 0 = par): q0 é inicial E final.', -1));
@@ -19,7 +19,7 @@ function buildLessonL15() {
   return steps;
 }
 
-export default { id: 15, label: "L15", formula: "L = { w ∈ {a,b}* | |w|a + |w|b é par }",                            desc: "",                                                                 shortestWord: "",         regex: /^([ab]{2})*$/,                                              alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "Não importa a ordem, desde que o tamanho total da palavra seja par.",                                               successMsg: "Tamanho par garantido com sucesso.",
+export default { id: 15, label: "L15", formula: "L = {w ∈ {a,b}* / |w|a + |w|b é par}",                            desc: "",                                                                 shortestWord: "",         regex: /^([ab]{2})*$/,                                              alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "Não importa a ordem, desde que o tamanho total da palavra seja par.",                                               successMsg: "Tamanho par garantido com sucesso.",
     tutorials: {
       onStart: { type: 'theory', title: 'Tamanho Par — O Símbolo Não Importa!', dialog: [
         'L15: qualquer "a" ou "b" lido aumenta o comprimento em 1.',

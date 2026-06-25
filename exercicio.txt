@@ -1,0 +1,53 @@
+L01: L = {}
+L02: L = {e}
+L03: L = {0}
+L04: L = {e, 0}
+L05: L = {a^n / n > 0}
+L06: L = {a^n / n > 0 e n é impar}
+L07: L = {a^n b^a / n >= 0 e n é par}
+L08: L = {a(bc)^n a / n > 0}
+L09: L = {a^n b^m c^p / n > 0, m >= 0, p >= 0}
+L10: L = {a^n b b a^m / n >= 0 é par, m >= 0 e m é par}
+L11: L = {a^n b^m / (n+m) é par, n >= 0, m >= 0}
+L12: L = {a^n b^2m / n > 0, m > 0}
+L13: L = {(ab)^n (cd)^m / n > 0, m > 0}
+L14: L = {w ∈ {a,b}* / |w|a = |w|b}
+L15: L = {w ∈ {a,b}* / |w|a + |w|b é par}
+L16: L = {a^u b^v c^x y / u,v,x,y ∈ {a,b,c}*}
+L17: L = {w ∈ {a,b}* / w começa com a e tem tamanho par}
+L18: L = {w ∈ {a,b}* / w nunca tem mais de dois a's consecutivos}
+L19: L = {w ∈ {a,b}* / w tem um número impar de ab's}
+L20: L = {w ∈ {a,b}* / |w| >= 2 e os a's precedem os b's}
+L21: L = {w ∈ {a,b,c,d}* / os a's precedem os b's e os c's precedem os d's}
+L22: L = {w ∈ {0,1}* / w é um número par}
+L23: L = {w ∈ {0,1}* / w é um número impar}
+L24: L = {w ∈ {0,1}* / w tem tamanho 3}
+L25: L = {w ∈ {0,1}* / w tem tamanho menor que 3}
+L26: L = {w ∈ {0,1}* / w tem tamanho maior que 3}
+L27: L = {w ∈ {0,1}* / w tem tamanho múltiplo de 3}
+L28: L = {w ∈ {0,1}* / cada 0 é seguido de, no mínimo, dois 1's}
+L29: L = {w ∈ {0,1}* / os primeiros 4 símbolos contêm, no mínimo, dois 1's}
+L30: L = {w ∈ {0,1}* / w não contém 000 nem 111}
+L31: L = {w ∈ {0,1}* / os últimos três símbolos não são 000}
+L32: L = {w ∈ {0,1,2}* / w tem número par de 0's, 1's e 2's}
+L33: L = {w ∈ {0,1}* / w tem 001 como prefixo}
+L34: L = {w ∈ {0,1}* / w tem 1010 como sufixo}
+L35: L = {w ∈ {0,1}* / w tem 1111 como subpalavra}
+L36: L = {w ∈ {a,b,c,d}* / w tem dcba como sufixo}
+L37: L = {w ∈ {a,b,c,d}* / w tem abcd ou dcba como subpalavra}
+L38: L = {w ∈ {a,b,c,d}* / w tem abcd ou dcba como subpalavra}
+L39: L = {w ∈ {a,b}* / a quantidade de a é par e a quantidade de b é impar}
+L40: L = {w ∈ {a,b}* / a quantidade de a é impar e a quantidade de b é impar}
+L41: L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}
+L42: L = {a^n (dcb)^m (bb)^p / n > 0, m > 0, p >= 0}
+L43: L = {w ∈ {a,b,c,d}* / w tem ab como subpalavra e cd como sufixo}
+L44: L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo e dcba como sufixo}
+L45: L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo e dcba como sufixo}
+L46: L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo, cccc como subpalavra e dcba como sufixo}
+L47: L = {w ∈ {a,b,c}* / a quantidade de a, b e c é par}
+L48: L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}
+L49: L = {a^n a c^m (ab+ba) c a^2p / n >= 0, m > 0, p > 0}
+L50: L = {a^n b^m c^p / n > 0, p > 0, m >= 0 e (n+p) é impar}
+L51: L = {a^n a c^m (ab+ba) c a^2p / n >= 0, m > 0, p > 0}
+L52: L = {a^n b^m c^p / n > 0, m é impar e p é par}
+L53: L = {w ∈ {a,b,c}* / cada b é seguido de pelo menos um c}

@@ -3,21 +3,21 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL24() {
   const b = makeBuilder(LEVEL_GRAPHS[24], {
-    q0: [12, 50], q1: [38, 50], q2: [64, 50], q3: [88, 50],
+    q0: [12, 48], q1: [28, 47], q2: [52, 48], q3: [74, 47],
   });
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3')
-   .addEdges(['q0', '0', 'q1'], ['q1', '0', 'q2'], ['q2', '0', 'q3']);
+   .addEdges(['q0', '0', 'q1'], ['q0', '1', 'q1'], ['q1', '0', 'q2'], ['q1', '1', 'q2'], ['q2', '0', 'q3'], ['q2', '1', 'q3']);
   steps.push(b.draw('Trilho de exatamente 3 passos: q0→q1→q2→q3 (final), cada seta lê {0,1}.', -1));
   steps.push(b.test('Veja "000" percorrer os 3 passos até q3 (final). Aceita!', '000', 0));
   steps.push(b.reject('Mas "00" tem só 2 símbolos: para em q2, que NÃO é final!', '00', 0));
-  steps.push(b.test('Qualquer combinação de 3 símbolos serve: "101" fecha em q3 (final). Aceita!', '101', 1));
-  steps.push(b.reject('E "0000" tem 4 símbolos: q3 não tem saída e a máquina trava!', '0000', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  steps.push(b.test('Qualquer combinação de 3 símbolos serve: "101" fecha em q3 (final). Aceita!', '101', 0));
+  steps.push(b.reject('E "0000" tem 4 símbolos: q3 não tem saída e a máquina trava!', '0000', 0));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 0));
   return steps;
 }
 
-export default { id: 24, label: "L24", formula: "L = { w ∈ {0,1}* | w tem tamanho 3 }",                              desc: "",                                                                 shortestWord: "000",      regex: /^[01]{3}$/,                                                 alphabet: ['0', '1'],             acceptedWords: ["000","011","101"],         rejectedWords: ["λ","00","0000"],       hint: "Você precisa de um caminho reto que só aceita na terceira etapa.",                                                  successMsg: "Controle de tamanho exato.",
+export default { id: 24, label: "L24", formula: "L = {w ∈ {0,1}* / w tem tamanho 3}",                                desc: "",                                                                 shortestWord: "000",      regex: /^[01]{3}$/,                                                 alphabet: ['0', '1'],             acceptedWords: ["000","011","101"],         rejectedWords: ["λ","00","0000"],       hint: "Você precisa de um caminho reto que só aceita na terceira etapa.",                                                  successMsg: "Controle de tamanho exato.",
     tutorials: {
       onStart: { type: 'theory', title: 'Caminho de Comprimento Exato!', dialog: [
         'L24: aceitar APENAS palavras com exatamente 3 símbolos — nem mais, nem menos.',

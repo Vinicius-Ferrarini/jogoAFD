@@ -3,7 +3,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL31() {
   const b = makeBuilder(LEVEL_GRAPHS[31], {
-    q0: [15, 50], q1: [42, 25], q2: [68, 50], q3: [88, 25],
+    q0: [10, 51], q1: [31, 28], q2: [58, 51], q3: [84, 87],
   });
   const steps = [];
   b.addNodes('q0').addEdges(['q0', '1', 'q0']);
@@ -20,7 +20,7 @@ function buildLessonL31() {
   return steps;
 }
 
-export default { id: 31, label: "L31", formula: "L = { w ∈ {0,1}* | os últimos três símbolos de w NÃO são 000 }",  desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000$)[01]*$/,                                         alphabet: ['0', '1'],             acceptedWords: ["λ","1","001"],            rejectedWords: ["000","1000","10000"],  hint: "O final da palavra é o mais importante aqui.",                                                                      successMsg: "Sufixo validado.",
+export default { id: 31, label: "L31", formula: "L = {w ∈ {0,1}* / os últimos três símbolos não são 000}",  desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000$)[01]*$/,                                         alphabet: ['0', '1'],             acceptedWords: ["λ","1","001"],            rejectedWords: ["000","1000","10000"],  hint: "O final da palavra é o mais importante aqui.",                                                                      successMsg: "Sufixo validado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Sufixo Proibido: "000"!', dialog: [
         'Diferente de L30, L31 só proíbe "000" como SUFIXO — não em qualquer posição.',

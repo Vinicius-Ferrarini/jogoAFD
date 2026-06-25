@@ -3,7 +3,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL13() {
   const b = makeBuilder(LEVEL_GRAPHS[13], {
-    q0: [12, 50], q1: [30, 50], q2: [50, 50], q3: [68, 50], q4: [85, 50],
+    q0: [10, 36], q1: [27, 36], q2: [50, 38], q3: [68, 39], q4: [91, 41],
   });
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
@@ -21,7 +21,7 @@ function buildLessonL13() {
   return steps;
 }
 
-export default { id: 13, label: "L13", formula: "L = { (ab)^n (cd)^m | n > 0, m > 0 }",                               desc: "",                                                                 shortestWord: "abcd",     regex: /^(ab)+(cd)+$/,                                              alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","ababcd","abcdcd"], rejectedWords: ["ab","cd","abdc"],      hint: "Blocos duplos de 'ab' seguidos por blocos duplos de 'cd'.",                                                        successMsg: "Padrão silábico validado!",
+export default { id: 13, label: "L13", formula: "L = {(ab)^n (cd)^m / n > 0, m > 0}",                               desc: "",                                                                 shortestWord: "abcd",     regex: /^(ab)+(cd)+$/,                                              alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","ababcd","abcdcd"], rejectedWords: ["ab","cd","abdc"],      hint: "Blocos duplos de 'ab' seguidos por blocos duplos de 'cd'.",                                                        successMsg: "Padrão silábico validado!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Ciclos em Série — Engrenagens!', dialog: [
         'Dois padrões cíclicos encadeados: (ab)^n depois (cd)^m, com n,m ≥ 1.',

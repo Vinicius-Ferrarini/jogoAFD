@@ -3,7 +3,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL21() {
   const b = makeBuilder(LEVEL_GRAPHS[21], {
-    q0: [15, 50], q1: [35, 20], q2: [65, 20], q3: [85, 50], qe: [50, 85],
+    q0: [12, 48], q1: [39, 26], q2: [66, 47], q3: [40, 75],
   });
   const steps = [];
   b.addNodes('q0').addEdges(['q0', 'a', 'q0']);
@@ -18,15 +18,13 @@ function buildLessonL21() {
   b.addNodes('q3').addEdges(['q2', 'd', 'q3'], ['q3', 'd', 'q3'], ['q0', 'd', 'q3'], ['q1', 'd', 'q3']);
   steps.push(b.draw('Bloco "d": q2→q3 (final, laço d) e os atalhos q0→q3 e q1→q3.', 2));
   steps.push(b.test('"abcd" percorre os quatro blocos até q3 (final). Aceita!', 'abcd', 2));
-  b.addNodes('qe').addEdges(['q1', 'a', 'qe'], ['q2', 'a', 'qe'], ['q3', 'a', 'qe'], ['qe', 'a', 'qe']);
-  steps.push(b.draw('Por fim, a armadilha qe (não-final): qualquer símbolo fora de ordem cai aqui.', 2));
-  steps.push(b.reject('"ba" tenta "a" depois de "b" (fora de ordem): q0→q1→qe (armadilha). Rejeita!', 'ba', 2));
+  steps.push(b.reject('"ba" tenta "a" depois de "b": q1 não tem seta para "a" — dead-state implícito!', 'ba', 2));
   steps.push(b.test('Já "aabbccdd" respeita a ordem e usa os laços de cada bloco. Aceita!', 'aabbccdd', 2));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
 }
 
-export default { id: 21, label: "L21", formula: "L = { w ∈ {a,b,c,d}* | 'a' precede 'b', 'b' precede 'c', 'c' precede 'd' }",    desc: "",                                                                 shortestWord: "",         regex: /^a*b*c*d*$/,                                                alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["λ","abcd","abc"],         rejectedWords: ["ba","ca","cb"],        hint: "É uma progressão linear estrita pelo alfabeto.",                                                                    successMsg: "Ordem alfabética mantida!",
+export default { id: 21, label: "L21", formula: "L = {w ∈ {a,b,c,d}* / os a's precedem os b's e os c's precedem os d's}", desc: "",                                                             shortestWord: "",         regex: /^a*b*c*d*$/,                                                alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["λ","abcd","abc"],         rejectedWords: ["ba","ca","cb"],        hint: "É uma progressão linear estrita pelo alfabeto.",                                                                    successMsg: "Ordem alfabética mantida!",
     tutorials: {
       onStart: { type: 'theory', title: 'Ordem Alfabética Estrita!', dialog: [
         'L21: símbolos em ordem a* b* c* d* — cada bloco pode aparecer 0 ou mais vezes.',
@@ -36,7 +34,7 @@ export default { id: 21, label: "L21", formula: "L = { w ∈ {a,b,c,d}* | 'a' pr
       onDrawGraph: { type: 'mechanic', title: 'Cadeia de Blocos com Atalhos', dialog: [
         '4 estados em zigue-zague: <b>q0</b>(a,ini,f), <b>q1</b>(b,f), <b>q2</b>(c,f), <b>q3</b>(d,f) — todos finais!',
         'Atalhos: q0→q3(d) e q1→q3(d). "ad" ✔ (pula b e c), "bd" ✔ (pula c), "cd" ✔ "d" ✔',
-        '"ba" é rejeitado: q1 sem seta para "a". "cb" é rejeitado: q2 sem seta para "b". A ordem importa!',
+        '"ba" é rejeitado: q1 sem seta para "a" — dead-state implícito. A ordem importa!',
       ] },
     },
     boardWords: ['', 'ab', 'abc', 'abcd', 'ba', 'aabbccdd'],

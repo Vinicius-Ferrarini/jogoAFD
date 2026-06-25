@@ -3,7 +3,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL16() {
   const b = makeBuilder(LEVEL_GRAPHS[16], {
-    q0: [15, 50], q1: [38, 50], q2: [62, 50], q3: [85, 50],
+    q0: [12, 47], q1: [30, 48], q2: [49, 48], q3: [69, 51],
   });
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3')
@@ -11,15 +11,20 @@ function buildLessonL16() {
   steps.push(b.draw('Menor palavra "abc" (um "a", um "b", um "c" em ordem): q0→q1→q2→q3 (final).', -1));
   steps.push(b.test('Veja "abc" percorrer a cadeia até q3 (final). Aceita!', 'abc', 0));
   steps.push(b.reject('Mas "ab" não achou o "c": para em q2, que NÃO é final!', 'ab', 0));
-  b.addEdges(['q0', 'b', 'q0'], ['q1', 'a', 'q1'], ['q2', 'a', 'q2'], ['q3', 'a', 'q3']);
+  b.addEdges(
+    ['q0', 'b', 'q0'], ['q0', 'c', 'q0'],
+    ['q1', 'a', 'q1'], ['q1', 'c', 'q1'],
+    ['q2', 'a', 'q2'], ['q2', 'b', 'q2'],
+    ['q3', 'a', 'q3'], ['q3', 'b', 'q3'], ['q3', 'c', 'q3']
+  );
   steps.push(b.draw('Adicionamos os laços de espera: cada estado ignora símbolos que ainda não procura.', 1));
   steps.push(b.test('"aabc" usa o laço de q1 (ignora o 2º "a") e fecha em q3. Aceita!', 'aabc', 1));
   steps.push(b.test('"abbc" usa o laço de q2 (ignora o 2º "b") e fecha em q3. Aceita!', 'abbc', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 16, label: "L16", formula: "L = { u a v b x c y | u,v,x,y ∈ {a,b,c}* }",                       desc: "",                                                                 shortestWord: "abc",      regex: /^[abc]*a[abc]*b[abc]*c[abc]*$/,                             alphabet: ['a', 'b', 'c'],        acceptedWords: ["abc","aabc","abbc"],       rejectedWords: ["λ","ab","bc"],         hint: "A palavra tem que ter pelo menos um 'a', um 'b' e um 'c', na ordem.",                                               successMsg: "Filtro de caracteres construído.",
+export default { id: 16, label: "L16", formula: "L = {a^u b^v c^x y / u,v,x,y ∈ {a,b,c}*}",                         desc: "",                                                                 shortestWord: "abc",      regex: /^[abc]*a[abc]*b[abc]*c[abc]*$/,                             alphabet: ['a', 'b', 'c'],        acceptedWords: ["abc","aabc","abbc"],       rejectedWords: ["λ","ab","bc"],         hint: "A palavra tem que ter pelo menos um 'a', um 'b' e um 'c', na ordem.",                                               successMsg: "Filtro de caracteres construído.",
     tutorials: {
       onStart: { type: 'theory', title: 'Busca Sequencial de Símbolos!', dialog: [
         'L16 exige ao menos um "a", um "b" e um "c" — nessa ORDEM, mas com qualquer coisa entre eles.',

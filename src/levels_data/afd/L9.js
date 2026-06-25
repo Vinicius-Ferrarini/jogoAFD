@@ -3,7 +3,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL9() {
   const b = makeBuilder(LEVEL_GRAPHS[9], {
-    q0: [15, 50], q1: [38, 50], q2: [61, 72], q3: [84, 50],
+    q0: [15, 50], q1: [38, 50], q2: [61, 60], q3: [84, 50],
   });
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
@@ -13,7 +13,7 @@ function buildLessonL9() {
   b.addNodes('q2').addEdges(['q1', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'b', 'q2']);
   steps.push(b.draw('Adicionamos o laço de "a" e o bloco de "b"s (q1→q2, laço em q2).', 1));
   steps.push(b.test('"aabb" usa o laço de "a" e o bloco de "b"s, parando em q2 (final). Aceita!', 'aabb', 1));
-  b.addNodes('q3').addEdges(['q2', 'c', 'q3'], ['q3', 'c', 'q3']);
+  b.addNodes('q3').addEdges(['q1', 'c', 'q3'], ['q2', 'c', 'q3'], ['q3', 'c', 'q3']);
   steps.push(b.draw('Por fim, o bloco de "c"s (q2→q3, laço em q3).', 2));
   steps.push(b.test('"aabbcc" percorre os três blocos e fecha em q3 (final). Aceita!', 'aabbcc', 2));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));

@@ -3,7 +3,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL28() {
   const b = makeBuilder(LEVEL_GRAPHS[28], {
-    q0: [20, 30], q1: [50, 30], q2: [80, 30], q3: [50, 70],
+    q0: [13, 31], q1: [40, 31], q2: [28, 56],
   });
   const steps = [];
   b.addNodes('q0').addEdges(['q0', '1', 'q0']);
@@ -12,15 +12,13 @@ function buildLessonL28() {
   b.addNodes('q1', 'q2').addEdges(['q0', '0', 'q1'], ['q1', '1', 'q2'], ['q2', '1', 'q0']);
   steps.push(b.draw('Cada "0" cria uma dívida de DOIS "1"s: q0→q1→q2→q0 (o "011" volta à base).', 1));
   steps.push(b.test('"011" paga a dívida com dois "1"s e volta a q0 (final). Aceita!', '011', 1));
-  b.addNodes('q3').addEdges(['q1', '0', 'q3'], ['q2', '0', 'q3'], ['q3', '0', 'q3']);
-  steps.push(b.draw('E a armadilha q3 (não-final): um "0" antes de quitar os dois "1"s cai aqui.', 2));
-  steps.push(b.reject('"010" lê só um "1" e já vem outro "0": q0→q1→q2→q3 (armadilha). Rejeita!', '010', 2));
-  steps.push(b.test('Já "1011" tem o "0" seguido de "11": q0→q0→q1→q2→q0 (final). Aceita!', '1011', 2));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  steps.push(b.reject('"010" lê só um "1" e já vem outro "0": q1 não tem seta para "0" — dead-state!', '010', 1));
+  steps.push(b.test('Já "1011" tem o "0" seguido de "11": q0→q0→q1→q2→q0 (final). Aceita!', '1011', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 28, label: "L28", formula: "L = { w ∈ {0,1}* | cada 0 é seguido de, no mínimo, dois 1's }",   desc: "",                                                                 shortestWord: "",         regex: /^(1*011+)*1*$/,                                             alphabet: ['0', '1'],             acceptedWords: ["λ","011","1011"],         rejectedWords: ["0","01","010"],        hint: "Leu um '0'? Então os próximos dois passos OBRIGATORIAMENTE devem ser '1'.",                                         successMsg: "Padrão de segurança estabelecido.",
+export default { id: 28, label: "L28", formula: "L = {w ∈ {0,1}* / cada 0 é seguido de, no mínimo, dois 1's}",     desc: "",                                                                 shortestWord: "",         regex: /^(1*011+)*1*$/,                                             alphabet: ['0', '1'],             acceptedWords: ["λ","011","1011"],         rejectedWords: ["0","01","010"],        hint: "Leu um '0'? Então os próximos dois passos OBRIGATORIAMENTE devem ser '1'.",                                         successMsg: "Padrão de segurança estabelecido.",
     tutorials: {
       onStart: { type: 'theory', title: 'Cada 0 Exige Dois 1s!', dialog: [
         'Restrição: todo "0" lido OBRIGA que os próximos dois símbolos sejam "1".',
@@ -28,9 +26,9 @@ export default { id: 28, label: "L28", formula: "L = { w ∈ {0,1}* | cada 0 é 
         'Estratégia: rastrear a "dívida" — quantos 1s ainda devemos após o último 0.',
       ] },
       onDrawGraph: { type: 'mechanic', title: 'Estados de Dívida', dialog: [
-        '<b>q0</b>(ini,f): sem dívida. <b>q1</b>: deve 2 uns. <b>q2</b>: deve 1 un. <b>qT</b>: dead.',
+        '<b>q0</b>(ini,f): sem dívida. <b>q1</b>: deve 2 uns. <b>q2</b>: deve 1 un.',
         '1 em q0: loop. 0 em q0: gera dívida (→q1). 1 em q1: paga parcial (→q2). 1 em q2: quita (→q0).',
-        'Novo 0 antes de quitar (q1→qT ou q2→qT) = violação irrecuperável. qT rejeita tudo.',
+        'Novo 0 antes de quitar (q1 sem seta para "0") = violação irrecuperável. Dead-state implícito.',
       ] },
     },
     boardWords: ['', '011', '010', '1011'],
