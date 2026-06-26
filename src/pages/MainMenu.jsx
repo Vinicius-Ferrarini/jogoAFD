@@ -1,8 +1,30 @@
 // MainMenu.jsx – Tela inicial com branding TuringLab
+import { useState, useEffect } from 'react';
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
 import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../levels';
 import FeedbackButton from '../components/FeedbackButton';
+
+function useLastCommitDate() {
+  const [label, setLabel] = useState(null);
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/Vinicius-Ferrarini/jogoAFD/commits?per_page=1')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(([commit]) => {
+        const raw = commit?.commit?.author?.date;
+        if (!raw) return;
+        const d = new Date(raw);
+        const pad = n => String(n).padStart(2, '0');
+        setLabel(
+          `Última atualização: ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`
+        );
+      })
+      .catch(() => {});
+  }, []);
+
+  return label;
+}
 
 const AVAILABLE_AFD_LEVELS = GAME_LEVELS.filter(l => !UNAVAILABLE_LEVELS.has(l.id));
 // AFD_1 e AFD_2 usam os mesmos níveis disponíveis, com progresso separado
@@ -12,6 +34,7 @@ const AP_MAX_STARS        = 45; // 15 níveis × 3 (L16 impossível excluído)
 const GRAND_MAX_STARS     = P1P2_MAX_STARS + MINIMIZER_MAX_STARS + AP_MAX_STARS;
 
 export default function MainMenu({ onStart, progress }) {
+  const lastCommit = useLastCommitDate();
   const p2Progress = (() => {
     try { return JSON.parse(localStorage.getItem('turinglab_progress_p2') || '{}'); }
     catch { return {}; }
@@ -78,6 +101,9 @@ export default function MainMenu({ onStart, progress }) {
         {/* Footer */}
         <div className="menu-footer">
           <p>🔬 Iniciação Científica | Teoria da Computação</p>
+          {lastCommit && (
+            <p id="last-commit-date" className="last-commit-date">{lastCommit}</p>
+          )}
         </div>
       </div> {/* fim main-menu-content */}
 
