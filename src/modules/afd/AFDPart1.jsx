@@ -565,6 +565,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         {isNewLessonUI ? (
           <BlackboardPanel
             boardWords={currentLevel.boardWords}
+            rejectedWords={currentLevel.rejectedWords}
             step={guidedLessonStep}
             steps={lessonAllSteps}
             phase={lessonPhase}

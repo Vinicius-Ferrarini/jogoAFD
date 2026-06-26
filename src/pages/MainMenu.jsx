@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
 import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../levels';
-import FeedbackButton from '../components/FeedbackButton';
+import FeedbackButton, { RepoButton } from '../components/FeedbackButton';
 
 function useLastCommitDate() {
   const [label, setLabel] = useState(null);
@@ -107,7 +107,8 @@ export default function MainMenu({ onStart, progress }) {
         </div>
       </div> {/* fim main-menu-content */}
 
-      {/* Botão flutuante de feedback (position:fixed — não afeta o layout) */}
+      {/* Botões flutuantes (position:fixed — não afeta o layout) */}
+      <RepoButton />
       <FeedbackButton />
     </div>
   );

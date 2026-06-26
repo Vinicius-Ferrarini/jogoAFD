@@ -6,7 +6,7 @@
 import './BlackboardPanel.css';
 
 export default function BlackboardPanel({
-  boardWords, step, steps, phase, atGraphEnd, sim, onReplaySim,
+  boardWords, rejectedWords, step, steps, phase, atGraphEnd, sim, onReplaySim,
   levelId, unlockedWords, onTriggerManualTrace,
   onGoFormal, onDoGraph, onNext, onPrev, onFinish,
 }) {
@@ -62,8 +62,14 @@ export default function BlackboardPanel({
             </div>
             {simDone && (() => {
               const accepted = simFrame.type === 'done';
-              // Rejeição DIDÁTICA: o passo avisou que a falha é proposital (lição).
-              const didactic = !accepted && currentStep?.expectedVerdict === 'reject';
+              // Rejeição DIDÁTICA: o passo define expectedVerdict='reject' (aula automática)
+              // OU o usuário clicou ▶ manualmente numa palavra que o nível marca como rejeitada.
+              const isManualTrace = sim.word !== currentStep?.simulateWord;
+              const rejSet = new Set(rejectedWords ?? []);
+              const didactic = !accepted && (
+                currentStep?.expectedVerdict === 'reject' ||
+                (isManualTrace && rejSet.has(sim.word))
+              );
               const cls = accepted ? 'ok' : didactic ? 'learn' : 'err';
               const msg = accepted
                 ? '✓ Aceita! Parou num estado final.'
