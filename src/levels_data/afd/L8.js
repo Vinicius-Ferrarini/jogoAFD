@@ -2,18 +2,19 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL8() {
+  // JFLAP_GRAPHS[8]: q0→q1(a)→q2(b)→q4(c)→q3(a,final). Ciclo: q4→q2(b)→q4(c)
   const b = makeBuilder(LEVEL_GRAPHS[8], {
-    q0: [12, 50], q1: [30, 50], q2: [48, 50], q3: [66, 50], q4: [84, 50],
+    q0: [12, 50], q1: [30, 50], q2: [48, 50], q3: [66, 70], q4: [84, 50],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
-   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'a', 'q4']);
-  steps.push(b.draw('Menor palavra "abca" (um ciclo "bc"): cadeia q0—a→q1—b→q2—c→q3—a→q4 (final).', -1));
-  steps.push(b.test('Veja "abca" percorrer a cadeia até q4 (final). Aceita!', 'abca', 0));
+  b.addNodes('q0', 'q1', 'q2', 'q4', 'q3')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q4'], ['q4', 'a', 'q3']);
+  steps.push(b.draw('Menor palavra "abca" (um ciclo "bc"): cadeia q0—a→q1—b→q2—c→q4—a→q3 (final).', -1));
+  steps.push(b.test('Veja "abca" percorrer a cadeia até q3 (final). Aceita!', 'abca', 0));
   steps.push(b.reject('Mas "aa" pula o ciclo "bc" obrigatório (n>0): trava em q1 sem transição de "a"!', 'aa', 0));
-  b.addEdges(['q3', 'b', 'q2']);
-  steps.push(b.draw('Adicionamos o retorno q3—b→q2: o ciclo "bc" pode girar quantas vezes quiser.', 1));
-  steps.push(b.test('Com o retorno, "abcbca" dá duas voltas no ciclo e fecha em q4. Aceita!', 'abcbca', 1));
+  b.addEdges(['q4', 'b', 'q2']);
+  steps.push(b.draw('Adicionamos o retorno q4—b→q2: o ciclo "bc" pode girar quantas vezes quiser.', 1));
+  steps.push(b.test('Com o retorno, "abcbca" dá duas voltas no ciclo e fecha em q3. Aceita!', 'abcbca', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
 }

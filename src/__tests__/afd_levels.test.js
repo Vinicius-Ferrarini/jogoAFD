@@ -100,9 +100,10 @@ describe('AFD Levels — grafo ≡ linguagem (fuzz até comprimento ' + FUZZ_MAX
 
     const label = level.label ?? `L${level.id}`;
 
-    it(`${label}: LEVEL_GRAPHS[${level.id}] ≡ spec para todas as palavras até comprimento ${FUZZ_MAX_LEN}`, () => {
+    const maxLen = level.fuzzMaxLen ?? FUZZ_MAX_LEN;
+    it(`${label}: LEVEL_GRAPHS[${level.id}] ≡ spec para todas as palavras até comprimento ${maxLen}`, () => {
       let counterexample = null;
-      for (const word of bfsWords(level.alphabet, FUZZ_MAX_LEN)) {
+      for (const word of bfsWords(level.alphabet, maxLen)) {
         const graphResult = simulateGraph(graph, word);
         const specResult  = levelAccepts(level, word);
         if (specResult === null) continue;

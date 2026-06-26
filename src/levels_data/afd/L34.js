@@ -12,7 +12,7 @@ function buildLessonL34() {
   steps.push(b.test('Veja "1010" percorrer a cadeia até q4 (final). Aceita!', '1010', 0));
   steps.push(b.reject('Mas "101" não completou o "1010": para em q3, que NÃO é final!', '101', 0));
   b.addEdges(['q0', '0', 'q0'], ['q1', '1', 'q1'], ['q2', '0', 'q0'],
-             ['q3', '1', 'q0'], ['q4', '1', 'q3'], ['q4', '0', 'q0']);
+             ['q3', '1', 'q1'], ['q4', '1', 'q3'], ['q4', '0', 'q0']);
   steps.push(b.draw('Adicionamos os laços e resets para rastrear o melhor sufixo.', 1));
   steps.push(b.test('"01010" tem prefixo livre e termina em "1010": q4 (final). Aceita!', '01010', 1));
   steps.push(b.test('"001010" também termina em "1010" após os zeros iniciais. Aceita!', '001010', 1));

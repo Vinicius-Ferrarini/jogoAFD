@@ -226,7 +226,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q2', to: 'q1', symbol: 'a, b' }
     ],
   },
-  // L18 ← L18.xml
+  // L18 ← L18.xml (q1→q2(a) was missing due to malformed XML: <to>>2</to>)
   18: {
     nodes: [
       { id: 'q0', x: 70, y: 161, isInitial: true, isFinal: true },
@@ -237,7 +237,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q1', to: 'q0', symbol: 'b' },
       { from: 'q0', to: 'q1', symbol: 'a' },
       { from: 'q0', to: 'q0', symbol: 'b' },
-      { from: 'q2', to: 'q0', symbol: 'b' }
+      { from: 'q2', to: 'q0', symbol: 'b' },
+      { from: 'q1', to: 'q2', symbol: 'a' }
     ],
   },
   // L19 ← L19.xml
@@ -279,7 +280,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q0', to: 'q1', symbol: 'a' }
     ],
   },
-  // L21 ← L21.xml
+  // L21 ← L21.xml (q1→q3(d) and q2→q3(d) were missing from XML)
   21: {
     nodes: [
       { id: 'q0', x: 70, y: 164, isInitial: true, isFinal: true },
@@ -296,7 +297,9 @@ export const JFLAP_GRAPHS = {
       { from: 'q2', to: 'q3', symbol: 'd' },
       { from: 'q0', to: 'q2', symbol: 'c' },
       { from: 'q1', to: 'q2', symbol: 'c' },
-      { from: 'q0', to: 'q3', symbol: 'd' }
+      { from: 'q0', to: 'q3', symbol: 'd' },
+      { from: 'q1', to: 'q3', symbol: 'd' },
+      { from: 'q2', to: 'q3', symbol: 'd' }
     ],
   },
   // L22 ← L22.xml
@@ -351,7 +354,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q0', to: 'q1', symbol: '0, 1' }
     ],
   },
-  // L26 ← L26.xml
+  // L26 ← L26.xml (q4→q4 self-loop missing from XML; needed for words longer than 4)
   26: {
     nodes: [
       { id: 'q0', x: 70, y: 164, isInitial: true, isFinal: false },
@@ -364,7 +367,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q1', to: 'q2', symbol: '0, 1' },
       { from: 'q3', to: 'q4', symbol: '0, 1' },
       { from: 'q2', to: 'q3', symbol: '0, 1' },
-      { from: 'q0', to: 'q1', symbol: '0, 1' }
+      { from: 'q0', to: 'q1', symbol: '0, 1' },
+      { from: 'q4', to: 'q4', symbol: '0, 1' }
     ],
   },
   // L27 ← L27.xml
@@ -404,8 +408,8 @@ export const JFLAP_GRAPHS = {
       { id: 'q4', x: 254, y: 134, isInitial: false, isFinal: false },
       { id: 'q5', x: 366, y: 80, isInitial: false, isFinal: false },
       { id: 'q6', x: 469, y: 165, isInitial: false, isFinal: true },
-      { id: 'q7', x: 257, y: 228, isInitial: false, isFinal: false },
-      { id: 'q8', x: 376, y: 229, isInitial: false, isFinal: false }
+      { id: 'q7', x: 257, y: 228, isInitial: false, isFinal: true },
+      { id: 'q8', x: 376, y: 229, isInitial: false, isFinal: true }
     ],
     transitions: [
       { from: 'q0', to: 'q2', symbol: '1' },
@@ -423,7 +427,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q8', to: 'q6', symbol: '0, 1' }
     ],
   },
-  // L30 ← L30.xml
+  // L30 ← L30.xml (q1→q3(1) and q3→q1(0) missing from XML; needed for alternating sequences)
   30: {
     nodes: [
       { id: 'q0', x: 58, y: 172, isInitial: true, isFinal: true },
@@ -438,7 +442,9 @@ export const JFLAP_GRAPHS = {
       { from: 'q4', to: 'q1', symbol: '0' },
       { from: 'q2', to: 'q3', symbol: '1' },
       { from: 'q0', to: 'q1', symbol: '0' },
-      { from: 'q3', to: 'q4', symbol: '1' }
+      { from: 'q3', to: 'q4', symbol: '1' },
+      { from: 'q1', to: 'q3', symbol: '1' },
+      { from: 'q3', to: 'q1', symbol: '0' }
     ],
   },
   // L31 ← L31.xml
@@ -460,7 +466,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q2', to: 'q3', symbol: '0' }
     ],
   },
-  // L32 ← L32.xml
+  // L32 ← L32.xml (q3↔q5 via '0' missing from XML; parity cube edge for (0,0,1)↔(1,0,1))
   32: {
     nodes: [
       { id: 'q0', x: 60, y: 223, isInitial: true, isFinal: true },
@@ -494,7 +500,9 @@ export const JFLAP_GRAPHS = {
       { from: 'q0', to: 'q1', symbol: '0' },
       { from: 'q1', to: 'q0', symbol: '0' },
       { from: 'q1', to: 'q4', symbol: '1' },
-      { from: 'q4', to: 'q1', symbol: '1' }
+      { from: 'q4', to: 'q1', symbol: '1' },
+      { from: 'q3', to: 'q5', symbol: '0' },
+      { from: 'q5', to: 'q3', symbol: '0' }
     ],
   },
   // L33 ← L33.xml
@@ -512,7 +520,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q1', to: 'q2', symbol: '0' }
     ],
   },
-  // L34 ← L34.xml
+  // L34 ← L34.xml (q3→q0(1) in XML is wrong; must be q3→q1(1) for KMP suffix "1010")
   34: {
     nodes: [
       { id: 'q0', x: 60, y: 223, isInitial: true, isFinal: false },
@@ -527,7 +535,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q2', to: 'q0', symbol: '0' },
       { from: 'q0', to: 'q0', symbol: '0' },
       { from: 'q1', to: 'q1', symbol: '1' },
-      { from: 'q3', to: 'q0', symbol: '1' },
+      { from: 'q3', to: 'q1', symbol: '1' },
       { from: 'q4', to: 'q3', symbol: '1' },
       { from: 'q1', to: 'q2', symbol: '0' },
       { from: 'q3', to: 'q4', symbol: '0' },
@@ -570,7 +578,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q0', to: 'q1', symbol: 'a' }
     ],
   },
-  // L37 ← L36.xml
+  // L37 ← L36.xml (q4 must loop on all symbols; XML's q4→q0(a,b,c) and q4→q1(d) cause false negatives)
   37: {
     nodes: [
       { id: 'q0', x: 172, y: 263, isInitial: true, isFinal: false },
@@ -581,13 +589,12 @@ export const JFLAP_GRAPHS = {
     ],
     transitions: [
       { from: 'q0', to: 'q0', symbol: 'a, b, c' },
-      { from: 'q3', to: 'q0', symbol: 'b, d' },
+      { from: 'q3', to: 'q0', symbol: 'b, c' },
       { from: 'q1', to: 'q1', symbol: 'd' },
       { from: 'q2', to: 'q0', symbol: 'a, c' },
       { from: 'q2', to: 'q3', symbol: 'b' },
-      { from: 'q4', to: 'q0', symbol: 'a, b, c' },
+      { from: 'q4', to: 'q4', symbol: 'a, b, c, d' },
       { from: 'q3', to: 'q4', symbol: 'a' },
-      { from: 'q4', to: 'q1', symbol: 'd' },
       { from: 'q3', to: 'q1', symbol: 'd' },
       { from: 'q0', to: 'q1', symbol: 'd' },
       { from: 'q1', to: 'q2', symbol: 'c' },
@@ -745,7 +752,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q2', symbol: 'b' }
     ],
   },
-  // L44 ← L43.xml
+  // L44 ← L43.xml (q3→q2(a,b,d) added; q4→q2 must not include 'c' since q4→q3(c) is correct)
   44: {
     nodes: [
       { id: 'q0', x: 53, y: 202, isInitial: true, isFinal: false },
@@ -764,11 +771,12 @@ export const JFLAP_GRAPHS = {
       { from: 'q1', to: 'q2', symbol: 'b' },
       { from: 'q0', to: 'q1', symbol: 'a' },
       { from: 'q1', to: 'q0', symbol: 'c, d' },
-      { from: 'q4', to: 'q2', symbol: 'a, b, c' },
-      { from: 'q2', to: 'q3', symbol: 'c' }
+      { from: 'q4', to: 'q2', symbol: 'a, b, d' },
+      { from: 'q2', to: 'q3', symbol: 'c' },
+      { from: 'q3', to: 'q2', symbol: 'a, b, d' }
     ],
   },
-  // L45 ← L44.xml
+  // L45 ← L44.xml (XML has q4→q5(c) causing false positive; suffix "dcba" starts with d not c)
   45: {
     nodes: [
       { id: 'q0', x: 53, y: 202, isInitial: true, isFinal: false },
@@ -788,9 +796,9 @@ export const JFLAP_GRAPHS = {
       { from: 'q1', to: 'q2', symbol: 'b' },
       { from: 'q8', to: 'q8', symbol: 'a, b, c' },
       { from: 'q7', to: 'q8', symbol: 'a, b, c' },
-      { from: 'q4', to: 'q5', symbol: 'c' },
+      { from: 'q4', to: 'q9', symbol: 'd' },
       { from: 'q2', to: 'q3', symbol: 'c' },
-      { from: 'q4', to: 'q4', symbol: 'd' },
+      { from: 'q4', to: 'q8', symbol: 'a, b, c' },
       { from: 'q9', to: 'q9', symbol: 'd' },
       { from: 'q8', to: 'q9', symbol: 'd' },
       { from: 'q7', to: 'q9', symbol: 'd' },
@@ -798,7 +806,6 @@ export const JFLAP_GRAPHS = {
       { from: 'q5', to: 'q6', symbol: 'b' },
       { from: 'q5', to: 'q8', symbol: 'a, c, d' },
       { from: 'q6', to: 'q9', symbol: 'd' },
-      { from: 'q4', to: 'q8', symbol: 'a, b' },
       { from: 'q6', to: 'q8', symbol: 'b, c' },
       { from: 'q9', to: 'q5', symbol: 'c' },
       { from: 'q6', to: 'q7', symbol: 'a' }
@@ -1014,7 +1021,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q5', to: 'q6', symbol: 'c' }
     ],
   },
-  // L53 ← L52.xml
+  // L53 ← L52.xml (q1→q3(b) missing; language a+(bb)*b(cc)* needs direct q1→q3 for single 'b')
   53: {
     nodes: [
       { id: 'q0', x: 71, y: 120, isInitial: true, isFinal: false },
@@ -1034,7 +1041,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q5', symbol: 'c' },
       { from: 'q0', to: 'q1', symbol: 'a' },
       { from: 'q3', to: 'q4', symbol: 'b' },
-      { from: 'q4', to: 'q3', symbol: 'b' }
+      { from: 'q4', to: 'q3', symbol: 'b' },
+      { from: 'q1', to: 'q3', symbol: 'b' }
     ],
   },
   // L54 ← L53.xml

@@ -14,7 +14,7 @@ function buildLessonL18() {
   steps.push(b.test('"ab" lê um "a" e reinicia com "b": q0→q1→q0 (final). Aceita!', 'ab', 1));
   b.addNodes('q2').addEdges(['q1', 'a', 'q2'], ['q2', 'b', 'q0']);
   steps.push(b.draw('Adicionamos q2 (dois "a"s consecutivos, final): "b" volta a q0.', 2));
-  steps.push(b.reject('"aab" não é aceito nesta versão — experimente o grafo completo!', 'aa', 2));
+  steps.push(b.reject('"aaa" tem três a\'s consecutivos: q0→q1→q2 sem seta para "a" — dead-state!', 'aaa', 2));
   steps.push(b.test('Já "aba" intercala com "b": q0→q1→q0→q1 (final). Aceita!', 'aba', 2));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;

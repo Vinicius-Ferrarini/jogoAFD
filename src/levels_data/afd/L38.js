@@ -8,7 +8,7 @@ function buildLessonL38() {
   });
   const steps = [];
   b.addNodes('q0', 'q1', 'q3', 'q5', 'q7')
-   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3'], ['q3', 'c', 'q5']);
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3'], ['q3', 'c', 'q5'], ['q5', 'd', 'q7']);
   steps.push(b.draw('Caça à subpalavra "abcd": q0→q1→q3→q5→q7 (final).', -1));
   b.addNodes('q2', 'q4', 'q6')
    .addEdges(

@@ -9,18 +9,18 @@ function buildLessonL45() {
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4'],
-             ['q4', 'c', 'q5'], ['q5', 'b', 'q6'], ['q6', 'a', 'q7']);
-  steps.push(b.draw('Espinha "abcdcba": prefixo "abcd" (q0→q4) e sufixo "cba" (q4→q7, final).', -1));
-  steps.push(b.test('Veja "abcdcba" percorrer até q7 (final). Aceita!', 'abcdcba', 0));
+             ['q4', 'd', 'q9'], ['q9', 'c', 'q5'], ['q5', 'b', 'q6'], ['q6', 'a', 'q7']);
+  steps.push(b.draw('Espinha "abcddcba": prefixo "abcd" (q0→q4), "d" inicia sufixo via q9, "cba" finaliza em q7.', -1));
+  steps.push(b.test('Veja "abcddcba" percorrer até q7 (final). Aceita!', 'abcddcba', 0));
   steps.push(b.reject('Mas "abcd" tem só o prefixo, sem o sufixo: para em q4, não-final!', 'abcd', 0));
-  b.addNodes('q8', 'q9')
-   .addEdges(['q4', 'd', 'q4'], ['q4', 'a', 'q8'], ['q4', 'b', 'q8'],
+  b.addNodes('q8')
+   .addEdges(['q4', 'a', 'q8'], ['q4', 'b', 'q8'], ['q4', 'c', 'q8'],
              ['q5', 'a', 'q8'], ['q5', 'c', 'q8'], ['q5', 'd', 'q8'],
              ['q6', 'b', 'q8'], ['q6', 'c', 'q8'], ['q6', 'd', 'q9'],
              ['q7', 'a', 'q8'], ['q7', 'b', 'q8'], ['q7', 'c', 'q8'], ['q7', 'd', 'q9'],
              ['q8', 'a', 'q8'], ['q8', 'b', 'q8'], ['q8', 'c', 'q8'],
              ['q8', 'd', 'q9'], ['q9', 'd', 'q9'],
-             ['q9', 'a', 'q8'], ['q9', 'b', 'q8'], ['q9', 'c', 'q5']);
+             ['q9', 'a', 'q8'], ['q9', 'b', 'q8']);
   steps.push(b.draw('Adicionamos miolo livre (q8) e estado "d" (q9). Sufixo reinicia se mismatch.', 1));
   steps.push(b.test('"abcdadcba" tem um "a" no miolo (laço q8) e fecha o sufixo. Aceita!', 'abcdadcba', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));

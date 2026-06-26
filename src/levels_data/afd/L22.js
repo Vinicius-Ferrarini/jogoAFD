@@ -2,18 +2,17 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL22() {
+  // JFLAP_GRAPHS[22]: q0=inicial não-final, q1=final. q0→q1(0), q1→q1(0), q0→q0(1), q1→q0(1)
   const b = makeBuilder(LEVEL_GRAPHS[22], { q0: [12, 48], q1: [36, 49] });
   const steps = [];
-  b.addNodes('q0').addEdges(['q0', '0', 'q0']);
-  steps.push(b.draw('Termina em "0": q0 é inicial+final, com laço de "0".', -1));
-  steps.push(b.test('Veja "0" ser aceita no laço de q0 (final).', '0', 0));
-  b.addNodes('q1').addEdges(['q0', '1', 'q1'], ['q1', '1', 'q1']);
-  steps.push(b.draw('Adicionamos q1 (último símbolo lido = "1"), com laço de "1".', 1));
-  steps.push(b.reject('Mas "1" termina em "1" (ímpar): para em q1, que NÃO é final!', '1', 1));
-  b.addEdges(['q1', '0', 'q0']);
-  steps.push(b.draw('E o retorno q1—0→q0: um "0" volta ao estado final.', 1));
-  steps.push(b.test('"10" termina em "0": q0→q1→q0 (final). Aceita!', '10', 1));
-  steps.push(b.test('"110" também termina em "0": q0→q1→q1→q0 (final). Aceita!', '110', 1));
+  b.addNodes('q0', 'q1').addEdges(['q0', '0', 'q1'], ['q1', '0', 'q1']);
+  steps.push(b.draw('Termina em "0": q0 (inicial) vai para q1 (final) ao ler "0". Laço de "0" em q1.', -1));
+  steps.push(b.test('Veja "0" chegar a q1 (final). Aceita!', '0', 0));
+  steps.push(b.reject('Mas "1" fica em q0 (não-final): terminar em "1" rejeita!', '1', 0));
+  b.addEdges(['q0', '1', 'q0'], ['q1', '1', 'q0']);
+  steps.push(b.draw('Adicionamos "1" de q0→q0 e "1" de q1→q0: qualquer "1" volta ao estado não-final.', 1));
+  steps.push(b.test('"10" termina em "0": q0→q0→q1 (final). Aceita!', '10', 1));
+  steps.push(b.test('"110" também termina em "0": q0→q0→q0→q1 (final). Aceita!', '110', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
 }
