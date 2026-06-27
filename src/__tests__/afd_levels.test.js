@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { AFD_LEVELS } from '../levels_data/afd/index.js';
 import { LEVEL_GRAPHS } from '../levels_graphs.js';
+import { readFileSync, readdirSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const LEVELS_DIR = resolve(__dirname, '../levels_data/afd');
 
 // "λ" (U+03BB) denotes the empty word in level word lists
 function normalizeWord(w) {
@@ -199,4 +205,45 @@ describe('L9 regressão — transição q1→q3(c)', () => {
       }
     }
   });
+});
+
+// ─── Suite 5: Bounding Box das coordenadas das aulas guiadas (L*.js) ──────────
+// Zona segura: X ∈ [4, 88]  Y ∈ [2, 28]
+// Apenas arquivos L<N>.js (sem _jflap) são verificados.
+describe('Validação de Coordenadas da Aula Guiada (Bounding Box)', () => {
+  const X_MIN = 4, X_MAX = 88, Y_MIN = 2, Y_MAX = 28;
+
+  // Match: q0: [x, y]  or  q10: [ x , y ]
+  const COORD_RE = /\b(q\d+)\s*:\s*\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]/g;
+
+  const lessonFiles = readdirSync(LEVELS_DIR)
+    .filter(f => /^L\d+\.js$/.test(f))
+    .sort((a, b) => {
+      const na = parseInt(a.match(/\d+/)[0], 10);
+      const nb = parseInt(b.match(/\d+/)[0], 10);
+      return na - nb;
+    });
+
+  for (const filename of lessonFiles) {
+    it(`${filename}: todas as coordenadas dentro de X[${X_MIN}-${X_MAX}] Y[${Y_MIN}-${Y_MAX}]`, () => {
+      const src = readFileSync(resolve(LEVELS_DIR, filename), 'utf8');
+      const violations = [];
+
+      for (const m of src.matchAll(COORD_RE)) {
+        const [, node, rawX, rawY] = m;
+        const x = parseFloat(rawX);
+        const y = parseFloat(rawY);
+        if (x < X_MIN || x > X_MAX || y < Y_MIN || y > Y_MAX) {
+          violations.push(`${node}: [${x}, ${y}]`);
+        }
+      }
+
+      expect(
+        violations,
+        violations.length
+          ? `Violações em ${filename}:\n` + violations.map(v => `  ${v}`).join('\n')
+          : undefined
+      ).toHaveLength(0);
+    });
+  }
 });

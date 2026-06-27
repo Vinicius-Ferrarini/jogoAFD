@@ -2,7 +2,7 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL23() {
-  const b = makeBuilder(LEVEL_GRAPHS[23], { q0: [12, 48], q1: [36, 49] });
+  const b = makeBuilder(LEVEL_GRAPHS[23], { q0: [4, 15], q1: [88, 15] });
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', '1', 'q1']);
   steps.push(b.draw('Menor palavra "1" (termina em 1): q0—1→q1 (final).', -1));

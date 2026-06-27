@@ -2,7 +2,7 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL6() {
-  const b = makeBuilder(LEVEL_GRAPHS[6], { q0: [20, 50], q1: [55, 50] });
+  const b = makeBuilder(LEVEL_GRAPHS[6], { q0: [4, 15], q1: [88, 15] });
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
   steps.push(b.draw('Vamos construir o caminho da menor palavra ímpar: "a".', -1));

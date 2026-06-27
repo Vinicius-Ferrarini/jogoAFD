@@ -2,7 +2,7 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL15() {
-  const b = makeBuilder(LEVEL_GRAPHS[15], { q0: [18, 44], q1: [42, 44] });
+  const b = makeBuilder(LEVEL_GRAPHS[15], { q0: [24, 15], q1: [68, 15] });
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('A menor palavra é λ (comprimento 0 = par): q0 é inicial E final.', -1));

@@ -3,7 +3,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL26() {
   const b = makeBuilder(LEVEL_GRAPHS[26], {
-    q0: [12, 48], q1: [28, 47], q2: [46, 46], q3: [64, 46], q4: [84, 51],
+    q0: [4, 15], q1: [23, 15], q2: [44, 15], q3: [65, 15], q4: [88, 15],
   });
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
