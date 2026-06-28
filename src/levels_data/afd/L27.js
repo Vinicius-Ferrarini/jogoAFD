@@ -2,7 +2,7 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL27() {
-  const b = makeBuilder(LEVEL_GRAPHS[27], { q0: [4, 28], q1: [43, 2], q2: [88, 28] });
+  const b = makeBuilder(LEVEL_GRAPHS[27], { q0: [24, 10], q1: [40, 20], q2: [56, 10] });
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('λ tem comprimento 0 (múltiplo de 3): q0 é inicial E final.', -1));
