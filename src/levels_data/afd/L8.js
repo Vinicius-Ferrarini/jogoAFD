@@ -4,7 +4,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 function buildLessonL8() {
   // JFLAP_GRAPHS[8]: q0→q1(a)→q2(b)→q4(c)→q3(a,final). Ciclo: q4→q2(b)→q4(c)
   const b = makeBuilder(LEVEL_GRAPHS[8], {
-    q0: [4, 2], q1: [28, 2], q2: [53, 2], q3: [68, 28], q4: [88, 2],
+    q0: [4, 10], q1: [22, 10], q2: [40, 10], q3: [74, 10], q4: [58, 10],
   });
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q4', 'q3')

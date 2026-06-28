@@ -2,7 +2,7 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL5() {
-  const b = makeBuilder(LEVEL_GRAPHS[5], { q0: [4, 15], q1: [88, 15] });
+  const b = makeBuilder(LEVEL_GRAPHS[5], { q0: [28, 15], q1: [54, 15] });
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
   steps.push(b.draw('Vamos construir o caminho da menor palavra válida: "a".', -1));

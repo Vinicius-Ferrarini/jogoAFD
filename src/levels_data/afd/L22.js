@@ -3,7 +3,7 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL22() {
   // JFLAP_GRAPHS[22]: q0=inicial não-final, q1=final. q0→q1(0), q1→q1(0), q0→q0(1), q1→q0(1)
-  const b = makeBuilder(LEVEL_GRAPHS[22], { q0: [4, 15], q1: [88, 15] });
+  const b = makeBuilder(LEVEL_GRAPHS[22], { q0: [24, 15], q1: [68, 15] });
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', '0', 'q1'], ['q1', '0', 'q1']);
   steps.push(b.draw('Termina em "0": q0 (inicial) vai para q1 (final) ao ler "0". Laço de "0" em q1.', -1));
