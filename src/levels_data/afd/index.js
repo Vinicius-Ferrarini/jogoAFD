@@ -33,6 +33,7 @@ import L32 from './L32.js';
 import L33 from './L33.js';
 import L34 from './L34.js';
 import L35 from './L35.js';
+import L35_ii from './L35_ii.js';
 import L36 from './L36.js';
 import L37 from './L37.js';
 import L38 from './L38.js';
@@ -96,6 +97,7 @@ export const AFD_LEVELS = [
   L33,
   L34,
   L35,
+  L35_ii,
   L36,
   L37,
   L38,

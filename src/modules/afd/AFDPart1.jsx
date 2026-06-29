@@ -209,6 +209,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const loadLevel = useCallback((level) => {
     _uidCounter = 0;
     setCurrentLevel(level);
+    setCurrentPage(1);
     setTela('JOGO');
     setNodes([]);
     setTransitions([]);
