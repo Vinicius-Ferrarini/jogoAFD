@@ -531,7 +531,7 @@ const _MANUAL = {
       { from: 'q4', to: 'q4', symbol: '0,1' }
     ]
   },
-  36: { // L35b: L = {w | prefixo 'abc'}
+  'L35ii': { // L35b: L = {w | prefixo 'abc'}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -545,7 +545,7 @@ const _MANUAL = {
       { from: 'q3', to: 'q3', symbol: 'a,b,c,d' }
     ]
   },
-  37: { // L36: L = {w | sufixo 'dcba'}
+  36: { // L36: L = {w | sufixo 'dcba'}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -557,16 +557,19 @@ const _MANUAL = {
       { from: 'q0', to: 'q0', symbol: 'a,b,c' },
       { from: 'q0', to: 'q1', symbol: 'd' },
       { from: 'q1', to: 'q2', symbol: 'c' },
+      { from: 'q1', to: 'q0', symbol: 'a,b' },
       { from: 'q1', to: 'q1', symbol: 'd' },
       { from: 'q2', to: 'q3', symbol: 'b' },
+      { from: 'q2', to: 'q0', symbol: 'a,c' },
       { from: 'q2', to: 'q1', symbol: 'd' },
       { from: 'q3', to: 'q4', symbol: 'a' },
+      { from: 'q3', to: 'q0', symbol: 'b,c' },
       { from: 'q3', to: 'q1', symbol: 'd' },
       { from: 'q4', to: 'q0', symbol: 'a,b,c' },
       { from: 'q4', to: 'q1', symbol: 'd' }
     ]
   },
-  38: { // L37: L = {w | contém 'abcd' ou 'dcba'}
+  37: { // L37: L = {w | contém 'abcd' ou 'dcba'}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'qa1', isInitial: false, isFinal: false },
@@ -606,7 +609,7 @@ const _MANUAL = {
       { from: 'qf',  to: 'qf',  symbol: 'a,b,c,d' }
     ]
   },
-  39: { // L38: L = {(a+b)* | |a| par, |b| ímpar}
+  38: { // L38: L = {(a+b)* | |a| par, |b| ímpar}
     nodes: [
       { id: 'pp', isInitial: true, isFinal: false },
       { id: 'pi', isInitial: false, isFinal: true },
@@ -624,7 +627,7 @@ const _MANUAL = {
       { from: 'ii', to: 'ip', symbol: 'b' }
     ]
   },
-  40: { // L39: L = {(a+b)* | |a| ímpar, |b| ímpar}
+  39: { // L39: L = {(a+b)* | |a| ímpar, |b| ímpar}
     nodes: [
       { id: 'pp', isInitial: true, isFinal: false },
       { id: 'pi', isInitial: false, isFinal: false },
@@ -642,7 +645,7 @@ const _MANUAL = {
       { from: 'ii', to: 'ip', symbol: 'b' }
     ]
   },
-  41: { // L40: L = {a^n b^2m d c^3p d | n,m,p ≥ 0}
+  40: { // L40: L = {a^n b^2m d c^3p d | n,m,p ≥ 0}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -665,7 +668,7 @@ const _MANUAL = {
       { from: 'q4', to: 'q2', symbol: 'c' }
     ]
   },
-  42: { // L41: L = {a(dcb)^n a^m (bb)^p | n>0, m>0, p≥0}
+  41: { // L41: L = {a(dcb)^n a^m (bb)^p | n>0, m>0, p≥0}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -687,7 +690,7 @@ const _MANUAL = {
       { from: 'q6', to: 'q5', symbol: 'b' }
     ]
   },
-  43: { // L42: L = {a^n b^2m cc d^p | n>0 (ímpar), m,p ≥ 0}
+  42: { // L42: L = {a^n b^2m cc d^p | n>0 (ímpar), m,p ≥ 0}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -708,7 +711,7 @@ const _MANUAL = {
       { from: 'q5', to: 'q5', symbol: 'd' }
     ]
   },
-  44: { // L43: L = {w | subpalavra 'ab' e sufixo 'cd'}
+  43: { // L43: L = {w | subpalavra 'ab' e sufixo 'cd'}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -731,7 +734,7 @@ const _MANUAL = {
       { from: 'q4', to: 'q2', symbol: 'a,b,d' }
     ]
   },
-  45: { // L44: L = {w | prefixo 'abcd' e sufixo 'dcba'}
+  44: { // L44: L = {w | prefixo 'abcd' e sufixo 'dcba'}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -756,7 +759,7 @@ const _MANUAL = {
       { from: 'q7', to: 'q8', symbol: 'a' }
     ]
   },
-  46: { // L45: L = {w | pref 'abcd', sub 'cccc', suf 'dcba'}
+  45: { // L45: L = {w | pref 'abcd', sub 'cccc', suf 'dcba'}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -788,7 +791,7 @@ const _MANUAL = {
       { from: 'q11', to: 'q11', symbol: 'a' }
     ]
   },
-  47: { // L46: L = {(a+b+c)* | par de a, b e c} - 8 estados
+  46: { // L46: L = {(a+b+c)* | par de a, b e c} - 8 estados
     nodes: [
       { id: 'ppp', isInitial: true, isFinal: true },
       { id: 'ppi', isInitial: false, isFinal: false },
@@ -826,7 +829,7 @@ const _MANUAL = {
       { from: 'iii', to: 'iip', symbol: 'c' }
     ]
   },
-  48: { // L47: revisão L40
+  47: { // L47: revisão L40
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -849,7 +852,7 @@ const _MANUAL = {
       { from: 'q4', to: 'q2', symbol: 'c' }
     ]
   },
-  49: { // L48: L = {w ∈ {0,1}* | zeros pares e uns ímpares}
+  48: { // L48: L = {w ∈ {0,1}* | zeros pares e uns ímpares}
     nodes: [
       { id: 'pp', isInitial: true, isFinal: false },
       { id: 'pi', isInitial: false, isFinal: true },
@@ -867,7 +870,7 @@ const _MANUAL = {
       { from: 'ii', to: 'ip', symbol: '1' }
     ]
   },
-  50: { // L49: L = {a^n a c^m (ab+ba) c a^2p | n≥0, m>0, p>0}
+  49: { // L49: L = {a^n a c^m (ab+ba) c a^2p | n≥0, m>0, p>0}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -894,7 +897,7 @@ const _MANUAL = {
       { from: 'q8', to: 'q7', symbol: 'a' }
     ]
   },
-  51: { // L50: L = {a^n b^m c^p | n,p>0, m≥0, (n+p) ímpar}
+  50: { // L50: L = {a^n b^m c^p | n,p>0, m≥0, (n+p) ímpar}
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'ai', isInitial: false, isFinal: false },
@@ -920,7 +923,7 @@ const _MANUAL = {
       { from: 'ce', to: 'ci', symbol: 'c' }
     ]
   },
-  52: { // L52: L = {a^n b^m c^p | n>0 (par), m (ímpar), p (par)}
+  51: { // L51: mesmo padrão de L49 (revisão)
     nodes: [
       { id: 'q0', isInitial: true, isFinal: false },
       { id: 'ao', isInitial: false, isFinal: false },

@@ -3,37 +3,34 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL52() {
   const b = makeBuilder(LEVEL_GRAPHS[52], {
-    q0: [4, 11], q1: [12, 11], q2: [26, 11], q3: [41, 2], q4: [40, 20],
-    q5: [56, 11], q6: [72, 11], q7: [88, 11], q8: [88, 28],
+    q0: [4, 2], q1: [23, 2], q2: [40, 2], q3: [61, 2], q4: [61, 28], q5: [88, 2], q6: [88, 28],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q2', 'q3', 'q5', 'q6', 'q7', 'q8')
-   .addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q2'], ['q2', 'a', 'q3'], ['q3', 'b', 'q5'],
-             ['q5', 'c', 'q6'], ['q6', 'a', 'q7'], ['q7', 'a', 'q8']);
-  steps.push(b.draw('Espinha "acabcaa": a, c, o miolo "ab", c e o par final "aa" (q7→q8 final).', -1));
-  steps.push(b.test('Veja "acabcaa" chegar a q8 (final). Aceita!', 'acabcaa', 0));
-  steps.push(b.reject('Mas "acabca" tem só 1 "a" no fim: para em q7 (os "a" finais vêm em pares)!', 'acabca', 0));
-  b.addNodes('q4')
-   .addEdges(['q1', 'a', 'q1'], ['q2', 'c', 'q2'], ['q2', 'b', 'q4'], ['q4', 'a', 'q5'], ['q8', 'a', 'q7']);
-  steps.push(b.draw('Adicionamos o miolo alternativo "ba" (q2→q4→q5), laços e o par extra de "a".', 1));
-  steps.push(b.test('"acbacaa" usa o miolo "ba": q2→q4→q5→q6→q7→q8 (final). Aceita!', 'acbacaa', 1));
-  steps.push(b.test('"accabcaaaa" usa laço de "c" e dois pares de "a". Aceita!', 'accabcaaaa', 1));
+  b.addNodes('q0', 'q1', 'q2').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q2'], ['q2', 'a', 'q1']);
+  steps.push(b.draw('Vai-e-volta de "a": q1 (ímpar-a), q2 (par-a). Começa com n > 0 "a"s.', -1));
+  b.addNodes('q3', 'q4', 'q5', 'q6')
+   .addEdges(['q2', 'b', 'q3'], ['q1', 'b', 'q3'], ['q3', 'b', 'q4'], ['q4', 'b', 'q3'],
+             ['q3', 'c', 'q5'], ['q5', 'c', 'q6'], ['q6', 'c', 'q5']);
+  steps.push(b.draw('Bloco de b-pares (q3↔q4) e par de c (q5↔q6, final). q3 também é final!', 1));
+  steps.push(b.test('Veja "ab" chegar a q3 (final). Aceita!', 'ab', 1));
+  steps.push(b.test('"aabcc" percorre q0→q1→q2→q3→q5→q6 (final). Aceita!', 'aabcc', 1));
+  steps.push(b.reject('"abc" tem apenas 1 "c" após o "b": q0→q1→q3→q5, mas q5 não é final!', 'abc', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 52, label: "L52", formula: "L = {a^n b^m c^p / n > 0, m é impar e p é par}",                   desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)c(aa)+$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
+export default { id: 52, label: "L52", formula: "L = {a^n b^m c^p / n > 0, m é impar e p é par}",                   desc: "",                                                                 shortestWord: "ab",       regex: /^a+(bb)*b(cc)*(cc)*$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["ab","aab","aabcc"],       rejectedWords: ["a","ba","abc"],         hint: "a-s, depois b-pares opcionais e um b extra, depois c-pares.",                                                       successMsg: "Paridade correlacionada dominada.",
     tutorials: {
-      onStart: { type: 'theory', title: 'a+ c+ (ab|ba) c (aa)+!', dialog: [
-        'L52: a-s, c-s, depois "ab" OU "ba", depois c, depois pares de a (min 1 par).',
-        '"acabcaa" ✓ (ab, 1par-a). "aacabcaa" ✓ (2a). "acbacaa" ✓ (ba).',
-        '9 estados: q0-q2 (a/c loops), bifurcação q3/q4, q5-q8 (cauda).',
+      onStart: { type: 'theory', title: 'a+ (bb)* b (cc)*!', dialog: [
+        'L52: a^n(bb)^m b c^(2p). a-s positivos, b-pares opcionais, um b extra, c-pares opcionais.',
+        '"ab" ✓ (1a, 1b). "aab" ✓ (2a, 1b). "aaabcc" ✓ (3a, 1b, 2c).',
+        '"a" ✗ (sem b). "ba" ✗ (começa com b). "abc" ✗ (1c é ímpar).',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '9 Estados: Loops + Bifurcação', dialog: [
-        'q0—a→q1 loop a. q1—c→q2 loop c. q2—a→q3—b→q5 (ab). q2—b→q4—a→q5 (ba).',
-        'q5—c→q6—a→q7—a→q8(f). q8—a→q7 (mais pares).',
-        '"acbacaa": q2—b→q4—a→q5→q6→q7→q8(f) ✓.',
+      onDrawGraph: { type: 'mechanic', title: '7 Estados: a+ b+ c*', dialog: [
+        'q0—a→q1 (a-ímpar). q1↔q2(a) (vai-e-volta). q2—b→q3(f).',
+        'q3↔q4(b) (pares de b adicionais). q3—c→q5—c→q6(f)—c→q5 (c-pares).',
+        '"aaabcc": q0→q1→q2→q1→q3—c→q5—c→q6(f) ✓.',
       ] },
     },
-    boardWords: ['acabcaa', 'acabca', 'acbacaa', 'accabcaaaa'],
+    boardWords: ['ab', 'a', 'aab', 'aabcc'],
     guidedLesson: buildLessonL52() };

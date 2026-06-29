@@ -3,34 +3,35 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL53() {
   const b = makeBuilder(LEVEL_GRAPHS[53], {
-    q0: [4, 2], q1: [23, 2], q2: [40, 2], q3: [61, 2], q4: [61, 28], q5: [88, 2], q6: [88, 28],
+    q0: [4, 15], q1: [88, 15],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q2').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q2'], ['q2', 'a', 'q1']);
-  steps.push(b.draw('Vai-e-volta de "a": q1 (ímpar-a), q2 (par-a). Começa com n > 0 "a"s.', -1));
-  b.addNodes('q3', 'q4', 'q5', 'q6')
-   .addEdges(['q2', 'b', 'q3'], ['q1', 'b', 'q3'], ['q3', 'b', 'q4'], ['q4', 'b', 'q3'],
-             ['q3', 'c', 'q5'], ['q5', 'c', 'q6'], ['q6', 'c', 'q5']);
-  steps.push(b.draw('Bloco de b-pares (q3↔q4) e par de c (q5↔q6, final). q3 também é final!', 1));
-  steps.push(b.test('Veja "ab" chegar a q3 (final). Aceita!', 'ab', 1));
-  steps.push(b.test('"aabcc" percorre q0→q1→q2→q3→q5→q6 (final). Aceita!', 'aabcc', 1));
-  steps.push(b.reject('"abc" tem apenas 1 "c" após o "b": q0→q1→q3→q5, mas q5 não é final!', 'abc', 1));
+  b.addNodes('q0').addEdges(['q0', 'a', 'q0'], ['q0', 'c', 'q0']);
+  steps.push(b.draw('λ e qualquer "a"/"c": q0 é inicial+final, com laço de {a,c}.', -1));
+  steps.push(b.test('Veja λ ser aceita parada em q0 (final).', '', 0));
+  b.addNodes('q1').addEdges(['q0', 'b', 'q1'], ['q1', 'c', 'q0']);
+  steps.push(b.draw('Um "b" cria a obrigação de um "c": q0→q1, e q1→q0 só com "c".', 1));
+  steps.push(b.test('"bc" cumpre a regra (b seguido de c): q0→q1→q0 (final). Aceita!', 'bc', 1));
+  steps.push(b.test('"abc" intercala e respeita a regra: q0→q0→q1→q0 (final). Aceita!', 'abc', 1));
+  steps.push(b.test('"abccc" tem "bc" seguido de c extra (laço q0). Aceita!', 'abccc', 1));
+  steps.push(b.test('"aaabccc" tem a-s, depois bc, depois c-s. Aceita!', 'aaabccc', 1));
+  steps.push(b.reject('Mas "b" no fim fica sem o "c" obrigatório: termina em q1, não-final!', 'b', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 53, label: "L53", formula: "L = {w ∈ {a,b,c}* / cada b é seguido de pelo menos um c}",          desc: "",                                                                 shortestWord: "ab",       regex: /^a+(bb)*b(cc)*(cc)*$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["ab","aab","aabcc"],       rejectedWords: ["a","ba","abc"],         hint: "a-s, depois b-pares opcionais e um b extra, depois c-pares.",                                                       successMsg: "Condicional restrita dominada. Zerou a lista!",
+export default { id: 53, label: "L53", formula: "L = {w ∈ {a,b,c}* / cada b é seguido de pelo menos um c}",          desc: "",                                                                 shortestWord: "",         regex: /^(a|c|bc+)*$/,                                              alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","abc","abccc","aaabccc"], rejectedWords: ["b","ab","bcb"],       hint: "Leu um 'b'? A próxima letra TEM que ser 'c'. Depois tudo fica livre.",                                              successMsg: "Condicional restrita dominada.",
     tutorials: {
-      onStart: { type: 'theory', title: 'a+ (bb)* b (cc)*!', dialog: [
-        'L53: a^n(bb)^m b c^(2p). a-s positivos, b-pares opcionais, um b extra, c-pares opcionais.',
-        '"ab" ✓ (1a, 1b). "aab" ✓ (2a, 1b). "aaabcc" ✓ (3a, 1b, 2c).',
-        '"a" ✗ (sem b). "ba" ✗ (começa com b). "abc" ✗ (1c é ímpar).',
+      onStart: { type: 'theory', title: 'Cada "b" deve ser seguido de "c"!', dialog: [
+        'L53: sempre que ler um "b", a próxima letra TEM que ser "c". Senão rejeita.',
+        '"bc" ✓ "abc" ✓ "λ" ✓ "a" ✓. "b" ✗ (nenhum c após b). "bcb" ✗ (o 2º b não tem c).',
+        'Apenas 2 estados: livre (q0) e esperando-c (q1). Simples mas rigoroso!',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '7 Estados: a+ b+ c*', dialog: [
-        'q0—a→q1 (a-ímpar). q1↔q2(a) (vai-e-volta). q2—b→q3(f).',
-        'q3↔q4(b) (pares de b adicionais). q3—c→q5—c→q6(f)—c→q5 (c-pares).',
-        '"aaabcc": q0→q1→q2→q1→q3—c→q5—c→q6(f) ✓.',
+      onDrawGraph: { type: 'mechanic', title: '2 Estados: Livre e Esperando-c', dialog: [
+        'q0(ini,f): loop a,c. Ler "b" → q1 (modo de espera).',
+        'q1: ler "c" → q0 (volta ao livre). Ler "a" ou "b" → morto (sem seta = rejeição).',
+        '"abc": q0—a→q0—b→q1—c→q0(f) ✓. "bcb": q0→q1→q0→q1(não-f) ✗.',
       ] },
     },
-    boardWords: ['ab', 'a', 'aab', 'aabcc'],
+    boardWords: ['', 'bc', 'b', 'abc'],
     guidedLesson: buildLessonL53() };

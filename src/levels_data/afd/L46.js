@@ -3,44 +3,41 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL46() {
   const b = makeBuilder(LEVEL_GRAPHS[46], {
-    q0: [4, 10], q1: [10, 10], q2: [17, 10], q3: [24, 10], q4: [31, 10], q5: [37, 2], q6: [49, 2],
-    q7: [58, 10], q8: [68, 10], q9: [88, 28], q10: [58, 22], q11: [32, 22], q12: [7, 28],
+    q0: [4, 16], q1: [12, 2], q2: [23, 16], q3: [11, 28], q4: [50, 4], q5: [38, 16], q6: [52, 28], q7: [88, 16],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10', 'q11', 'q12')
-   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4'],
-             ['q4', 'c', 'q5'], ['q5', 'c', 'q6'], ['q6', 'c', 'q7'], ['q7', 'c', 'q8'],
-             ['q8', 'd', 'q9'], ['q9', 'c', 'q10'], ['q10', 'b', 'q11'], ['q11', 'a', 'q12']);
-  steps.push(b.draw('Espinha "abcdccccdcba": prefixo abcd, o bloco cccc e o sufixo dcba (q12 final).', -1));
-  steps.push(b.test('Veja "abcdccccdcba" percorrer tudo até q12 (final). Aceita!', 'abcdccccdcba', 0));
-  steps.push(b.reject('Mas "abcddcba" tem prefixo e sufixo, sem o "cccc": trava em q4!', 'abcddcba', 0));
-  b.addEdges(['q4', 'a', 'q4'], ['q4', 'b', 'q4'], ['q4', 'd', 'q4'],
-             ['q5', 'a', 'q4'], ['q5', 'b', 'q4'], ['q5', 'd', 'q4'],
-             ['q6', 'a', 'q4'], ['q6', 'b', 'q4'], ['q6', 'd', 'q4'],
-             ['q7', 'a', 'q4'], ['q7', 'b', 'q4'], ['q7', 'd', 'q4'],
-             ['q8', 'a', 'q8'], ['q8', 'b', 'q8'], ['q8', 'c', 'q8'],
-             ['q9', 'd', 'q9'], ['q9', 'a', 'q8'], ['q9', 'b', 'q8'],
-             ['q10', 'a', 'q8'], ['q10', 'c', 'q8'], ['q10', 'd', 'q9'],
-             ['q11', 'b', 'q8'], ['q11', 'c', 'q8'], ['q11', 'd', 'q9'],
-             ['q12', 'd', 'q9'], ['q12', 'a', 'q8'], ['q12', 'b', 'q8'], ['q12', 'c', 'q8']);
-  steps.push(b.draw('Adicionamos os miolos livres: laços de q4 ({a,b,d}) e q8 ({a,b,c}).', 1));
-  steps.push(b.test('"abcdaccccdcba" insere um "a" no miolo e ainda fecha. Aceita!', 'abcdaccccdcba', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
+  b.addNodes('q0');
+  steps.push(b.draw('λ tem 0 de cada símbolo (tudo par): q0 é inicial+final.', -1));
+  steps.push(b.test('Veja λ ser aceita parada em q0 (final).', '', 0));
+  b.addNodes('q1', 'q2', 'q4')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q0'], ['q0', 'b', 'q2'], ['q2', 'b', 'q0'],
+             ['q1', 'b', 'q4'], ['q4', 'b', 'q1'], ['q2', 'a', 'q4'], ['q4', 'a', 'q2']);
+  steps.push(b.draw('Quadrado das paridades de a e b.', 1));
+  steps.push(b.test('"aabb" zera as paridades de a e b: volta a q0 (final). Aceita!', 'aabb', 1));
+  steps.push(b.reject('Mas "a" deixa os "a" ímpares: termina em q1, que NÃO é final!', 'a', 1));
+  b.addNodes('q3', 'q5', 'q6', 'q7')
+   .addEdges(['q0', 'c', 'q3'], ['q3', 'c', 'q0'], ['q1', 'c', 'q5'], ['q5', 'c', 'q1'],
+             ['q2', 'c', 'q6'], ['q6', 'c', 'q2'], ['q4', 'c', 'q7'], ['q7', 'c', 'q4'],
+             ['q3', 'a', 'q5'], ['q5', 'a', 'q3'], ['q3', 'b', 'q6'], ['q6', 'b', 'q3'],
+             ['q5', 'b', 'q7'], ['q7', 'b', 'q5'], ['q6', 'a', 'q7'], ['q7', 'a', 'q6']);
+  steps.push(b.draw('Duplicamos o quadrado para "c": vira um cubo de 8 estados.', 2));
+  steps.push(b.test('"aabbcc" zera as três paridades: volta a q0 (final). Aceita!', 'aabbcc', 2));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
 }
 
-export default { id: 46, label: "L46", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo, cccc como subpalavra e dcba como sufixo}", desc: "",                                         shortestWord: "abcdccccdcba", regex: /^abcd[abcd]*cccc[abcd]*dcba$/,                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcdccccdcba","abcdaccccdcba"], rejectedWords: ["abcddcba","abcdcccdcba","dcba"], hint: "Faça o caminho em três estágios lógicos na sua cabeça.",                                          successMsg: "Você construiu um autômato enorme, meus parabéns!",
+export default { id: 46, label: "L46", formula: "L = {w ∈ {a,b,c}* / a quantidade de a, b e c é par}",              desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['a','b','c'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","aabb","aabbcc"],      rejectedWords: ["a","b","abc"],         hint: "Isso é um cubo mágico de estados! Paridade para 3 letras exige 8 estados.",                                        successMsg: "Paridade em 3D completada!",
     tutorials: {
-      onStart: { type: 'theory', title: 'Prefixo abcd + 4c seguidos + sufixo dcba!', dialog: [
-        'L46: comecar com "abcd", conter "cccc" em algum lugar, terminar com "dcba".',
-        '"abcdccccdcba" ✓ (min). "abcdaccccdcba" ✓ (a no meio). 13 estados!',
-        'Tres fases: prefixo fixo → detectar cccc → sufixo fixo.',
+      onStart: { type: 'theory', title: 'Cubo de paridade: 3 letras, 8 estados!', dialog: [
+        'L46: contar a, b e c separadamente. Aceito quando TODOS pares.',
+        '"λ" ✓ (0+0+0). "aabb" ✓ (2a,2b,0c). "aabbcc" ✓ (2a,2b,2c). "a" ✗ (1a impar).',
+        '8 combinacoes de paridade: 2^3 = 8 estados. Apenas q0(ini,f) aceita.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '13 Estados: Tres Fases', dialog: [
-        'Prefixo: q0—a→q1—b→q2—c→q3—d→q4. q4 loop a,b,d; q4—c→q5.',
-        'cccc: q5—c→q6—c→q7—c→q8. Mismatch volta a q4. q8 loop a,b,c.',
-        'Sufixo: q8—d→q9—c→q10—b→q11—a→q12(f). Mismatches → q8 ou q9.',
+      onDrawGraph: { type: 'mechanic', title: '8 Estados em Cubo', dialog: [
+        'q0(f)=(p,p,p). "a" inverte bit-a, "b" inverte bit-b, "c" inverte bit-c.',
+        'Quadrado base (a,b): q0↔q1(a), q0↔q2(b), q1↔q4(b), q2↔q4(a).',
+        'Extensão "c": cada estado do quadrado é conectado ao seu espelho no cubo.',
       ] },
     },
-    boardWords: ['abcdccccdcba', 'abcddcba', 'abcdaccccdcba'],
+    boardWords: ['', 'aabb', 'a', 'aabbcc'],
     guidedLesson: buildLessonL46() };

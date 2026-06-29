@@ -3,38 +3,42 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL44() {
   const b = makeBuilder(LEVEL_GRAPHS[44], {
-    q0: [4, 28], q1: [24, 28], q2: [45, 28], q3: [66, 2], q4: [88, 28],
+    q0: [4, 15], q1: [15, 15], q2: [27, 15], q3: [35, 15], q4: [48, 15],
+    q5: [63, 8], q6: [79, 2], q7: [88, 8], q8: [55, 28], q9: [75, 28],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
-   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4']);
-  steps.push(b.draw('Espinha "abcd": q0—a→q1—b→q2—c→q3—d→q4 (final).', -1));
-  steps.push(b.test('Veja "abcd" atingir q4 (final). Aceita!', 'abcd', 0));
-  steps.push(b.reject('Mas "acd" não tem o "ab": depois do "a" veio "c", trava em q1!', 'acd', 0));
-  b.addEdges(['q0', 'b', 'q0'], ['q0', 'c', 'q0'], ['q0', 'd', 'q0'],
-             ['q1', 'a', 'q1'], ['q1', 'c', 'q0'], ['q1', 'd', 'q0'],
-             ['q2', 'a', 'q2'], ['q2', 'b', 'q2'], ['q2', 'd', 'q2'],
-             ['q3', 'c', 'q3'], ['q4', 'c', 'q3'],
-             ['q4', 'a', 'q2'], ['q4', 'b', 'q2'], ['q4', 'c', 'q2']);
-  steps.push(b.draw('Adicionamos os laços e resets: após "abcd" (q4), qualquer símbolo recomeça a busca pelo sufixo.', 1));
-  steps.push(b.test('"aabcd" repete o "a" (laço q1) antes de "bcd": q4 (final). Aceita!', 'aabcd', 1));
-  steps.push(b.test('"abccd" repete o "c" (laço q3) antes do "d" final: q4 (final). Aceita!', 'abccd', 1));
+  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4'],
+             ['q4', 'd', 'q9'], ['q9', 'c', 'q5'], ['q5', 'b', 'q6'], ['q6', 'a', 'q7']);
+  steps.push(b.draw('Espinha "abcddcba": prefixo "abcd" (q0→q4), "d" inicia sufixo via q9, "cba" finaliza em q7.', -1));
+  steps.push(b.test('Veja "abcddcba" percorrer até q7 (final). Aceita!', 'abcddcba', 0));
+  steps.push(b.reject('Mas "abcd" tem só o prefixo, sem o sufixo: para em q4, não-final!', 'abcd', 0));
+  b.addNodes('q8')
+   .addEdges(['q4', 'a', 'q8'], ['q4', 'b', 'q8'], ['q4', 'c', 'q8'],
+             ['q5', 'a', 'q8'], ['q5', 'c', 'q8'], ['q5', 'd', 'q8'],
+             ['q6', 'b', 'q8'], ['q6', 'c', 'q8'], ['q6', 'd', 'q9'],
+             ['q7', 'a', 'q8'], ['q7', 'b', 'q8'], ['q7', 'c', 'q8'], ['q7', 'd', 'q9'],
+             ['q8', 'a', 'q8'], ['q8', 'b', 'q8'], ['q8', 'c', 'q8'],
+             ['q8', 'd', 'q9'], ['q9', 'd', 'q9'],
+             ['q9', 'a', 'q8'], ['q9', 'b', 'q8']);
+  steps.push(b.draw('Adicionamos miolo livre (q8) e estado "d" (q9). Sufixo reinicia se mismatch.', 1));
+  steps.push(b.test('"abcdadcba" tem um "a" no miolo (laço q8) e fecha o sufixo. Aceita!', 'abcdadcba', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 44, label: "L44", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo e dcba como sufixo}", desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*ab[abcd]*cd$/,                                      alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","aabcd","abccd"],  rejectedWords: ["λ","acd","abdc"],      hint: "Ache primeiro o 'ab'. Depois de achar, fique aguardando um 'cd' para finalizar.",                                   successMsg: "Subpalavra + Sufixo resolvido.",
+export default { id: 44, label: "L44", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo e dcba como sufixo}", desc: "",                                                                shortestWord: "abcddcba", regex: /^abcd[abcd]*dcba$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcddcba","abcdadcba"],  rejectedWords: ["abcd","dcba","abcdcd"], hint: "Sanduíche de palavras! O começo e o fim são engessados.",                                                           successMsg: "Sanduíche de letras perfeito.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Subpalavra "ab" + Sufixo "cd"!', dialog: [
-        'L44: a palavra deve conter "ab" em algum lugar E terminar com "cd".',
-        '"abcd" ✓ (ab subpalavra, cd sufixo). "aabcd" ✓. "abccd" ✓.',
-        '"acd" ✗ (sem "ab"). "abdc" ✗ ("ab" ok mas não termina em "cd").',
+      onStart: { type: 'theory', title: 'Prefixo "abcd" E sufixo "dcba"!', dialog: [
+        'L44: comecar com "abcd" obrigatorio, terminar com "dcba" obrigatorio.',
+        '"abcddcba" ✓ (min). "abcdadcba" ✓ (a no meio).',
+        '"abcd" ✗ (falta sufixo). "dcba" ✗ (falta prefixo). 10 estados.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '5 Estados: Detectar + Esperar', dialog: [
-        'q0→q1(a): buscando "ab". q1→q2(b): "ab" encontrado! q0,q1 loops e resets.',
-        'q2→q3(c): primeiro "c" do sufixo. q3→q4(d): "cd" completo — final!',
-        'q2,q4 loops em a,b,d. q3 loop c. Mismatches voltam ao rastreio.',
+      onDrawGraph: { type: 'mechanic', title: '10 Estados: Prefixo + Sufixo', dialog: [
+        'Prefixo: q0—a→q1—b→q2—c→q3—d→q4. q4 loop d e mismatches para q8.',
+        'Sufixo: q4—c→q5—b→q6—a→q7(f). Mismatches → q8/q9.',
+        'q8=miolo(abc), q9=miolo(d). q9—c→q5 reinicia o sufixo.',
       ] },
     },
-    boardWords: ['abcd', 'acd', 'aabcd', 'abccd'],
+    boardWords: ['abcddcba', 'abcd', 'abcdadcba'],
     guidedLesson: buildLessonL44() };

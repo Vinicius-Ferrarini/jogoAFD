@@ -563,8 +563,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q0', symbol: '0' }
     ],
   },
-  // L36 ← L35-jj.xml
-  36: {
+  // L35ii ← L35-jj.xml
+  'L35ii': {
     nodes: [
       { id: 'q0', x: 232, y: 230, isInitial: true, isFinal: false },
       { id: 'q1', x: 370, y: 228, isInitial: false, isFinal: false },
@@ -578,32 +578,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q0', to: 'q1', symbol: 'a' }
     ],
   },
-  // L37 ← L36.xml (q4 must loop on all symbols; XML's q4→q0(a,b,c) and q4→q1(d) cause false negatives)
+  // L37 ← L37.xml
   37: {
-    nodes: [
-      { id: 'q0', x: 172, y: 263, isInitial: true, isFinal: false },
-      { id: 'q1', x: 362, y: 158, isInitial: false, isFinal: false },
-      { id: 'q2', x: 637, y: 166, isInitial: false, isFinal: false },
-      { id: 'q3', x: 797, y: 287, isInitial: false, isFinal: false },
-      { id: 'q4', x: 873, y: 482, isInitial: false, isFinal: true }
-    ],
-    transitions: [
-      { from: 'q0', to: 'q0', symbol: 'a, b, c' },
-      { from: 'q3', to: 'q0', symbol: 'b, c' },
-      { from: 'q1', to: 'q1', symbol: 'd' },
-      { from: 'q2', to: 'q0', symbol: 'a, c' },
-      { from: 'q2', to: 'q3', symbol: 'b' },
-      { from: 'q4', to: 'q4', symbol: 'a, b, c, d' },
-      { from: 'q3', to: 'q4', symbol: 'a' },
-      { from: 'q3', to: 'q1', symbol: 'd' },
-      { from: 'q0', to: 'q1', symbol: 'd' },
-      { from: 'q1', to: 'q2', symbol: 'c' },
-      { from: 'q1', to: 'q0', symbol: 'a, b' },
-      { from: 'q2', to: 'q1', symbol: 'd' }
-    ],
-  },
-  // L38 ← L37.xml
-  38: {
     nodes: [
       { id: 'q0', x: 67, y: 278, isInitial: true, isFinal: false },
       { id: 'q1', x: 366, y: 110, isInitial: false, isFinal: false },
@@ -643,8 +619,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q0', to: 'q1', symbol: 'a' }
     ],
   },
-  // L39 ← L38.xml
-  39: {
+  // L38 ← L38.xml
+  38: {
     nodes: [
       { id: 'q0', x: 319, y: 165, isInitial: true, isFinal: false },
       { id: 'q1', x: 511, y: 162, isInitial: false, isFinal: false },
@@ -662,8 +638,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q2', symbol: 'a' }
     ],
   },
-  // L40 ← L39.xml
-  40: {
+  // L39 ← L39.xml
+  39: {
     nodes: [
       { id: 'q0', x: 319, y: 165, isInitial: true, isFinal: false },
       { id: 'q1', x: 511, y: 162, isInitial: false, isFinal: false },
@@ -681,8 +657,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q2', symbol: 'a' }
     ],
   },
-  // L41 ← L40.xml
-  41: {
+  // L40 ← L40.xml
+  40: {
     nodes: [
       { id: 'q0', x: 80, y: 153, isInitial: true, isFinal: false },
       { id: 'q1', x: 181, y: 58, isInitial: false, isFinal: false },
@@ -705,8 +681,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q6', symbol: 'd' }
     ],
   },
-  // L42 ← L41.xml
-  42: {
+  // L41 ← L41.xml
+  41: {
     nodes: [
       { id: 'q0', x: 80, y: 153, isInitial: true, isFinal: false },
       { id: 'q1', x: 166, y: 153, isInitial: false, isFinal: false },
@@ -730,8 +706,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q7', to: 'q6', symbol: 'b' }
     ],
   },
-  // L43 ← L42.xml
-  43: {
+  // L42 ← L42.xml
+  42: {
     nodes: [
       { id: 'q0', x: 80, y: 153, isInitial: true, isFinal: false },
       { id: 'q1', x: 179, y: 154, isInitial: false, isFinal: false },
@@ -752,8 +728,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q2', symbol: 'b' }
     ],
   },
-  // L44 ← L43.xml (q3→q2(a,b,d) added; q4→q2 must not include 'c' since q4→q3(c) is correct)
-  44: {
+  // L43 ← L43.xml (q3→q2(a,b,d) added; q4→q2 must not include 'c' since q4→q3(c) is correct)
+  43: {
     nodes: [
       { id: 'q0', x: 53, y: 202, isInitial: true, isFinal: false },
       { id: 'q1', x: 243, y: 200, isInitial: false, isFinal: false },
@@ -776,8 +752,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q2', symbol: 'a, b, d' }
     ],
   },
-  // L45 ← L44.xml (XML has q4→q5(c) causing false positive; suffix "dcba" starts with d not c)
-  45: {
+  // L44 ← L44.xml (XML has q4→q5(c) causing false positive; suffix "dcba" starts with d not c)
+  44: {
     nodes: [
       { id: 'q0', x: 53, y: 202, isInitial: true, isFinal: false },
       { id: 'q1', x: 155, y: 202, isInitial: false, isFinal: false },
@@ -811,8 +787,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q6', to: 'q7', symbol: 'a' }
     ],
   },
-  // L46 ← L45.xml
-  46: {
+  // L45 ← L45.xml
+  45: {
     nodes: [
       { id: 'q0', x: 53, y: 202, isInitial: true, isFinal: false },
       { id: 'q1', x: 121, y: 201, isInitial: false, isFinal: false },
@@ -856,8 +832,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q10', to: 'q9', symbol: 'd' }
     ],
   },
-  // L47 ← L46.xml
-  47: {
+  // L46 ← L46.xml
+  46: {
     nodes: [
       { id: 'q0', x: 53, y: 202, isInitial: true, isFinal: true },
       { id: 'q1', x: 128, y: 32, isInitial: false, isFinal: false },
@@ -895,8 +871,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q7', to: 'q6', symbol: 'a' }
     ],
   },
-  // L48 ← L47.xml
-  48: {
+  // L47 ← L47.xml
+  47: {
     nodes: [
       { id: 'q0', x: 54, y: 147, isInitial: true, isFinal: false },
       { id: 'q1', x: 56, y: 245, isInitial: false, isFinal: false },
@@ -919,8 +895,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q5', to: 'q3', symbol: 'c' }
     ],
   },
-  // L49 ← L48.xml
-  49: {
+  // L48 ← L48.xml
+  48: {
     nodes: [
       { id: 'q0', x: 177, y: 115, isInitial: true, isFinal: false },
       { id: 'q1', x: 297, y: 112, isInitial: false, isFinal: false },
@@ -938,8 +914,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q2', symbol: '0' }
     ],
   },
-  // L50 ← L49.xml
-  50: {
+  // L49 ← L49.xml
+  49: {
     nodes: [
       { id: 'q0', x: 108, y: 115, isInitial: true, isFinal: false },
       { id: 'q1', x: 192, y: 111, isInitial: false, isFinal: false },
@@ -966,8 +942,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q5', symbol: 'b' }
     ],
   },
-  // L51 ← L50.xml
-  51: {
+  // L50 ← L50.xml
+  50: {
     nodes: [
       { id: 'q0', x: 71, y: 120, isInitial: true, isFinal: false },
       { id: 'q1', x: 158, y: 123, isInitial: false, isFinal: false },
@@ -993,8 +969,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q1', to: 'q3', symbol: 'b' }
     ],
   },
-  // L52 ← L51.xml
-  52: {
+  // L51 ← L51.xml
+  51: {
     nodes: [
       { id: 'q0', x: 71, y: 120, isInitial: true, isFinal: false },
       { id: 'q1', x: 133, y: 120, isInitial: false, isFinal: false },
@@ -1021,8 +997,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q5', to: 'q6', symbol: 'c' }
     ],
   },
-  // L53 ← L52.xml (q1→q3(b) missing; language a+(bb)*b(cc)* needs direct q1→q3 for single 'b')
-  53: {
+  // L52 ← L52.xml (q1→q3(b) missing; language a+(bb)*b(cc)* needs direct q1→q3 for single 'b')
+  52: {
     nodes: [
       { id: 'q0', x: 71, y: 120, isInitial: true, isFinal: false },
       { id: 'q1', x: 178, y: 119, isInitial: false, isFinal: false },
@@ -1045,8 +1021,8 @@ export const JFLAP_GRAPHS = {
       { from: 'q1', to: 'q3', symbol: 'b' }
     ],
   },
-  // L54 ← L53.xml
-  54: {
+  // L53 ← L53.xml
+  53: {
     nodes: [
       { id: 'q0', x: 86, y: 122, isInitial: true, isFinal: true },
       { id: 'q1', x: 245, y: 118, isInitial: false, isFinal: false }

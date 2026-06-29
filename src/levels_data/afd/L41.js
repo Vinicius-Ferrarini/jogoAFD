@@ -3,36 +3,35 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL41() {
   const b = makeBuilder(LEVEL_GRAPHS[41], {
-    q0: [4, 16], q1: [23, 2], q2: [46, 2], q3: [64, 16], q4: [73, 2], q5: [88, 8], q6: [84, 28],
+    q0: [4, 11], q1: [23, 11], q2: [45, 11], q3: [67, 2], q4: [88, 11],
+    q5: [87, 28], q6: [53, 28], q7: [21, 28],
   });
   const steps = [];
-  b.addNodes('q0', 'q3', 'q6').addEdges(['q0', 'd', 'q3'], ['q3', 'd', 'q6']);
-  steps.push(b.draw('Menor palavra "dd": ponte d (q0→q3) e d final (q3→q6, final).', -1));
-  steps.push(b.test('Veja "dd" chegar a q6 (final). Aceita!', 'dd', 0));
-  steps.push(b.reject('Mas "d" sozinho para em q3, que NÃO é final (falta fechar com o 2º "d")!', 'd', 0));
-  b.addNodes('q1', 'q2')
-   .addEdges(['q0', 'a', 'q0'], ['q0', 'b', 'q1'], ['q1', 'b', 'q2'], ['q2', 'b', 'q1'], ['q2', 'd', 'q3']);
-  steps.push(b.draw('Laço de "a" e o par "bb" (q1↔q2). A ponte "d" sai de q0 (0 b) ou q2 (b par).', 1));
-  steps.push(b.test('"abbdd" usa um "a" e um par "bb": q0→q1→q2→q3→q6 (final). Aceita!', 'abbdd', 1));
-  b.addNodes('q4', 'q5').addEdges(['q3', 'c', 'q4'], ['q4', 'c', 'q5'], ['q5', 'c', 'q3']);
-  steps.push(b.draw('E o ciclo de TRIOS "ccc" (q3→q4→q5→q3) entre os dois "d".', 2));
-  steps.push(b.test('"adcccd" usa um trio "ccc" entre os "d": q0→q3→q4→q5→q3→q6 (final). Aceita!', 'adcccd', 2));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4', 'q5')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'd', 'q2'], ['q2', 'c', 'q3'], ['q3', 'b', 'q4'], ['q4', 'a', 'q5']);
+  steps.push(b.draw('Espinha "adcba": q0→q1→q2→q3→q4→q5 (final, um ciclo dcb com a inicial).', -1));
+  steps.push(b.test('Veja "adcba" chegar a q5 (final). Aceita!', 'adcba', 0));
+  steps.push(b.reject('Mas "adcb" para em q4 sem o "a": NÃO é final!', 'adcb', 0));
+  b.addNodes('q6', 'q7')
+   .addEdges(['q4', 'd', 'q2'], ['q5', 'a', 'q5'], ['q5', 'b', 'q6'], ['q6', 'b', 'q7'], ['q7', 'b', 'q6']);
+  steps.push(b.draw('Retorno do ciclo (q4→q2), laço de "a" em q5 e pares "bb" (q5→q6→q7 final).', 1));
+  steps.push(b.test('"adcbabb" fecha o ciclo, sai pelo "a" e usa um par "bb". Aceita!', 'adcbabb', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 41, label: "L41", formula: "L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}",                 desc: "",                                                                 shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Essa é grande! Blocos de 'b' em duplas, o primeiro 'd' serve de ponte, e 'c' em trios.",                            successMsg: "Sintaxe complexa analisada com sucesso.",
+export default { id: 41, label: "L41", formula: "L = {a(dcb)^n a^m (bb)^p / n > 0, m > 0, p >= 0}",               desc: "",                                                                 shortestWord: "adcba",    regex: /^a(dcb)+a+(bb)*$/,                                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["adcba","adcbaa","adcbabb"], rejectedWords: ["a","adcb","dcba"],  hint: "Siga a receita passo a passo: a, ciclo dcb, a, b-pares.",                                                           successMsg: "Ciclo dominado.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Blocos: a-block, b-pares, d, c-trios, d!', dialog: [
-        'L41: a^n b^2m d c^3p d. a-s, depois b-pares, depois d, depois c-trios, depois d.',
-        '"dd" ✓ (0a 0b 0c). "abbdd" ✓ (1a 1par-b). "adcccd" ✓ (1a 1trio-c).',
-        '7 estados: q0(ini/a), q1(b-ímpar), q2(b-par), q3(após-d), q4/q5(c-trio), q6(f).',
+      onStart: { type: 'theory', title: 'Ciclo dcb: a + dcb+ + a+ + b-pares!', dialog: [
+        'L41: "a", depois 1+ ciclos de "dcb", depois 1+ "a", depois b-pares opcionais.',
+        '"adcba" ✓ (1 ciclo, 1a). "adcbaa" ✓ (2a). "adcbabb" ✓ (1a, 1par-b).',
+        '"a" ✗ (sem dcb). "adcb" ✗ (sem a final). 8 estados.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '7 Estados em Sequência', dialog: [
-        'q0 loop a. q0—b→q1—b→q2 (par de b); q2—b→q1 (mais pares).',
-        'Ponte "d" sai de q0 ou q2: q0—d→q3, q2—d→q3. q3—d→q6(f).',
-        'q3—c→q4—c→q5—c→q3 (trio de c). "adcccd": q0—d→q3—c→q4—c→q5—c→q3—d→q6(f) ✓.',
+      onDrawGraph: { type: 'mechanic', title: '8 Estados: Cadeia + Ciclo + b-pares', dialog: [
+        'q0—a→q1—d→q2—c→q3—b→q4 (ciclo dcb). q4—d→q2 (repetir ciclo).',
+        'q4—a→q5(f). q5 loop a. q5—b→q6—b→q7(f)—b→q6.',
+        '"adcbabb": q0→q1→q2→q3→q4→q5—b→q6—b→q7(f) ✓.',
       ] },
     },
-    boardWords: ['dd', 'd', 'abbdd', 'adcccd'],
+    boardWords: ['adcba', 'adcb', 'adcbabb'],
     guidedLesson: buildLessonL41() };

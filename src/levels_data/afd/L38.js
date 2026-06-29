@@ -3,46 +3,36 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL38() {
   const b = makeBuilder(LEVEL_GRAPHS[38], {
-    q0: [4, 18], q1: [28, 5], q2: [14, 28], q3: [53, 2], q4: [54, 28],
-    q5: [78, 14], q6: [78, 18], q7: [88, 18],
+    q0: [4, 2], q1: [82, 2], q2: [7, 28], q3: [88, 28],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q3', 'q5', 'q7')
-   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3'], ['q3', 'c', 'q5'], ['q5', 'd', 'q7']);
-  steps.push(b.draw('Caça à subpalavra "abcd": q0→q1→q3→q5→q7 (final).', -1));
-  b.addNodes('q2', 'q4', 'q6')
-   .addEdges(
-     ['q3', 'a', 'q1'],
-     ['q0', 'd', 'q2'], ['q2', 'c', 'q4'], ['q4', 'b', 'q6'], ['q6', 'a', 'q7'],
-     ['q5', 'a', 'q1'], ['q5', 'd', 'q2'],
-     ['q6', 'b', 'q0'], ['q6', 'd', 'q2'],
-     ['q4', 'a', 'q1'], ['q4', 'd', 'q2'],
-     ['q2', 'a', 'q1'], ['q2', 'b', 'q0'],
-     ['q1', 'a', 'q1'], ['q1', 'd', 'q2'], ['q1', 'c', 'q0'],
-     ['q0', 'b', 'q0'], ['q0', 'c', 'q0'],
-     ['q7', 'a', 'q7'], ['q7', 'b', 'q7'], ['q7', 'c', 'q7'], ['q7', 'd', 'q7'],
-     ['q5', 'b', 'q0'], ['q5', 'c', 'q0'],
-   );
-  steps.push(b.draw('Ramo "dcba" (q0→q2→q4→q6→q7) + resets KMP para os dois padrões.', 1));
-  steps.push(b.test('"abcd" alcança q7 (final). Aceita!', 'abcd', 1));
-  steps.push(b.test('"dcba" alcança q7 (final). Aceita!', 'dcba', 1));
-  steps.push(b.test('"babcd" ignora o "b" inicial e acha "abcd": q7 (final). Aceita!', 'babcd', 1));
+  b.addNodes('q0', 'q2').addEdges(['q0', 'b', 'q2']);
+  steps.push(b.draw('Menor palavra "b" (0 "a" par, 1 "b" ímpar): q0—b→q2 (final).', -1));
+  steps.push(b.test('Veja "b" chegar a q2 (final). Aceita!', 'b', 0));
+  b.addNodes('q1', 'q3')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q0'], ['q2', 'b', 'q0'],
+             ['q1', 'b', 'q3'], ['q3', 'b', 'q1'], ['q2', 'a', 'q3'], ['q3', 'a', 'q2']);
+  steps.push(b.draw('Completamos o quadrado: "a" troca a paridade de a, "b" troca a paridade de b.', 1));
+  steps.push(b.reject('Mas "a" tem 1 "a" (ímpar) e 0 "b" (par): para em q1, que NÃO é final!', 'a', 1));
+  steps.push(b.test('"aab" tem 2 "a"s (par) e 1 "b" (ímpar): chega a q2 (final). Aceita!', 'aab', 1));
+  steps.push(b.test('"bbb" tem 0 "a" (par) e 3 "b"s (ímpar): também fecha em q2 (final). Aceita!', 'bbb', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 38, label: "L38", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd ou dcba como subpalavra}",        desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*(abcd|dcba)[abcd]*$/,                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","dcba","aabcdb"],  rejectedWords: ["λ","abc","dcb"],       hint: "Dois caminhos independentes saindo do início que caem num mesmo estado de vitória.",                                successMsg: "Bifurcação de subpalavras dominada!",
+export default { id: 38, label: "L38", formula: "L = {w ∈ {a,b}* / a quantidade de a é par e a quantidade de b é impar}", desc: "",                                                             shortestWord: "b",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["λ","a","ab"],          hint: "Você precisa de 4 estados para controlar: Par/Par, Par/Ímpar, Ímpar/Par, Ímpar/Ímpar.",                             successMsg: "Quadrante de paridade solucionado.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Subpalavra: "abcd" ou "dcba"!', dialog: [
-        'L38: basta conter "abcd" ou "dcba" em qualquer posição da palavra.',
-        '"abcd" ✓, "dcba" ✓, "aabcdb" ✓ (contém "abcd"). "abc", "dcb" ✗ (incompletos).',
-        'Dois caminhos independentes do q0 convergem para o mesmo estado final q7.',
+      onStart: { type: 'theory', title: 'Paridade Dupla: a-par e b-ímpar!', dialog: [
+        'L38: contar a\'s e b\'s separadamente. Aceito quando #a par E #b ímpar.',
+        '"b" ✓ (0a=par, 1b=ímpar). "aab" ✓ (2a=par, 1b=ímpar). "ab" ✗ (1a=ímpar, 1b=ímpar).',
+        '4 combinações de paridade → 4 estados: q0=(p,p), q2=(p,í), q1=(í,p), q3=(í,í).',
+        'Cada \'a\' lido troca a paridade de a. Cada \'b\' lido troca a paridade de b.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Dois Ramos + Resets KMP', dialog: [
-        'Ramo "abcd" (topo): q0—a→q1—b→q3—c→q5—d→q7(f). "abcd" aceito!',
-        'Ramo "dcba" (base): q0—d→q2—c→q4—b→q6—a→q7(f). "dcba" aceito!',
-        'q7 é poço (loop a,b,c,d). Resets KMP: "a" reinicia em q1, "d" em q2 — nenhum símbolo desperdiçado.',
+      onDrawGraph: { type: 'mechanic', title: '4 Estados em Quadrado', dialog: [
+        'q0(ini)=(p,p), q2(f)=(p,í), q1=(í,p), q3=(í,í). Só q2 é final.',
+        'Ler \'b\': q0↔q2 e q1↔q3 (troca bit-b). Ler \'a\': q0↔q1 e q2↔q3 (troca bit-a).',
+        '"aab": q0—a→q1—a→q0—b→q2(f) ✓. "ab": q0—a→q1—b→q3 (não-final) ✗.',
       ] },
     },
-    boardWords: ['abcd', 'abc', 'babcd'],
+    boardWords: ['b', 'a', 'aab', 'bbb'],
     guidedLesson: buildLessonL38() };

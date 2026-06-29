@@ -3,38 +3,46 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL37() {
   const b = makeBuilder(LEVEL_GRAPHS[37], {
-    q0: [4, 11], q1: [27, 2], q2: [60, 2], q3: [79, 11], q4: [88, 28],
+    q0: [4, 18], q1: [28, 5], q2: [14, 28], q3: [53, 2], q4: [54, 28],
+    q5: [78, 14], q6: [78, 18], q7: [88, 18],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
-   .addEdges(['q0', 'd', 'q1'], ['q1', 'c', 'q2'], ['q2', 'b', 'q3'], ['q3', 'a', 'q4']);
-  steps.push(b.draw('Espinha do sufixo "dcba": q0→q1→q2→q3→q4 (final).', -1));
-  steps.push(b.test('Veja "dcba" percorrer a cadeia até q4 (final). Aceita!', 'dcba', 0));
-  steps.push(b.reject('Mas "dcb" não completou o "dcba": para em q3, que NÃO é final!', 'dcb', 0));
-  b.addEdges(['q0', 'a', 'q0'], ['q0', 'b', 'q0'], ['q0', 'c', 'q0'],
-             ['q1', 'd', 'q1'], ['q1', 'a', 'q0'], ['q1', 'b', 'q0'],
-             ['q2', 'a', 'q0'], ['q2', 'c', 'q0'], ['q2', 'd', 'q1'],
-             ['q3', 'b', 'q0'], ['q3', 'd', 'q1'],
-             ['q4', 'a', 'q0'], ['q4', 'b', 'q0'], ['q4', 'c', 'q0'], ['q4', 'd', 'q1']);
-  steps.push(b.draw('Adicionamos os laços e resets (backedges KMP) para rastrear a subpalavra "dcba".', 1));
-  steps.push(b.test('"adcba" tem prefixo livre e contém "dcba": q4 (final). Aceita!', 'adcba', 1));
-  steps.push(b.test('"ddcba" reusa o "d" (laço q1) e fecha a subpalavra. Aceita!', 'ddcba', 1));
+  b.addNodes('q0', 'q1', 'q3', 'q5', 'q7')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3'], ['q3', 'c', 'q5'], ['q5', 'd', 'q7']);
+  steps.push(b.draw('Caça à subpalavra "abcd": q0→q1→q3→q5→q7 (final).', -1));
+  b.addNodes('q2', 'q4', 'q6')
+   .addEdges(
+     ['q3', 'a', 'q1'],
+     ['q0', 'd', 'q2'], ['q2', 'c', 'q4'], ['q4', 'b', 'q6'], ['q6', 'a', 'q7'],
+     ['q5', 'a', 'q1'], ['q5', 'd', 'q2'],
+     ['q6', 'b', 'q0'], ['q6', 'd', 'q2'],
+     ['q4', 'a', 'q1'], ['q4', 'd', 'q2'],
+     ['q2', 'a', 'q1'], ['q2', 'b', 'q0'],
+     ['q1', 'a', 'q1'], ['q1', 'd', 'q2'], ['q1', 'c', 'q0'],
+     ['q0', 'b', 'q0'], ['q0', 'c', 'q0'],
+     ['q7', 'a', 'q7'], ['q7', 'b', 'q7'], ['q7', 'c', 'q7'], ['q7', 'd', 'q7'],
+     ['q5', 'b', 'q0'], ['q5', 'c', 'q0'],
+   );
+  steps.push(b.draw('Ramo "dcba" (q0→q2→q4→q6→q7) + resets KMP para os dois padrões.', 1));
+  steps.push(b.test('"abcd" alcança q7 (final). Aceita!', 'abcd', 1));
+  steps.push(b.test('"dcba" alcança q7 (final). Aceita!', 'dcba', 1));
+  steps.push(b.test('"babcd" ignora o "b" inicial e acha "abcd": q7 (final). Aceita!', 'babcd', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 37, label: "L37", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd ou dcba como subpalavra}",        desc: "",                                                                 shortestWord: "dcba",     regex: /^[abcd]*dcba[abcd]*$/,                                      alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dcba","adcba","aadcba"], rejectedWords: ["λ","dcb","abcd"],      hint: "O caminho deve soletrar 'd','c','b','a' em algum ponto.",                                                            successMsg: "Subpalavra detectada!",
+export default { id: 37, label: "L37", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd ou dcba como subpalavra}",        desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*(abcd|dcba)[abcd]*$/,                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","dcba","aabcdb"], rejectedWords: ["λ","abc","dcb"],       hint: "Dois caminhos independentes saindo do início que caem num mesmo estado de vitória.",                                successMsg: "Bifurcação de subpalavras dominada!",
     tutorials: {
-      onStart: { type: 'theory', title: 'Subpalavra "dcba"!', dialog: [
-        'L37: a palavra deve CONTER "dcba" em qualquer posição.',
-        '"dcba" ✓ "adcba" ✓ "aadcba" ✓. "λ", "dcb", "abcd" ✗.',
-        'Técnica KMP: 5 estados rastreiam quanto de "dcba" já foi lido.',
+      onStart: { type: 'theory', title: 'Subpalavra: "abcd" ou "dcba"!', dialog: [
+        'L37: basta conter "abcd" ou "dcba" em qualquer posição da palavra.',
+        '"abcd" ✓, "dcba" ✓, "aabcdb" ✓ (contém "abcd"). "abc", "dcb" ✗ (incompletos).',
+        'Dois caminhos independentes do q0 convergem para o mesmo estado final q7.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Cadeia + Retornos KMP', dialog: [
-        'q0—d→q1—c→q2—b→q3—a→q4(f). Cadeia principal.',
-        'q0 loop a,b,c (prefixo descartado). q1 loop d (novo "d" reinicia a busca).',
-        'Mismatches em q2,q3,q4 voltam para q0 ou q1 — nunca desperdiçam um "d".',
+      onDrawGraph: { type: 'mechanic', title: 'Dois Ramos + Resets KMP', dialog: [
+        'Ramo "abcd" (topo): q0—a→q1—b→q3—c→q5—d→q7(f). "abcd" aceito!',
+        'Ramo "dcba" (base): q0—d→q2—c→q4—b→q6—a→q7(f). "dcba" aceito!',
+        'q7 é poço (loop a,b,c,d). Resets KMP: "a" reinicia em q1, "d" em q2 — nenhum símbolo desperdiçado.',
       ] },
     },
-    boardWords: ['dcba', 'dcb', 'adcba', 'ddcba'],
+    boardWords: ['abcd', 'abc', 'babcd'],
     guidedLesson: buildLessonL37() };

@@ -3,35 +3,37 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL49() {
   const b = makeBuilder(LEVEL_GRAPHS[49], {
-    q0: [5, 2], q1: [83, 2], q2: [4, 28], q3: [88, 28],
+    q0: [4, 11], q1: [17, 11], q2: [30, 11], q3: [42, 2], q4: [41, 20],
+    q5: [55, 11], q6: [69, 11], q7: [88, 11], q8: [88, 28],
   });
   const steps = [];
-  b.addNodes('q0', 'q2').addEdges(['q0', '1', 'q2']);
-  steps.push(b.draw('Menor palavra "1" (0 zeros par, 1 um ímpar): q0—1→q2 (final).', -1));
-  steps.push(b.test('Veja "1" chegar a q2 (final). Aceita!', '1', 0));
-  b.addNodes('q1', 'q3')
-   .addEdges(['q0', '0', 'q1'], ['q1', '0', 'q0'], ['q2', '0', 'q3'], ['q3', '0', 'q2'],
-             ['q2', '1', 'q0'], ['q1', '1', 'q3'], ['q3', '1', 'q1']);
-  steps.push(b.draw('Completamos o quadrado: "0" troca a paridade dos zeros, "1" a dos uns.', 1));
-  steps.push(b.reject('Mas "0" tem 1 zero (ímpar) e 0 uns (par): para em q1, que NÃO é final!', '0', 1));
-  steps.push(b.test('"001" tem 2 zeros (par) e 1 um (ímpar): chega a q2 (final). Aceita!', '001', 1));
-  steps.push(b.test('"11100" tem 3 uns (ímpar) e 2 zeros (par): também fecha em q2. Aceita!', '11100', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
+  b.addNodes('q0', 'q1', 'q2', 'q3', 'q5', 'q6', 'q7', 'q8')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q2'], ['q2', 'a', 'q3'], ['q3', 'b', 'q5'],
+             ['q5', 'c', 'q6'], ['q6', 'a', 'q7'], ['q7', 'a', 'q8']);
+  steps.push(b.draw('Espinha "acabcaa": a, c, o miolo "ab", c e o par final "aa" (q7→q8 final).', -1));
+  steps.push(b.test('Veja "acabcaa" chegar a q8 (final). Aceita!', 'acabcaa', 0));
+  steps.push(b.reject('Mas "acabca" tem só 1 "a" no fim: para em q7 (os "a" finais vêm em pares)!', 'acabca', 0));
+  b.addNodes('q4')
+   .addEdges(['q1', 'a', 'q1'], ['q2', 'c', 'q2'], ['q2', 'b', 'q4'], ['q4', 'a', 'q5'], ['q8', 'a', 'q7']);
+  steps.push(b.draw('Adicionamos o miolo alternativo "ba" (q2→q4→q5), o laço de "a" em q1, o laço de "c" em q2 e o par extra de "a" (q8→q7).', 1));
+  steps.push(b.test('"acbacaa" usa o miolo "ba": q2→q4→q5→q6→q7→q8 (final). Aceita!', 'acbacaa', 1));
+  steps.push(b.test('"accabcaaaa" usa o laço de "c" e dois pares de "a": fecha em q8 (final). Aceita!', 'accabcaaaa', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
 }
 
-export default { id: 49, label: "L49", formula: "L = {a^n a c^m (ab+ba) c a^2p / n >= 0, m > 0, p > 0}",            desc: "",                                                                 shortestWord: "1",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='0').length%2===0 && [...w].filter(c=>c==='1').length%2===1, alphabet: ['0', '1'],             acceptedWords: ["1","001","11100"],        rejectedWords: ["λ","0","01"],          hint: "Parecido com a L39, mas com números. Foque no estado correto de parada.",                                           successMsg: "Paridade binária.",
+export default { id: 49, label: "L49", formula: "L = {a^n a c^m (ab+ba) c a^2p / n >= 0, m > 0, p > 0}",            desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)c(aa)+$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Paridade Binária: 0-par e 1-ímpar!', dialog: [
-        'L49: contar 0s e 1s separadamente. Aceito quando #0 par E #1 ímpar.',
-        '"1" ✓ (0 zeros, 1 um). "001" ✓ (2 zeros, 1 um). "λ" ✗ (0 uns = par).',
-        '4 combinações de paridade → 4 estados. Mesmo quadrado da L39 mas com 0 e 1!',
+      onStart: { type: 'theory', title: 'a+ c+ (ab|ba) c aa+ — bifurcacao!', dialog: [
+        'L49: a-s, c-s, depois "ab" OU "ba", depois c, depois pares de a (min 1 par).',
+        '"acabcaa" ✓ (ab, 1par-a). "aacabcaa" ✓ (2a). "acbacaa" ✓ (ba).',
+        '9 estados: q0-q2 (a/c loops), bifurcacao q3/q4, q5-q8 (cauda).',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '4 Estados em Quadrado Binário', dialog: [
-        'q0(ini)=(p0,p1), q2(f)=(p0,í1), q1=(í0,p1), q3=(í0,í1). Só q2 é final.',
-        'Ler "1": q0↔q2 e q1↔q3. Ler "0": q0↔q1 e q2↔q3.',
-        '"001": q0—0→q1—0→q0—1→q2(f) ✓.',
+      onDrawGraph: { type: 'mechanic', title: '9 Estados: Loops + Bifurcacao', dialog: [
+        'q0—a→q1 loop a. q1—c→q2 loop c. q2—a→q3—b→q5 (ab). q2—b→q4—a→q5 (ba).',
+        'q5—c→q6—a→q7—a→q8(f). q8—a→q7 (mais pares).',
+        '"acbacaa": q2—b→q4—a→q5→q6→q7→q8(f) ✓.',
       ] },
     },
-    boardWords: ['1', '0', '001', '11100'],
+    boardWords: ['acabcaa', 'acabca', 'acbacaa', 'accabcaaaa'],
     guidedLesson: buildLessonL49() };

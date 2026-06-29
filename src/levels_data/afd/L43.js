@@ -3,34 +3,38 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL43() {
   const b = makeBuilder(LEVEL_GRAPHS[43], {
-    q0: [4, 28], q1: [24, 28], q2: [38, 2], q3: [60, 2], q4: [63, 28], q5: [88, 28],
+    q0: [4, 28], q1: [24, 28], q2: [45, 28], q3: [66, 2], q4: [88, 28],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q4', 'q5').addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q4'], ['q4', 'c', 'q5']);
-  steps.push(b.draw('Menor palavra "acc": q0—a→q1, depois o "cc" obrigatório (q1→q4→q5, final).', -1));
-  steps.push(b.test('Veja "acc" chegar a q5 (final). Aceita!', 'acc', 0));
-  steps.push(b.reject('Mas "cc" não tem nenhum "a" (n ímpar ≥ 1): trava logo em q0!', 'cc', 0));
-  b.addNodes('q2', 'q3')
-   .addEdges(['q1', 'a', 'q0'], ['q1', 'b', 'q2'], ['q2', 'b', 'q3'], ['q3', 'b', 'q2'], ['q3', 'c', 'q4'], ['q5', 'd', 'q5']);
-  steps.push(b.draw('Adicionamos o vai-e-volta de "a", o ciclo "bb" e o laço de "d".', 1));
-  steps.push(b.test('"aaacc" tem 3 "a"s (ímpar): q0→q1→q0→q1→q4→q5 (final). Aceita!', 'aaacc', 1));
-  steps.push(b.test('"abbccdd" usa um par "bb" e dois "d" no fim: fecha em q5 (final). Aceita!', 'abbccdd', 1));
+  b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
+   .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4']);
+  steps.push(b.draw('Espinha "abcd": q0—a→q1—b→q2—c→q3—d→q4 (final).', -1));
+  steps.push(b.test('Veja "abcd" atingir q4 (final). Aceita!', 'abcd', 0));
+  steps.push(b.reject('Mas "acd" não tem o "ab": depois do "a" veio "c", trava em q1!', 'acd', 0));
+  b.addEdges(['q0', 'b', 'q0'], ['q0', 'c', 'q0'], ['q0', 'd', 'q0'],
+             ['q1', 'a', 'q1'], ['q1', 'c', 'q0'], ['q1', 'd', 'q0'],
+             ['q2', 'a', 'q2'], ['q2', 'b', 'q2'], ['q2', 'd', 'q2'],
+             ['q3', 'c', 'q3'], ['q4', 'c', 'q3'],
+             ['q4', 'a', 'q2'], ['q4', 'b', 'q2'], ['q4', 'c', 'q2']);
+  steps.push(b.draw('Adicionamos os laços e resets: após "abcd" (q4), qualquer símbolo recomeça a busca pelo sufixo.', 1));
+  steps.push(b.test('"aabcd" repete o "a" (laço q1) antes de "bcd": q4 (final). Aceita!', 'aabcd', 1));
+  steps.push(b.test('"abccd" repete o "c" (laço q3) antes do "d" final: q4 (final). Aceita!', 'abccd', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 43, label: "L43", formula: "L = {w ∈ {a,b,c,d}* / w tem ab como subpalavra e cd como sufixo}",  desc: "",                                                                 shortestWord: "acc",      regex: /^a(aa)*(bb)*ccd*$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["acc","aaacc","accdd"],   rejectedWords: ["cc","aacc","abcc"],    hint: "O início exige vai-e-volta ímpar para os 'a's, depois 'b's em duplas.",                                             successMsg: "Paridade e duplas em sequência perfeita.",
+export default { id: 43, label: "L43", formula: "L = {w ∈ {a,b,c,d}* / w tem ab como subpalavra e cd como sufixo}",  desc: "",                                                                shortestWord: "abcd",     regex: /^[abcd]*ab[abcd]*cd$/,                                      alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","aabcd","abccd"],  rejectedWords: ["λ","acd","abdc"],      hint: "Ache primeiro o 'ab'. Depois de achar, fique aguardando um 'cd' para finalizar.",                                   successMsg: "Subpalavra + Sufixo resolvido.",
     tutorials: {
-      onStart: { type: 'theory', title: 'a-ímpar + b-pares + cc + d*!', dialog: [
-        'L43: a^n b^2m cc d^p onde n > 0 ímpar, m ≥ 0, p ≥ 0.',
-        '"acc" ✓ (1a, 0b). "aaacc" ✓ (3a, 0b). "abbcc" ✓ (1a, 2b). "aacc" ✗ (2a = par!).',
-        '6 estados: q0 (start), q1 (odd-a), q2 (odd-b/even-b via q3), q4 (1ºc), q5 (final).',
+      onStart: { type: 'theory', title: 'Subpalavra "ab" + Sufixo "cd"!', dialog: [
+        'L43: a palavra deve conter "ab" em algum lugar E terminar com "cd".',
+        '"abcd" ✓ (ab subpalavra, cd sufixo). "aabcd" ✓. "abccd" ✓.',
+        '"acd" ✗ (sem "ab"). "abdc" ✗ ("ab" ok mas não termina em "cd").',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '6 Estados: Paridade + Cadeia', dialog: [
-        'q0—a→q1 (ímpar-a). q1—a→q0 (par-a). q1—c→q4—c→q5(f). "cc" obrigatório.',
-        'q5 loop d. q1—b→q2—b→q3—c→q4. Pares de "b" de q1 voltam a q1 via q2↔q3.',
-        '"abbccdd": q0→q1→q2→q3→q4→q5→q5→q5(f) ✓.',
+      onDrawGraph: { type: 'mechanic', title: '5 Estados: Detectar + Esperar', dialog: [
+        'q0→q1(a): buscando "ab". q1→q2(b): "ab" encontrado! q0,q1 loops e resets.',
+        'q2→q3(c): primeiro "c" do sufixo. q3→q4(d): "cd" completo — final!',
+        'q2,q4 loops em a,b,d. q3 loop c. Mismatches voltam ao rastreio.',
       ] },
     },
-    boardWords: ['acc', 'cc', 'aaacc', 'abbccdd'],
+    boardWords: ['abcd', 'acd', 'aabcd', 'abccd'],
     guidedLesson: buildLessonL43() };

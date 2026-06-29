@@ -3,41 +3,36 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL47() {
   const b = makeBuilder(LEVEL_GRAPHS[47], {
-    q0: [4, 16], q1: [12, 2], q2: [23, 16], q3: [11, 28], q4: [50, 4], q5: [38, 16], q6: [52, 28], q7: [88, 16],
+    q0: [4, 16], q1: [23, 2], q2: [46, 2], q3: [64, 16], q4: [73, 2], q5: [88, 8], q6: [84, 28],
   });
   const steps = [];
-  b.addNodes('q0');
-  steps.push(b.draw('λ tem 0 de cada símbolo (tudo par): q0 é inicial+final.', -1));
-  steps.push(b.test('Veja λ ser aceita parada em q0 (final).', '', 0));
-  b.addNodes('q1', 'q2', 'q4')
-   .addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q0'], ['q0', 'b', 'q2'], ['q2', 'b', 'q0'],
-             ['q1', 'b', 'q4'], ['q4', 'b', 'q1'], ['q2', 'a', 'q4'], ['q4', 'a', 'q2']);
-  steps.push(b.draw('Quadrado das paridades de a e b.', 1));
-  steps.push(b.test('"aabb" zera as paridades de a e b: volta a q0 (final). Aceita!', 'aabb', 1));
-  steps.push(b.reject('Mas "a" deixa os "a" ímpares: termina em q1, que NÃO é final!', 'a', 1));
-  b.addNodes('q3', 'q5', 'q6', 'q7')
-   .addEdges(['q0', 'c', 'q3'], ['q3', 'c', 'q0'], ['q1', 'c', 'q5'], ['q5', 'c', 'q1'],
-             ['q2', 'c', 'q6'], ['q6', 'c', 'q2'], ['q4', 'c', 'q7'], ['q7', 'c', 'q4'],
-             ['q3', 'a', 'q5'], ['q5', 'a', 'q3'], ['q3', 'b', 'q6'], ['q6', 'b', 'q3'],
-             ['q5', 'b', 'q7'], ['q7', 'b', 'q5'], ['q6', 'a', 'q7'], ['q7', 'a', 'q6']);
-  steps.push(b.draw('Duplicamos o quadrado para "c": vira um cubo de 8 estados.', 2));
-  steps.push(b.test('"aabbcc" zera as três paridades: volta a q0 (final). Aceita!', 'aabbcc', 2));
+  b.addNodes('q0', 'q3', 'q6').addEdges(['q0', 'd', 'q3'], ['q3', 'd', 'q6']);
+  steps.push(b.draw('Menor palavra "dd": ponte d (q0→q3) e d final (q3→q6, final).', -1));
+  steps.push(b.test('Veja "dd" chegar a q6 (final). Aceita!', 'dd', 0));
+  steps.push(b.reject('Mas "d" sozinho para em q3, que NÃO é final (falta fechar com o 2º "d")!', 'd', 0));
+  b.addNodes('q1', 'q2')
+   .addEdges(['q0', 'a', 'q0'], ['q0', 'b', 'q1'], ['q1', 'b', 'q2'], ['q2', 'b', 'q1'], ['q2', 'd', 'q3']);
+  steps.push(b.draw('Laço de "a" e o par "bb" (q1↔q2). A ponte "d" sai de q0 (0 b) ou q2 (b par).', 1));
+  steps.push(b.test('"abbdd" usa um "a" e um par "bb": q0→q1→q2→q3→q6 (final). Aceita!', 'abbdd', 1));
+  b.addNodes('q4', 'q5').addEdges(['q3', 'c', 'q4'], ['q4', 'c', 'q5'], ['q5', 'c', 'q3']);
+  steps.push(b.draw('E o ciclo de TRIOS "ccc" (q3→q4→q5→q3) entre os dois "d".', 2));
+  steps.push(b.test('"adcccd" usa um trio "ccc" entre os "d": q0→q3→q4→q5→q3→q6 (final). Aceita!', 'adcccd', 2));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
   return steps;
 }
 
-export default { id: 47, label: "L47", formula: "L = {w ∈ {a,b,c}* / a quantidade de a, b e c é par}",              desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['a','b','c'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","aabb","aabbcc"],      rejectedWords: ["a","b","abc"],         hint: "Isso é um cubo mágico de estados! Paridade para 3 letras exige 8 estados.",                                        successMsg: "Paridade em 3D completada!",
+export default { id: 47, label: "L47", formula: "L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}",                desc: "(Revisão L40)",                                                    shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Se chegou até aqui, já sabe: separe o problema em bloquinhos lógicos.",                                             successMsg: "Revisão bem sucedida.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Cubo de paridade: 3 letras, 8 estados!', dialog: [
-        'L47: contar a, b e c separadamente. Aceito quando TODOS pares.',
-        '"λ" ✓ (0+0+0). "aabb" ✓ (2a,2b,0c). "aabbcc" ✓ (2a,2b,2c). "a" ✗ (1a impar).',
-        '8 combinacoes de paridade: 2^3 = 8 estados. Apenas q0(ini,f) aceita.',
+      onStart: { type: 'theory', title: 'Revisão L40: blocos a, b-pares, d, c-trios, d!', dialog: [
+        'L47 é revisão de L40. Mesma linguagem a^n b^2m d c^3p d.',
+        '"dd" ✓. "abbdd" ✓. "adcccd" ✓. "d" ✗. "abcdd" ✗.',
+        '7 estados: q0(ini/a), q1(b-ímpar), q2(b-par), q3(após-d), q4/q5(c-trio), q6(f).',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '8 Estados em Cubo', dialog: [
-        'q0(f)=(p,p,p). "a" inverte bit-a, "b" inverte bit-b, "c" inverte bit-c.',
-        'Quadrado base (a,b): q0↔q1(a), q0↔q2(b), q1↔q4(b), q2↔q4(a).',
-        'Extensão "c": cada estado do quadrado é conectado ao seu espelho no cubo.',
+      onDrawGraph: { type: 'mechanic', title: 'Revisão: 7 Estados', dialog: [
+        'q0 loop a; q0—b→q1—b→q2; q2—b→q1; ponte: q0—d→q3 e q2—d→q3.',
+        'q3—d→q6(f); q3—c→q4—c→q5—c→q3 (trio).',
+        'Mesma lógica de L40. Você já sabe montar isso!',
       ] },
     },
-    boardWords: ['', 'aabb', 'a', 'aabbcc'],
+    boardWords: ['dd', 'd', 'abbdd', 'adcccd'],
     guidedLesson: buildLessonL47() };

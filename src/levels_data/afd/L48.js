@@ -3,36 +3,35 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL48() {
   const b = makeBuilder(LEVEL_GRAPHS[48], {
-    q0: [4, 15], q1: [4, 28], q2: [29, 28], q3: [48, 15], q4: [64, 2], q5: [88, 2], q6: [84, 22],
+    q0: [5, 2], q1: [83, 2], q2: [4, 28], q3: [88, 28],
   });
   const steps = [];
-  b.addNodes('q0', 'q3', 'q6').addEdges(['q0', 'd', 'q3'], ['q3', 'd', 'q6']);
-  steps.push(b.draw('Menor palavra "dd": q0—d→q3 (ponte) e q3—d→q6 (final).', -1));
-  steps.push(b.test('Veja "dd" chegar a q6 (final). Aceita!', 'dd', 0));
-  steps.push(b.reject('Mas "d" sozinho para em q3, que NÃO é final!', 'd', 0));
-  b.addNodes('q1', 'q2')
-   .addEdges(['q0', 'a', 'q0'], ['q0', 'b', 'q1'], ['q1', 'b', 'q2'], ['q2', 'b', 'q1'], ['q2', 'd', 'q3']);
-  steps.push(b.draw('Laço de "a" e par "bb" (q1↔q2). Ponte "d" sai de q0 ou q2 (b par).', 1));
-  steps.push(b.test('"abbdd" usa um "a" e par "bb": q0→q1→q2→q3→q6 (final). Aceita!', 'abbdd', 1));
-  b.addNodes('q4', 'q5').addEdges(['q3', 'c', 'q4'], ['q4', 'c', 'q5'], ['q5', 'c', 'q3']);
-  steps.push(b.draw('Ciclo de TRIOS "ccc" (q3→q4→q5→q3) entre os dois "d".', 2));
-  steps.push(b.test('"adcccd" usa um trio "ccc": q0→q3→q4→q5→q3→q6 (final). Aceita!', 'adcccd', 2));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  b.addNodes('q0', 'q2').addEdges(['q0', '1', 'q2']);
+  steps.push(b.draw('Menor palavra "1" (0 zeros par, 1 um ímpar): q0—1→q2 (final).', -1));
+  steps.push(b.test('Veja "1" chegar a q2 (final). Aceita!', '1', 0));
+  b.addNodes('q1', 'q3')
+   .addEdges(['q0', '0', 'q1'], ['q1', '0', 'q0'], ['q2', '0', 'q3'], ['q3', '0', 'q2'],
+             ['q2', '1', 'q0'], ['q1', '1', 'q3'], ['q3', '1', 'q1']);
+  steps.push(b.draw('Completamos o quadrado: "0" troca a paridade dos zeros, "1" a dos uns.', 1));
+  steps.push(b.reject('Mas "0" tem 1 zero (ímpar) e 0 uns (par): para em q1, que NÃO é final!', '0', 1));
+  steps.push(b.test('"001" tem 2 zeros (par) e 1 um (ímpar): chega a q2 (final). Aceita!', '001', 1));
+  steps.push(b.test('"11100" tem 3 uns (ímpar) e 2 zeros (par): também fecha em q2. Aceita!', '11100', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 48, label: "L48", formula: "L = {w ∈ {0,1}* / a quantidade de zeros é par e a quantidade de um é impar}", desc: "(Revisão L41)",                                            shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Se chegou até aqui, já sabe: separe o problema em bloquinhos lógicos.",                                             successMsg: "Revisão bem sucedida.",
+export default { id: 48, label: "L48", formula: "L = {w ∈ {0,1}* / a quantidade de zeros é par e a quantidade de 1 é impar}", desc: "",                                                         shortestWord: "1",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='0').length%2===0 && [...w].filter(c=>c==='1').length%2===1, alphabet: ['0', '1'],             acceptedWords: ["1","001","11100"],        rejectedWords: ["λ","0","01"],          hint: "Parecido com a L38, mas com números. Foque no estado correto de parada.",                                           successMsg: "Paridade binária.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Revisão L41: blocos a, b-pares, d, c-trios, d!', dialog: [
-        'L48 é revisão de L41. Mesma linguagem a^n b^2m d c^3p d.',
-        '"dd" ✓. "abbdd" ✓. "adcccd" ✓. "d" ✗. "abcdd" ✗.',
-        '7 estados: q0(ini/a), q1(b-ímpar), q2(b-par), q3(após-d), q4/q5(c-trio), q6(f).',
+      onStart: { type: 'theory', title: 'Paridade Binária: 0-par e 1-ímpar!', dialog: [
+        'L48: contar 0s e 1s separadamente. Aceito quando #0 par E #1 ímpar.',
+        '"1" ✓ (0 zeros, 1 um). "001" ✓ (2 zeros, 1 um). "λ" ✗ (0 uns = par).',
+        '4 combinações de paridade → 4 estados. Mesmo quadrado da L38 mas com 0 e 1!',
       ] },
-      onDrawGraph: { type: 'mechanic', title: 'Revisão: 7 Estados', dialog: [
-        'q0 loop a; q0—b→q1—b→q2; q2—b→q1; ponte: q0—d→q3 e q2—d→q3.',
-        'q3—d→q6(f); q3—c→q4—c→q5—c→q3 (trio).',
-        'Mesma lógica de L41. Você já sabe montar isso!',
+      onDrawGraph: { type: 'mechanic', title: '4 Estados em Quadrado Binário', dialog: [
+        'q0(ini)=(p0,p1), q2(f)=(p0,í1), q1=(í0,p1), q3=(í0,í1). Só q2 é final.',
+        'Ler "1": q0↔q2 e q1↔q3. Ler "0": q0↔q1 e q2↔q3.',
+        '"001": q0—0→q1—0→q0—1→q2(f) ✓.',
       ] },
     },
-    boardWords: ['dd', 'd', 'abbdd', 'adcccd'],
+    boardWords: ['1', '0', '001', '11100'],
     guidedLesson: buildLessonL48() };

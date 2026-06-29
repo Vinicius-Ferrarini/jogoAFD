@@ -2,7 +2,7 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL35ii() {
-  const b = makeBuilder(LEVEL_GRAPHS[36], {
+  const b = makeBuilder(LEVEL_GRAPHS['L35ii'], {
     q0: [10, 15], q1: [26, 15], q2: [42, 15], q3: [58, 15],
   });
   const steps = [];

@@ -3,37 +3,36 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL50() {
   const b = makeBuilder(LEVEL_GRAPHS[50], {
-    q0: [4, 11], q1: [17, 11], q2: [30, 11], q3: [42, 2], q4: [41, 20],
-    q5: [55, 11], q6: [69, 11], q7: [88, 11], q8: [88, 28],
+    q0: [4, 8], q1: [23, 8], q2: [23, 20], q3: [51, 2], q4: [55, 28], q5: [87, 8], q6: [88, 20],
   });
   const steps = [];
-  b.addNodes('q0', 'q1', 'q2', 'q3', 'q5', 'q6', 'q7', 'q8')
-   .addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q2'], ['q2', 'a', 'q3'], ['q3', 'b', 'q5'],
-             ['q5', 'c', 'q6'], ['q6', 'a', 'q7'], ['q7', 'a', 'q8']);
-  steps.push(b.draw('Espinha "acabcaa": a, c, o miolo "ab", c e o par final "aa" (q7→q8 final).', -1));
-  steps.push(b.test('Veja "acabcaa" chegar a q8 (final). Aceita!', 'acabcaa', 0));
-  steps.push(b.reject('Mas "acabca" tem só 1 "a" no fim: para em q7 (os "a" finais vêm em pares)!', 'acabca', 0));
-  b.addNodes('q4')
-   .addEdges(['q1', 'a', 'q1'], ['q2', 'c', 'q2'], ['q2', 'b', 'q4'], ['q4', 'a', 'q5'], ['q8', 'a', 'q7']);
-  steps.push(b.draw('Adicionamos o miolo alternativo "ba" (q2→q4→q5), o laço de "a" em q1, o laço de "c" em q2 e o par extra de "a" (q8→q7).', 1));
-  steps.push(b.test('"acbacaa" usa o miolo "ba": q2→q4→q5→q6→q7→q8 (final). Aceita!', 'acbacaa', 1));
-  steps.push(b.test('"accabcaaaa" usa o laço de "c" e dois pares de "a": fecha em q8 (final). Aceita!', 'accabcaaaa', 1));
-  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 2));
+  b.addNodes('q0', 'q1', 'q5', 'q6').addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q5'], ['q5', 'c', 'q6']);
+  steps.push(b.draw('Espinha "acc": q0—a→q1, depois o "cc" obrigatório (q1→q5→q6, final).', -1));
+  steps.push(b.test('Veja "acc" (n=1, p=2, soma 3 ímpar) chegar a q6 (final). Aceita!', 'acc', 0));
+  steps.push(b.reject('Mas "ac" tem n+p = 1+1 = 2 (par): para em q5, que NÃO é final!', 'ac', 0));
+  b.addNodes('q2', 'q3', 'q4')
+   .addEdges(['q1', 'a', 'q2'], ['q2', 'a', 'q1'], ['q1', 'b', 'q3'], ['q2', 'b', 'q4'],
+             ['q3', 'b', 'q3'], ['q4', 'b', 'q4'], ['q2', 'c', 'q6'], ['q3', 'c', 'q5'],
+             ['q4', 'c', 'q6'], ['q6', 'c', 'q5']);
+  steps.push(b.draw('Vai-e-volta de "a", bloco de "b" e caminhos de "c" (paridade de n+p).', 1));
+  steps.push(b.test('"aac" tem n=2, p=1 (soma 3 ímpar): q0→q1→q2→q6 (final). Aceita!', 'aac', 1));
+  steps.push(b.test('"abcc" tem n=1, m=1, p=2: q0→q1→q3→q5→q6 (final). Aceita!', 'abcc', 1));
+  steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 50, label: "L49", formula: "L = {a^n b^m c^p / n > 0, p > 0, m >= 0 e (n+p) é impar}",          desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)c(aa)+$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
+export default { id: 50, label: "L50", formula: "L = {a^n b^m c^p / n > 0, p > 0, m >= 0 e (n+p) é impar}",          desc: "",                                                                 shortestWord: "ac",       regex: /^.*$/, validate: w => /^a+b*c+$/.test(w) && ([...w].filter(c=>c==='a').length + [...w].filter(c=>c==='c').length)%2===1, alphabet: ['a', 'b', 'c'],        acceptedWords: ["acc","aac","abcc"],       rejectedWords: ["ac","aacc","c"],        hint: "Se a quantidade de 'a's for ímpar, os 'c's precisam ser pares, e vice versa.",                                     successMsg: "Paridade correlacionada funcionando!",
     tutorials: {
-      onStart: { type: 'theory', title: 'a+ c+ (ab|ba) c aa+ — bifurcacao!', dialog: [
-        'L49: a-s, c-s, depois "ab" OU "ba", depois c, depois pares de a (min 1 par).',
-        '"acabcaa" ✓ (ab, 1par-a). "aacabcaa" ✓ (2a). "acbacaa" ✓ (ba).',
-        '9 estados: q0-q2 (a/c loops), bifurcacao q3/q4, q5-q8 (cauda).',
+      onStart: { type: 'theory', title: 'a+ b* c+ com (n+p) impar!', dialog: [
+        'L50: a^n b^m c^p. n>0, p>0, m>=0. Mas a quantidade (n+p) tem que ser impar.',
+        '"acc" ✓ (1a+2c=3 impar). "aac" ✓ (2a+1c=3). "abcc" ✓ (1a+2c=3).',
+        '"ac" ✗ (1+1=2 par). "aacc" ✗ (2+2=4 par). 7 estados: paridade de a e c.',
       ] },
-      onDrawGraph: { type: 'mechanic', title: '9 Estados: Loops + Bifurcacao', dialog: [
-        'q0—a→q1 loop a. q1—c→q2 loop c. q2—a→q3—b→q5 (ab). q2—b→q4—a→q5 (ba).',
-        'q5—c→q6—a→q7—a→q8(f). q8—a→q7 (mais pares).',
-        '"acbacaa": q2—b→q4—a→q5→q6→q7→q8(f) ✓.',
+      onDrawGraph: { type: 'mechanic', title: '7 Estados: Paridade a + c', dialog: [
+        'q0—a→q1 (ímpar-a). q1—a→q2 (par-a). q2—a→q1 (ciclo). q1—c→q5, q2—c→q6(f).',
+        'b-phase: q1—b→q3(ímpar-a+b), q2—b→q4. q3,q4 loop b. q3—c→q5, q4—c→q6(f).',
+        'c-phase: q5—c→q6(f). q6—c→q5. "abcc": q1—b→q3—c→q5—c→q6(f) ✓.',
       ] },
     },
-    boardWords: ['acabcaa', 'acabca', 'acbacaa', 'accabcaaaa'],
+    boardWords: ['acc', 'ac', 'aac', 'abcc'],
     guidedLesson: buildLessonL50() };
