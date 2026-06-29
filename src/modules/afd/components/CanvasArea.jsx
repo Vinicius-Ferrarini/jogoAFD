@@ -221,6 +221,12 @@ export default function CanvasArea({
       const upd = { ...arrowDragRef.current, x2: ix, y2: iy };
       arrowDragRef.current = upd;
       setArrowDrag({ ...upd });
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const nodeEl = el?.closest('[data-uid]');
+      const hoveredUid = nodeEl?.dataset.uid ?? null;
+      const targetUid = hoveredUid && hoveredUid !== arrowDragRef.current.srcUid ? hoveredUid : null;
+      arrowTargetUidRef.current = targetUid;
+      setArrowTargetUid(targetUid);
       return;
     }
 
@@ -242,38 +248,34 @@ export default function CanvasArea({
     }
   }, [isDrawingUnlocked, zoom, selectionBox, dragInfo, selectedNodes, interactionMode, isErasing, drawTool]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Finaliza drag de seta (solto em cima de um nó) ──────────────────────
-  const handlePointerUpNode = useCallback((e, uid) => {
-    if (!arrowDragRef.current) return;
-    try { e.target.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
-    e.stopPropagation();
-    const srcUid = arrowDragRef.current.srcUid;
-    arrowDragRef.current = null;
-    setArrowDrag(null);
-    setConnectingSource(null);
-    const srcNode = nodes.find(n => n.uid === srcUid);
-    const tgtNode = nodes.find(n => n.uid === uid);
-    if (!srcNode || !tgtNode) return;
-    const exists = transitions.some(t => t.from === srcNode.id && t.to === tgtNode.id);
-    if (exists) {
-      showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
-      return;
-    }
-    const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
-    setTransitions(newTrans);
-    recordHistory(nodes, newTrans);
-    squashNextHistoryRef.current = true;
-  }, [nodes, transitions, recordHistory, showToast, setTransitions, setConnectingSource, squashNextHistoryRef]);
-
   // ── Pointer: up ───────────────────────────────────────────────────────────
   const handlePointerUp = useCallback((e) => {
     try { e.target.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
 
-    // Drag de seta solto no vazio — cancela
+    // Drag de seta: cria transição se houver alvo, senão cancela
     if (arrowDragRef.current) {
+      const srcUid = arrowDragRef.current.srcUid;
+      const tgtUid = arrowTargetUidRef.current;
       arrowDragRef.current = null;
+      arrowTargetUidRef.current = null;
       setArrowDrag(null);
+      setArrowTargetUid(null);
       setConnectingSource(null);
+      if (tgtUid) {
+        const srcNode = nodes.find(n => n.uid === srcUid);
+        const tgtNode = nodes.find(n => n.uid === tgtUid);
+        if (srcNode && tgtNode) {
+          const exists = transitions.some(t => t.from === srcNode.id && t.to === tgtNode.id);
+          if (exists) {
+            showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
+          } else {
+            const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
+            setTransitions(newTrans);
+            recordHistory(nodes, newTrans);
+            squashNextHistoryRef.current = true;
+          }
+        }
+      }
       return;
     }
 
@@ -578,10 +580,10 @@ export default function CanvasArea({
                     : '' : '';
                 return (
                   <div key={node.uid}
-                    className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${highlightedError===node.id?'error-pulse-severe':''} ${simCls}`}
+                    data-uid={node.uid}
+                    className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${highlightedError===node.id?'error-pulse-severe':''} ${simCls} ${arrowTargetUid===node.uid?'arrow-target':''}`}
                     style={{ top:`${node.y}px`, left:`${node.x}px` }}
-                    onPointerDown={e => handlePointerDownNode(e, node.uid)}
-                    onPointerUp={e => handlePointerUpNode(e, node.uid)}>
+                    onPointerDown={e => handlePointerDownNode(e, node.uid)}>
                     <input
                       type="text"
                       className="node-id-input"
