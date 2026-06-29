@@ -450,6 +450,8 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           userTransitionsSnapshot.current = JSON.parse(JSON.stringify(transitions));
           setGuidedLessonStep(0);
         }}
+        lessonActive={lessonActive}
+        onCloseLesson={handleLessonFinish}
       />
 
       {/* ── Barra de palavras testadas (oculta no modo Aula V2) ── */}

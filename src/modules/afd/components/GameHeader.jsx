@@ -20,6 +20,7 @@ const navBtnDisabledStyle = {
 export default function GameHeader({
   currentLevel, progress,
   toggleSidebar, onBack, onPrevLevel, onNextLevel, onStartLesson,
+  lessonActive, onCloseLesson,
 }) {
   const diffBg = DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff';
   const idx = GAME_LEVELS.findIndex(l => l.id === currentLevel?.id);
@@ -36,14 +37,29 @@ export default function GameHeader({
         <span className="mission-label">Objetivo</span>
         <div className="mission-formula">{currentLevel?.formula || ''}</div>
         {currentLevel?.guidedLesson && (
-          <button
-            className="menu-btn"
-            style={{ padding: '4px 12px', fontSize: 12, marginLeft: 6 }}
-            onClick={onStartLesson}
-            title="Assistir demonstração passo a passo"
-          >
-            👨‍🏫 Aula
-          </button>
+          <div style={{ position: 'relative', display: 'inline-block', marginLeft: 6 }}>
+            <button
+              className="menu-btn"
+              style={{ padding: '4px 12px', fontSize: 12, opacity: lessonActive ? 0.5 : 1, cursor: lessonActive ? 'default' : 'pointer' }}
+              onClick={lessonActive ? undefined : onStartLesson}
+              title={lessonActive ? undefined : 'Assistir demonstração passo a passo'}
+            >
+              👨‍🏫 Aula
+            </button>
+            {lessonActive && (
+              <span
+                onClick={onCloseLesson}
+                title="Fechar aula"
+                style={{
+                  position: 'absolute', top: -6, right: -6,
+                  width: 16, height: 16,
+                  background: '#ef4444', border: '2px solid #000', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 9, fontWeight: 900, color: '#fff',
+                  cursor: 'pointer',
+                }}>✕</span>
+            )}
+          </div>
         )}
       </div>
       <div style={{ width: 180, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
