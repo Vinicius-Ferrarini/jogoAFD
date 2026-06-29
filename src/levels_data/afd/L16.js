@@ -24,7 +24,7 @@ function buildLessonL16() {
   return steps;
 }
 
-export default { id: 16, label: "L16", formula: "L = {a^u b^v c^x y / u,v,x,y ∈ {a,b,c}*}",                         desc: "",                                                                 shortestWord: "abc",      regex: /^[abc]*a[abc]*b[abc]*c[abc]*$/,                             alphabet: ['a', 'b', 'c'],        acceptedWords: ["abc","aabc","abbc"],       rejectedWords: ["λ","ab","bc"],         hint: "A palavra tem que ter pelo menos um 'a', um 'b' e um 'c', na ordem.",                                               successMsg: "Filtro de caracteres construído.",
+export default { id: 16, label: "L16", formula: "L = {u a v b x c y | u,v,x,y ∈ {a,b,c}*}",                         desc: "",                                                                 shortestWord: "abc",      regex: /^[abc]*a[abc]*b[abc]*c[abc]*$/,                             alphabet: ['a', 'b', 'c'],        acceptedWords: ["abc","aabc","abbc"],       rejectedWords: ["λ","ab","bc"],         hint: "A palavra tem que ter pelo menos um 'a', um 'b' e um 'c', na ordem.",                                               successMsg: "Filtro de caracteres construído.",
     tutorials: {
       onStart: { type: 'theory', title: 'Busca Sequencial de Símbolos!', dialog: [
         'L16 exige ao menos um "a", um "b" e um "c" — nessa ORDEM, mas com qualquer coisa entre eles.',

@@ -17,7 +17,7 @@ function buildLessonL35ii() {
   return steps;
 }
 
-export default { id: 3502, label: "L35_ii", formula: "L = {w ∈ {a,b,c,d}* / w tem abc como prefixo}",                   desc: "",                                                                 shortestWord: "abc",      regex: /^abc[abcd]*/,                                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abc","abcd","abcabc"],   rejectedWords: ["λ","ab","bca"],        hint: "Igual ao 001, mas com um alfabeto maior.",                                                                          successMsg: "Prefixo alfabético concluído.",
+export default { id: 3502, label: "L35.", formula: "L = {w ∈ {a,b,c,d}* / w tem abc como prefixo}",                   desc: "",                                                                 shortestWord: "abc",      regex: /^abc[abcd]*/,                                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abc","abcd","abcabc"],   rejectedWords: ["λ","ab","bca"],        hint: "Igual ao 001, mas com um alfabeto maior.",                                                                          successMsg: "Prefixo alfabético concluído.",
     tutorials: {
       onStart: { type: 'theory', title: 'Prefixo Obrigatório: "abc"!', dialog: [
         'L35_ii: toda palavra aceita DEVE começar com "abc". O resto pode ser qualquer coisa.',
