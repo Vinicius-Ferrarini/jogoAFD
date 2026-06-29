@@ -60,6 +60,8 @@ export default function CanvasArea({
       hasAutoCenteredRef.current = false;
       return;
     }
+    // Só centraliza automaticamente quando a aula guiada está ativa
+    if (guidedLessonStep === null) return;
     if (hasAutoCenteredRef.current) return;
     hasAutoCenteredRef.current = true;
     setTimeout(() => {
