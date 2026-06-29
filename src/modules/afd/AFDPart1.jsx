@@ -297,9 +297,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         const allowed = currentLevel.allowedCards;
         const initialCards = [
           { id: 'c0', type: 'action', action: 'toggleInitial', icon: '▶', label: 'Estado Inicial' },
+          { id: 'c3', type: 'action', action: 'toggleFinal',   icon: '◎', label: 'Definir Final' },
           { id: 'c1', type: 'action', action: 'addNode',       icon: '◯', label: 'Novo Estado' },
           { id: 'c2', type: 'action', action: 'addTransition', icon: '↗', label: 'Criar Seta' },
-          { id: 'c3', type: 'action', action: 'toggleFinal',   icon: '◎', label: 'Definir Final' },
           { id: 'c4', type: 'action', action: 'erase',         icon: '🗑', label: 'Apagar' },
           { id: 'cu', type: 'action', action: 'undo',          icon: '↶', label: 'Desfazer' },
           { id: 'cr', type: 'action', action: 'redo',          icon: '↷', label: 'Refazer' },

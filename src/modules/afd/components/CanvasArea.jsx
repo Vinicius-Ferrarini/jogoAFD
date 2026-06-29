@@ -54,6 +54,12 @@ export default function CanvasArea({
   const [zoomInput, setZoomInput] = useState(String(zoom));
   useEffect(() => { setZoomInput(String(zoom)); }, [zoom]);
 
+  // ── Drag de seta estilo JFLAP ─────────────────────────────────────────────
+  const [arrowDrag, setArrowDrag] = useState(null); // { srcUid, x1, y1, x2, y2 }
+  const arrowDragRef = useRef(null);
+  const [arrowTargetUid, setArrowTargetUid] = useState(null);
+  const arrowTargetUidRef = useRef(null);
+
   const hasAutoCenteredRef = useRef(false);
   useEffect(() => {
     if (displayNodes.length === 0) {
@@ -155,22 +161,12 @@ export default function CanvasArea({
       return;
     }
     if (interactionMode === 'CONNECTING') {
-      if (!connectingSource) {
-        setConnectingSource(uid);
-      } else {
-        const srcNode = nodes.find(n => n.uid === connectingSource);
-        const tgtNode = nodes.find(n => n.uid === uid);
-        const exists = transitions.some(t => t.from === srcNode.id && t.to === tgtNode.id);
-        if (exists) {
-          showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
-        } else {
-          const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
-          setTransitions(newTrans);
-          recordHistory(nodes, newTrans);
-          squashNextHistoryRef.current = true;
-        }
-        setConnectingSource(null);
-      }
+      const srcNode = nodes.find(n => n.uid === uid);
+      if (!srcNode) return;
+      const drag = { srcUid: uid, x1: srcNode.x, y1: srcNode.y, x2: srcNode.x, y2: srcNode.y };
+      arrowDragRef.current = drag;
+      setArrowDrag({ ...drag });
+      setConnectingSource(uid);
       return;
     }
 
@@ -221,6 +217,13 @@ export default function CanvasArea({
       return;
     }
 
+    if (arrowDragRef.current) {
+      const upd = { ...arrowDragRef.current, x2: ix, y2: iy };
+      arrowDragRef.current = upd;
+      setArrowDrag({ ...upd });
+      return;
+    }
+
     if (selectionBox) {
       setSelectionBox(s => ({ ...s, currentX: ix, currentY: iy }));
     } else if (dragInfo.isDragging) {
@@ -239,9 +242,40 @@ export default function CanvasArea({
     }
   }, [isDrawingUnlocked, zoom, selectionBox, dragInfo, selectedNodes, interactionMode, isErasing, drawTool]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Finaliza drag de seta (solto em cima de um nó) ──────────────────────
+  const handlePointerUpNode = useCallback((e, uid) => {
+    if (!arrowDragRef.current) return;
+    try { e.target.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+    e.stopPropagation();
+    const srcUid = arrowDragRef.current.srcUid;
+    arrowDragRef.current = null;
+    setArrowDrag(null);
+    setConnectingSource(null);
+    const srcNode = nodes.find(n => n.uid === srcUid);
+    const tgtNode = nodes.find(n => n.uid === uid);
+    if (!srcNode || !tgtNode) return;
+    const exists = transitions.some(t => t.from === srcNode.id && t.to === tgtNode.id);
+    if (exists) {
+      showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
+      return;
+    }
+    const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
+    setTransitions(newTrans);
+    recordHistory(nodes, newTrans);
+    squashNextHistoryRef.current = true;
+  }, [nodes, transitions, recordHistory, showToast, setTransitions, setConnectingSource, squashNextHistoryRef]);
+
   // ── Pointer: up ───────────────────────────────────────────────────────────
   const handlePointerUp = useCallback((e) => {
     try { e.target.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+
+    // Drag de seta solto no vazio — cancela
+    if (arrowDragRef.current) {
+      arrowDragRef.current = null;
+      setArrowDrag(null);
+      setConnectingSource(null);
+      return;
+    }
 
     if (interactionMode === 'DRAW' && isDrawingRef.current) {
       isDrawingRef.current = false;
@@ -467,6 +501,7 @@ export default function CanvasArea({
               {/* SVG transições */}
               <svg className="connections-svg">
                 <defs>
+                  <marker id="ah-ghost" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#888"/></marker>
                   <marker id="ah"    markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000"/></marker>
                   <marker id="ahe"   markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#ef4444"/></marker>
                   <marker id="ahr"   markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#dc2626"/></marker>
@@ -484,6 +519,23 @@ export default function CanvasArea({
                     style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
                     onClick={e => handleTransitionLineClick(e, tr.idx)} />
                 ))}
+                {arrowDrag && (() => {
+                  const dx = arrowDrag.x2 - arrowDrag.x1;
+                  const dy = arrowDrag.y2 - arrowDrag.y1;
+                  const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                  const tip = 14; // recua a ponta para a seta não ultrapassar o cursor
+                  const ex = arrowDrag.x2 - (dx/dist)*tip;
+                  const ey = arrowDrag.y2 - (dy/dist)*tip;
+                  return (
+                    <line
+                      x1={arrowDrag.x1} y1={arrowDrag.y1}
+                      x2={ex} y2={ey}
+                      stroke="#888" strokeWidth="2" strokeDasharray="8 4"
+                      markerEnd="url(#ah-ghost)"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  );
+                })()}
               </svg>
 
               {/* Labels das transições */}
@@ -528,7 +580,8 @@ export default function CanvasArea({
                   <div key={node.uid}
                     className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${highlightedError===node.id?'error-pulse-severe':''} ${simCls}`}
                     style={{ top:`${node.y}px`, left:`${node.x}px` }}
-                    onPointerDown={e => handlePointerDownNode(e, node.uid)}>
+                    onPointerDown={e => handlePointerDownNode(e, node.uid)}
+                    onPointerUp={e => handlePointerUpNode(e, node.uid)}>
                     <input
                       type="text"
                       className="node-id-input"
