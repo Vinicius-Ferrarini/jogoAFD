@@ -3,8 +3,8 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL44() {
   const b = makeBuilder(LEVEL_GRAPHS[44], {
-    q0: [4, 15], q1: [15, 15], q2: [27, 15], q3: [35, 15], q4: [48, 15],
-    q5: [63, 8], q6: [79, 2], q7: [88, 8], q8: [55, 28], q9: [75, 28],
+    q0: [10, 17], q1: [20, 17], q2: [30, 17], q3: [38, 17], q4: [48, 17],
+    q5: [60, 10], q6: [72, 8], q7: [80, 12], q8: [56, 26], q9: [70, 26],
   });
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7')
@@ -21,7 +21,7 @@ function buildLessonL44() {
              ['q8', 'a', 'q8'], ['q8', 'b', 'q8'], ['q8', 'c', 'q8'],
              ['q8', 'd', 'q9'], ['q9', 'd', 'q9'],
              ['q9', 'a', 'q8'], ['q9', 'b', 'q8']);
-  steps.push(b.draw('Adicionamos miolo livre (q8) e estado "d" (q9). Sufixo reinicia se mismatch.', 1));
+  steps.push(b.draw('Adicionamos miolo livre (q8) e estado "d-sufixo" (q9). Sufixo reinicia se mismatch.', 1));
   steps.push(b.test('"abcdadcba" tem um "a" no miolo (laço q8) e fecha o sufixo. Aceita!', 'abcdadcba', 1));
   steps.push(b.formalIntro('Grafo completo! Agora vamos à Descrição Formal.', 1));
   return steps;
@@ -35,9 +35,9 @@ export default { id: 44, label: "L44", formula: "L = {w ∈ {a,b,c,d}* / w tem a
         '"abcd" ✗ (falta sufixo). "dcba" ✗ (falta prefixo). 10 estados.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '10 Estados: Prefixo + Sufixo', dialog: [
-        'Prefixo: q0—a→q1—b→q2—c→q3—d→q4. q4 loop d e mismatches para q8.',
-        'Sufixo: q4—c→q5—b→q6—a→q7(f). Mismatches → q8/q9.',
-        'q8=miolo(abc), q9=miolo(d). q9—c→q5 reinicia o sufixo.',
+        'Prefixo: q0—a→q1—b→q2—c→q3—d→q4. q4 recebe "abc" → q8 (mismatch).',
+        'Sufixo: q4—d→q9—c→q5—b→q6—a→q7(f). Mismatches → q8/q9.',
+        'q8=miolo(abc), q9=rastreia "d" no sufixo. q9—c→q5 reinicia o sufixo.',
       ] },
     },
     boardWords: ['abcddcba', 'abcd', 'abcdadcba'],

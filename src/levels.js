@@ -20,7 +20,7 @@ export const LEVEL_DIFFICULTY = {
   36:'easy', 37:'easy', 38:'medium',39:'hard', 40:'hard',
   41:'hard', 42:'medium',43:'medium',44:'medium',45:'hard',
   46:'hard', 47:'hard', 48:'hard', 49:'medium',50:'hard',
-  51:'hard', 52:'hard', 53:'medium',54:'hard', 55:'impossible',
+  51:'hard', 52:'hard', 53:'medium',54:'hard', 55:'hard',
   56:'trabalho', 57:'trabalho', 58:'trabalho',
   59:'prova', 60:'prova', 61:'prova',
 };

@@ -3,8 +3,8 @@ import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL54() {
   const b = makeBuilder(LEVEL_GRAPHS[54], {
-    ppp: [10, 50], ipp: [30, 20], pip: [30, 80], ppi: [50, 50],
-    iip: [70, 20], ipi: [70, 80], pii: [90, 50], iii: [50, 10],
+    ppp: [16, 50], ipp: [33, 22], pip: [33, 78], ppi: [50, 50],
+    iip: [66, 22], ipi: [66, 78], pii: [82, 50], iii: [50, 14],
   });
   const steps = [];
   b.addNodes('ppp').addEdges();

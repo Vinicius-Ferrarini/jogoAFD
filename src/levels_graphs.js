@@ -734,29 +734,38 @@ const _MANUAL = {
       { from: 'q4', to: 'q2', symbol: 'a,b,d' }
     ]
   },
-  44: { // L44: L = {w | prefixo 'abcd' e sufixo 'dcba'}
+  44: { // L44: L = {w | prefixo 'abcd' e sufixo 'dcba'} — sobrescrito por JFLAP_GRAPHS[44]
     nodes: [
-      { id: 'q0', isInitial: true, isFinal: false },
+      { id: 'q0', isInitial: true,  isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
       { id: 'q2', isInitial: false, isFinal: false },
       { id: 'q3', isInitial: false, isFinal: false },
       { id: 'q4', isInitial: false, isFinal: false },
       { id: 'q5', isInitial: false, isFinal: false },
       { id: 'q6', isInitial: false, isFinal: false },
-      { id: 'q7', isInitial: false, isFinal: false },
-      { id: 'q8', isInitial: false, isFinal: true }
+      { id: 'q7', isInitial: false, isFinal: true  },
+      { id: 'q8', isInitial: false, isFinal: false },
+      { id: 'q9', isInitial: false, isFinal: false },
     ],
     transitions: [
       { from: 'q0', to: 'q1', symbol: 'a' },
       { from: 'q1', to: 'q2', symbol: 'b' },
       { from: 'q2', to: 'q3', symbol: 'c' },
       { from: 'q3', to: 'q4', symbol: 'd' },
-      { from: 'q4', to: 'q4', symbol: 'a,b,c' },
-      { from: 'q4', to: 'q5', symbol: 'd' },
-      { from: 'q5', to: 'q6', symbol: 'c' },
-      { from: 'q5', to: 'q5', symbol: 'd' },
-      { from: 'q6', to: 'q7', symbol: 'b' },
-      { from: 'q7', to: 'q8', symbol: 'a' }
+      { from: 'q4', to: 'q9', symbol: 'd' },
+      { from: 'q4', to: 'q8', symbol: 'a, b, c' },
+      { from: 'q5', to: 'q6', symbol: 'b' },
+      { from: 'q5', to: 'q8', symbol: 'a, c, d' },
+      { from: 'q6', to: 'q7', symbol: 'a' },
+      { from: 'q6', to: 'q8', symbol: 'b, c' },
+      { from: 'q6', to: 'q9', symbol: 'd' },
+      { from: 'q7', to: 'q8', symbol: 'a, b, c' },
+      { from: 'q7', to: 'q9', symbol: 'd' },
+      { from: 'q8', to: 'q8', symbol: 'a, b, c' },
+      { from: 'q8', to: 'q9', symbol: 'd' },
+      { from: 'q9', to: 'q5', symbol: 'c' },
+      { from: 'q9', to: 'q9', symbol: 'd' },
+      { from: 'q9', to: 'q8', symbol: 'a, b' },
     ]
   },
   45: { // L45: L = {w | pref 'abcd', sub 'cccc', suf 'dcba'}
