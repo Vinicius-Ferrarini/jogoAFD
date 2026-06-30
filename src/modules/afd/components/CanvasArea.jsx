@@ -57,6 +57,8 @@ export default function CanvasArea({
   // ── Drag de seta estilo JFLAP ─────────────────────────────────────────────
   const [arrowDrag, setArrowDrag] = useState(null); // { srcUid, x1, y1, x2, y2 }
   const arrowDragRef = useRef(null);
+  const arrowDragStartRef = useRef(null); // { x, y } posição inicial do pointerDown
+  const prevConnectingSourceRef = useRef(null); // connectingSource antes do pointerDown atual
   const [arrowTargetUid, setArrowTargetUid] = useState(null);
   const arrowTargetUidRef = useRef(null);
 
@@ -122,6 +124,12 @@ export default function CanvasArea({
       return;
     }
 
+    if (interactionMode === 'CONNECTING') {
+      // Clique no canvas vazio cancela a seleção de fonte
+      setConnectingSource(null);
+      return;
+    }
+
     if (interactionMode === 'IDLE' && e.button === 0) {
       const { x, y } = pxFromEvent(e, innerRef);
       setSelectionBox({ startX: x, startY: y, currentX: x, currentY: y });
@@ -163,8 +171,10 @@ export default function CanvasArea({
     if (interactionMode === 'CONNECTING') {
       const srcNode = nodes.find(n => n.uid === uid);
       if (!srcNode) return;
+      prevConnectingSourceRef.current = connectingSource;
       const drag = { srcUid: uid, x1: srcNode.x, y1: srcNode.y, x2: srcNode.x, y2: srcNode.y };
       arrowDragRef.current = drag;
+      arrowDragStartRef.current = { x: srcNode.x, y: srcNode.y };
       setArrowDrag({ ...drag });
       setConnectingSource(uid);
       return;
@@ -183,6 +193,67 @@ export default function CanvasArea({
       e.target.setPointerCapture(e.pointerId);
     }
   }, [isDrawingUnlocked, interactionMode, connectingSource, selectedNodes, nodes, transitions, recordHistory, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Pointer up no nó: trata clique simples e loop no modo CONNECTING ───────
+  const handlePointerUpNode = useCallback((e, uid) => {
+    if (!isDrawingUnlocked || interactionMode !== 'CONNECTING') return;
+    if (!arrowDragRef.current) return;
+
+    const start = arrowDragStartRef.current;
+    const cur = arrowDragRef.current;
+    const dist = start ? Math.hypot(cur.x2 - start.x, cur.y2 - start.y) : 0;
+    const isDrag = dist > 8;
+
+    // Se foi drag real, deixa o handlePointerUp do canvas resolver
+    if (isDrag) return;
+
+    // Clique simples (sem arraste): cancelar o drag visual e redirecionar para o canvas não processar
+    e.stopPropagation();
+    arrowDragRef.current = null;
+    arrowDragStartRef.current = null;
+    arrowTargetUidRef.current = null;
+    setArrowDrag(null);
+    setArrowTargetUid(null);
+
+    // prevConnectingSourceRef tem o connectingSource de ANTES deste pointerDown
+    const prevSrc = prevConnectingSourceRef.current;
+
+    if (!prevSrc) {
+      // Primeiro clique: nó já foi selecionado como fonte no pointerDown (connectingSource = uid)
+      // Não faz mais nada — o highlight de selected-source já aparece
+    } else if (prevSrc === uid) {
+      // Segundo clique no mesmo nó: cria loop
+      setConnectingSource(null);
+      const srcNode = nodes.find(n => n.uid === uid);
+      if (srcNode) {
+        const exists = transitions.some(t => t.from === srcNode.id && t.to === srcNode.id);
+        if (exists) {
+          showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
+        } else {
+          const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: srcNode.id }];
+          setTransitions(newTrans);
+          recordHistory(nodes, newTrans);
+          squashNextHistoryRef.current = true;
+        }
+      }
+    } else {
+      // Segundo clique em nó diferente: cria seta de prevSrc → uid
+      setConnectingSource(null);
+      const srcNode = nodes.find(n => n.uid === prevSrc);
+      const tgtNode = nodes.find(n => n.uid === uid);
+      if (srcNode && tgtNode) {
+        const exists = transitions.some(t => t.from === srcNode.id && t.to === tgtNode.id);
+        if (exists) {
+          showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
+        } else {
+          const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
+          setTransitions(newTrans);
+          recordHistory(nodes, newTrans);
+          squashNextHistoryRef.current = true;
+        }
+      }
+    }
+  }, [isDrawingUnlocked, interactionMode, nodes, transitions, recordHistory]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer: move ─────────────────────────────────────────────────────────
   const handlePointerMove = useCallback((e) => {
@@ -254,28 +325,39 @@ export default function CanvasArea({
 
     // Drag de seta: cria transição se houver alvo, senão cancela
     if (arrowDragRef.current) {
+      const start = arrowDragStartRef.current;
+      const cur = arrowDragRef.current;
+      const dist = start ? Math.hypot(cur.x2 - start.x, cur.y2 - start.y) : 0;
+      const isDrag = dist > 8;
+
       const srcUid = arrowDragRef.current.srcUid;
       const tgtUid = arrowTargetUidRef.current;
       arrowDragRef.current = null;
+      arrowDragStartRef.current = null;
       arrowTargetUidRef.current = null;
       setArrowDrag(null);
       setArrowTargetUid(null);
-      setConnectingSource(null);
-      if (tgtUid) {
-        const srcNode = nodes.find(n => n.uid === srcUid);
-        const tgtNode = nodes.find(n => n.uid === tgtUid);
-        if (srcNode && tgtNode) {
-          const exists = transitions.some(t => t.from === srcNode.id && t.to === tgtNode.id);
-          if (exists) {
-            showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
-          } else {
-            const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
-            setTransitions(newTrans);
-            recordHistory(nodes, newTrans);
-            squashNextHistoryRef.current = true;
+
+      if (isDrag) {
+        // Drag real que terminou no canvas vazio: cancela tudo
+        setConnectingSource(null);
+        if (tgtUid) {
+          const srcNode = nodes.find(n => n.uid === srcUid);
+          const tgtNode = nodes.find(n => n.uid === tgtUid);
+          if (srcNode && tgtNode) {
+            const exists = transitions.some(t => t.from === srcNode.id && t.to === tgtNode.id);
+            if (exists) {
+              showToast('Seta já existe! Clique na seta para adicionar um símbolo.', 'info');
+            } else {
+              const newTrans = [...transitions, { from: srcNode.id, symbol: '', to: tgtNode.id }];
+              setTransitions(newTrans);
+              recordHistory(nodes, newTrans);
+              squashNextHistoryRef.current = true;
+            }
           }
         }
       }
+      // Se não foi drag (clique simples), handlePointerUpNode já tratou — não faz nada aqui
       return;
     }
 
@@ -583,7 +665,8 @@ export default function CanvasArea({
                     data-uid={node.uid}
                     className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${highlightedError===node.id?'error-pulse-severe':''} ${simCls} ${arrowTargetUid===node.uid?'arrow-target':''}`}
                     style={{ top:`${node.y}px`, left:`${node.x}px` }}
-                    onPointerDown={e => handlePointerDownNode(e, node.uid)}>
+                    onPointerDown={e => handlePointerDownNode(e, node.uid)}
+                    onPointerUp={e => handlePointerUpNode(e, node.uid)}>
                     <input
                       type="text"
                       className="node-id-input"
