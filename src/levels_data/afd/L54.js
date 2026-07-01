@@ -2,35 +2,44 @@ import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
 function buildLessonL54() {
+  // q0=ppp(ini), q1=ipp, q2=pip, q3=ppi, q4=pii, q5=ipi, q6=iip, q7=iii(final)
   const b = makeBuilder(LEVEL_GRAPHS[54], {
-    ppp: [16, 50], ipp: [33, 22], pip: [33, 78], ppi: [50, 50],
-    iip: [66, 22], ipi: [66, 78], pii: [82, 50], iii: [50, 14],
+    q0: [12, 15], q1: [30,  4], q2: [38, 15], q3: [30, 26],
+    q4: [56, 26], q5: [48, 15], q6: [56,  4], q7: [70, 15],
   });
   const steps = [];
-  b.addNodes('ppp').addEdges();
-  steps.push(b.draw('ppp = "a,b,c todos PAR" (0 ocorrências é par). É o inicial, mas não final.', -1));
-  steps.push(b.reject('λ tem 0 de cada letra (par,par,par): fica em ppp, que não é final. Rejeita!', '', 0));
-  b.addNodes('ipp').addEdges(['ppp', 'a', 'ipp'], ['ipp', 'a', 'ppp']);
-  steps.push(b.draw('Cada "a" alterna a paridade de a: ppp↔ipp (i=ímpar, p=par).', 1));
-  steps.push(b.reject('"a" só muda a paridade de a: ppp→ipp (ímpar,par,par), não final. Rejeita!', 'a', 1));
-  b.addNodes('pip', 'iip').addEdges(['ppp', 'b', 'pip'], ['pip', 'b', 'ppp'], ['ipp', 'b', 'iip'], ['iip', 'b', 'ipp']);
-  steps.push(b.draw('"b" alterna a paridade do meio: cada estado ganha uma aresta b para seu par.', 1));
-  steps.push(b.reject('"ab": ppp→ipp→iip (ímpar,ímpar,par) ainda falta o c ímpar. Rejeita!', 'ab', 1));
-  b.addNodes('ppi', 'ipi', 'pii', 'iii').addEdges(
-    ['ppp', 'c', 'ppi'], ['ppi', 'c', 'ppp'],
-    ['ipp', 'c', 'ipi'], ['ipi', 'c', 'ipp'],
-    ['pip', 'c', 'pii'], ['pii', 'c', 'pip'],
-    ['iip', 'c', 'iii'], ['iii', 'c', 'iip'],
+  b.addNodes('q0').addEdges();
+  steps.push(b.draw('q0 = ppp: "a,b,c todos PAR" (0 ocorrências é par). É o inicial, mas não final.', -1));
+  steps.push(b.reject('λ tem 0 de cada letra (par,par,par): fica em q0, que não é final. Rejeita!', '', 0));
+  b.addNodes('q1').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q0']);
+  steps.push(b.draw('Cada "a" alterna a paridade de a: q0↔q1 (ppp↔ipp).', 1));
+  steps.push(b.reject('"a" vai de q0→q1 (ímpar,par,par), mas q1 não é final. Rejeita!', 'a', 1));
+  b.addNodes('q2', 'q6').addEdges(
+    ['q0', 'b', 'q2'], ['q2', 'b', 'q0'],
+    ['q1', 'b', 'q6'], ['q6', 'b', 'q1'],
   );
-  steps.push(b.draw('"c" alterna a paridade final: completa o cubo. Só "iii" (tudo ímpar) é final.', 1));
-  steps.push(b.test('"abc": ppp→ipp→iip→iii (ímpar,ímpar,ímpar) é final! Aceita!', 'abc', 1));
-  steps.push(b.test('"abccc": dois "c" extras voltam e saem de iii de novo, fecha em iii. Aceita!', 'abccc', 1));
-  steps.push(b.test('"aaabccc": os "a" extras passam por ipp/ppp antes do "bc", mas fecha em iii. Aceita!', 'aaabccc', 1));
-  steps.push(b.formalIntro('Cubo completo: 8 estados (paridade de a,b,c), 1 final. Agora a Descrição Formal.', 1));
+  steps.push(b.draw('"b" alterna a paridade do meio: q0↔q2 (ppp↔pip), q1↔q6 (ipp↔iip).', 1));
+  steps.push(b.reject('"ab": q0→q1→q6 (iip: ímpar,ímpar,par) ainda falta o c ímpar. Rejeita!', 'ab', 1));
+  b.addNodes('q3', 'q5', 'q4', 'q7').addEdges(
+    ['q0', 'c', 'q3'], ['q3', 'c', 'q0'],
+    ['q1', 'c', 'q5'], ['q5', 'c', 'q1'],
+    ['q2', 'c', 'q4'], ['q4', 'c', 'q2'],
+    ['q6', 'c', 'q7'], ['q7', 'c', 'q6'],
+    ['q3', 'a', 'q5'], ['q5', 'a', 'q3'],
+    ['q2', 'a', 'q6'], ['q6', 'a', 'q2'],
+    ['q4', 'a', 'q7'], ['q7', 'a', 'q4'],
+    ['q3', 'b', 'q4'], ['q4', 'b', 'q3'],
+    ['q5', 'b', 'q7'], ['q7', 'b', 'q5'],
+  );
+  steps.push(b.draw('"c" alterna a paridade final: cubo completo. Só q7=iii (tudo ímpar) é final.', 1));
+  steps.push(b.test('"abc": q0→q1→q6→q7 (iii, tudo ímpar) é final! Aceita!', 'abc', 1));
+  steps.push(b.test('"abccc": dois "c" extras saem e voltam a q7. Aceita!', 'abccc', 1));
+  steps.push(b.test('"aaabccc": "a" extras passam por q1/q0 antes, mas fecha em q7. Aceita!', 'aaabccc', 1));
+  steps.push(b.formalIntro('Cubo completo: 8 estados (paridade de a,b,c), 1 final (q7). Agora a Descrição Formal.', 1));
   return steps;
 }
 
-export default { id: 54, label: "L54", formula: "L = {w ∈ {a,b,c}* / |w|a, |w|b e |w|c são todos ímpares}",          desc: "",                                                                 shortestWord: "abc",      alphabet: ['a', 'b', 'c'],        acceptedWords: ["abc","abccc","aaabccc","cba"], rejectedWords: ["","a","ab","aabbcc"],  hint: "Pense num cubo: cada vértice é uma combinação de paridades (par/ímpar) de a, b e c. Só o vértice 'tudo ímpar' é final.",  successMsg: "Cubo de paridade dominado!",
+export default { id: 54, label: "L54", formula: "L = {w ∈ {a,b,c}* / |w|a, |w|b e |w|c são todos ímpares}", desc: "", shortestWord: "abc", alphabet: ['a', 'b', 'c'], acceptedWords: ["abc","abccc","aaabccc","cba"], rejectedWords: ["","a","ab","aabbcc"], hint: "Pense num cubo: cada vértice é uma combinação de paridades (par/ímpar) de a, b e c. Só o vértice 'tudo ímpar' (q7) é final.", successMsg: "Cubo de paridade dominado!",
     validate: (w) => {
       const count = (ch) => (w.match(new RegExp(ch, 'g')) || []).length;
       return count('a') % 2 === 1 && count('b') % 2 === 1 && count('c') % 2 === 1;
@@ -43,8 +52,8 @@ export default { id: 54, label: "L54", formula: "L = {w ∈ {a,b,c}* / |w|a, |w|
       ] },
       onDrawGraph: { type: 'mechanic', title: '8 Estados: o Cubo de Paridades', dialog: [
         'Cada letra lida (a, b ou c) alterna SÓ a paridade daquela letra, virando para o vértice vizinho do cubo.',
-        'ppp (tudo par) é o inicial. iii (tudo ímpar) é o único final.',
-        '"abc": ppp—a→ipp—b→iip—c→iii(final) ✓. Qualquer ordem de a,b,c uma vez cada chega em iii.',
+        'q0=ppp (tudo par, inicial). q7=iii (tudo ímpar, único final).',
+        '"abc": q0—a→q1—b→q6—c→q7(final) ✓. Qualquer ordem de a,b,c uma vez cada chega em q7.',
       ] },
     },
     boardWords: ['abc', 'aabbcc', 'ab', 'cba'],

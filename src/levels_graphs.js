@@ -965,30 +965,31 @@ const _MANUAL = {
       { from: 'q1', to: 'q0', symbol: 'c' }
     ]
   },
-  54: { // L54: L = {w ∈ {a,b,c}* | |w|a, |w|b, |w|c todos ímpares} — cubo de paridade, único final: iii
+  54: { // L54: L = {w ∈ {a,b,c}* | |w|a, |w|b, |w|c todos ímpares} — cubo de paridade, único final: q7
+    // q0=ppp(ini), q1=ipp, q2=pip, q3=ppi, q4=pii, q5=ipi, q6=iip, q7=iii(final)
     nodes: [
-      { id: 'ppp', isInitial: true,  isFinal: false },
-      { id: 'ipp', isInitial: false, isFinal: false },
-      { id: 'pip', isInitial: false, isFinal: false },
-      { id: 'iip', isInitial: false, isFinal: false },
-      { id: 'ppi', isInitial: false, isFinal: false },
-      { id: 'ipi', isInitial: false, isFinal: false },
-      { id: 'pii', isInitial: false, isFinal: false },
-      { id: 'iii', isInitial: false, isFinal: true  }
+      { id: 'q0', x: 91,  y: 274, isInitial: true,  isFinal: false },
+      { id: 'q1', x: 248, y: 84,  isInitial: false,  isFinal: false },
+      { id: 'q2', x: 345, y: 279, isInitial: false,  isFinal: false },
+      { id: 'q3', x: 229, y: 466, isInitial: false,  isFinal: false },
+      { id: 'q4', x: 621, y: 472, isInitial: false,  isFinal: false },
+      { id: 'q5', x: 551, y: 281, isInitial: false,  isFinal: false },
+      { id: 'q6', x: 640, y: 85,  isInitial: false,  isFinal: false },
+      { id: 'q7', x: 768, y: 279, isInitial: false,  isFinal: true  }
     ],
     transitions: [
-      { from: 'ppp', to: 'ipp', symbol: 'a' }, { from: 'ipp', to: 'ppp', symbol: 'a' },
-      { from: 'pip', to: 'iip', symbol: 'a' }, { from: 'iip', to: 'pip', symbol: 'a' },
-      { from: 'ppi', to: 'ipi', symbol: 'a' }, { from: 'ipi', to: 'ppi', symbol: 'a' },
-      { from: 'pii', to: 'iii', symbol: 'a' }, { from: 'iii', to: 'pii', symbol: 'a' },
-      { from: 'ppp', to: 'pip', symbol: 'b' }, { from: 'pip', to: 'ppp', symbol: 'b' },
-      { from: 'ipp', to: 'iip', symbol: 'b' }, { from: 'iip', to: 'ipp', symbol: 'b' },
-      { from: 'ppi', to: 'pii', symbol: 'b' }, { from: 'pii', to: 'ppi', symbol: 'b' },
-      { from: 'ipi', to: 'iii', symbol: 'b' }, { from: 'iii', to: 'ipi', symbol: 'b' },
-      { from: 'ppp', to: 'ppi', symbol: 'c' }, { from: 'ppi', to: 'ppp', symbol: 'c' },
-      { from: 'ipp', to: 'ipi', symbol: 'c' }, { from: 'ipi', to: 'ipp', symbol: 'c' },
-      { from: 'pip', to: 'pii', symbol: 'c' }, { from: 'pii', to: 'pip', symbol: 'c' },
-      { from: 'iip', to: 'iii', symbol: 'c' }, { from: 'iii', to: 'iip', symbol: 'c' }
+      { from: 'q0', to: 'q1', symbol: 'a' }, { from: 'q1', to: 'q0', symbol: 'a' },
+      { from: 'q2', to: 'q6', symbol: 'a' }, { from: 'q6', to: 'q2', symbol: 'a' },
+      { from: 'q3', to: 'q5', symbol: 'a' }, { from: 'q5', to: 'q3', symbol: 'a' },
+      { from: 'q4', to: 'q7', symbol: 'a' }, { from: 'q7', to: 'q4', symbol: 'a' },
+      { from: 'q0', to: 'q2', symbol: 'b' }, { from: 'q2', to: 'q0', symbol: 'b' },
+      { from: 'q1', to: 'q6', symbol: 'b' }, { from: 'q6', to: 'q1', symbol: 'b' },
+      { from: 'q3', to: 'q4', symbol: 'b' }, { from: 'q4', to: 'q3', symbol: 'b' },
+      { from: 'q5', to: 'q7', symbol: 'b' }, { from: 'q7', to: 'q5', symbol: 'b' },
+      { from: 'q0', to: 'q3', symbol: 'c' }, { from: 'q3', to: 'q0', symbol: 'c' },
+      { from: 'q1', to: 'q5', symbol: 'c' }, { from: 'q5', to: 'q1', symbol: 'c' },
+      { from: 'q2', to: 'q4', symbol: 'c' }, { from: 'q4', to: 'q2', symbol: 'c' },
+      { from: 'q6', to: 'q7', symbol: 'c' }, { from: 'q7', to: 'q6', symbol: 'c' }
     ]
   },
   56: { // L56 "trabalho": a^(n+3) (bc+cb)(ddd)^m aba e^p a(bc)^q | n,m,p≥0, q>0 — DFA determinístico

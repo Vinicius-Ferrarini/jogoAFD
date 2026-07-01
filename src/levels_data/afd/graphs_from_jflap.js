@@ -752,7 +752,7 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q2', symbol: 'a, b, d' }
     ],
   },
-  // L44 ← L44.xml (XML has q4→q5(c) causing false positive; suffix "dcba" starts with d not c)
+  // L44 ← L44.xml
   44: {
     nodes: [
       { id: 'q0', x: 53, y: 202, isInitial: true, isFinal: false },
@@ -767,24 +767,25 @@ export const JFLAP_GRAPHS = {
       { id: 'q9', x: 728, y: 326, isInitial: false, isFinal: false }
     ],
     transitions: [
-      { from: 'q3', to: 'q4', symbol: 'd' },
       { from: 'q0', to: 'q1', symbol: 'a' },
       { from: 'q1', to: 'q2', symbol: 'b' },
-      { from: 'q8', to: 'q8', symbol: 'a, b, c' },
-      { from: 'q7', to: 'q8', symbol: 'a, b, c' },
-      { from: 'q4', to: 'q9', symbol: 'd' },
       { from: 'q2', to: 'q3', symbol: 'c' },
-      { from: 'q4', to: 'q8', symbol: 'a, b, c' },
-      { from: 'q9', to: 'q9', symbol: 'd' },
-      { from: 'q8', to: 'q9', symbol: 'd' },
-      { from: 'q7', to: 'q9', symbol: 'd' },
-      { from: 'q9', to: 'q8', symbol: 'a, b' },
+      { from: 'q3', to: 'q4', symbol: 'd' },
+      { from: 'q4', to: 'q4', symbol: 'd' },
+      { from: 'q4', to: 'q5', symbol: 'c' },
+      { from: 'q4', to: 'q8', symbol: 'a, b' },
       { from: 'q5', to: 'q6', symbol: 'b' },
       { from: 'q5', to: 'q8', symbol: 'a, c, d' },
-      { from: 'q6', to: 'q9', symbol: 'd' },
+      { from: 'q6', to: 'q7', symbol: 'a' },
       { from: 'q6', to: 'q8', symbol: 'b, c' },
+      { from: 'q6', to: 'q9', symbol: 'd' },
+      { from: 'q7', to: 'q8', symbol: 'a, b, c' },
+      { from: 'q7', to: 'q9', symbol: 'd' },
+      { from: 'q8', to: 'q8', symbol: 'a, b, c' },
+      { from: 'q8', to: 'q9', symbol: 'd' },
       { from: 'q9', to: 'q5', symbol: 'c' },
-      { from: 'q6', to: 'q7', symbol: 'a' }
+      { from: 'q9', to: 'q8', symbol: 'a, b' },
+      { from: 'q9', to: 'q9', symbol: 'd' }
     ],
   },
   // L45 ← L45.xml
@@ -1031,6 +1032,43 @@ export const JFLAP_GRAPHS = {
       { from: 'q0', to: 'q1', symbol: 'b' },
       { from: 'q1', to: 'q0', symbol: 'c' },
       { from: 'q0', to: 'q0', symbol: 'a, c' }
+    ],
+  },
+  // L55 ← L55.xml — [ab]*[cd]*[ef]*, todos 6 com qtd par; q0,q4,q11=finais
+  55: {
+    nodes: [
+      { id: 'q0',  x: 59,  y: 220, isInitial: true,  isFinal: true  },
+      { id: 'q1',  x: 71,  y: 13,  isInitial: false,  isFinal: false },
+      { id: 'q2',  x: 239, y: 13,  isInitial: false,  isFinal: false },
+      { id: 'q3',  x: 229, y: 124, isInitial: false,  isFinal: false },
+      { id: 'q4',  x: 361, y: 342, isInitial: false,  isFinal: true  },
+      { id: 'q5',  x: 359, y: 194, isInitial: false,  isFinal: false },
+      { id: 'q6',  x: 546, y: 343, isInitial: false,  isFinal: false },
+      { id: 'q7',  x: 555, y: 200, isInitial: false,  isFinal: false },
+      { id: 'q8',  x: 271, y: 425, isInitial: false,  isFinal: false },
+      { id: 'q9',  x: 485, y: 451, isInitial: false,  isFinal: false },
+      { id: 'q10', x: 278, y: 586, isInitial: false,  isFinal: false },
+      { id: 'q11', x: 487, y: 588, isInitial: false,  isFinal: true  }
+    ],
+    transitions: [
+      { from: 'q9',  to: 'q11', symbol: 'e' }, { from: 'q11', to: 'q9',  symbol: 'e' },
+      { from: 'q0',  to: 'q6',  symbol: 'd' },
+      { from: 'q6',  to: 'q7',  symbol: 'c' }, { from: 'q7',  to: 'q6',  symbol: 'c' },
+      { from: 'q10', to: 'q8',  symbol: 'e' }, { from: 'q8',  to: 'q10', symbol: 'e' },
+      { from: 'q3',  to: 'q0',  symbol: 'b' }, { from: 'q0',  to: 'q3',  symbol: 'b' },
+      { from: 'q0',  to: 'q5',  symbol: 'c' },
+      { from: 'q4',  to: 'q9',  symbol: 'f' },
+      { from: 'q5',  to: 'q7',  symbol: 'd' }, { from: 'q7',  to: 'q5',  symbol: 'd' },
+      { from: 'q0',  to: 'q1',  symbol: 'a' }, { from: 'q1',  to: 'q0',  symbol: 'a' },
+      { from: 'q0',  to: 'q10', symbol: 'f' },
+      { from: 'q1',  to: 'q2',  symbol: 'b' }, { from: 'q2',  to: 'q1',  symbol: 'b' },
+      { from: 'q6',  to: 'q4',  symbol: 'd' }, { from: 'q4',  to: 'q6',  symbol: 'd' },
+      { from: 'q10', to: 'q11', symbol: 'f' }, { from: 'q11', to: 'q10', symbol: 'f' },
+      { from: 'q8',  to: 'q9',  symbol: 'f' }, { from: 'q9',  to: 'q8',  symbol: 'f' },
+      { from: 'q2',  to: 'q3',  symbol: 'a' }, { from: 'q3',  to: 'q2',  symbol: 'a' },
+      { from: 'q4',  to: 'q10', symbol: 'e' },
+      { from: 'q0',  to: 'q9',  symbol: 'e' },
+      { from: 'q4',  to: 'q5',  symbol: 'c' }, { from: 'q5',  to: 'q4',  symbol: 'c' }
     ],
   }
 };
