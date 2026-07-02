@@ -546,7 +546,9 @@ body { color: var(--text-main); }
 }
 
 .transition-chip-input {
-  width: 30px;
+  min-width: 2ch;
+  width: 2ch; /* sobrescrito inline pelo React com largura dinâmica */
+  box-sizing: content-box;
   border: 2px solid #7c3aed;
   border-radius: 4px;
   font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;

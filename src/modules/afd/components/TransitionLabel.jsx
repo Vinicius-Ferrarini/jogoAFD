@@ -57,6 +57,9 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
     setInputVal(symList[chipIdx]);
   };
 
+  // Largura dinâmica: cresce com o conteúdo (mínimo 2ch, 1ch por caractere extra)
+  const inputWidth = `${Math.max(2, inputVal.length + 0.5)}ch`;
+
   return (
     <div
       className={`transition-label${interactionMode === 'ERASE' ? ' erasable-target' : ''}${selectedSymbolCard ? ' clickable action-target' : ''}${isError ? ' error-pulse-severe' : ''}${className ? ' ' + className : ''}`}
@@ -69,7 +72,8 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
             <input key={i} ref={inputRef} className="transition-chip-input"
               value={inputVal} onChange={e => setInputVal(e.target.value)}
               onBlur={commitEdit} onKeyDown={handleKeyDown}
-              onClick={e => e.stopPropagation()} maxLength={4}
+              onClick={e => e.stopPropagation()}
+              style={{ width: inputWidth }}
               autoComplete="off" spellCheck={false} />
           ) : (
             <span key={i} className="transition-chip" onClick={e => handleChipClick(e, i)}>{sym}</span>
@@ -79,7 +83,8 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
           <input ref={inputRef} className="transition-chip-input"
             value={inputVal} onChange={e => setInputVal(e.target.value)}
             onBlur={commitAdd} onKeyDown={handleKeyDown}
-            onClick={e => e.stopPropagation()} maxLength={4}
+            onClick={e => e.stopPropagation()}
+            style={{ width: inputWidth }}
             autoComplete="off" spellCheck={false} />
         ) : symList.length === 0 ? (
           <span className="transition-chip empty">?</span>

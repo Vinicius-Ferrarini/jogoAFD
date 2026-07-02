@@ -385,7 +385,12 @@ export default function CanvasArea({
     }
 
     if (dragInfo.isDragging) {
-      recordHistory(nodes, transitions);
+      // Só grava histórico se algum nó realmente mudou de posição
+      const moved = dragInfo.initialNodes.some(init => {
+        const cur = nodes.find(n => n.uid === init.uid);
+        return cur && (Math.abs(cur.x - init.x) > 1 || Math.abs(cur.y - init.y) > 1);
+      });
+      if (moved) recordHistory(nodes, transitions);
       setDragInfo({ isDragging: false, initialNodes: [], startX: 0, startY: 0 });
     }
 
