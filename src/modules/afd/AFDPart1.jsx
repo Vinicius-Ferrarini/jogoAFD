@@ -26,7 +26,7 @@ const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6
 // animação: cada quadro marca o estado ativo, a última letra consumida e o tipo
 // de destaque ('ok' = rastreando/amarelo, 'done' = aceitou/verde, 'error' =
 // travou ou parou em não-final/vermelho).
-function traceWord(nodes, transitions, word) {
+export function traceWord(nodes, transitions, word) {
   const initial = (nodes ?? []).find(n => n.isInitial);
   if (!initial) return [];
   const frames = [{ nodeId: initial.id, type: 'ok', letter: -1 }];

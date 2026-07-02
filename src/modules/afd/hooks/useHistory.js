@@ -9,6 +9,50 @@
 // para disparar re-renders nos componentes que verificam disabled de undo/redo.
 import { useState, useRef, useCallback } from 'react';
 
+// ─── Lógica pura da pilha (testável sem React) ────────────────────────────────
+export function createHistoryStack() {
+  const stack = [];
+  let idx = -1;
+
+  const record = (nodes, transitions, squash = false) => {
+    const snap = {
+      nodes:       JSON.parse(JSON.stringify(nodes)),
+      transitions: JSON.parse(JSON.stringify(transitions)),
+    };
+    if (squash && idx >= 0) {
+      stack[idx] = snap;
+    } else {
+      stack.splice(idx + 1);
+      stack.push(snap);
+      idx = stack.length - 1;
+    }
+    return { idx, len: stack.length };
+  };
+
+  const undo = () => {
+    if (idx <= 0) return null;
+    idx -= 1;
+    return stack[idx];
+  };
+
+  const redo = () => {
+    if (idx >= stack.length - 1) return null;
+    idx += 1;
+    return stack[idx];
+  };
+
+  const reset = (nodes, transitions) => {
+    stack.length = 0;
+    stack.push({ nodes, transitions });
+    idx = 0;
+    return { idx, len: 1 };
+  };
+
+  const state = () => ({ idx, len: stack.length });
+
+  return { record, undo, redo, reset, state };
+}
+
 export default function useHistory({ setNodes, setTransitions, showToast }) {
   const stackRef = useRef([]);  // snapshots: [{ nodes, transitions }]
   const idxRef   = useRef(-1);  // cursor na pilha

@@ -9,6 +9,80 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { fuzzDFA } from '../utils/dfaFuzzer';
 
+// ─── Validação pura (sem React, testável) ─────────────────────────────────────
+// Retorna { ok: true } ou { ok: false, reason: string }
+// reason: 'no_initial' | 'no_final' | 'empty_symbol' | 'invalid_symbol' |
+//         'nondeterministic' | 'word_mismatch' | 'language_mismatch'
+export function validateAFDPure({ nodes, transitions, testWords = [], currentLevel = null }) {
+  if (!nodes.some(n => n.isInitial))
+    return { ok: false, reason: 'no_initial' };
+
+  if (!nodes.some(n => n.isFinal))
+    return { ok: false, reason: 'no_final' };
+
+  if (transitions.some(t => t.symbol === ''))
+    return { ok: false, reason: 'empty_symbol' };
+
+  for (const node of nodes) {
+    const allSyms = transitions
+      .filter(t => t.from === node.id)
+      .flatMap(t => t.symbol.split(',').map(s => s.trim()).filter(Boolean));
+    if (allSyms.length !== new Set(allSyms).size)
+      return { ok: false, reason: 'nondeterministic' };
+  }
+
+  const alphabetSet = new Set(currentLevel?.alphabet || []);
+  if (alphabetSet.size > 0) {
+    for (const t of transitions) {
+      for (const sym of t.symbol.split(',').map(s => s.trim()).filter(Boolean)) {
+        if (!alphabetSet.has(sym))
+          return { ok: false, reason: 'invalid_symbol' };
+      }
+    }
+  }
+
+  const simulateDFA = (word) => {
+    let cur = nodes.find(n => n.isInitial)?.id;
+    if (!cur) return false;
+    const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
+    for (const ch of w) {
+      const tr = transitions.find(t => t.from === cur && t.symbol.split(',').map(s => s.trim()).includes(ch));
+      if (!tr) return false;
+      cur = tr.to;
+    }
+    return !!nodes.find(n => n.id === cur)?.isFinal;
+  };
+
+  for (const tw of testWords) {
+    const accepted     = simulateDFA(tw.word);
+    const shouldAccept = tw.status === 'shortest' || tw.status === 'correct';
+    if (accepted !== shouldAccept)
+      return { ok: false, reason: 'word_mismatch', word: tw.word, shouldAccept };
+  }
+
+  if (currentLevel?.regex || typeof currentLevel?.validate === 'function') {
+    const lvlFn = (w) => {
+      if (typeof currentLevel.validate === 'function') return currentLevel.validate(w);
+      return currentLevel.regex?.test(w) ?? false;
+    };
+    const ce = fuzzDFA(currentLevel.alphabet, lvlFn, simulateDFA);
+    if (ce !== null)
+      return { ok: false, reason: 'language_mismatch', counterexample: ce };
+  }
+
+  return { ok: true };
+}
+
+// ─── mergeSymbols: merge de símbolos numa transição (puro, testável) ──────────
+// Recebe a string atual da transição e uma string de entrada (pode conter vírgulas).
+// Retorna a nova string com símbolos únicos, ou null se não houve alteração.
+export function mergeSymbols(currentSymbol, incoming) {
+  const existing = (currentSymbol || '').split(',').map(s => s.trim()).filter(Boolean);
+  const toAdd = incoming.split(',').map(s => s.trim()).filter(s => s && !existing.includes(s));
+  if (toAdd.length === 0) return null;
+  return [...existing, ...toAdd].join(',');
+}
+
 // Aceita palavra contra regex ou função validate do nível.
 export function lvlAccepts(level, word) {
   if (typeof level.validate === 'function') return level.validate(word);
@@ -179,7 +253,12 @@ export default function useAFDGraph({
       return;
     }
 
-    // Salva renomeação
+    // Salva renomeação (só se o label realmente mudou)
+    if (trimmed === oldId) {
+      setEditingNodeLabel(null);
+      return;
+    }
+
     const newNodes = nodes.map(n => n.uid === uid ? { ...n, label: trimmed, id: trimmed } : n);
 
     // Atualiza transições que apontam para/de este nó
@@ -198,9 +277,9 @@ export default function useAFDGraph({
   // ── Handlers de transição (chips inline) ─────────────────────────────────
   const handleAddSymbol = useCallback((idx, sym) => {
     const newTrans = [...transitions];
-    const existing = newTrans[idx].symbol.split(',').map(s => s.trim()).filter(Boolean);
-    if (!existing.includes(sym)) {
-      newTrans[idx] = { ...newTrans[idx], symbol: [...existing, sym].join(',') };
+    const merged = mergeSymbols(newTrans[idx].symbol, sym);
+    if (merged !== null) {
+      newTrans[idx] = { ...newTrans[idx], symbol: merged };
       setTransitions(newTrans);
       const squash = squashNextHistoryRef.current;
       squashNextHistoryRef.current = false;
@@ -226,10 +305,9 @@ export default function useAFDGraph({
   const handleAppendCardToTransition = useCallback((idx) => {
     if (!selectedSymbolCard) return;
     const newTrans = [...transitions];
-    const existing = newTrans[idx].symbol.split(',').map(s => s.trim()).filter(Boolean);
-    const sym = selectedSymbolCard;
-    if (!existing.includes(sym)) {
-      newTrans[idx] = { ...newTrans[idx], symbol: [...existing, sym].join(',') };
+    const merged = mergeSymbols(newTrans[idx].symbol, selectedSymbolCard);
+    if (merged !== null) {
+      newTrans[idx] = { ...newTrans[idx], symbol: merged };
       setTransitions(newTrans);
       const squash = squashNextHistoryRef.current;
       squashNextHistoryRef.current = false;
