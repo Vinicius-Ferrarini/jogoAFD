@@ -752,19 +752,21 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q2', symbol: 'a, b, d' }
     ],
   },
-  // L44 ← L44.xml
+  // L44 ← L44.xml: L = {w ∈ {a,b,c,d}* | prefixo abcd e sufixo cba}
+  // q0-q3: prefixo a,b,c,d | q4: miolo(d loop) | q5: leu c | q6: leu cb | q7: leu cba (final)
+  // q8: miolo sem sufixo iniciado | q9: leu d após q8
   44: {
     nodes: [
-      { id: 'q0', x: 53, y: 202, isInitial: true, isFinal: false },
-      { id: 'q1', x: 155, y: 202, isInitial: false, isFinal: false },
-      { id: 'q2', x: 267, y: 207, isInitial: false, isFinal: false },
-      { id: 'q3', x: 351, y: 210, isInitial: false, isFinal: false },
-      { id: 'q4', x: 469, y: 214, isInitial: false, isFinal: false },
-      { id: 'q5', x: 616, y: 146, isInitial: false, isFinal: false },
-      { id: 'q6', x: 761, y: 95, isInitial: false, isFinal: false },
-      { id: 'q7', x: 849, y: 146, isInitial: false, isFinal: true },
-      { id: 'q8', x: 537, y: 309, isInitial: false, isFinal: false },
-      { id: 'q9', x: 728, y: 326, isInitial: false, isFinal: false }
+      { id: 'q0', x: 53,  y: 202, isInitial: true,  isFinal: false },
+      { id: 'q1', x: 155, y: 202, isInitial: false,  isFinal: false },
+      { id: 'q2', x: 267, y: 207, isInitial: false,  isFinal: false },
+      { id: 'q3', x: 351, y: 210, isInitial: false,  isFinal: false },
+      { id: 'q4', x: 469, y: 214, isInitial: false,  isFinal: false },
+      { id: 'q5', x: 616, y: 146, isInitial: false,  isFinal: false },
+      { id: 'q6', x: 761, y: 95,  isInitial: false,  isFinal: false },
+      { id: 'q7', x: 849, y: 146, isInitial: false,  isFinal: true  },
+      { id: 'q8', x: 537, y: 309, isInitial: false,  isFinal: false },
+      { id: 'q9', x: 728, y: 326, isInitial: false,  isFinal: false },
     ],
     transitions: [
       { from: 'q0', to: 'q1', symbol: 'a' },
@@ -773,19 +775,19 @@ export const JFLAP_GRAPHS = {
       { from: 'q3', to: 'q4', symbol: 'd' },
       { from: 'q4', to: 'q4', symbol: 'd' },
       { from: 'q4', to: 'q5', symbol: 'c' },
-      { from: 'q4', to: 'q8', symbol: 'a, b' },
+      { from: 'q4', to: 'q8', symbol: 'a,b' },
       { from: 'q5', to: 'q6', symbol: 'b' },
-      { from: 'q5', to: 'q8', symbol: 'a, c, d' },
+      { from: 'q5', to: 'q8', symbol: 'a,c,d' },
       { from: 'q6', to: 'q7', symbol: 'a' },
-      { from: 'q6', to: 'q8', symbol: 'b, c' },
+      { from: 'q6', to: 'q8', symbol: 'b,c' },
       { from: 'q6', to: 'q9', symbol: 'd' },
-      { from: 'q7', to: 'q8', symbol: 'a, b, c' },
+      { from: 'q7', to: 'q8', symbol: 'a,b,c' },
       { from: 'q7', to: 'q9', symbol: 'd' },
-      { from: 'q8', to: 'q8', symbol: 'a, b, c' },
+      { from: 'q8', to: 'q8', symbol: 'a,b,c' },
       { from: 'q8', to: 'q9', symbol: 'd' },
+      { from: 'q9', to: 'q8', symbol: 'a,b' },
       { from: 'q9', to: 'q5', symbol: 'c' },
-      { from: 'q9', to: 'q8', symbol: 'a, b' },
-      { from: 'q9', to: 'q9', symbol: 'd' }
+      { from: 'q9', to: 'q9', symbol: 'd' },
     ],
   },
   // L45 ← L45.xml

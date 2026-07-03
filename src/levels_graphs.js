@@ -734,7 +734,8 @@ const _MANUAL = {
       { from: 'q4', to: 'q2', symbol: 'a,b,d' }
     ]
   },
-  44: { // L44: L = {w | prefixo 'abcd' e sufixo 'dcba'} — sobrescrito por JFLAP_GRAPHS[44]
+  44: { // L44: L = {w ∈ {a,b,c,d}* | w tem abcd como prefixo e dcba como sufixo}
+    // q0-q3: prefixo a-b-c-d; q4: miolo; q5: leu d; q6: leu dc; q7: leu dcb; q8: leu dcba (final); q9: morto
     nodes: [
       { id: 'q0', isInitial: true,  isFinal: false },
       { id: 'q1', isInitial: false, isFinal: false },
@@ -743,29 +744,40 @@ const _MANUAL = {
       { id: 'q4', isInitial: false, isFinal: false },
       { id: 'q5', isInitial: false, isFinal: false },
       { id: 'q6', isInitial: false, isFinal: false },
-      { id: 'q7', isInitial: false, isFinal: true  },
-      { id: 'q8', isInitial: false, isFinal: false },
+      { id: 'q7', isInitial: false, isFinal: false },
+      { id: 'q8', isInitial: false, isFinal: true  },
       { id: 'q9', isInitial: false, isFinal: false },
     ],
     transitions: [
+      // Prefixo: abcd
       { from: 'q0', to: 'q1', symbol: 'a' },
+      { from: 'q0', to: 'q9', symbol: 'b,c,d' },
       { from: 'q1', to: 'q2', symbol: 'b' },
+      { from: 'q1', to: 'q9', symbol: 'a,c,d' },
       { from: 'q2', to: 'q3', symbol: 'c' },
+      { from: 'q2', to: 'q9', symbol: 'a,b,d' },
       { from: 'q3', to: 'q4', symbol: 'd' },
-      { from: 'q4', to: 'q9', symbol: 'd' },
-      { from: 'q4', to: 'q8', symbol: 'a, b, c' },
-      { from: 'q5', to: 'q6', symbol: 'b' },
-      { from: 'q5', to: 'q8', symbol: 'a, c, d' },
-      { from: 'q6', to: 'q7', symbol: 'a' },
-      { from: 'q6', to: 'q8', symbol: 'b, c' },
-      { from: 'q6', to: 'q9', symbol: 'd' },
-      { from: 'q7', to: 'q8', symbol: 'a, b, c' },
-      { from: 'q7', to: 'q9', symbol: 'd' },
-      { from: 'q8', to: 'q8', symbol: 'a, b, c' },
-      { from: 'q8', to: 'q9', symbol: 'd' },
-      { from: 'q9', to: 'q5', symbol: 'c' },
-      { from: 'q9', to: 'q9', symbol: 'd' },
-      { from: 'q9', to: 'q8', symbol: 'a, b' },
+      { from: 'q3', to: 'q9', symbol: 'a,b,c' },
+      // Miolo: qualquer coisa, mas d inicia tentativa de sufixo
+      { from: 'q4', to: 'q4', symbol: 'a,b,c' },
+      { from: 'q4', to: 'q5', symbol: 'd' },
+      // q5: leu d — c avança sufixo, d recome‍ça, a/b voltam ao miolo
+      { from: 'q5', to: 'q6', symbol: 'c' },
+      { from: 'q5', to: 'q5', symbol: 'd' },
+      { from: 'q5', to: 'q4', symbol: 'a,b' },
+      // q6: leu dc — b avança sufixo, c reinicia dc, d reinicia d, a volta miolo
+      { from: 'q6', to: 'q7', symbol: 'b' },
+      { from: 'q6', to: 'q6', symbol: 'c' },
+      { from: 'q6', to: 'q5', symbol: 'd' },
+      { from: 'q6', to: 'q4', symbol: 'a' },
+      // q7: leu dcb — a completa dcba (final), d reinicia d, b/c voltam miolo
+      { from: 'q7', to: 'q8', symbol: 'a' },
+      { from: 'q7', to: 'q5', symbol: 'd' },
+      { from: 'q7', to: 'q4', symbol: 'b,c' },
+      // q8: final — nada pode vir depois (vai para morto)
+      { from: 'q8', to: 'q9', symbol: 'a,b,c,d' },
+      // q9: morto — absorve tudo
+      { from: 'q9', to: 'q9', symbol: 'a,b,c,d' },
     ]
   },
   45: { // L45: L = {w | pref 'abcd', sub 'cccc', suf 'dcba'}
