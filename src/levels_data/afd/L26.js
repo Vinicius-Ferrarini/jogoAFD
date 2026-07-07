@@ -21,7 +21,7 @@ function buildLessonL26() {
   return steps;
 }
 
-export default { id: 26, layout: LAYOUT, label: "L26", formula: "L = {w ∈ {0,1}* / w tem tamanho maior que 3}",                     desc: "",                                                                 shortestWord: "0000",     regex: /^[01]{4,}$/,                                                alphabet: ['0', '1'],             acceptedWords: ["0000","1111","01010"],    rejectedWords: ["λ","0","000"],         hint: "Passe pelos primeiros três estados sem aceitar, depois aceite tudo.",                                                successMsg: "Tamanho mínimo garantido.",
+export default { id: 26, layout: LAYOUT, label: "L26", formula: "L = {w ∈ {0,1}* / w tem tamanho maior que 3}", aliases: ["L = {w ∈ {0,1}* / |w| > 3}", "L = {w ∈ {0,1}* / |w| >= 4}", "L = {w ∈ {0,1}* / |w| maior que 3}", "L = {w ∈ {0,1}* / |w| maior igual a 4}"],                     desc: "",                                                                 shortestWord: "0000",     regex: /^[01]{4,}$/,                                                alphabet: ['0', '1'],             acceptedWords: ["0000","1111","01010"],    rejectedWords: ["λ","0","000"],         hint: "Passe pelos primeiros três estados sem aceitar, depois aceite tudo.",                                                successMsg: "Tamanho mínimo garantido.",
     tutorials: {
       onStart: { type: 'theory', title: 'Tamanho MAIOR que 3!', dialog: [
         'L26: aceitar palavras com 4 ou MAIS símbolos. Rejeitar qualquer coisa menor.',

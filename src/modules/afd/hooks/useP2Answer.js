@@ -18,6 +18,22 @@ function normalize(s) {
     .replace(/∅|\\emptyset|vazio|empty/gi, 'emptyset')
     .replace(/[≥]/g, '>=')
     .replace(/[≤]/g, '<=');
+
+  // Normalize word-length phrases to a canonical "wlen>N" form before pipe-splitting.
+  // Step 1 — "tamanho maior que N" / "w tem tamanho > N" (no |w| notation); string already lowercase
+  r = r.replace(/(?:w)?(?:tem)?tamanho(?:maior(igual)?(?:a+|que)?|>(=)?)?(?:que|a+)?(\d+)/g, (_, igt, gte, n) => {
+    const num = parseInt(n, 10);
+    return `wlen>${(igt || gte) ? num - 1 : num}`;
+  });
+  // Step 2 — protect |w| (word-length notation) from being confused with the set-builder "|"
+  r = r.replace(/\|w\|/g, 'wlen');
+  // Step 3 — strip noise between wlen and comparison: "wlen tem tamanho >3" → "wlen>3"
+  r = r.replace(/wlen(?:tem)?(?:tamanho)?/g, 'wlen');
+  // Step 4 — "wlen maior que N" / "wlen maior igual a N"
+  r = r.replace(/wlenmaiorque(\d+)/g, (_, n) => `wlen>${n}`);
+  r = r.replace(/wlenmaiorigual(?:que|a+)?(\d+)/g, (_, n) => `wlen>${parseInt(n, 10) - 1}`);
+  // Step 5 — "wlen >= N" is equivalent to "wlen > N-1" for integers
+  r = r.replace(/wlen>=(\d+)/g, (_, n) => `wlen>${parseInt(n, 10) - 1}`);
   const absorbed = new Set();
   r = r.replace(/([a-z])\1\^([a-z]+?)(?=[^a-z]|[a-z]\^|$)/g, (_, ch, v) => { absorbed.add(v); return `${ch}^${v}`; });
   for (const v of absorbed)
@@ -29,7 +45,7 @@ function normalize(s) {
     let wPart = r.slice(0, pipePos);
     let cPart = r.slice(pipePos + 1);
     const varSet = new Set();
-    for (const [, v] of cPart.matchAll(/([a-z]+)(?=[><=])/g)) varSet.add(v);
+    for (const [, v] of cPart.matchAll(/([a-z]+)(?=[><=])/g)) if (v !== 'wlen') varSet.add(v);
     const order = [...varSet].sort((a, b) => {
       const ia = wPart.indexOf(`^${a}`);
       const ib = wPart.indexOf(`^${b}`);
