@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL36() {
-  const b = makeBuilder(LEVEL_GRAPHS[36], {
+const LAYOUT = {
     q0: [8, 24], q1: [24, 8], q2: [40, 8], q3: [56, 16], q4: [72, 24],
-  });
+  };
+
+function buildLessonL36() {
+  const b = makeBuilder(LEVEL_GRAPHS[36], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
    .addEdges(['q0', 'd', 'q1'], ['q1', 'c', 'q2'], ['q2', 'b', 'q3'], ['q3', 'a', 'q4']);
@@ -23,7 +25,7 @@ function buildLessonL36() {
   return steps;
 }
 
-export default { id: 36, label: "L36", formula: "L = {w ∈ {a,b,c,d}* / w tem dcba como sufixo}",                   desc: "",                                                                 shortestWord: "dcba",     regex: /^[abcd]*dcba$/,                                             alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dcba","adcba","ddcba"],  rejectedWords: ["λ","dcb","abcd"],      hint: "Concentre-se nos últimos 4 símbolos: eles precisam ser exatamente 'd','c','b','a'.",                                successMsg: "Sufixo detectado!",
+export default { id: 36, layout: LAYOUT, label: "L36", formula: "L = {w ∈ {a,b,c,d}* / w tem dcba como sufixo}",                   desc: "",                                                                 shortestWord: "dcba",     regex: /^[abcd]*dcba$/,                                             alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dcba","adcba","ddcba"],  rejectedWords: ["λ","dcb","abcd"],      hint: "Concentre-se nos últimos 4 símbolos: eles precisam ser exatamente 'd','c','b','a'.",                                successMsg: "Sufixo detectado!",
     tutorials: {
       onStart: { type: 'theory', title: 'Sufixo Obrigatório: "dcba"!', dialog: [
         'L36: toda palavra aceita DEVE terminar com "dcba". O prefixo pode ser qualquer coisa.',

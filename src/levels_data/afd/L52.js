@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL52() {
-  const b = makeBuilder(LEVEL_GRAPHS[52], {
+const LAYOUT = {
     q0: [10, 10], q1: [26, 10], q2: [42, 5], q3: [58, 10], q4: [58, 26], q5: [74, 10], q6: [74, 26],
-  });
+  };
+
+function buildLessonL52() {
+  const b = makeBuilder(LEVEL_GRAPHS[52], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q2'], ['q2', 'a', 'q1']);
   steps.push(b.draw('Vai-e-volta de "a": q1 (ímpar-a), q2 (par-a). Começa com n > 0 "a"s.', -1));
@@ -19,7 +21,7 @@ function buildLessonL52() {
   return steps;
 }
 
-export default { id: 52, label: "L52", formula: "L = {a^n b^m c^p / n > 0, m é impar e p é par}",                   desc: "",                                                                 shortestWord: "ab",       regex: /^a+(bb)*b(cc)*(cc)*$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["ab","aab","aabcc"],       rejectedWords: ["a","ba","abc"],         hint: "a-s, depois b-pares opcionais e um b extra, depois c-pares.",                                                       successMsg: "Paridade correlacionada dominada.",
+export default { id: 52, layout: LAYOUT, label: "L52", formula: "L = {a^n b^m c^p / n > 0, m é impar e p é par}",                   desc: "",                                                                 shortestWord: "ab",       regex: /^a+(bb)*b(cc)*(cc)*$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["ab","aab","aabcc"],       rejectedWords: ["a","ba","abc"],         hint: "a-s, depois b-pares opcionais e um b extra, depois c-pares.",                                                       successMsg: "Paridade correlacionada dominada.",
     tutorials: {
       onStart: { type: 'theory', title: 'a+ (bb)* b (cc)*!', dialog: [
         'L52: a^n(bb)^m b c^(2p). a-s positivos, b-pares opcionais, um b extra, c-pares opcionais.',

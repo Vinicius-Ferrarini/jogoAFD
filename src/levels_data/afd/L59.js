@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL59() {
-  const b = makeBuilder(LEVEL_GRAPHS[59], {
+const LAYOUT = {
     q0:[10, 18], q1:[25, 12], q2:[40, 6], q3:[60, 9], q4:[70, 18],
-  });
+  };
+
+function buildLessonL59() {
+  const b = makeBuilder(LEVEL_GRAPHS[59], LAYOUT);
   const steps = [];
   b.addNodes('q0','q1','q2','q3','q4')
    .addEdges(['q0','b','q1'],['q1','b','q2'],['q2','c','q3'],['q3','d','q4']);
@@ -21,7 +23,7 @@ function buildLessonL59() {
   return steps;
 }
 
-export default { id: 59, label: "L59", formula: "L = { a^n b^2m c^p d^q | n,m,p,q ≥ 0 }", desc: "(prova)", shortestWord: "", regex: /^a*(bb)*c*d*$/, alphabet: ['a', 'b', 'c', 'd'], acceptedWords: ["a","bb","abbc","bbdd",""], rejectedWords: ["b","bbb","abbcdb","cba"], hint: "Ordem fixa: a's, depois b's (em quantidade PAR), depois c's, depois d's. Um número ímpar de 'b' rejeita.", successMsg: "Prova L59 resolvida!",
+export default { id: 59, layout: LAYOUT, label: "L59", formula: "L = { a^n b^2m c^p d^q | n,m,p,q ≥ 0 }", desc: "(prova)", shortestWord: "", regex: /^a*(bb)*c*d*$/, alphabet: ['a', 'b', 'c', 'd'], acceptedWords: ["a","bb","abbc","bbdd",""], rejectedWords: ["b","bbb","abbcdb","cba"], hint: "Ordem fixa: a's, depois b's (em quantidade PAR), depois c's, depois d's. Um número ímpar de 'b' rejeita.", successMsg: "Prova L59 resolvida!",
     boardWords: ['bbcd', 'bbb', 'aabbccdd', 'bbbb'],
     guidedLesson: buildLessonL59(),
   };

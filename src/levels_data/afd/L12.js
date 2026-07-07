@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL12() {
-  const b = makeBuilder(LEVEL_GRAPHS[12], {
+const LAYOUT = {
     q0: [4, 15], q1: [24, 15], q2: [44, 15], q3: [64, 15],
-  });
+  };
+
+function buildLessonL12() {
+  const b = makeBuilder(LEVEL_GRAPHS[12], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'b', 'q3']);
@@ -21,7 +23,7 @@ function buildLessonL12() {
   return steps;
 }
 
-export default { id: 12, label: "L12", formula: "L = {a^n b^2m / n > 0, m > 0}",                                    desc: "",                                                                 shortestWord: "abb",      regex: /^a+(bb)+$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["abb","aabb","abbbb"],      rejectedWords: ["a","ab","bb"],         hint: "Os 'b's só podem vir em duplas após pelo menos um 'a'.",                                                            successMsg: "Duplas de B controladas.",
+export default { id: 12, layout: LAYOUT, label: "L12", formula: "L = {a^n b^2m / n > 0, m > 0}",                                    desc: "",                                                                 shortestWord: "abb",      regex: /^a+(bb)+$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["abb","aabb","abbbb"],      rejectedWords: ["a","ab","bb"],         hint: "Os 'b's só podem vir em duplas após pelo menos um 'a'.",                                                            successMsg: "Duplas de B controladas.",
     tutorials: {
       onStart: { type: 'theory', title: 'Armadilha Natural dos "b"s Ímpares!', dialog: [
         'b^2m com m > 0: pelo menos UM par de "b"s, nunca um "b" avulso.',

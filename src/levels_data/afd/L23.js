@@ -1,8 +1,10 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
+const LAYOUT = { q0: [24, 15], q1: [68, 15] };
+
 function buildLessonL23() {
-  const b = makeBuilder(LEVEL_GRAPHS[23], { q0: [24, 15], q1: [68, 15] });
+  const b = makeBuilder(LEVEL_GRAPHS[23], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', '1', 'q1']);
   steps.push(b.draw('Menor palavra "1" (termina em 1): q0—1→q1 (final).', -1));
@@ -19,7 +21,7 @@ function buildLessonL23() {
   return steps;
 }
 
-export default { id: 23, label: "L23", formula: "L = {w ∈ {0,1}* / w é um número impar}",
+export default { id: 23, layout: LAYOUT, label: "L23", formula: "L = {w ∈ {0,1}* / w é um número impar}",
     aliases: [
       "L = { w ∈ {0,1}* | w é ímpar }",
       "L = { w ∈ {0,1}* | w termina em 1 }",

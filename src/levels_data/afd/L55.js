@@ -1,13 +1,15 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL55() {
-  // q0=ini+final, q1-q3=seção ab, q4=final cd, q5-q7=seção cd, q8-q9=ef(q4), q10-q11=ef(q0)
-  const b = makeBuilder(LEVEL_GRAPHS[55], {
+const LAYOUT = {
     q0:  [ 8, 12], q1:  [8,  3], q2:  [34,  3], q3:  [34,  8],
     q6:  [54, 18], q7:  [54, 13], q4:  [83, 18], q5:  [83, 11],
     q8:  [25, 22], q9:  [50, 22], q10: [25, 28], q11: [50, 28],
-  });
+  };
+
+function buildLessonL55() {
+  // q0=ini+final, q1-q3=seção ab, q4=final cd, q5-q7=seção cd, q8-q9=ef(q4), q10-q11=ef(q0)
+  const b = makeBuilder(LEVEL_GRAPHS[55], LAYOUT);
   const steps = [];
   b.addNodes('q0').addEdges();
   steps.push(b.draw('3 seções em ordem: [ab]* → [cd]* → [ef]*. Todos os 6 com qtd par!', -1));
@@ -49,7 +51,7 @@ function buildLessonL55() {
   return steps;
 }
 
-export default { id: 55, label: "L55", formula: "L = { wxy | w∈{a,b}*, x∈{c,d}*, y∈{e,f}* e cada símbolo tem qtd par }", desc: "", shortestWord: "", validate: (w) => { if (!/^([ab]*)([cd]*)([ef]*)$/.test(w)) return false; const counts = ['a','b','c','d','e','f'].map(ch => (w.match(new RegExp(ch,'g'))||[]).length); return counts.every(c => c%2===0); }, fuzzMaxLen: 0, alphabet: ['a','b','c','d','e','f'], acceptedWords: ['','aabb','ccdd','aabbccdd','abba'], rejectedWords: ['a','abccdd','ac','ba','c','aabbcde'], hint: "Três seções em ordem! [ab]* depois [cd]* depois [ef]*. Cada par de letras com paridade independente. O AFD completo tem mais de 80 estados!", successMsg: "Mestre das seis paridades!",
+export default { id: 55, layout: LAYOUT, label: "L55", formula: "L = { wxy | w∈{a,b}*, x∈{c,d}*, y∈{e,f}* e cada símbolo tem qtd par }", desc: "", shortestWord: "", validate: (w) => { if (!/^([ab]*)([cd]*)([ef]*)$/.test(w)) return false; const counts = ['a','b','c','d','e','f'].map(ch => (w.match(new RegExp(ch,'g'))||[]).length); return counts.every(c => c%2===0); }, fuzzMaxLen: 0, alphabet: ['a','b','c','d','e','f'], acceptedWords: ['','aabb','ccdd','aabbccdd','abba'], rejectedWords: ['a','abccdd','ac','ba','c','aabbcde'], hint: "Três seções em ordem! [ab]* depois [cd]* depois [ef]*. Cada par de letras com paridade independente. O AFD completo tem mais de 80 estados!", successMsg: "Mestre das seis paridades!",
     tutorials: {
       onStart: { type: 'theory', title: '6 Letras, 3 Seções, Paridade Total!', dialog: [
         'L55: forma [ab]*[cd]*[ef]* com TODAS as 6 contagens pares.',

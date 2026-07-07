@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL24() {
-  const b = makeBuilder(LEVEL_GRAPHS[24], {
+const LAYOUT = {
     q0: [4, 15], q1: [24, 15], q2: [44, 15], q3: [64, 15],
-  });
+  };
+
+function buildLessonL24() {
+  const b = makeBuilder(LEVEL_GRAPHS[24], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3')
    .addEdges(['q0', '0', 'q1'], ['q0', '1', 'q1'], ['q1', '0', 'q2'], ['q1', '1', 'q2'], ['q2', '0', 'q3'], ['q2', '1', 'q3']);
@@ -17,7 +19,7 @@ function buildLessonL24() {
   return steps;
 }
 
-export default { id: 24, label: "L24", formula: "L = {w ∈ {0,1}* / w tem tamanho 3}",                                desc: "",                                                                 shortestWord: "000",      regex: /^[01]{3}$/,                                                 alphabet: ['0', '1'],             acceptedWords: ["000","011","101"],         rejectedWords: ["λ","00","0000"],       hint: "Você precisa de um caminho reto que só aceita na terceira etapa.",                                                  successMsg: "Controle de tamanho exato.",
+export default { id: 24, layout: LAYOUT, label: "L24", formula: "L = {w ∈ {0,1}* / w tem tamanho 3}",                                desc: "",                                                                 shortestWord: "000",      regex: /^[01]{3}$/,                                                 alphabet: ['0', '1'],             acceptedWords: ["000","011","101"],         rejectedWords: ["λ","00","0000"],       hint: "Você precisa de um caminho reto que só aceita na terceira etapa.",                                                  successMsg: "Controle de tamanho exato.",
     tutorials: {
       onStart: { type: 'theory', title: 'Caminho de Comprimento Exato!', dialog: [
         'L24: aceitar APENAS palavras com exatamente 3 símbolos — nem mais, nem menos.',

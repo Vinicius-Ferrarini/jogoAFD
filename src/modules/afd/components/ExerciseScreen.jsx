@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { LEVEL_GRAPHS } from '../../../levels_graphs';
 import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../../levels';
 import { SvgStars } from '../SvgStar';
@@ -24,6 +24,38 @@ const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowe
 
 export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev }) {
   const graph = LEVEL_GRAPHS[level.id];
+
+  const fixedPositions = useMemo(() => {
+    if (!level.layout || !graph) return null;
+    const entries = Object.entries(level.layout);
+    if (entries.length !== graph.nodes.length) return null;
+
+    // Layout % was authored on a square canvas; scale uniformly so the graph
+    // keeps its proportions, then center inside the VW×VH viewport.
+    const xs = entries.map(([, v]) => v[0]);
+    const ys = entries.map(([, v]) => v[1]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const NR = 23; // node radius — same as GraphView default
+    const PAD = NR + 10;
+    const spanX = maxX - minX || 1;
+    const spanY = maxY - minY || 1;
+    const scaleX = (VW - 2 * PAD) / spanX;
+    const scaleY = (VH - 2 * PAD) / spanY;
+    const scale  = Math.min(scaleX, scaleY);
+    const drawnW = spanX * scale;
+    const drawnH = spanY * scale;
+    const offX   = (VW - drawnW) / 2 - minX * scale;
+    const offY   = (VH - drawnH) / 2 - minY * scale;
+
+    const pos = {};
+    graph.nodes.forEach(n => {
+      const ly = level.layout[n.id];
+      if (!ly) return;
+      pos[n.id] = { x: Math.round(ly[0] * scale + offX), y: Math.round(ly[1] * scale + offY) };
+    });
+    return Object.keys(pos).length === graph.nodes.length ? pos : null;
+  }, [level.layout, graph]);
 
   const {
     answer,
@@ -56,7 +88,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
     handleOverlayDown,
     handleOverlayMove,
     handleOverlayUp,
-  } = useDrawing();
+  } = useDrawing({ cssZoomCompensation: false });
 
   const [isDrawMode,   setIsDrawMode]   = useState(false);
   const [simWords,     setSimWords]     = useState([]);
@@ -248,6 +280,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
                 transitions={graph.transitions}
                 highlightNodeId={simHighlight.nodeId}
                 highlightType={simHighlight.type}
+                fixedPositions={fixedPositions}
               />
               {/* Drawing overlay */}
               <svg ref={overlayRef}

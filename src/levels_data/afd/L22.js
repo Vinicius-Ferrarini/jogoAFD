@@ -1,9 +1,11 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
+const LAYOUT = { q0: [24, 15], q1: [68, 15] };
+
 function buildLessonL22() {
   // JFLAP_GRAPHS[22]: q0=inicial não-final, q1=final. q0→q1(0), q1→q1(0), q0→q0(1), q1→q0(1)
-  const b = makeBuilder(LEVEL_GRAPHS[22], { q0: [24, 15], q1: [68, 15] });
+  const b = makeBuilder(LEVEL_GRAPHS[22], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', '0', 'q1'], ['q1', '0', 'q1']);
   steps.push(b.draw('Termina em "0": q0 (inicial) vai para q1 (final) ao ler "0". Laço de "0" em q1.', -1));
@@ -17,7 +19,7 @@ function buildLessonL22() {
   return steps;
 }
 
-export default { id: 22, label: "L22", formula: "L = {w ∈ {0,1}* / w é um número par}",
+export default { id: 22, layout: LAYOUT, label: "L22", formula: "L = {w ∈ {0,1}* / w é um número par}",
     aliases: [
       "L = { w ∈ {0,1}* | w é par }",
       "L = { w ∈ {0,1}* | w termina em 0 }",

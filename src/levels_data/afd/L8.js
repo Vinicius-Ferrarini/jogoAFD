@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
+const LAYOUT = {
+    q0: [4, 10], q1: [22, 10], q2: [40, 10], q3: [74, 10], q4: [58, 10],
+  };
+
 function buildLessonL8() {
   // JFLAP_GRAPHS[8]: q0→q1(a)→q2(b)→q4(c)→q3(a,final). Ciclo: q4→q2(b)→q4(c)
-  const b = makeBuilder(LEVEL_GRAPHS[8], {
-    q0: [4, 10], q1: [22, 10], q2: [40, 10], q3: [74, 10], q4: [58, 10],
-  });
+  const b = makeBuilder(LEVEL_GRAPHS[8], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q4', 'q3')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q4'], ['q4', 'a', 'q3']);
@@ -19,7 +21,7 @@ function buildLessonL8() {
   return steps;
 }
 
-export default { id: 8,  label: "L08", formula: "L = { a(bc)^n a | n > 0 }",                                          desc: "",                                                                 shortestWord: "abca",     regex: /^a(bc)+a$/,                                                 alphabet: ['a', 'b', 'c'],        acceptedWords: ["abca","abcbca"],           rejectedWords: ["aa","aca","abba"],     hint: "Começa com 'a', depois exige o ciclo exato 'bc', 'bc', e fecha com 'a'.",                                           successMsg: "Belo ciclo! A sequência foi respeitada.",
+export default { id: 8, layout: LAYOUT,  label: "L08", formula: "L = { a(bc)^n a | n > 0 }",                                          desc: "",                                                                 shortestWord: "abca",     regex: /^a(bc)+a$/,                                                 alphabet: ['a', 'b', 'c'],        acceptedWords: ["abca","abcbca"],           rejectedWords: ["aa","aca","abba"],     hint: "Começa com 'a', depois exige o ciclo exato 'bc', 'bc', e fecha com 'a'.",                                           successMsg: "Belo ciclo! A sequência foi respeitada.",
     tutorials: {
       onStart: { type: 'theory', title: 'Agrupamento Cíclico (bc)^n', dialog: [
         'Parênteses na notação! (bc)^n significa o GRUPO "bc" repetido n vezes, com n > 0.',

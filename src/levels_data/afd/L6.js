@@ -1,8 +1,10 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
+const LAYOUT = { q0: [28, 15], q1: [48, 15] };
+
 function buildLessonL6() {
-  const b = makeBuilder(LEVEL_GRAPHS[6], { q0: [28, 15], q1: [48, 15] });
+  const b = makeBuilder(LEVEL_GRAPHS[6], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
   steps.push(b.draw('Vamos construir o caminho da menor palavra ímpar: "a".', -1));
@@ -15,7 +17,7 @@ function buildLessonL6() {
   return steps;
 }
 
-export default { id: 6,  label: "L06", formula: "L = { a^n | n > 0 e n é ímpar }",                                    desc: "",                                                                 shortestWord: "a",        regex: /^a(aa)*$/,                                                  alphabet: ['a'],                  acceptedWords: ["a","aaa","aaaaa"],         rejectedWords: ["λ","aa","aaaa"],       hint: "Ímpar significa 1, 3, 5... Vai e volta entre dois estados!",                                                        successMsg: "Mecânica de paridade dominada!",
+export default { id: 6, layout: LAYOUT,  label: "L06", formula: "L = { a^n | n > 0 e n é ímpar }",                                    desc: "",                                                                 shortestWord: "a",        regex: /^a(aa)*$/,                                                  alphabet: ['a'],                  acceptedWords: ["a","aaa","aaaaa"],         rejectedWords: ["λ","aa","aaaa"],       hint: "Ímpar significa 1, 3, 5... Vai e volta entre dois estados!",                                                        successMsg: "Mecânica de paridade dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade: Ímpar vs Par', dialog: [
         'Novo conceito: PARIDADE! 🔢 Ímpar = 1,3,5... Par = 0,2,4...',

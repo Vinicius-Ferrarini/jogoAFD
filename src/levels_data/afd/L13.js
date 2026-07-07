@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL13() {
-  const b = makeBuilder(LEVEL_GRAPHS[13], {
+const LAYOUT = {
     q0: [4, 15], q1: [22, 15], q2: [40, 15], q3: [58, 15], q4: [74, 15],
-  });
+  };
+
+function buildLessonL13() {
+  const b = makeBuilder(LEVEL_GRAPHS[13], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4']);
@@ -21,7 +23,7 @@ function buildLessonL13() {
   return steps;
 }
 
-export default { id: 13, label: "L13", formula: "L = {(ab)^n (cd)^m / n > 0, m > 0}",                               desc: "",                                                                 shortestWord: "abcd",     regex: /^(ab)+(cd)+$/,                                              alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","ababcd","abcdcd"], rejectedWords: ["ab","cd","abdc"],      hint: "Blocos duplos de 'ab' seguidos por blocos duplos de 'cd'.",                                                        successMsg: "Padrão silábico validado!",
+export default { id: 13, layout: LAYOUT, label: "L13", formula: "L = {(ab)^n (cd)^m / n > 0, m > 0}",                               desc: "",                                                                 shortestWord: "abcd",     regex: /^(ab)+(cd)+$/,                                              alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","ababcd","abcdcd"], rejectedWords: ["ab","cd","abdc"],      hint: "Blocos duplos de 'ab' seguidos por blocos duplos de 'cd'.",                                                        successMsg: "Padrão silábico validado!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Ciclos em Série — Engrenagens!', dialog: [
         'Dois padrões cíclicos encadeados: (ab)^n depois (cd)^m, com n,m ≥ 1.',

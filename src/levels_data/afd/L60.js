@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL60() {
-  const b = makeBuilder(LEVEL_GRAPHS[60], {
+const LAYOUT = {
     q0:[5, 10], q1:[15, 10], q2:[30, 10], q3:[15, 20], q4:[30, 20],
     q5:[40, 10], q6:[55, 10], q7:[55, 20], q8:[40, 20], q9:[70, 15],
-  });
+  };
+
+function buildLessonL60() {
+  const b = makeBuilder(LEVEL_GRAPHS[60], LAYOUT);
   const steps = [];
   b.addNodes('q0','q1','q2','q4','q5','q6','q7','q9')
    .addEdges(['q0','a','q1'],['q1','b','q2'],['q2','c','q4'],['q4','a','q5'],
@@ -25,7 +27,7 @@ function buildLessonL60() {
   return steps;
 }
 
-export default { id: 60, label: "L60", formula: "L = { a w a x a | w,x ∈ {b,c}*, |w|b e |w|c ímpares, |x|b e |x|c ímpares }", desc: "(prova)", shortestWord: "abcabca",
+export default { id: 60, layout: LAYOUT, label: "L60", formula: "L = { a w a x a | w,x ∈ {b,c}*, |w|b e |w|c ímpares, |x|b e |x|c ímpares }", desc: "(prova)", shortestWord: "abcabca",
     validate: (s) => { const m = /^a([bc]*)a([bc]*)a$/.exec(s); if (!m) return false; const odd = (t) => (t.match(/b/g)||[]).length%2===1 && (t.match(/c/g)||[]).length%2===1; return odd(m[1]) && odd(m[2]); },
     alphabet: ['a', 'b', 'c'], acceptedWords: ["abcabca","abcacba","abbbcabca"], rejectedWords: ["abcaa","aabca","aba","abcabcaa"], hint: "Estrutura a·w·a·x·a (três 'a's, dois blocos de b/c). Em cada bloco a quantidade de 'b' E de 'c' precisa ser ÍMPAR. Menor palavra: 'abcabca'.", successMsg: "Prova L60 resolvida — paridade ímpar dupla!",
     boardWords: ['abcabca', 'acbabca', 'ababca', 'abcacba'],

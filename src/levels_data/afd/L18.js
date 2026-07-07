@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL18() {
-  const b = makeBuilder(LEVEL_GRAPHS[18], {
+const LAYOUT = {
     q0: [4, 15], q1: [24, 6], q2: [44, 15],
-  });
+  };
+
+function buildLessonL18() {
+  const b = makeBuilder(LEVEL_GRAPHS[18], LAYOUT);
   const steps = [];
   b.addNodes('q0').addEdges(['q0', 'b', 'q0']);
   steps.push(b.draw('λ e qualquer sequência de "b"s: q0 é inicial+final, com laço de "b".', -1));
@@ -20,7 +22,7 @@ function buildLessonL18() {
   return steps;
 }
 
-export default { id: 18, label: "L18", formula: "L = {w ∈ {a,b}* / w nunca tem mais de dois a's consecutivos}",     desc: "",                                                                 shortestWord: "",         regex: /^(b|ab|aab)*a{0,2}$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["λ","a","b","ab","ba"],     rejectedWords: ["aaa","aaab","baaa"],hint: "Dois 'a's seguidos são permitidos, mas três já não. 'b' reinicia a contagem.",                                      successMsg: "Controle de consecutivos!",
+export default { id: 18, layout: LAYOUT, label: "L18", formula: "L = {w ∈ {a,b}* / w nunca tem mais de dois a's consecutivos}",     desc: "",                                                                 shortestWord: "",         regex: /^(b|ab|aab)*a{0,2}$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["λ","a","b","ab","ba"],     rejectedWords: ["aaa","aaab","baaa"],hint: "Dois 'a's seguidos são permitidos, mas três já não. 'b' reinicia a contagem.",                                      successMsg: "Controle de consecutivos!",
     tutorials: {
       onStart: { type: 'theory', title: 'Máximo dois \'a\'s seguidos!', dialog: [
         'L18 aceita palavras que nunca tenham mais de dois "a"s consecutivos.',

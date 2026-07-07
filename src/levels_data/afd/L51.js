@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL51() {
-  const b = makeBuilder(LEVEL_GRAPHS[51], {
+const LAYOUT = {
     q0: [10, 14], q1: [22, 14], q2: [34, 14], q3: [44, 7], q4: [44, 22],
     q5: [56, 14], q6: [68, 14], q7: [78, 14], q8: [78, 26],
-  });
+  };
+
+function buildLessonL51() {
+  const b = makeBuilder(LEVEL_GRAPHS[51], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q5', 'q6', 'q7', 'q8')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q2'], ['q2', 'a', 'q3'], ['q3', 'b', 'q5'],
@@ -22,7 +24,7 @@ function buildLessonL51() {
   return steps;
 }
 
-export default { id: 51, label: "L51", formula: "L = {a^n a c^m (ab+ba) c a^2p / n >= 0, m > 0, p > 0}",            desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)c(aa)+$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
+export default { id: 51, layout: LAYOUT, label: "L51", formula: "L = {a^n a c^m (ab+ba) c a^2p / n >= 0, m > 0, p > 0}",            desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)c(aa)+$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
     tutorials: {
       onStart: { type: 'theory', title: 'a+ c+ (ab|ba) c (aa)+!', dialog: [
         'L51: a-s, c-s, depois "ab" OU "ba", depois c, depois pares de a (min 1 par).',

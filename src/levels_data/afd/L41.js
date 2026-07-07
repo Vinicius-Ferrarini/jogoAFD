@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL41() {
-  const b = makeBuilder(LEVEL_GRAPHS[41], {
+const LAYOUT = {
     q0: [10, 15], q1: [25, 15], q2: [42, 15], q3: [58, 8], q4: [75, 15],
     q5: [75, 26], q6: [55, 26], q7: [25, 26],
-  });
+  };
+
+function buildLessonL41() {
+  const b = makeBuilder(LEVEL_GRAPHS[41], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4', 'q5')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'd', 'q2'], ['q2', 'c', 'q3'], ['q3', 'b', 'q4'], ['q4', 'a', 'q5']);
@@ -20,7 +22,7 @@ function buildLessonL41() {
   return steps;
 }
 
-export default { id: 41, label: "L41", formula: "L = {a(dcb)^n a^m (bb)^p / n > 0, m > 0, p >= 0}",               desc: "",                                                                 shortestWord: "adcba",    regex: /^a(dcb)+a+(bb)*$/,                                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["adcba","adcbaa","adcbabb"], rejectedWords: ["a","adcb","dcba"],  hint: "Siga a receita passo a passo: a, ciclo dcb, a, b-pares.",                                                           successMsg: "Ciclo dominado.",
+export default { id: 41, layout: LAYOUT, label: "L41", formula: "L = {a(dcb)^n a^m (bb)^p / n > 0, m > 0, p >= 0}",               desc: "",                                                                 shortestWord: "adcba",    regex: /^a(dcb)+a+(bb)*$/,                                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["adcba","adcbaa","adcbabb"], rejectedWords: ["a","adcb","dcba"],  hint: "Siga a receita passo a passo: a, ciclo dcb, a, b-pares.",                                                           successMsg: "Ciclo dominado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Ciclo dcb: a + dcb+ + a+ + b-pares!', dialog: [
         'L41: "a", depois 1+ ciclos de "dcb", depois 1+ "a", depois b-pares opcionais.',

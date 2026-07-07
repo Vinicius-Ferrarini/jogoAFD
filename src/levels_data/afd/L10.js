@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL10() {
-  const b = makeBuilder(LEVEL_GRAPHS[10], {
+const LAYOUT = {
     q0: [24, 10], q1: [44, 10], q2: [64, 10], q3: [24, 20], q4: [64, 20],
-  });
+  };
+
+function buildLessonL10() {
+  const b = makeBuilder(LEVEL_GRAPHS[10], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2').addEdges(['q0', 'b', 'q1'], ['q1', 'b', 'q2']);
   steps.push(b.draw('Menor palavra "bb" (o núcleo fixo): q0—b→q1—b→q2 (final).', -1));
@@ -20,7 +22,7 @@ function buildLessonL10() {
   return steps;
 }
 
-export default { id: 10, label: "L10", formula: "L = {a^n b b a^m / n >= 0 é par, m >= 0 e m é par}",                 desc: "",                                                                 shortestWord: "bb",       regex: /^(aa)*bb(aa)*$/,                                            alphabet: ['a', 'b'],             acceptedWords: ["bb","aabb","bbaa"],        rejectedWords: ["abb","bba","b"],       hint: "Começa com 'a's pares (ou zero), o núcleo é 'bb', termina com 'a's pares.",                                        successMsg: "Núcleo isolado com sucesso!",
+export default { id: 10, layout: LAYOUT, label: "L10", formula: "L = {a^n b b a^m / n >= 0 é par, m >= 0 e m é par}",                 desc: "",                                                                 shortestWord: "bb",       regex: /^(aa)*bb(aa)*$/,                                            alphabet: ['a', 'b'],             acceptedWords: ["bb","aabb","bbaa"],        rejectedWords: ["abb","bba","b"],       hint: "Começa com 'a's pares (ou zero), o núcleo é 'bb', termina com 'a's pares.",                                        successMsg: "Núcleo isolado com sucesso!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Vai-e-Volta nos Flancos!', dialog: [
         'L10 tem um núcleo fixo "bb" cercado por a\'s em quantidade PAR.',

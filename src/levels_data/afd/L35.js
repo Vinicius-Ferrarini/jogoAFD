@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL35() {
-  const b = makeBuilder(LEVEL_GRAPHS[35], {
+const LAYOUT = {
     q0: [4, 15], q1: [20, 5], q2: [32, 5], q3: [48, 15], q4: [64, 20],
-  });
+  };
+
+function buildLessonL35() {
+  const b = makeBuilder(LEVEL_GRAPHS[35], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
    .addEdges(['q0', '1', 'q1'], ['q1', '1', 'q2'], ['q2', '1', 'q3'], ['q3', '1', 'q4']);
@@ -19,7 +21,7 @@ function buildLessonL35() {
   return steps;
 }
 
-export default { id: 35, label: "L35", formula: "L = {w ∈ {0,1}* / w tem 1111 como subpalavra}",                    desc: "",                                                                 shortestWord: "1111",     regex: /^[01]*1111[01]*/,                                           alphabet: ['0', '1'],             acceptedWords: ["1111","01111","11110"],   rejectedWords: ["λ","111","11011"],     hint: "Assim que achar quatro '1's seguidos, pode ir para um estado final que aceita tudo.",                               successMsg: "Achou a subpalavra!",
+export default { id: 35, layout: LAYOUT, label: "L35", formula: "L = {w ∈ {0,1}* / w tem 1111 como subpalavra}",                    desc: "",                                                                 shortestWord: "1111",     regex: /^[01]*1111[01]*/,                                           alphabet: ['0', '1'],             acceptedWords: ["1111","01111","11110"],   rejectedWords: ["λ","111","11011"],     hint: "Assim que achar quatro '1's seguidos, pode ir para um estado final que aceita tudo.",                               successMsg: "Achou a subpalavra!",
     tutorials: {
       onStart: { type: 'theory', title: 'Caçando "1111"!', dialog: [
         'L35: a palavra CONTÉM "1111" como subpalavra (em qualquer posição).',

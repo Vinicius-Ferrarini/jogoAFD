@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL45() {
-  const b = makeBuilder(LEVEL_GRAPHS[45], {
+const LAYOUT = {
     q0: [5, 12], q1: [12, 12], q2: [19, 12], q3: [26, 12], q4: [35, 12], q5: [45, 5], q6: [58, 5],
     q7: [62, 12], q8: [76, 12], q9: [80, 26], q10: [68, 19], q11: [50, 23], q12: [16, 26],
-  });
+  };
+
+function buildLessonL45() {
+  const b = makeBuilder(LEVEL_GRAPHS[45], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10', 'q11', 'q12')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4'],
@@ -29,7 +31,7 @@ function buildLessonL45() {
   return steps;
 }
 
-export default { id: 45, label: "L45", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo, cccc como subpalavra e dcba como sufixo}", desc: "",                                         shortestWord: "abcdccccdcba", regex: /^abcd[abcd]*cccc[abcd]*dcba$/,                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcdccccdcba","abcdaccccdcba"], rejectedWords: ["abcddcba","abcdcccdcba","dcba"], hint: "Faça o caminho em três estágios lógicos na sua cabeça.",                                          successMsg: "Você construiu um autômato enorme, meus parabéns!",
+export default { id: 45, layout: LAYOUT, label: "L45", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo, cccc como subpalavra e dcba como sufixo}", desc: "",                                         shortestWord: "abcdccccdcba", regex: /^abcd[abcd]*cccc[abcd]*dcba$/,                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcdccccdcba","abcdaccccdcba"], rejectedWords: ["abcddcba","abcdcccdcba","dcba"], hint: "Faça o caminho em três estágios lógicos na sua cabeça.",                                          successMsg: "Você construiu um autômato enorme, meus parabéns!",
     tutorials: {
       onStart: { type: 'theory', title: 'Prefixo abcd + 4c seguidos + sufixo dcba!', dialog: [
         'L45: comecar com "abcd", conter "cccc" em algum lugar, terminar com "dcba".',

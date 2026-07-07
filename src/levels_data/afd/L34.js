@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL34() {
-  const b = makeBuilder(LEVEL_GRAPHS[34], {
+const LAYOUT = {
     q0: [8, 15], q1: [20, 8], q2: [36, 4], q3: [52, 8], q4: [68, 15],
-  });
+  };
+
+function buildLessonL34() {
+  const b = makeBuilder(LEVEL_GRAPHS[34], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
    .addEdges(['q0', '1', 'q1'], ['q1', '0', 'q2'], ['q2', '1', 'q3'], ['q3', '0', 'q4']);
@@ -21,7 +23,7 @@ function buildLessonL34() {
   return steps;
 }
 
-export default { id: 34, label: "L34", formula: "L = {w ∈ {0,1}* / w tem 1010 como sufixo}",                        desc: "",                                                                 shortestWord: "1010",     regex: /^[01]*1010$/,                                               alphabet: ['0', '1'],             acceptedWords: ["1010","01010","001010"], rejectedWords: ["λ","101","1011"],       hint: "Mantenha a porta aberta para infinitos caracteres, mas só aceite se a 'memória' bater com 1010.",                  successMsg: "Detector de sufixo ativado.",
+export default { id: 34, layout: LAYOUT, label: "L34", formula: "L = {w ∈ {0,1}* / w tem 1010 como sufixo}",                        desc: "",                                                                 shortestWord: "1010",     regex: /^[01]*1010$/,                                               alphabet: ['0', '1'],             acceptedWords: ["1010","01010","001010"], rejectedWords: ["λ","101","1011"],       hint: "Mantenha a porta aberta para infinitos caracteres, mas só aceite se a 'memória' bater com 1010.",                  successMsg: "Detector de sufixo ativado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Detector de Sufixo "1010"!', dialog: [
         'L34: a palavra termina em "1010". O começo pode ser qualquer coisa!',

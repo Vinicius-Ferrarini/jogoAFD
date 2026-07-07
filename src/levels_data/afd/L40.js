@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL40() {
-  const b = makeBuilder(LEVEL_GRAPHS[40], {
+const LAYOUT = {
     q0: [10, 18], q1: [25, 8], q2: [42, 8], q3: [58, 18], q4: [65, 8], q5: [76, 12], q6: [76, 18],
-  });
+  };
+
+function buildLessonL40() {
+  const b = makeBuilder(LEVEL_GRAPHS[40], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q3', 'q6').addEdges(['q0', 'd', 'q3'], ['q3', 'd', 'q6']);
   steps.push(b.draw('Menor palavra "dd": ponte d (q0→q3) e d final (q3→q6, final).', -1));
@@ -21,7 +23,7 @@ function buildLessonL40() {
   return steps;
 }
 
-export default { id: 40, label: "L40", formula: "L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}",                desc: "",                                                                 shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Essa é grande! Blocos de 'b' em duplas, o primeiro 'd' serve de ponte, e 'c' em trios.",                            successMsg: "Sintaxe complexa analisada com sucesso.",
+export default { id: 40, layout: LAYOUT, label: "L40", formula: "L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}",                desc: "",                                                                 shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Essa é grande! Blocos de 'b' em duplas, o primeiro 'd' serve de ponte, e 'c' em trios.",                            successMsg: "Sintaxe complexa analisada com sucesso.",
     tutorials: {
       onStart: { type: 'theory', title: 'Blocos: a-block, b-pares, d, c-trios, d!', dialog: [
         'L40: a^n b^2m d c^3p d. a-s, depois b-pares, depois d, depois c-trios, depois d.',

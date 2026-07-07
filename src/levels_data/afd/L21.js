@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL21() {
-  const b = makeBuilder(LEVEL_GRAPHS[21], {
+const LAYOUT = {
     q0: [4, 14], q1: [34, 5], q2: [54, 14], q3: [34, 25],
-  });
+  };
+
+function buildLessonL21() {
+  const b = makeBuilder(LEVEL_GRAPHS[21], LAYOUT);
   const steps = [];
   b.addNodes('q0').addEdges(['q0', 'a', 'q0']);
   steps.push(b.draw('λ e qualquer bloco de "a"s: q0 é inicial+final, com laço de "a".', -1));
@@ -24,7 +26,7 @@ function buildLessonL21() {
   return steps;
 }
 
-export default { id: 21, label: "L21", formula: "L = {w ∈ {a,b,c,d}* / os a's precedem os b's e os c's precedem os d's}", desc: "",                                                             shortestWord: "",         regex: /^a*b*c*d*$/,                                                alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["λ","abcd","abc"],         rejectedWords: ["ba","ca","cb"],        hint: "É uma progressão linear estrita pelo alfabeto.",                                                                    successMsg: "Ordem alfabética mantida!",
+export default { id: 21, layout: LAYOUT, label: "L21", formula: "L = {w ∈ {a,b,c,d}* / os a's precedem os b's e os c's precedem os d's}", desc: "",                                                             shortestWord: "",         regex: /^a*b*c*d*$/,                                                alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["λ","abcd","abc"],         rejectedWords: ["ba","ca","cb"],        hint: "É uma progressão linear estrita pelo alfabeto.",                                                                    successMsg: "Ordem alfabética mantida!",
     tutorials: {
       onStart: { type: 'theory', title: 'Ordem Alfabética Estrita!', dialog: [
         'L21: símbolos em ordem a* b* c* d* — cada bloco pode aparecer 0 ou mais vezes.',

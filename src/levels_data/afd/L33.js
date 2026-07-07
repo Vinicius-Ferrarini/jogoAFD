@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL33() {
-  const b = makeBuilder(LEVEL_GRAPHS[33], {
+const LAYOUT = {
     q0: [4, 15], q1: [24, 15], q2: [44, 15], q3: [64, 15],
-  });
+  };
+
+function buildLessonL33() {
+  const b = makeBuilder(LEVEL_GRAPHS[33], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3').addEdges(['q0', '0', 'q1'], ['q1', '0', 'q2'], ['q2', '1', 'q3']);
   steps.push(b.draw('Prefixo exato "001": trilho q0—0→q1—0→q2—1→q3 (final).', -1));
@@ -17,7 +19,7 @@ function buildLessonL33() {
   return steps;
 }
 
-export default { id: 33, label: "L33", formula: "L = {w ∈ {0,1}* / w tem 001 como prefixo}",                         desc: "",                                                                 shortestWord: "001",      regex: /^001[01]*$/,                                                alphabet: ['0', '1'],             acceptedWords: ["001","0011","001100"],    rejectedWords: ["λ","1","010"],         hint: "O começo tem que ser rigorosamente '0' -> '0' -> '1'.",                                                             successMsg: "Prefixo amarrado!",
+export default { id: 33, layout: LAYOUT, label: "L33", formula: "L = {w ∈ {0,1}* / w tem 001 como prefixo}",                         desc: "",                                                                 shortestWord: "001",      regex: /^001[01]*$/,                                                alphabet: ['0', '1'],             acceptedWords: ["001","0011","001100"],    rejectedWords: ["λ","1","010"],         hint: "O começo tem que ser rigorosamente '0' -> '0' -> '1'.",                                                             successMsg: "Prefixo amarrado!",
     tutorials: {
       onStart: { type: 'theory', title: 'Prefixo Obrigatório: "001"!', dialog: [
         'L33: toda palavra aceita DEVE começar com "001". O resto pode ser qualquer coisa.',

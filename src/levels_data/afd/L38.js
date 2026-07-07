@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL38() {
-  const b = makeBuilder(LEVEL_GRAPHS[38], {
+const LAYOUT = {
     q0: [20, 10], q1: [70, 10], q2: [20, 25], q3: [70, 25],
-  });
+  };
+
+function buildLessonL38() {
+  const b = makeBuilder(LEVEL_GRAPHS[38], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q2').addEdges(['q0', 'b', 'q2']);
   steps.push(b.draw('Menor palavra "b" (0 "a" par, 1 "b" ímpar): q0—b→q2 (final).', -1));
@@ -20,7 +22,7 @@ function buildLessonL38() {
   return steps;
 }
 
-export default { id: 38, label: "L38", formula: "L = {w ∈ {a,b}* / a quantidade de a é par e a quantidade de b é impar}", desc: "",                                                             shortestWord: "b",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["λ","a","ab"],          hint: "Você precisa de 4 estados para controlar: Par/Par, Par/Ímpar, Ímpar/Par, Ímpar/Ímpar.",                             successMsg: "Quadrante de paridade solucionado.",
+export default { id: 38, layout: LAYOUT, label: "L38", formula: "L = {w ∈ {a,b}* / a quantidade de a é par e a quantidade de b é impar}", desc: "",                                                             shortestWord: "b",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["λ","a","ab"],          hint: "Você precisa de 4 estados para controlar: Par/Par, Par/Ímpar, Ímpar/Par, Ímpar/Ímpar.",                             successMsg: "Quadrante de paridade solucionado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade Dupla: a-par e b-ímpar!', dialog: [
         'L38: contar a\'s e b\'s separadamente. Aceito quando #a par E #b ímpar.',

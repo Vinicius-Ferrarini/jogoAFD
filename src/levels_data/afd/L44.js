@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL44() {
-  const b = makeBuilder(LEVEL_GRAPHS[44], {
+const LAYOUT = {
     q0: [10, 17], q1: [20, 17], q2: [30, 17], q3: [38, 17], q4: [48, 17],
     q5: [60, 12], q6: [72, 8],  q7: [80, 12], q8: [54, 28], q9: [70, 28],
-  });
+  };
+
+function buildLessonL44() {
+  const b = makeBuilder(LEVEL_GRAPHS[44], LAYOUT);
   const steps = [];
 
   // Passo 1: espinha do caminho feliz — abcd (prefixo) + cba (sufixo)
@@ -38,7 +40,7 @@ function buildLessonL44() {
 }
 
 export default {
-  id: 44, label: "L44",
+  id: 44, layout: LAYOUT, label: "L44",
   formula: "L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo e cba como sufixo}",
   desc: "",
   shortestWord: "abcdcba",

@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL53() {
-  const b = makeBuilder(LEVEL_GRAPHS[53], {
+const LAYOUT = {
     q0: [32, 17], q1: [62, 17],
-  });
+  };
+
+function buildLessonL53() {
+  const b = makeBuilder(LEVEL_GRAPHS[53], LAYOUT);
   const steps = [];
   b.addNodes('q0').addEdges(['q0', 'a', 'q0'], ['q0', 'c', 'q0']);
   steps.push(b.draw('λ e qualquer "a"/"c": q0 é inicial+final, com laço de {a,c}.', -1));
@@ -20,7 +22,7 @@ function buildLessonL53() {
   return steps;
 }
 
-export default { id: 53, label: "L53", formula: "L = {w ∈ {a,b,c}* / cada b é seguido de pelo menos um c}",          desc: "",                                                                 shortestWord: "",         regex: /^(a|c|bc+)*$/,                                              alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","abc","abccc","aaabccc"], rejectedWords: ["b","ab","bcb"],       hint: "Leu um 'b'? A próxima letra TEM que ser 'c'. Depois tudo fica livre.",                                              successMsg: "Condicional restrita dominada.",
+export default { id: 53, layout: LAYOUT, label: "L53", formula: "L = {w ∈ {a,b,c}* / cada b é seguido de pelo menos um c}",          desc: "",                                                                 shortestWord: "",         regex: /^(a|c|bc+)*$/,                                              alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","abc","abccc","aaabccc"], rejectedWords: ["b","ab","bcb"],       hint: "Leu um 'b'? A próxima letra TEM que ser 'c'. Depois tudo fica livre.",                                              successMsg: "Condicional restrita dominada.",
     tutorials: {
       onStart: { type: 'theory', title: 'Cada "b" deve ser seguido de "c"!', dialog: [
         'L53: sempre que ler um "b", a próxima letra TEM que ser "c". Senão rejeita.',

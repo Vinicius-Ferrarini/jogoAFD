@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL7() {
-  const b = makeBuilder(LEVEL_GRAPHS[7], {
+const LAYOUT = {
     q0: [24, 10], q1: [44, 10], q2: [44, 20], q3: [64, 10],
-  });
+  };
+
+function buildLessonL7() {
+  const b = makeBuilder(LEVEL_GRAPHS[7], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q3').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q3']);
   steps.push(b.draw('Menor palavra "aa" (zero "b"s no meio): q0—a→q1—a→q3 (final).', -1));
@@ -17,7 +19,7 @@ function buildLessonL7() {
   return steps;
 }
 
-export default { id: 7,  label: "L07", formula: "L = { a b^n a | n ≥ 0 e n é par }",                                  desc: "",                                                                 shortestWord: "aa",       regex: /^a(bb)*a$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["aa","abba","abbbba"],      rejectedWords: ["a","aba","abbba","b","ba","baa","babba","aab","aaba","abbab","aaa"],     hint: "A palavra começa com 'a', termina com 'a', e no meio os 'b's andam em duplas.",                                    successMsg: "Excelente! Você controlou o sanduíche de 'b's pares.",
+export default { id: 7, layout: LAYOUT,  label: "L07", formula: "L = { a b^n a | n ≥ 0 e n é par }",                                  desc: "",                                                                 shortestWord: "aa",       regex: /^a(bb)*a$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["aa","abba","abbbba"],      rejectedWords: ["a","aba","abbba","b","ba","baa","babba","aab","aaba","abbab","aaa"],     hint: "A palavra começa com 'a', termina com 'a', e no meio os 'b's andam em duplas.",                                    successMsg: "Excelente! Você controlou o sanduíche de 'b's pares.",
     tutorials: {
       onStart: { type: 'theory', title: 'Linguagem Sanduíche!', dialog: [
         'Linguagem SANDUÍCHE! 🥪 Início e fim fixos, meio variável.',

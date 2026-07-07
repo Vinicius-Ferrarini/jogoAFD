@@ -273,8 +273,14 @@ export function productCounterexample(A, B, alphabet) {
 
 // ─── BFS horizontal layout ────────────────────────────────────────────────────
 // opts defaults match AFDPart2's constants; pass overrides for other viewports
-export function computeLayout(nodes, transitions, { VW = 580, VH = 340, MX = 65, MY = 42 } = {}) {
+// fixedPositions: { [nodeId]: {x, y} } — overrides BFS for those nodes (px)
+export function computeLayout(nodes, transitions, { VW = 580, VH = 340, MX = 65, MY = 42, fixedPositions = null } = {}) {
   if (!nodes.length) return {};
+  if (fixedPositions) {
+    const result = {};
+    nodes.forEach(n => { result[n.id] = fixedPositions[n.id] ?? { x: VW / 2, y: VH / 2 }; });
+    return result;
+  }
   const initId = nodes.find(n => n.isInitial)?.id ?? nodes[0].id;
 
   const layer = { [initId]: 0 };

@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL46() {
-  const b = makeBuilder(LEVEL_GRAPHS[46], {
+const LAYOUT = {
     q0: [14, 17], q1: [22, 8], q2: [32, 17], q3: [22, 26], q4: [52, 8], q5: [44, 17], q6: [54, 26], q7: [75, 17],
-  });
+  };
+
+function buildLessonL46() {
+  const b = makeBuilder(LEVEL_GRAPHS[46], LAYOUT);
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('λ tem 0 de cada símbolo (tudo par): q0 é inicial+final.', -1));
@@ -26,7 +28,7 @@ function buildLessonL46() {
   return steps;
 }
 
-export default { id: 46, label: "L46", formula: "L = {w ∈ {a,b,c}* / a quantidade de a, b e c é par}",              desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['a','b','c'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","aabb","aabbcc"],      rejectedWords: ["a","b","abc"],         hint: "Isso é um cubo mágico de estados! Paridade para 3 letras exige 8 estados.",                                        successMsg: "Paridade em 3D completada!",
+export default { id: 46, layout: LAYOUT, label: "L46", formula: "L = {w ∈ {a,b,c}* / a quantidade de a, b e c é par}",              desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['a','b','c'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","aabb","aabbcc"],      rejectedWords: ["a","b","abc"],         hint: "Isso é um cubo mágico de estados! Paridade para 3 letras exige 8 estados.",                                        successMsg: "Paridade em 3D completada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Cubo de paridade: 3 letras, 8 estados!', dialog: [
         'L46: contar a, b e c separadamente. Aceito quando TODOS pares.',

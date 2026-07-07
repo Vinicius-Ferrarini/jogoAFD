@@ -1,12 +1,14 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL58() {
-  const b = makeBuilder(LEVEL_GRAPHS[58], {
+const LAYOUT = {
     q0:[4, 7], q1:[16, 7], q2:[10, 17], q3:[21, 17], q4:[27, 7], q5:[39, 7],
     q6:[50, 7], q7:[56, 17], q8:[62, 7], q9:[74, 7],
     q10:[66, 15], q11:[75, 28], q12:[80, 15],
-  });
+  };
+
+function buildLessonL58() {
+  const b = makeBuilder(LEVEL_GRAPHS[58], LAYOUT);
   const steps = [];
   b.addNodes('q0','q1','q4','q5','q6','q7','q8','q9')
    .addEdges(['q0','a','q1'],['q1','a','q4'],['q4','c','q5'],['q5','e','q6'],
@@ -37,7 +39,7 @@ function buildLessonL58() {
   return steps;
 }
 
-export default { id: 58, label: "L58", formula: "L = { b^n a (bcd)^m a b^p c^q e w e^r a^s b^t c^u | n,m,p,r,s,t,u ≥ 0, q > 0, w ∈ {a,b,c,d}*, w tem 'ab' como sufixo }", desc: "(trabalho — boss final)", shortestWord: "aaceabe",
+export default { id: 58, layout: LAYOUT, label: "L58", formula: "L = { b^n a (bcd)^m a b^p c^q e w e^r a^s b^t c^u | n,m,p,r,s,t,u ≥ 0, q > 0, w ∈ {a,b,c,d}*, w tem 'ab' como sufixo }", desc: "(trabalho — boss final)", shortestWord: "aaceabe",
     validate: (s) => {
       const delta = {
         q0:{b:'q0',a:'q1'}, q1:{b:'q2',a:'q4'}, q2:{c:'q3'}, q3:{d:'q1'},

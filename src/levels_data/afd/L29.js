@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL29() {
-  const b = makeBuilder(LEVEL_GRAPHS[29], {
+const LAYOUT = {
     q0: [4, 15], q1: [18, 10], q2: [18, 20], q3: [32, 5], q4: [32, 15],
     q5: [48, 10], q6: [64, 15], q7: [32, 25], q8: [48, 20],
-  });
+  };
+
+function buildLessonL29() {
+  const b = makeBuilder(LEVEL_GRAPHS[29], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2').addEdges(['q0', '0', 'q1'], ['q0', '1', 'q2']);
   steps.push(b.draw('q0 ramifica: "0"→q1 (viu 0) e "1"→q2 (viu 1 no pos1).', -1));
@@ -25,7 +27,7 @@ function buildLessonL29() {
   return steps;
 }
 
-export default { id: 29, label: "L29", formula: "L = {w ∈ {0,1}* / os primeiros 4 símbolos contêm, no mínimo, dois 1's}", desc: "", shortestWord: "11", validate: w => { const first4 = [...w].slice(0,4); return first4.filter(c=>c==='1').length >= 2; }, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Analise apenas os primeiros 4 símbolos e conte os 1s.",                                                              successMsg: "Análise de janela inicial!",
+export default { id: 29, layout: LAYOUT, label: "L29", formula: "L = {w ∈ {0,1}* / os primeiros 4 símbolos contêm, no mínimo, dois 1's}", desc: "", shortestWord: "11", validate: w => { const first4 = [...w].slice(0,4); return first4.filter(c=>c==='1').length >= 2; }, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Analise apenas os primeiros 4 símbolos e conte os 1s.",                                                              successMsg: "Análise de janela inicial!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois 1s nos primeiros 4 símbolos!', dialog: [
         'L29: os primeiros 4 símbolos devem conter ao menos dois "1"s.',

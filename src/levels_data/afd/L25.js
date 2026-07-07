@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL25() {
-  const b = makeBuilder(LEVEL_GRAPHS[25], {
+const LAYOUT = {
     q0: [24, 15], q1: [47, 15], q2: [68, 15],
-  });
+  };
+
+function buildLessonL25() {
+  const b = makeBuilder(LEVEL_GRAPHS[25], LAYOUT);
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('λ tem comprimento 0 (< 3): q0 é inicial E final.', -1));
@@ -20,7 +22,7 @@ function buildLessonL25() {
   return steps;
 }
 
-export default { id: 25, label: "L25", formula: "L = {w ∈ {0,1}* / w tem tamanho menor que 3}",                      desc: "",                                                                 shortestWord: "",         regex: /^[01]{0,2}$/,                                               alphabet: ['0', '1'],             acceptedWords: ["λ","0","10"],             rejectedWords: ["000","0000","010"],    hint: "Os estados iniciais já podem ser finais, mas pare no terceiro passo.",                                               successMsg: "Tamanho máximo controlado.",
+export default { id: 25, layout: LAYOUT, label: "L25", formula: "L = {w ∈ {0,1}* / w tem tamanho menor que 3}",                      desc: "",                                                                 shortestWord: "",         regex: /^[01]{0,2}$/,                                               alphabet: ['0', '1'],             acceptedWords: ["λ","0","10"],             rejectedWords: ["000","0000","010"],    hint: "Os estados iniciais já podem ser finais, mas pare no terceiro passo.",                                               successMsg: "Tamanho máximo controlado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Comprimento Menor que 3!', dialog: [
         'L25: aceitar palavras com 0, 1 ou 2 símbolos. Rejeitar com 3 ou mais.',

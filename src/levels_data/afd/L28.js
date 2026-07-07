@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL28() {
-  const b = makeBuilder(LEVEL_GRAPHS[28], {
+const LAYOUT = {
     q0: [24, 10], q1: [40, 20], q2: [56, 10],
-  });
+  };
+
+function buildLessonL28() {
+  const b = makeBuilder(LEVEL_GRAPHS[28], LAYOUT);
   const steps = [];
   b.addNodes('q0').addEdges(['q0', '1', 'q0']);
   steps.push(b.draw('λ e qualquer bloco de "1"s: q0 é inicial+final, com laço de "1".', -1));
@@ -18,7 +20,7 @@ function buildLessonL28() {
   return steps;
 }
 
-export default { id: 28, label: "L28", formula: "L = {w ∈ {0,1}* / cada 0 é seguido de, no mínimo, dois 1's}",     desc: "",                                                                 shortestWord: "",         regex: /^(1*011+)*1*$/,                                             alphabet: ['0', '1'],             acceptedWords: ["λ","011","1011"],         rejectedWords: ["0","01","010"],        hint: "Leu um '0'? Então os próximos dois passos OBRIGATORIAMENTE devem ser '1'.",                                         successMsg: "Padrão de segurança estabelecido.",
+export default { id: 28, layout: LAYOUT, label: "L28", formula: "L = {w ∈ {0,1}* / cada 0 é seguido de, no mínimo, dois 1's}",     desc: "",                                                                 shortestWord: "",         regex: /^(1*011+)*1*$/,                                             alphabet: ['0', '1'],             acceptedWords: ["λ","011","1011"],         rejectedWords: ["0","01","010"],        hint: "Leu um '0'? Então os próximos dois passos OBRIGATORIAMENTE devem ser '1'.",                                         successMsg: "Padrão de segurança estabelecido.",
     tutorials: {
       onStart: { type: 'theory', title: 'Cada 0 Exige Dois 1s!', dialog: [
         'Restrição: todo "0" lido OBRIGA que os próximos dois símbolos sejam "1".',

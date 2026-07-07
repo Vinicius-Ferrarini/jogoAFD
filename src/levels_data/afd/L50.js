@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL50() {
-  const b = makeBuilder(LEVEL_GRAPHS[50], {
+const LAYOUT = {
     q0: [12, 12], q1: [28, 12], q2: [28, 20], q3: [52, 7], q4: [52, 26], q5: [75, 12], q6: [75, 20],
-  });
+  };
+
+function buildLessonL50() {
+  const b = makeBuilder(LEVEL_GRAPHS[50], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q5', 'q6').addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q5'], ['q5', 'c', 'q6']);
   steps.push(b.draw('Espinha "acc": q0—a→q1, depois o "cc" obrigatório (q1→q5→q6, final).', -1));
@@ -21,7 +23,7 @@ function buildLessonL50() {
   return steps;
 }
 
-export default { id: 50, label: "L50", formula: "L = {a^n b^m c^p / n > 0, p > 0, m >= 0 e (n+p) é impar}",          desc: "",                                                                 shortestWord: "ac",       regex: /^.*$/, validate: w => /^a+b*c+$/.test(w) && ([...w].filter(c=>c==='a').length + [...w].filter(c=>c==='c').length)%2===1, alphabet: ['a', 'b', 'c'],        acceptedWords: ["acc","aac","abcc"],       rejectedWords: ["ac","aacc","c"],        hint: "Se a quantidade de 'a's for ímpar, os 'c's precisam ser pares, e vice versa.",                                     successMsg: "Paridade correlacionada funcionando!",
+export default { id: 50, layout: LAYOUT, label: "L50", formula: "L = {a^n b^m c^p / n > 0, p > 0, m >= 0 e (n+p) é impar}",          desc: "",                                                                 shortestWord: "ac",       regex: /^.*$/, validate: w => /^a+b*c+$/.test(w) && ([...w].filter(c=>c==='a').length + [...w].filter(c=>c==='c').length)%2===1, alphabet: ['a', 'b', 'c'],        acceptedWords: ["acc","aac","abcc"],       rejectedWords: ["ac","aacc","c"],        hint: "Se a quantidade de 'a's for ímpar, os 'c's precisam ser pares, e vice versa.",                                     successMsg: "Paridade correlacionada funcionando!",
     tutorials: {
       onStart: { type: 'theory', title: 'a+ b* c+ com (n+p) impar!', dialog: [
         'L50: a^n b^m c^p. n>0, p>0, m>=0. Mas a quantidade (n+p) tem que ser impar.',

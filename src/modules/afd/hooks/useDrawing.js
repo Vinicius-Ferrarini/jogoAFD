@@ -13,7 +13,7 @@ export const DRAW_COLORS = [
   { hex: '#f8f8f8', label: 'Branco' },
 ];
 
-export default function useDrawing() {
+export default function useDrawing({ cssZoomCompensation = true } = {}) {
   const [drawings, setDrawings]           = useState([]);
   const [drawingStack, setDrawingStack]   = useState([]);
   const [currentStroke, setCurrentStroke] = useState(null);
@@ -49,12 +49,16 @@ export default function useDrawing() {
     if (!svg) return { x: 0, y: 0 };
     try {
       const pt = svg.createSVGPoint();
-      // Compensate for CSS zoom on the parent container
-      const parent = svg.parentElement;
-      const parentRect = parent ? parent.getBoundingClientRect() : svg.getBoundingClientRect();
-      const cssZoom = parent && parent.offsetWidth ? parentRect.width / parent.offsetWidth : 1;
-      pt.x = e.clientX / cssZoom;
-      pt.y = e.clientY / cssZoom;
+      if (cssZoomCompensation) {
+        const parent = svg.parentElement;
+        const parentRect = parent ? parent.getBoundingClientRect() : svg.getBoundingClientRect();
+        const zoom = parent && parent.offsetWidth ? parentRect.width / parent.offsetWidth : 1;
+        pt.x = e.clientX / zoom;
+        pt.y = e.clientY / zoom;
+      } else {
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+      }
       const ctm = svg.getScreenCTM();
       if (!ctm) return { x: 0, y: 0 };
       const p = pt.matrixTransform(ctm.inverse());

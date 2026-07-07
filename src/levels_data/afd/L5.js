@@ -1,8 +1,10 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
+const LAYOUT = { q0: [28, 15], q1: [54, 15] };
+
 function buildLessonL5() {
-  const b = makeBuilder(LEVEL_GRAPHS[5], { q0: [28, 15], q1: [54, 15] });
+  const b = makeBuilder(LEVEL_GRAPHS[5], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
   steps.push(b.draw('Vamos construir o caminho da menor palavra válida: "a".', -1));
@@ -15,7 +17,7 @@ function buildLessonL5() {
   return steps;
 }
 
-export default { id: 5,  label: "L05", formula: "L = { a^n | n > 0 }",                                                 desc: "",                                                                 shortestWord: "a",        regex: /^a+$/,                                                      alphabet: ['a'],                  acceptedWords: ["a","aa","aaa"],            rejectedWords: ["λ","b","ba"],          hint: "Você precisa ler pelo menos um 'a', e depois pode ler infinitos.",                                                  successMsg: "Ótimo uso de repetição (loop) no estado final!",
+export default { id: 5, layout: LAYOUT,  label: "L05", formula: "L = { a^n | n > 0 }",                                                 desc: "",                                                                 shortestWord: "a",        regex: /^a+$/,                                                      alphabet: ['a'],                  acceptedWords: ["a","aa","aaa"],            rejectedWords: ["λ","b","ba"],          hint: "Você precisa ler pelo menos um 'a', e depois pode ler infinitos.",                                                  successMsg: "Ótimo uso de repetição (loop) no estado final!",
     tutorials: {
       onStart: { type: 'theory', title: 'Notação a^n — Repetição Infinita!', dialog: [
         'Nova notação: a^n com n > 0 significa "pelo menos um a, podendo ser infinitos".',

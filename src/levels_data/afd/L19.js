@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL19() {
-  const b = makeBuilder(LEVEL_GRAPHS[19], {
+const LAYOUT = {
     q0: [24, 10], q1: [59, 10], q2: [24, 20], q3: [59, 20],
-  });
+  };
+
+function buildLessonL19() {
+  const b = makeBuilder(LEVEL_GRAPHS[19], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q3').addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3']);
   steps.push(b.draw('Menor palavra "ab" (1 "a", 1 "b" = ímpar/ímpar): q0—a→q1—b→q3 (final).', -1));
@@ -20,7 +22,7 @@ function buildLessonL19() {
   return steps;
 }
 
-export default { id: 19, label: "L19", formula: "L = {w ∈ {a,b}* / w tem um número impar de ab's}",           desc: "",                                                                 shortestWord: "ab",       validate: (w) => { let a=0,b=0; for(const c of w){if(c==='a')a++;else if(c==='b')b++;} return a%2===1&&b%2===1; },                                                                           alphabet: ['a', 'b'],             acceptedWords: ["ab","ba","aaab"],          rejectedWords: ["λ","aa","abab","b"],   hint: "Cada 'a' alterna a paridade do contador de a's; cada 'b' alterna o de b's. Aceite quando os dois forem ímpares.",  successMsg: "Paridade dupla dominada!",
+export default { id: 19, layout: LAYOUT, label: "L19", formula: "L = {w ∈ {a,b}* / w tem um número impar de ab's}",           desc: "",                                                                 shortestWord: "ab",       validate: (w) => { let a=0,b=0; for(const c of w){if(c==='a')a++;else if(c==='b')b++;} return a%2===1&&b%2===1; },                                                                           alphabet: ['a', 'b'],             acceptedWords: ["ab","ba","aaab"],          rejectedWords: ["λ","aa","abab","b"],   hint: "Cada 'a' alterna a paridade do contador de a's; cada 'b' alterna o de b's. Aceite quando os dois forem ímpares.",  successMsg: "Paridade dupla dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade Dupla!', dialog: [
         'Aceitar quando a quantidade de "a"s E a de "b"s são ambas ímpares ao mesmo tempo.',

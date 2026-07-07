@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL11() {
-  const b = makeBuilder(LEVEL_GRAPHS[11], {
+const LAYOUT = {
     q0: [24, 10], q1: [24, 20], q2: [44, 10], q3: [44, 20],
-  });
+  };
+
+function buildLessonL11() {
+  const b = makeBuilder(LEVEL_GRAPHS[11], LAYOUT);
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('A menor palavra é λ (0+0 = par): o estado inicial q0 já é final.', -1));
@@ -23,7 +25,7 @@ function buildLessonL11() {
   return steps;
 }
 
-export default { id: 11, label: "L11", formula: "L = {a^n b^m / (n+m) é par, n >= 0, m >= 0}",                         desc: "",                                                                 shortestWord: "",         regex: /^((aa)*(bb)*|a(aa)*b(bb)*)$/,                               alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "A soma é par se ambos forem pares, ou se ambos forem ímpares!",                                                    successMsg: "Lógica matemática aplicada no grafo. Lindo!",
+export default { id: 11, layout: LAYOUT, label: "L11", formula: "L = {a^n b^m / (n+m) é par, n >= 0, m >= 0}",                         desc: "",                                                                 shortestWord: "",         regex: /^((aa)*(bb)*|a(aa)*b(bb)*)$/,                               alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "A soma é par se ambos forem pares, ou se ambos forem ímpares!",                                                    successMsg: "Lógica matemática aplicada no grafo. Lindo!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Casos de Paridade!', dialog: [
         'n + m é par em dois casos: AMBOS pares (0+0, 2+2...) ou AMBOS ímpares (1+1, 3+1...).',

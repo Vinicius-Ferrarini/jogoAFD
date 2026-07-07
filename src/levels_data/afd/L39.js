@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL39() {
-  const b = makeBuilder(LEVEL_GRAPHS[39], {
+const LAYOUT = {
     q0: [20, 10], q1: [70, 10], q2: [20, 25], q3: [70, 25],
-  });
+  };
+
+function buildLessonL39() {
+  const b = makeBuilder(LEVEL_GRAPHS[39], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q3').addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3']);
   steps.push(b.draw('Menor palavra "ab" (1 "a", 1 "b" = ímpar/ímpar): q0—a→q1—b→q3 (final).', -1));
@@ -20,7 +22,7 @@ function buildLessonL39() {
   return steps;
 }
 
-export default { id: 39, label: "L39", formula: "L = {w ∈ {a,b}* / a quantidade de a é impar e a quantidade de b é impar}", desc: "",                                                            shortestWord: "ab",       regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===1 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["ab","abbb","aaabbb"],     rejectedWords: ["λ","a","b"],           hint: "Parecido com a anterior, mas o estado de aceitação muda.",                                                          successMsg: "Paridade ímpar cruzada!",
+export default { id: 39, layout: LAYOUT, label: "L39", formula: "L = {w ∈ {a,b}* / a quantidade de a é impar e a quantidade de b é impar}", desc: "",                                                            shortestWord: "ab",       regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===1 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["ab","abbb","aaabbb"],     rejectedWords: ["λ","a","b"],           hint: "Parecido com a anterior, mas o estado de aceitação muda.",                                                          successMsg: "Paridade ímpar cruzada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade Dupla: a-ímpar e b-ímpar!', dialog: [
         'L39: aceito quando #a ímpar E #b ímpar. Estado final: q3=(í,í) no canto oposto de q0.',

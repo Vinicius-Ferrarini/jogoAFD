@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL32() {
-  const b = makeBuilder(LEVEL_GRAPHS[32], {
+const LAYOUT = {
     q0: [4, 15], q1: [20, 5], q2: [25, 15], q3: [20, 25],
     q4: [55, 5], q5: [40, 15], q6: [55, 25], q7: [70, 15],
-  });
+  };
+
+function buildLessonL32() {
+  const b = makeBuilder(LEVEL_GRAPHS[32], LAYOUT);
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('λ tem 0 de cada símbolo (tudo par): q0 é inicial+final.', -1));
@@ -27,7 +29,7 @@ function buildLessonL32() {
   return steps;
 }
 
-export default { id: 32, label: "L32", formula: "L = {w ∈ {0,1,2}* / w tem número par de 0's, 1's e 2's}",          desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
+export default { id: 32, layout: LAYOUT, label: "L32", formula: "L = {w ∈ {0,1,2}* / w tem número par de 0's, 1's e 2's}",          desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
     tutorials: {
       onStart: { type: 'theory', title: 'Explosão de Estados — 2³ = 8!', dialog: [
         'Paridade tripla simultânea: par/ímpar de 0s, de 1s e de 2s — totalmente independentes.',

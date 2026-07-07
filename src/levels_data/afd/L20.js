@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL20() {
-  const b = makeBuilder(LEVEL_GRAPHS[20], {
+const LAYOUT = {
     q0: [4, 14], q1: [24, 8], q2: [54, 8], q3: [54, 20], q4: [24, 20],
-  });
+  };
+
+function buildLessonL20() {
+  const b = makeBuilder(LEVEL_GRAPHS[20], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q3').addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3']);
   steps.push(b.draw('Menor palavra "ab": q0—a→q1—b→q3 (final).', -1));
@@ -24,7 +26,7 @@ function buildLessonL20() {
   return steps;
 }
 
-export default { id: 20, label: "L20", formula: "L = {w ∈ {a,b}* / |w| >= 2 e os a's precedem os b's}",             desc: "",                                                                 shortestWord: "aa",       regex: /^(aa+|a+b+|bb+)$/,                                          alphabet: ['a', 'b'],             acceptedWords: ["aa","ab","bb"],            rejectedWords: ["λ","a","ba"],          hint: "Depois que o primeiro 'b' for lido, um 'a' nunca mais poderá aparecer.",                                            successMsg: "Transição irreversível dominada.",
+export default { id: 20, layout: LAYOUT, label: "L20", formula: "L = {w ∈ {a,b}* / |w| >= 2 e os a's precedem os b's}",             desc: "",                                                                 shortestWord: "aa",       regex: /^(aa+|a+b+|bb+)$/,                                          alphabet: ['a', 'b'],             acceptedWords: ["aa","ab","bb"],            rejectedWords: ["λ","a","ba"],          hint: "Depois que o primeiro 'b' for lido, um 'a' nunca mais poderá aparecer.",                                            successMsg: "Transição irreversível dominada.",
     tutorials: {
       onStart: { type: 'theory', title: 'Transição Irreversível a→b!', dialog: [
         'L20: comprimento ≥ 2, e todos os "a"s ANTES de todos os "b"s.',

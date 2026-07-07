@@ -1,12 +1,14 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL54() {
-  // q0=ppp(ini), q1=ipp, q2=pip, q3=ppi, q4=pii, q5=ipi, q6=iip, q7=iii(final)
-  const b = makeBuilder(LEVEL_GRAPHS[54], {
+const LAYOUT = {
     q0: [12, 15], q1: [30,  4], q2: [38, 15], q3: [30, 26],
     q4: [56, 26], q5: [48, 15], q6: [56,  4], q7: [70, 15],
-  });
+  };
+
+function buildLessonL54() {
+  // q0=ppp(ini), q1=ipp, q2=pip, q3=ppi, q4=pii, q5=ipi, q6=iip, q7=iii(final)
+  const b = makeBuilder(LEVEL_GRAPHS[54], LAYOUT);
   const steps = [];
   b.addNodes('q0').addEdges();
   steps.push(b.draw('q0 = ppp: "a,b,c todos PAR" (0 ocorrências é par). É o inicial, mas não final.', -1));
@@ -39,7 +41,7 @@ function buildLessonL54() {
   return steps;
 }
 
-export default { id: 54, label: "L54", formula: "L = {w ∈ {a,b,c}* / |w|a, |w|b e |w|c são todos ímpares}", desc: "", shortestWord: "abc", alphabet: ['a', 'b', 'c'], acceptedWords: ["abc","abccc","aaabccc","cba"], rejectedWords: ["","a","ab","aabbcc"], hint: "Pense num cubo: cada vértice é uma combinação de paridades (par/ímpar) de a, b e c. Só o vértice 'tudo ímpar' (q7) é final.", successMsg: "Cubo de paridade dominado!",
+export default { id: 54, layout: LAYOUT, label: "L54", formula: "L = {w ∈ {a,b,c}* / |w|a, |w|b e |w|c são todos ímpares}", desc: "", shortestWord: "abc", alphabet: ['a', 'b', 'c'], acceptedWords: ["abc","abccc","aaabccc","cba"], rejectedWords: ["","a","ab","aabbcc"], hint: "Pense num cubo: cada vértice é uma combinação de paridades (par/ímpar) de a, b e c. Só o vértice 'tudo ímpar' (q7) é final.", successMsg: "Cubo de paridade dominado!",
     validate: (w) => {
       const count = (ch) => (w.match(new RegExp(ch, 'g')) || []).length;
       return count('a') % 2 === 1 && count('b') % 2 === 1 && count('c') % 2 === 1;

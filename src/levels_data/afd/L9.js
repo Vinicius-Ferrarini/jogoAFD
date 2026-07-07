@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL9() {
-  const b = makeBuilder(LEVEL_GRAPHS[9], {
+const LAYOUT = {
     q0: [24, 10], q1: [44, 10], q2: [64, 10], q3: [54, 20],
-  });
+  };
+
+function buildLessonL9() {
+  const b = makeBuilder(LEVEL_GRAPHS[9], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1').addEdges(['q0', 'a', 'q1']);
   steps.push(b.draw('Menor palavra "a" (n>0): q0—a→q1 (final).', -1));
@@ -20,7 +22,7 @@ function buildLessonL9() {
   return steps;
 }
 
-export default { id: 9,  label: "L09", formula: "L = { a^n b^m c^p | n > 0, m ≥ 0, p ≥ 0 }",                         desc: "",                                                                 shortestWord: "a",        regex: /^a+b*c*$/,                                                  alphabet: ['a', 'b', 'c'],        acceptedWords: ["a","ab","abc"],            rejectedWords: ["λ","b","ba"],          hint: "Os blocos não se misturam. Primeiro só 'a's, depois só 'b's, e por fim só 'c's.",                                  successMsg: "Progresso linear perfeito!",
+export default { id: 9, layout: LAYOUT,  label: "L09", formula: "L = { a^n b^m c^p | n > 0, m ≥ 0, p ≥ 0 }",                         desc: "",                                                                 shortestWord: "a",        regex: /^a+b*c*$/,                                                  alphabet: ['a', 'b', 'c'],        acceptedWords: ["a","ab","abc"],            rejectedWords: ["λ","b","ba"],          hint: "Os blocos não se misturam. Primeiro só 'a's, depois só 'b's, e por fim só 'c's.",                                  successMsg: "Progresso linear perfeito!",
     tutorials: {
       onStart: { type: 'theory', title: 'Variáveis Independentes!', dialog: [
         'Três blocos independentes: a^n (n>0, obrigatório), b^m (m≥0, opcional), c^p (p≥0, opcional).',

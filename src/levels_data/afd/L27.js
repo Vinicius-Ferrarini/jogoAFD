@@ -1,8 +1,10 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
+const LAYOUT = { q0: [24, 10], q1: [40, 20], q2: [56, 10] };
+
 function buildLessonL27() {
-  const b = makeBuilder(LEVEL_GRAPHS[27], { q0: [24, 10], q1: [40, 20], q2: [56, 10] });
+  const b = makeBuilder(LEVEL_GRAPHS[27], LAYOUT);
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('λ tem comprimento 0 (múltiplo de 3): q0 é inicial E final.', -1));
@@ -16,7 +18,7 @@ function buildLessonL27() {
   return steps;
 }
 
-export default { id: 27, label: "L27", formula: "L = {w ∈ {0,1}* / w tem tamanho múltiplo de 3}",                   desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["λ","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemático de tamanho 3.",
+export default { id: 27, layout: LAYOUT, label: "L27", formula: "L = {w ∈ {0,1}* / w tem tamanho múltiplo de 3}",                   desc: "",                                                                 shortestWord: "",         regex: /^([01]{3})*$/,                                              alphabet: ['0', '1'],             acceptedWords: ["λ","000","010101"],       rejectedWords: ["0","00","0001"],       hint: "Crie um ciclo de 3 passos que volta para o estado final inicial.",                                                   successMsg: "Ciclo matemático de tamanho 3.",
     tutorials: {
       onStart: { type: 'theory', title: 'Contagem Modular — Mod 3!', dialog: [
         'Múltiplo de 3: comprimento ≡ 0 (mod 3). Ou seja, palavras de tamanho 0, 3, 6, 9...',

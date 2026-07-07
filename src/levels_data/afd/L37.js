@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL37() {
-  const b = makeBuilder(LEVEL_GRAPHS[37], {
+const LAYOUT = {
     q0: [4, 15], q1: [22, 5], q2: [16, 25], q3: [46, 5], q4: [46, 25],
     q5: [54, 12], q6: [54, 18], q7: [70, 15],
-  });
+  };
+
+function buildLessonL37() {
+  const b = makeBuilder(LEVEL_GRAPHS[37], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q3', 'q5', 'q7')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q3'], ['q3', 'c', 'q5'], ['q5', 'd', 'q7']);
@@ -32,7 +34,7 @@ function buildLessonL37() {
   return steps;
 }
 
-export default { id: 37, label: "L37", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd ou dcba como subpalavra}",        desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*(abcd|dcba)[abcd]*$/,                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","dcba","aabcdb"], rejectedWords: ["λ","abc","dcb"],       hint: "Dois caminhos independentes saindo do início que caem num mesmo estado de vitória.",                                successMsg: "Bifurcação de subpalavras dominada!",
+export default { id: 37, layout: LAYOUT, label: "L37", formula: "L = {w ∈ {a,b,c,d}* / w tem abcd ou dcba como subpalavra}",        desc: "",                                                                 shortestWord: "abcd",     regex: /^[abcd]*(abcd|dcba)[abcd]*$/,                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","dcba","aabcdb"], rejectedWords: ["λ","abc","dcb"],       hint: "Dois caminhos independentes saindo do início que caem num mesmo estado de vitória.",                                successMsg: "Bifurcação de subpalavras dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Subpalavra: "abcd" ou "dcba"!', dialog: [
         'L37: basta conter "abcd" ou "dcba" em qualquer posição da palavra.',

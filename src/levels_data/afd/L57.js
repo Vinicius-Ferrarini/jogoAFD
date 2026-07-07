@@ -1,11 +1,13 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL57() {
-  const b = makeBuilder(LEVEL_GRAPHS[57], {
+const LAYOUT = {
     q0:[4, 15], q1:[25, 15], q2:[14, 9], q3:[35, 9], q4:[25, 4],
     q5:[57, 15], q6:[47, 9], q7:[67, 9], q8:[57, 4], q9:[88, 15],
-  });
+  };
+
+function buildLessonL57() {
+  const b = makeBuilder(LEVEL_GRAPHS[57], LAYOUT);
   const steps = [];
   b.addNodes('q0','q1','q5','q9')
    .addEdges(['q0','a','q1'],['q1','a','q5'],['q5','a','q9']);
@@ -28,7 +30,7 @@ function buildLessonL57() {
   return steps;
 }
 
-export default { id: 57, label: "L57", formula: "L = { a w a x a | w,x ∈ {b,c}*, |w|b é par e |w|c é par, |x|b é par e |x|c é par }", desc: "(trabalho)", shortestWord: "aaa",
+export default { id: 57, layout: LAYOUT, label: "L57", formula: "L = { a w a x a | w,x ∈ {b,c}*, |w|b é par e |w|c é par, |x|b é par e |x|c é par }", desc: "(trabalho)", shortestWord: "aaa",
     validate: (s) => { const m = /^a([bc]*)a([bc]*)a$/.exec(s); if (!m) return false; const even = (t) => (t.match(/b/g)||[]).length%2===0 && (t.match(/c/g)||[]).length%2===0; return even(m[1]) && even(m[2]); },
     alphabet: ['a', 'b', 'c'], acceptedWords: ["aaa","abbaa","aabba","abcbcaa","aabcbca","abbccabbcca"], rejectedWords: ["aabaa","aaaba","aaaa","aaaaaa","acbcaa","bbbaaaaa"], hint: "Estrutura a·w·a·x·a: três 'a's separam dois blocos de b/c. Em cada bloco, a quantidade de 'b' e de 'c' precisa ser PAR. Caso vazio = 'aaa'.", successMsg: "Trabalho concluído — paridade dupla em dois blocos dominada!",
     boardWords: ['aaa', 'abbaa', 'abbabba'],

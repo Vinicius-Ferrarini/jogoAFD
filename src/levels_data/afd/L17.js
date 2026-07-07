@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL17() {
-  const b = makeBuilder(LEVEL_GRAPHS[17], {
+const LAYOUT = {
     q0: [4, 15], q1: [24, 15], q2: [44, 15],
-  });
+  };
+
+function buildLessonL17() {
+  const b = makeBuilder(LEVEL_GRAPHS[17], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2').addEdges(['q0', 'a', 'q1'], ['q1', 'a', 'q2']);
   steps.push(b.draw('Menor palavra "aa" (começa com "a", comprimento 2): q0—a→q1—a→q2 (final).', -1));
@@ -17,7 +19,7 @@ function buildLessonL17() {
   return steps;
 }
 
-export default { id: 17, label: "L17", formula: "L = {w ∈ {a,b}* / w começa com a e tem tamanho par}",                desc: "",                                                                 shortestWord: "aa",       regex: /^a[ab]([ab]{2})*$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["aa","ab","abba"],          rejectedWords: ["a","b","aba"],         hint: "Forçar o início e depois manter a paridade.",                                                                       successMsg: "Paridade e prefixo resolvidos.",
+export default { id: 17, layout: LAYOUT, label: "L17", formula: "L = {w ∈ {a,b}* / w começa com a e tem tamanho par}",                desc: "",                                                                 shortestWord: "aa",       regex: /^a[ab]([ab]{2})*$/,                                         alphabet: ['a', 'b'],             acceptedWords: ["aa","ab","abba"],          rejectedWords: ["a","b","aba"],         hint: "Forçar o início e depois manter a paridade.",                                                                       successMsg: "Paridade e prefixo resolvidos.",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Requisitos Simultâneos!', dialog: [
         'L17: a palavra deve começar com "a" E ter comprimento PAR.',

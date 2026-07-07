@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL35ii() {
-  const b = makeBuilder(LEVEL_GRAPHS['L35ii'], {
+const LAYOUT = {
     q0: [10, 15], q1: [26, 15], q2: [42, 15], q3: [58, 15],
-  });
+  };
+
+function buildLessonL35ii() {
+  const b = makeBuilder(LEVEL_GRAPHS['L35ii'], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3').addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3']);
   steps.push(b.draw('Prefixo exato "abc": trilho q0—a→q1—b→q2—c→q3 (final).', -1));
@@ -17,7 +19,7 @@ function buildLessonL35ii() {
   return steps;
 }
 
-export default { id: 3502, label: "L35.", formula: "L = {w ∈ {a,b,c,d}* / w tem abc como prefixo}",                   desc: "",                                                                 shortestWord: "abc",      regex: /^abc[abcd]*/,                                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abc","abcd","abcabc"],   rejectedWords: ["λ","ab","bca"],        hint: "Igual ao 001, mas com um alfabeto maior.",                                                                          successMsg: "Prefixo alfabético concluído.",
+export default { id: 3502, layout: LAYOUT, label: "L35.", formula: "L = {w ∈ {a,b,c,d}* / w tem abc como prefixo}",                   desc: "",                                                                 shortestWord: "abc",      regex: /^abc[abcd]*/,                                               alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abc","abcd","abcabc"],   rejectedWords: ["λ","ab","bca"],        hint: "Igual ao 001, mas com um alfabeto maior.",                                                                          successMsg: "Prefixo alfabético concluído.",
     tutorials: {
       onStart: { type: 'theory', title: 'Prefixo Obrigatório: "abc"!', dialog: [
         'L35_ii: toda palavra aceita DEVE começar com "abc". O resto pode ser qualquer coisa.',

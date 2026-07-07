@@ -44,13 +44,10 @@
 .p2-edge-label {
   font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
   font-size: 12px;
-  font-weight: bold;
-  fill: #000;
+  font-weight: 900;
+  fill: #1e3a8a;
   pointer-events: none;
   user-select: none;
-  paint-order: stroke;
-  stroke: #fff;
-  stroke-width: 3px;
 }
 
 /* ── Legend ── */

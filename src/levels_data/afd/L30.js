@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL30() {
-  const b = makeBuilder(LEVEL_GRAPHS[30], {
+const LAYOUT = {
     q0: [4, 13], q1: [24, 8], q2: [44, 8], q3: [24, 20], q4: [52, 20],
-  });
+  };
+
+function buildLessonL30() {
+  const b = makeBuilder(LEVEL_GRAPHS[30], LAYOUT);
   const steps = [];
   b.addNodes('q0');
   steps.push(b.draw('λ não tem nenhuma sequência proibida: q0 é inicial+final.', -1));
@@ -22,7 +24,7 @@ function buildLessonL30() {
   return steps;
 }
 
-export default { id: 30, label: "L30", formula: "L = {w ∈ {0,1}* / w não contém 000 nem 111}",                      desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000)(?!.*111)[01]*$/,                                 alphabet: ['0', '1'],             acceptedWords: ["λ","01","0101"],          rejectedWords: ["000","111","1000"],    hint: "Se 3 zeros ou 3 uns aparecerem, jogue a palavra num estado de erro.",                                                successMsg: "Evitou a bomba tripla!",
+export default { id: 30, layout: LAYOUT, label: "L30", formula: "L = {w ∈ {0,1}* / w não contém 000 nem 111}",                      desc: "",                                                                 shortestWord: "",         regex: /^(?!.*000)(?!.*111)[01]*$/,                                 alphabet: ['0', '1'],             acceptedWords: ["λ","01","0101"],          rejectedWords: ["000","111","1000"],    hint: "Se 3 zeros ou 3 uns aparecerem, jogue a palavra num estado de erro.",                                                successMsg: "Evitou a bomba tripla!",
     tutorials: {
       onStart: { type: 'theory', title: 'Evitando Subpalavras Proibidas!', dialog: [
         'Novo padrão: NÃO CONTÉM — rejeitar quando uma sequência específica aparecer.',

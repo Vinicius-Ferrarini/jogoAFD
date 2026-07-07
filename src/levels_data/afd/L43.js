@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL43() {
-  const b = makeBuilder(LEVEL_GRAPHS[43], {
+const LAYOUT = {
     q0: [12, 26], q1: [30, 26], q2: [48, 26], q3: [65, 10], q4: [78, 26],
-  });
+  };
+
+function buildLessonL43() {
+  const b = makeBuilder(LEVEL_GRAPHS[43], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q2', 'q3', 'q4')
    .addEdges(['q0', 'a', 'q1'], ['q1', 'b', 'q2'], ['q2', 'c', 'q3'], ['q3', 'd', 'q4']);
@@ -23,7 +25,7 @@ function buildLessonL43() {
   return steps;
 }
 
-export default { id: 43, label: "L43", formula: "L = {w ∈ {a,b,c,d}* / w tem ab como subpalavra e cd como sufixo}",  desc: "",                                                                shortestWord: "abcd",     regex: /^[abcd]*ab[abcd]*cd$/,                                      alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","aabcd","abccd"],  rejectedWords: ["λ","acd","abdc"],      hint: "Ache primeiro o 'ab'. Depois de achar, fique aguardando um 'cd' para finalizar.",                                   successMsg: "Subpalavra + Sufixo resolvido.",
+export default { id: 43, layout: LAYOUT, label: "L43", formula: "L = {w ∈ {a,b,c,d}* / w tem ab como subpalavra e cd como sufixo}",  desc: "",                                                                shortestWord: "abcd",     regex: /^[abcd]*ab[abcd]*cd$/,                                      alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["abcd","aabcd","abccd"],  rejectedWords: ["λ","acd","abdc"],      hint: "Ache primeiro o 'ab'. Depois de achar, fique aguardando um 'cd' para finalizar.",                                   successMsg: "Subpalavra + Sufixo resolvido.",
     tutorials: {
       onStart: { type: 'theory', title: 'Subpalavra "ab" + Sufixo "cd"!', dialog: [
         'L43: a palavra deve conter "ab" em algum lugar E terminar com "cd".',

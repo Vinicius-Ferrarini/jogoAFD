@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL61() {
-  const b = makeBuilder(LEVEL_GRAPHS[61], {
+const LAYOUT = {
     q0:[5, 20], q1:[25, 20], q2:[22, 10] , q3:[45, 20] , q4:[45, 10], q5:[65, 20], q6:[65, 10],
-  });
+  };
+
+function buildLessonL61() {
+  const b = makeBuilder(LEVEL_GRAPHS[61], LAYOUT);
   const steps = [];
   b.addNodes('q0','q1','q2','q3')
    .addEdges(['q0','1','q2'],['q2','1','q3'],['q3','0','q1']);
@@ -23,7 +25,7 @@ function buildLessonL61() {
   return steps;
 }
 
-export default { id: 61, label: "L61", formula: "L = { w ∈ {0,1}* | w é múltiplo de 6 }", desc: "(prova)", shortestWord: "0",
+export default { id: 61, layout: LAYOUT, label: "L61", formula: "L = { w ∈ {0,1}* | w é múltiplo de 6 }", desc: "(prova)", shortestWord: "0",
     validate: (w) => { if (w === '' || !/^[01]+$/.test(w)) return false; let r = 0; for (const ch of w) r = (r*2 + (ch === '1' ? 1 : 0)) % 6; return r === 0; },
     alphabet: ['0', '1'], acceptedWords: ["0","110","1100","10010"], rejectedWords: ["1","10","101","111"], hint: "Leia da esquerda para a direita acumulando o resto mod 6: a cada bit, resto = (resto×2 + bit) mod 6. Aceita se terminar em resto 0. A palavra vazia não conta.", successMsg: "Prova L61 resolvida — máquina de módulo 6!",
     boardWords: ['110', '1', '000', '10010'],

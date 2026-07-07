@@ -1,10 +1,12 @@
 import { LEVEL_GRAPHS } from '../../levels_graphs.js';
 import { makeBuilder } from '../lessonBuilder.js';
 
-function buildLessonL42() {
-  const b = makeBuilder(LEVEL_GRAPHS[42], {
+const LAYOUT = {
     q0: [12, 26], q1: [28, 26], q2: [40, 16], q3: [58, 16], q4: [62, 26], q5: [78, 26],
-  });
+  };
+
+function buildLessonL42() {
+  const b = makeBuilder(LEVEL_GRAPHS[42], LAYOUT);
   const steps = [];
   b.addNodes('q0', 'q1', 'q4', 'q5').addEdges(['q0', 'a', 'q1'], ['q1', 'c', 'q4'], ['q4', 'c', 'q5']);
   steps.push(b.draw('Menor palavra "acc": q0—a→q1, depois o "cc" obrigatório (q1→q4→q5, final).', -1));
@@ -19,7 +21,7 @@ function buildLessonL42() {
   return steps;
 }
 
-export default { id: 42, label: "L42", formula: "L = {a^n b^2m cc d^p / n > 0 é impar, m >= 0, p >= 0}",           desc: "",                                                                 shortestWord: "acc",      regex: /^a(aa)*(bb)*ccd*$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["acc","aaacc","accdd"],   rejectedWords: ["cc","aacc","abcc"],    hint: "O início exige vai-e-volta ímpar para os 'a's, depois 'b's em duplas.",                                             successMsg: "Paridade e duplas em sequência perfeita.",
+export default { id: 42, layout: LAYOUT, label: "L42", formula: "L = {a^n b^2m cc d^p / n > 0 é impar, m >= 0, p >= 0}",           desc: "",                                                                 shortestWord: "acc",      regex: /^a(aa)*(bb)*ccd*$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["acc","aaacc","accdd"],   rejectedWords: ["cc","aacc","abcc"],    hint: "O início exige vai-e-volta ímpar para os 'a's, depois 'b's em duplas.",                                             successMsg: "Paridade e duplas em sequência perfeita.",
     tutorials: {
       onStart: { type: 'theory', title: 'a-ímpar + b-pares + cc + d*!', dialog: [
         'L42: a^n b^2m cc d^p onde n > 0 ímpar, m ≥ 0, p ≥ 0.',
