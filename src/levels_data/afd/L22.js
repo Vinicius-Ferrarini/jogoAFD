@@ -22,8 +22,6 @@ function buildLessonL22() {
 export default { id: 22, layout: LAYOUT, label: "L22", formula: "L = {w ∈ {0,1}* / w é um número par}",
     aliases: [
       "L = { w ∈ {0,1}* | w é par }",
-      "L = { w ∈ {0,1}* | w termina em 0 }",
-      "L = { w ∈ {0,1}* | w termina com 0 }",
     ],
     desc: "",                                                                 shortestWord: "0",        regex: /^[01]*0$/,                                                  alphabet: ['0', '1'],             acceptedWords: ["0","10","110"],            rejectedWords: ["1","11","101"],        hint: "Pense em binário! Todo número binário par termina com que dígito?",                                                 successMsg: "Lógica binária! Terminou em zero.",
     tutorials: {

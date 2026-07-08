@@ -24,8 +24,6 @@ function buildLessonL23() {
 export default { id: 23, layout: LAYOUT, label: "L23", formula: "L = {w ∈ {0,1}* / w é um número impar}",
     aliases: [
       "L = { w ∈ {0,1}* | w é ímpar }",
-      "L = { w ∈ {0,1}* | w termina em 1 }",
-      "L = { w ∈ {0,1}* | w termina com 1 }",
     ],
     desc: "",                                                                 shortestWord: "1",        regex: /^[01]*1$/,                                                  alphabet: ['0', '1'],             acceptedWords: ["1","11","101"],            rejectedWords: ["0","10","100"],        hint: "Números ímpares em binário sempre terminam com '1'.",                                                               successMsg: "Lógica binária! Terminou em um.",
     tutorials: {

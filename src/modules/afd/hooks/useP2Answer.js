@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 
 // ── Normalize for comparison ──────────────────────────────────────────────────
-function normalize(s) {
+export function normalize(s) {
   let r = s
     .replace(/^L\s*=\s*/, '')
     .trim()
@@ -20,15 +20,16 @@ function normalize(s) {
     .replace(/[≤]/g, '<=');
 
   // Normalize word-length phrases to a canonical "wlen>N" form before pipe-splitting.
+  // Step 2 runs first so that "|w|temtamanho>3" doesn't get partially matched by Step 1.
+  // Step 2 — protect |w| (word-length notation) from being confused with the set-builder "|"
+  r = r.replace(/\|w\|/g, 'wlen');
+  // Step 3 — strip noise between wlen and comparison: "wlentemtamanho>3" → "wlen>3"
+  r = r.replace(/wlen(?:tem)?(?:tamanho)?/g, 'wlen');
   // Step 1 — "tamanho maior que N" / "w tem tamanho > N" (no |w| notation); string already lowercase
   r = r.replace(/(?:w)?(?:tem)?tamanho(?:maior(igual)?(?:a+|que)?|>(=)?)?(?:que|a+)?(\d+)/g, (_, igt, gte, n) => {
     const num = parseInt(n, 10);
     return `wlen>${(igt || gte) ? num - 1 : num}`;
   });
-  // Step 2 — protect |w| (word-length notation) from being confused with the set-builder "|"
-  r = r.replace(/\|w\|/g, 'wlen');
-  // Step 3 — strip noise between wlen and comparison: "wlen tem tamanho >3" → "wlen>3"
-  r = r.replace(/wlen(?:tem)?(?:tamanho)?/g, 'wlen');
   // Step 4 — "wlen maior que N" / "wlen maior igual a N"
   r = r.replace(/wlenmaiorque(\d+)/g, (_, n) => `wlen>${n}`);
   r = r.replace(/wlenmaiorigual(?:que|a+)?(\d+)/g, (_, n) => `wlen>${parseInt(n, 10) - 1}`);
