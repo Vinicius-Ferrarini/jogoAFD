@@ -30,29 +30,28 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
     const entries = Object.entries(level.layout);
     if (entries.length !== graph.nodes.length) return null;
 
-    // Layout % was authored on a square canvas; scale uniformly so the graph
-    // keeps its proportions, then center inside the VW×VH viewport.
+    // Layout coordinates are authored on an abstract grid; scale X and Y
+    // independently so the graph always fills the full canvas width and height,
+    // matching how AFD_1 positions nodes as % of canvas dimensions.
     const xs = entries.map(([, v]) => v[0]);
     const ys = entries.map(([, v]) => v[1]);
     const minX = Math.min(...xs), maxX = Math.max(...xs);
     const minY = Math.min(...ys), maxY = Math.max(...ys);
     const NR = 23; // node radius — same as GraphView default
-    const PAD = NR + 10;
-    const spanX = maxX - minX || 1;
-    const spanY = maxY - minY || 1;
-    const scaleX = (VW - 2 * PAD) / spanX;
-    const scaleY = (VH - 2 * PAD) / spanY;
-    const scale  = Math.min(scaleX, scaleY);
-    const drawnW = spanX * scale;
-    const drawnH = spanY * scale;
-    const offX   = (VW - drawnW) / 2 - minX * scale;
-    const offY   = (VH - drawnH) / 2 - minY * scale;
+    const PAD = NR + 14;
+    const spanX = maxX - minX;
+    const spanY = maxY - minY;
+    const scaleX = spanX > 0 ? (VW - 2 * PAD) / spanX : 1;
+    const scaleY = spanY > 0 ? (VH - 2 * PAD) / spanY : 1;
+    // When all nodes share the same axis value, center on that axis.
+    const offX = spanX > 0 ? PAD - minX * scaleX : VW / 2 - minX * scaleX;
+    const offY = spanY > 0 ? PAD - minY * scaleY : VH / 2 - minY * scaleY;
 
     const pos = {};
     graph.nodes.forEach(n => {
       const ly = level.layout[n.id];
       if (!ly) return;
-      pos[n.id] = { x: Math.round(ly[0] * scale + offX), y: Math.round(ly[1] * scale + offY) };
+      pos[n.id] = { x: Math.round(ly[0] * scaleX + offX), y: Math.round(ly[1] * scaleY + offY) };
     });
     return Object.keys(pos).length === graph.nodes.length ? pos : null;
   }, [level.layout, graph]);

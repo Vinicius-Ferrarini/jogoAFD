@@ -57,6 +57,19 @@ export default function GraphView({
         </marker>
       </defs>
 
+      {/* Sombras dos nós (renderizadas antes das arestas para ficarem por baixo) */}
+      {nodes.map(nd => {
+        const p = positions[nd.id];
+        if (!p) return null;
+        return (
+          <circle key={`sh-${nd.id}`}
+            cx={p.x + 4} cy={p.y + 4}
+            r={nd.isFinal ? nr + 8 : nr}
+            fill="#000"
+          />
+        );
+      })}
+
       {edges.map((edge, i) => {
         const sp = positions[edge.from];
         const tp = positions[edge.to];
@@ -93,9 +106,11 @@ export default function GraphView({
         const lw = label.length * 7 + 8, lh = 16;
 
         if (edge.from === edge.to) {
+          const lbx = sp.x - lw / 2, lby = sp.y - nr - 32 - lh / 2;
           return (
             <g key={i}>
-              <rect x={sp.x - lw / 2} y={sp.y - nr - 32 - lh / 2} width={lw} height={lh} fill="#fff" stroke="#1e3a8a" strokeWidth="2" rx="3" />
+              <rect x={lbx + 2} y={lby + 2} width={lw} height={lh} fill="#000" rx="3" />
+              <rect x={lbx} y={lby} width={lw} height={lh} fill="#fff" stroke="#000" strokeWidth="2" rx="3" />
               <text x={sp.x} y={sp.y - nr - 32}
                 textAnchor="middle" dominantBaseline="middle" className="p2-edge-label">
                 {label}
@@ -121,7 +136,8 @@ export default function GraphView({
         }
         return (
           <g key={i}>
-            <rect x={lx - lw / 2} y={ly - lh / 2} width={lw} height={lh} fill="#fff" stroke="#1e3a8a" strokeWidth="2" rx="3" />
+            <rect x={lx - lw / 2 + 2} y={ly - lh / 2 + 2} width={lw} height={lh} fill="#000" rx="3" />
+            <rect x={lx - lw / 2} y={ly - lh / 2} width={lw} height={lh} fill="#fff" stroke="#000" strokeWidth="2" rx="3" />
             <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" className="p2-edge-label">
               {label}
             </text>
@@ -134,11 +150,14 @@ export default function GraphView({
         if (!p) return null;
         const label = nd.label ?? nd.id;
         const fontSize = label.length > 4 ? 8 : label.length > 3 ? 9 : label.length > 2 ? 11 : 13;
+        const fillColor = highlightNodeId === nd.id
+          ? (highlightType === 'ok' ? '#fbbf24' : highlightType === 'done' ? '#86efac' : '#fca5a5')
+          : nd.isInitial ? '#bae6fd' : nd.isFinal ? '#86efac' : '#fff';
         return (
           <g key={nd.id}>
             {nd.isInitial && (
               <text
-                x={p.x - nr - 5} y={p.y}
+                x={p.x - nr - 6} y={p.y}
                 textAnchor="end" dominantBaseline="middle"
                 style={{ fontSize: 22, fontWeight: 'bold', fill: '#000',
                   paintOrder: 'stroke', stroke: '#fff', strokeWidth: 3,
@@ -146,16 +165,17 @@ export default function GraphView({
               >▶</text>
             )}
             {nd.isFinal && (
-              <circle cx={p.x} cy={p.y} r={nr + 7} fill="none" stroke="#000" strokeWidth="3" />
+              <>
+                {/* Anel externo do estado final */}
+                <circle cx={p.x} cy={p.y} r={nr + 8} fill={fillColor} stroke="#000" strokeWidth="4" />
+                {/* Anel interno separador (gap de ~3px entre os dois strokes) */}
+                <circle cx={p.x} cy={p.y} r={nr + 3} fill="none" stroke="#000" strokeWidth="3" />
+              </>
             )}
             <circle
               cx={p.x} cy={p.y} r={nr}
-              fill={
-                highlightNodeId === nd.id
-                  ? (highlightType === 'ok' ? '#fef08a' : highlightType === 'done' ? '#86efac' : '#fca5a5')
-                  : nd.isInitial ? '#bae6fd' : nd.isFinal ? '#bbf7d0' : '#fff'
-              }
-              stroke="#000" strokeWidth="3"
+              fill={fillColor}
+              stroke="#000" strokeWidth="4"
             />
             <text
               x={p.x} y={p.y}

@@ -50,6 +50,23 @@
   user-select: none;
 }
 
+/* Fundo do canvas no AFD2 igual ao AFD1 */
+.canvas-area .p2-svg-box {
+  background: transparent;
+}
+
+/* Grade de pontos cobrindo toda a canvas-area no AFD2 */
+.canvas-area:has(.p2-svg-box)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.10;
+  background-image: radial-gradient(#000 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* ── Legend ── */
 .p2-legend {
   position: absolute;
