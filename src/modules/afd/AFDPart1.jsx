@@ -67,7 +67,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   // Quando true, o próximo recordHistory substitui o último entry (squash)
   // em vez de empurrar um novo — usado para fundir "criar seta" + "adicionar símbolo"
   const squashNextHistoryRef = useRef(false);
-  const { history, historyIndex, historyLen, recordHistory, undo, redo, resetHistory } =
+  const { historyIndex, historyLen, recordHistory, undo, redo, resetHistory } =
     useHistory({ setNodes, setTransitions, showToast });
 
   // ── Estado geral ───────────────────────────────────────────────────────────

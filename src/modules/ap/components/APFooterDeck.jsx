@@ -20,7 +20,7 @@ const CARDS_TAIL = [
 ];
 
 export default function APFooterDeck({
-  mode, onPick, profMessage, profMood, onProfClick, onCloseBalloon,
+  mode, onPick, profMessage, profMood, onProfClick,
   onNodeDrag, onNodeDrop, onNodeDragCancel,
   canUndo, canRedo, onUndo, onRedo, lessonActive, hasNodes,
   showFinalCard = false,

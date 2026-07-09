@@ -128,7 +128,9 @@ export default function useDrawing({ cssZoomCompensation = true } = {}) {
     }
     currentStrokeRef.current = null;
     setCurrentStroke(null);
-    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {
+      // pointer já pode não estar capturado — nada a fazer
+    }
   }, [isErasing]);
 
   return {

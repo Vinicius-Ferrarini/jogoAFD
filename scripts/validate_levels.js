@@ -2,11 +2,9 @@
 // Valida todos os níveis AFD: grafo, guidedLesson, palavras, textos.
 // Uso: node scripts/validate_levels.js
 
-import { lote1 } from '../src/levels_data/lote1.js';
-import { lote2 } from '../src/levels_data/lote2.js';
-import { lote3 } from '../src/levels_data/lote3.js';
+import { AFD_LEVELS } from '../src/levels_data/afd/index.js';
 
-const GAME_LEVELS = [...lote1, ...lote2, ...lote3];
+const GAME_LEVELS = AFD_LEVELS;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

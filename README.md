@@ -35,6 +35,9 @@ O visual segue o estilo neo-brutalismo / gibi (inspirado na Turma da Mônica), c
 | 🧠 | **Validação Automática** | O sistema simula o autômato desenhado contra a expressão regular da fase e rejeita erros de não-determinismo |
 | 🔬 | **Simulação Passo a Passo** | Percorre cada transição com destaque visual em tempo real |
 | 📊 | **Grafo → Linguagem (P2)** | Modo inverso: dado um autômato, o aluno deve identificar a linguagem formal aceita |
+| 🔽 | **Minimização de AFD** | Reduz um autômato ao equivalente mínimo em passos guiados |
+| 📚 | **Autômatos com Pilha** | Construção de AP com aceitação por pilha vazia |
+| 🎞️ | **Máquinas de Turing** | Construção de MT transdutora com fita e simulação passo a passo |
 | ⭐ | **Sistema de Estrelas** | Até 3 estrelas por fase com base no número de tentativas |
 
 ---
@@ -45,16 +48,16 @@ O visual segue o estilo neo-brutalismo / gibi (inspirado na Turma da Mônica), c
 TuringLab
 ├── AFD Parte 1 — Desenhar o autômato a partir da linguagem
 ├── AFD Parte 2 — Identificar a linguagem a partir do grafo
-├── AFD Minimização — (em breve)
-├── Autômatos com Pilha — (em breve)
-└── Máquinas de Turing — (em breve)
+├── AFD Minimização — reduzir um autômato ao seu equivalente mínimo
+├── Autômatos com Pilha — construção e aceitação por pilha vazia
+└── Máquinas de Turing (Transdutora) — construção passo a passo com fita
 ```
 
 ---
 
 ## Stack
 
-- **Framework:** React 18 + Vite
+- **Framework:** React 19 + Vite
 - **Estilização:** CSS3 puro — Neo-brutalismo, Comic Sans, `#fff9c4`
 - **Lógica de autômatos:** JavaScript puro, sem bibliotecas externas de grafo
 - **Persistência:** `localStorage` para progresso por fase

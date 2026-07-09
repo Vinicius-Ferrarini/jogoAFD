@@ -1,3 +1,7 @@
+> **[ARQUIVADO]** Planejamento pré-implementação. Os níveis reais implementados em
+> `src/levels_data/mt/` (L1–L12) já divergiram desta numeração — usar apenas como
+> referência histórica de decisões de design, não como roadmap ativo.
+
 # Roadmap — MT Transdutora L2–L16
 
 > Planejamento arquitetural para implementação em lotes.

@@ -356,7 +356,7 @@ export default function useAFDGraph({
       const tx = tgt.x, ty = tgt.y;
       const bidir = src.uid !== tgt.uid && displayTransitions.some(o => o.from === tgt.id && o.to === src.id);
 
-      let pathD = '', lx = 0, ly = 0;
+      let pathD, lx, ly;
       if (src.uid === tgt.uid) {
         pathD = `M ${sx - 16} ${sy - 29} C ${sx - 58} ${sy - 96} ${sx + 58} ${sy - 96} ${sx + 16} ${sy - 29}`;
         lx = sx; ly = sy - 82;

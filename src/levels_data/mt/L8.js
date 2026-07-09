@@ -42,18 +42,12 @@ const L8_E_CLN_END = { from: 'q_clean',to: 'qf',     read: '□', write: '□', 
 
 const L8_N0      = [L8_Q0];
 const L8_N0CA    = [L8_Q0, L8_Q_CA];
-const L8_N0CAB   = [L8_Q0, L8_Q_CA, L8_Q_CB];
 const L8_N_RET   = [L8_Q0, L8_Q_CA, L8_Q_CB, L8_Q_RET];
 const L8_N_CLN   = [L8_Q0, L8_Q_CA, L8_Q_CB, L8_Q_RET, L8_Q_CLN];
 const L8_NFULL   = [L8_Q0, L8_Q_CA, L8_Q_CB, L8_Q_RET, L8_Q_CLN, L8_QF];
 
-const L8_T0      = [L8_E_Q0_A, L8_E_Q0_B, L8_E_Q0_LA, L8_E_Q0_LB];
-const L8_T0END   = [L8_E_Q0_A, L8_E_Q0_B, L8_E_Q0_LA, L8_E_Q0_LB, L8_E_Q0_END];
 const L8_TCA     = [L8_E_Q0_A, L8_E_Q0_B, L8_E_Q0_LA, L8_E_Q0_LB, L8_E_Q0_END,
                     L8_E_CA_LA, L8_E_CA_LB, L8_E_CA_LAA, L8_E_CA_LBB, L8_E_CA_DEP];
-const L8_TCAB    = [L8_E_Q0_A, L8_E_Q0_B, L8_E_Q0_LA, L8_E_Q0_LB, L8_E_Q0_END,
-                    L8_E_CA_LA, L8_E_CA_LB, L8_E_CA_LAA, L8_E_CA_LBB, L8_E_CA_DEP,
-                    L8_E_CB_LA, L8_E_CB_LB, L8_E_CB_LAA, L8_E_CB_LBB, L8_E_CB_DEP];
 const L8_TRET    = [L8_E_Q0_A, L8_E_Q0_B, L8_E_Q0_LA, L8_E_Q0_LB, L8_E_Q0_END,
                     L8_E_CA_LA, L8_E_CA_LB, L8_E_CA_LAA, L8_E_CA_LBB, L8_E_CA_DEP,
                     L8_E_CB_LA, L8_E_CB_LB, L8_E_CB_LAA, L8_E_CB_LBB, L8_E_CB_DEP,

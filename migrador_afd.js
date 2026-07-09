@@ -2,7 +2,6 @@
 // migrador_afd.js
 // Lê os XMLs do JFLAP em gabaritos_jflap/afd/, extrai nodes/transitions,
 // e gera src/levels_data/afd/graphs_from_jflap.js com todos os grafos.
-// Também gera arquivos L{N}_jflap.js individuais (sem sobrescrever os L*.js).
 // NÃO modifica nenhum arquivo .jsx, .css ou os L*.js existentes.
 
 import fs from 'fs';
@@ -95,22 +94,6 @@ function inlineGraph(graph, indent = '    ') {
   return `{\n${indent}nodes: ${nb},\n${indent}transitions: ${tb},\n${indent.slice(2)}}`;
 }
 
-// ─── Gera conteúdo de um arquivo individual L{N}_jflap.js ───────────────────
-function genIndividualFile(levelId, sourceFile, graph) {
-  const label = `L${String(levelId).padStart(2, '0')}`;
-  const nodesLines = graph.nodes
-    .map(n => `  { id: '${n.id}', x: ${n.x}, y: ${n.y}, isInitial: ${n.isInitial}, isFinal: ${n.isFinal} }`)
-    .join(',\n');
-  const transLines = graph.transitions
-    .map(t => `  { from: '${t.from}', to: '${t.to}', symbol: '${t.symbol}' }`)
-    .join(',\n');
-
-  const nb = graph.nodes.length === 0       ? '[]' : `[\n${nodesLines}\n]`;
-  const tb = graph.transitions.length === 0 ? '[]' : `[\n${transLines}\n]`;
-
-  return `// ${label} — grafo extraído de ${sourceFile} por migrador_afd.js\nexport default {\n  nodes: ${nb},\n  transitions: ${tb},\n};\n`;
-}
-
 // ─── Main ────────────────────────────────────────────────────────────────────
 function main() {
   const xmlFiles = fs.readdirSync(XML_DIR)
@@ -143,10 +126,6 @@ function main() {
     }
 
     allGraphs[levelId] = { graph, sourceFile: xmlFile };
-
-    // Gera arquivo individual (nome distinto para não colidir com L*.js existentes)
-    const outPath = path.join(OUT_DIR, `L${levelId}_jflap.js`);
-    fs.writeFileSync(outPath, genIndividualFile(levelId, xmlFile, graph), 'utf8');
     generated++;
   }
 
@@ -171,7 +150,7 @@ function main() {
   const indexPath = path.join(OUT_DIR, 'graphs_from_jflap.js');
   fs.writeFileSync(indexPath, indexContent, 'utf8');
 
-  console.log(`\n✅ ${generated} arquivos L{N}_jflap.js gerados em src/levels_data/afd/`);
+  console.log(`\n✅ ${generated} grafos migrados`);
   console.log(`   Índice consolidado: src/levels_data/afd/graphs_from_jflap.js`);
   if (noMap.length)
     console.log(`⏭  Sem mapeamento (ignorados): ${noMap.join(', ')}`);

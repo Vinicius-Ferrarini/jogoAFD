@@ -434,7 +434,6 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         onProfClick={() => setProf(p => p.message
           ? { ...p, message: '' }
           : { message: level.hint || 'Lembre: aceita por pilha vazia (esvazie o Z no fim).', mood: 'explicando' })}
-        onCloseBalloon={() => setProf(p => ({ ...p, message: '' }))}
         onNodeDrag={handleDeckDrag}
         onNodeDrop={handleDeckDrop}
         onNodeDragCancel={handleDeckCancel}

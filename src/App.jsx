@@ -20,7 +20,6 @@ const DIRECT_GAME = { ap: 'ap-pilha', mt: 'mt-trans' };
 export default function App() {
   const [screen, setScreen] = useState('HOME');
   const [currentModule, setCurrentModule] = useState(null);
-  const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
 
   // ✨ Progresso Persistente
   const getProgress = () => {
@@ -43,10 +42,10 @@ export default function App() {
     });
   }, []);
 
-  const showToast = useCallback((message, type = 'info') => {
-    setToastData({ show: true, message, type });
-    setTimeout(() => setToastData(d => ({ ...d, show: false })), 4000);
-  }, []);
+  // TODO: showToast não renderiza feedback visual — toastData foi removido por
+  // ser código morto, mas os chamadores (AFDPart1/2, MTPart1 etc.) ainda esperam
+  // essa função. Precisa de um componente de toast de verdade no futuro.
+  const showToast = useCallback(() => {}, []);
 
   // ✨ Navegação
   const goHome = () => setScreen('HOME');

@@ -27,10 +27,6 @@ const T_AB_4 = [E_Q0A, E_Q1B, E_Q1_BACK, E_Q2A, E_Q2B];           // + scan-back
 const T_AB_5 = [E_Q0A, E_Q1B, E_Q1_BACK, E_Q2A, E_Q2B, E_Q2_FIN]; // máquina "ab" (sem laço 'a')
 const T_FULL = [E_Q0A, E_Q0B, E_Q1A, E_Q1B, E_Q1_BACK, E_Q2A, E_Q2B, E_Q2_FIN]; // generalizada
 
-// Grafo final (passo formal) — corresponde à formalDescription
-const L1_N_FULL = N_0123;
-const L1_T_FULL = T_FULL;
-
 // δ revelada aos poucos no formulário formal (cada grupo acrescenta linhas)
 const D1 = [E_Q0A, E_Q0B];                          // q0 converte a 1ª letra
 const D2 = [...D1, E_Q1A, E_Q1B];                   // + laços de q1

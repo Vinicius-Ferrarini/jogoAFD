@@ -109,8 +109,5 @@ export default function useHistory({ setNodes, setTransitions, showToast }) {
     syncReact(0, 1);
   }, [syncReact]);
 
-  // Expõe `history` como array derivado para FooterDeck verificar `.length`.
-  const history = stackRef.current;
-
-  return { history, historyIndex, historyLen, recordHistory, undo, redo, resetHistory };
+  return { historyIndex, historyLen, recordHistory, undo, redo, resetHistory };
 }

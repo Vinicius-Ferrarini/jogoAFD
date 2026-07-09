@@ -39,14 +39,12 @@ const L12_E_CLN_E  = { from: 'q_clean',to: 'q_rw',   read: '□', write: '□', 
 const L12_E_RW_1   = { from: 'q_rw',   to: 'q_rw',   read: '1', write: '1', move: 'L' };
 const L12_E_RW_E   = { from: 'q_rw',   to: 'qf',     read: '□', write: '□', move: 'R' };
 
-const L12_N0    = [L12_Q0];
 const L12_N01   = [L12_Q0, L12_Q1];
 const L12_N012  = [L12_Q0, L12_Q1, L12_Q2];
 const L12_N_CLN = [L12_Q0, L12_Q1, L12_Q2, L12_QCLN];
 const L12_N_RW  = [L12_Q0, L12_Q1, L12_Q2, L12_QCLN, L12_QRW];
 const L12_NFULL = [L12_Q0, L12_Q1, L12_Q2, L12_QCLN, L12_QRW, L12_QF];
 
-const L12_T0    = [L12_E_Q0_1, L12_E_Q0_LX];
 const L12_T01   = [L12_E_Q0_1, L12_E_Q0_LX, L12_E_Q1_L1, L12_E_Q1_LX, L12_E_Q1_LH, L12_E_Q1_1];
 const L12_T012  = [L12_E_Q0_1, L12_E_Q0_LX, L12_E_Q1_L1, L12_E_Q1_LX, L12_E_Q1_LH, L12_E_Q1_1,
                    L12_E_Q2_L1, L12_E_Q2_LX, L12_E_Q2_LH, L12_E_Q2_RET];

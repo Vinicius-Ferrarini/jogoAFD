@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { LEVEL_GRAPHS } from '../../../levels_graphs';
-import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../../levels';
+import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../../../levels';
 import { SvgStars } from '../SvgStar';
 import GraphView       from './GraphView';
 import { DrawStroke }  from './StrokeEl';
