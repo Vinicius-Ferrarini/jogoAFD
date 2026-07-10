@@ -375,9 +375,23 @@ export default function useAFDGraph({
         const nx = dist ? -dy/dist : 0, ny = dist ? dx/dist : 0;
         const off = 40;
         const qcx = (sx+tx)/2 + nx*off, qcy = (sy+ty)/2 + ny*off;
-        pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${tx} ${ty}`;
-        lx = ((sx+tx)/2 + qcx)/2 + nx*10;
-        ly = ((sy+ty)/2 + qcy)/2 + ny*10;
+        // Recua o ponto final ao longo da TANGENTE da curva em t=1 (direção
+        // ponto-de-controle→destino), não ao longo da reta sp→tp — a seta usa
+        // orient="auto" (rotaciona conforme a tangente real do path), então
+        // terminar o path na reta faz a ponta parecer torta em relação à
+        // curva visível. NR aproxima o raio do nó (65px de diâmetro / 2).
+        const NR = 32;
+        const tanX = tx - qcx, tanY = ty - qcy;
+        const tanDist = Math.sqrt(tanX*tanX + tanY*tanY) || 1;
+        const endX = tx - (tanX/tanDist) * NR;
+        const endY = ty - (tanY/tanDist) * NR;
+        pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${endX} ${endY}`;
+        // Ponto da curva Bézier quadrática em t=0.5 é exatamente o midpoint
+        // entre o ponto médio reto e o ponto de controle — usar esse valor
+        // exato (sem offset extra) mantém o rótulo sempre em cima da curva,
+        // em vez de flutuando além dela.
+        lx = ((sx+tx)/2 + qcx)/2;
+        ly = ((sy+ty)/2 + qcy)/2;
       } else {
         pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
         lx = (sx+tx)/2; ly = (sy+ty)/2;

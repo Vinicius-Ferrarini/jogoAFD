@@ -613,7 +613,7 @@ export default function CanvasArea({
                   <path key={tr.idx} d={tr.pathD}
                     className={`transition-line ${interactionMode==='ERASE'?'erasable':''} ${highlightedError===`transition-${tr.idx}`?'line-error':''}`}
                     markerEnd={`url(#${
-                      tr.src.uid === tr.tgt.uid
+                      tr.src.uid === tr.tgt.uid || tr.bidir
                         ? (interactionMode === 'ERASE' ? 'ahsle' : 'ahsl')
                         : (interactionMode === 'ERASE' ? 'ahe' : highlightedError === `transition-${tr.idx}` ? 'ahr' : 'ah')
                     })`}

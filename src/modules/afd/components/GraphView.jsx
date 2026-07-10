@@ -20,6 +20,16 @@ export default function GraphView({
   fixedPositions = null,
   rawLayout = null,
 }) {
+  // Nós com self-loop (from===to) desenham uma curva que sobe ~nr+58 acima do
+  // próprio centro (ver path do self-loop mais abaixo) — bem mais alto que o
+  // padding padrão do nó. Se um desses nós ficar perto da borda superior do
+  // layout, o loop é cortado pelo viewBox (ex.: L50/q3). Detectamos esses nós
+  // para reservar padding extra no topo só quando necessário.
+  const selfLoopNodeIds = useMemo(
+    () => new Set(transitions.filter(t => t.from === t.to).map(t => t.from)),
+    [transitions]
+  );
+
   // Layouts autorados numa grade abstrata (rawLayout, ex.: coordenadas 0-100)
   // são escalados para o viewport atual (vw/vh) — assim, se o container mudar
   // de proporção, o grafo reaproveita o espaço em vez de sobrar margem vazia.
@@ -32,19 +42,23 @@ export default function GraphView({
     const minX = Math.min(...xs), maxX = Math.max(...xs);
     const minY = Math.min(...ys), maxY = Math.max(...ys);
     const PAD = nr + 14;
+    // Padding extra no topo: suficiente para a curva do self-loop (que sobe
+    // nr+58 acima do centro do nó) não ultrapassar y=0 do viewBox.
+    const hasTopSelfLoop = entries.some(([id, [, ly]]) => ly === minY && selfLoopNodeIds.has(id));
+    const PAD_TOP = hasTopSelfLoop ? nr + 62 : PAD;
     const spanX = maxX - minX;
     const spanY = maxY - minY;
     const scaleX = spanX > 0 ? (vw - 2 * PAD) / spanX : 1;
-    const scaleY = spanY > 0 ? (vh - 2 * PAD) / spanY : 1;
+    const scaleY = spanY > 0 ? (vh - PAD_TOP - PAD) / spanY : 1;
     const offX = spanX > 0 ? PAD - minX * scaleX : vw / 2 - minX * scaleX;
-    const offY = spanY > 0 ? PAD - minY * scaleY : vh / 2 - minY * scaleY;
+    const offY = spanY > 0 ? PAD_TOP - minY * scaleY : vh / 2 - minY * scaleY;
 
     const pos = {};
     for (const [id, [lx, ly]] of entries) {
       pos[id] = { x: Math.round(lx * scaleX + offX), y: Math.round(ly * scaleY + offY) };
     }
     return pos;
-  }, [rawLayout, vw, vh, nr]);
+  }, [rawLayout, vw, vh, nr, selfLoopNodeIds]);
 
   const effectiveFixedPositions = scaledRawLayout ?? fixedPositions;
 
@@ -91,12 +105,16 @@ export default function GraphView({
       const bidir = hasBidir(edge.from, edge.to);
       let x, y, baseOff;
       if (bidir) {
+        // O path da curva é uma Bézier quadrática com ponto de controle a
+        // `off` de distância perpendicular do midpoint reto — o ponto da
+        // curva em t=0.5 fica exatamente na METADE dessa distância
+        // (0.25·p0 + 0.5·ctrl + 0.25·p2 = midpoint reto + off/2). Usar esse
+        // valor exato (sem offset extra) mantém o rótulo sempre em cima da
+        // curva, em vez de flutuando além dela.
         const off = 38;
-        const cx1 = (sp.x + tp.x) / 2 + nx * off;
-        const cy1 = (sp.y + tp.y) / 2 + ny * off;
-        x = ((sp.x + tp.x) / 2 + cx1) / 2 + nx * 10;
-        y = ((sp.y + tp.y) / 2 + cy1) / 2 + ny * 10;
-        baseOff = (off / 2 + 10);
+        baseOff = off / 2;
+        x = (sp.x + tp.x) / 2 + nx * baseOff;
+        y = (sp.y + tp.y) / 2 + ny * baseOff;
       } else {
         baseOff = 15;
         x = (sp.x + tp.x) / 2 + nx * baseOff;
@@ -229,16 +247,26 @@ export default function GraphView({
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const nx = -dy / dist, ny = dx / dist;
         const bidir = hasBidir(edge.from, edge.to);
-        let pathD;
+        let pathD, markerId = 'gv-arr';
         if (bidir) {
           const off = 38;
           const cx1 = (sp.x + tp.x) / 2 + nx * off;
           const cy1 = (sp.y + tp.y) / 2 + ny * off;
-          pathD = `M ${sp.x} ${sp.y} Q ${cx1} ${cy1} ${tp.x} ${tp.y}`;
+          // Recua o ponto final ao longo da TANGENTE da curva em t=1 (direção
+          // ponto-de-controle→destino), não ao longo da reta sp→tp — usar a
+          // reta aqui faria o marker rotacionar (orient="auto") na direção da
+          // curva mas terminar num ponto fora do ângulo real de chegada,
+          // deixando a ponta da seta visivelmente torta em relação ao traço.
+          const tanX = tp.x - cx1, tanY = tp.y - cy1;
+          const tanDist = Math.sqrt(tanX * tanX + tanY * tanY) || 1;
+          const endX = tp.x - (tanX / tanDist) * nr;
+          const endY = tp.y - (tanY / tanDist) * nr;
+          pathD = `M ${sp.x} ${sp.y} Q ${cx1} ${cy1} ${endX} ${endY}`;
+          markerId = 'gv-arr-sl';
         } else {
           pathD = `M ${sp.x} ${sp.y} L ${tp.x} ${tp.y}`;
         }
-        return <path key={i} d={pathD} fill="none" stroke="#000" strokeWidth="4" markerEnd="url(#gv-arr)" />;
+        return <path key={i} d={pathD} fill="none" stroke="#000" strokeWidth="4" markerEnd={`url(#${markerId})`} />;
       })}
 
       {resolvedLabels.map((box, i) => {
