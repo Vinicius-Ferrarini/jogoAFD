@@ -33,7 +33,7 @@ export default function GameHeader({
         <button className="sidebar-toggle" onClick={toggleSidebar} title="Abrir Descrição Formal">☰</button>
         <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
       </div>
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
         <span className="mission-label">Objetivo</span>
         <div className="mission-formula">{currentLevel?.formula || ''}</div>
         {currentLevel?.guidedLesson && (

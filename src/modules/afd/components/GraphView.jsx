@@ -1,7 +1,9 @@
 // Grafo SVG read-only — compartilhado entre AFDPart2 (AFDGraphView) e AFDMinimizer (GraphView).
 // CSS: classes .p2-edge-label, .p2-node-label definidas em AFDPart2.css.
 // highlightNodeId/highlightType: usados pela simulação passo a passo (apenas AFDPart2).
-// vw/vh/nr/mx/my: permitem customizar o viewport para cada contexto.
+// vw/vh/nr/mx/my: permitem customizar o viewport para cada contexto — quem chama
+// deve medir o container real e passar vw/vh nessa proporção, para o grafo
+// preencher o espaço disponível sem sobrar margem vazia nas bordas.
 import { useMemo, useCallback } from 'react';
 import { computeLayout } from '../utils/dfaAlgorithms';
 
@@ -16,10 +18,39 @@ export default function GraphView({
   mx = 65,
   my = 42,
   fixedPositions = null,
+  rawLayout = null,
 }) {
+  // Layouts autorados numa grade abstrata (rawLayout, ex.: coordenadas 0-100)
+  // são escalados para o viewport atual (vw/vh) — assim, se o container mudar
+  // de proporção, o grafo reaproveita o espaço em vez de sobrar margem vazia.
+  const scaledRawLayout = useMemo(() => {
+    if (!rawLayout) return null;
+    const entries = Object.entries(rawLayout);
+    if (!entries.length) return null;
+    const xs = entries.map(([, v]) => v[0]);
+    const ys = entries.map(([, v]) => v[1]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const PAD = nr + 14;
+    const spanX = maxX - minX;
+    const spanY = maxY - minY;
+    const scaleX = spanX > 0 ? (vw - 2 * PAD) / spanX : 1;
+    const scaleY = spanY > 0 ? (vh - 2 * PAD) / spanY : 1;
+    const offX = spanX > 0 ? PAD - minX * scaleX : vw / 2 - minX * scaleX;
+    const offY = spanY > 0 ? PAD - minY * scaleY : vh / 2 - minY * scaleY;
+
+    const pos = {};
+    for (const [id, [lx, ly]] of entries) {
+      pos[id] = { x: Math.round(lx * scaleX + offX), y: Math.round(ly * scaleY + offY) };
+    }
+    return pos;
+  }, [rawLayout, vw, vh, nr]);
+
+  const effectiveFixedPositions = scaledRawLayout ?? fixedPositions;
+
   const positions = useMemo(
-    () => computeLayout(nodes, transitions, { VW: vw, VH: vh, MX: mx, MY: my, fixedPositions }),
-    [nodes, transitions, vw, vh, mx, my, fixedPositions]
+    () => computeLayout(nodes, transitions, { VW: vw, VH: vh, MX: mx, MY: my, fixedPositions: effectiveFixedPositions }),
+    [nodes, transitions, vw, vh, mx, my, effectiveFixedPositions]
   );
 
   const edges = useMemo(() => {
@@ -39,6 +70,118 @@ export default function GraphView({
     (a, b) => edges.some(e => e.from === b && e.to === a),
     [edges]
   );
+
+  // Posição base de cada rótulo de aresta (antes de resolver colisões).
+  // Guarda também a caixa (lw/lh) para a passagem de repulsão abaixo.
+  const labelBoxes = useMemo(() => {
+    return edges.map(edge => {
+      const sp = positions[edge.from];
+      const tp = positions[edge.to];
+      const label = edge.syms.join(',');
+      const lw = label.length * 7 + 8, lh = 16;
+      if (!sp || !tp) return { label, lw, lh, x: 0, y: 0, valid: false };
+
+      if (edge.from === edge.to) {
+        return { label, lw, lh, x: sp.x, y: sp.y - nr - 32, valid: true, isSelfLoop: true };
+      }
+
+      const dx = tp.x - sp.x, dy = tp.y - sp.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const nx = -dy / dist, ny = dx / dist;
+      const bidir = hasBidir(edge.from, edge.to);
+      let x, y, baseOff;
+      if (bidir) {
+        const off = 38;
+        const cx1 = (sp.x + tp.x) / 2 + nx * off;
+        const cy1 = (sp.y + tp.y) / 2 + ny * off;
+        x = ((sp.x + tp.x) / 2 + cx1) / 2 + nx * 10;
+        y = ((sp.y + tp.y) / 2 + cy1) / 2 + ny * 10;
+        baseOff = (off / 2 + 10);
+      } else {
+        baseOff = 15;
+        x = (sp.x + tp.x) / 2 + nx * baseOff;
+        y = (sp.y + tp.y) / 2 + ny * baseOff;
+      }
+      // midX/midY + nx/ny/baseOff são guardados para a repulsão abaixo poder
+      // mover o rótulo SÓ ao longo da perpendicular à linha (nx,ny) — do
+      // contrário, empurrões em X/Y absolutos desalinham o rótulo do "meio"
+      // visual da linha em arestas diagonais (fica flutuando ao lado dela).
+      const midX = (sp.x + tp.x) / 2, midY = (sp.y + tp.y) / 2;
+      return { label, lw, lh, x, y, valid: true, midX, midY, nx, ny, baseOff };
+    });
+  }, [edges, positions, hasBidir, nr]);
+
+  // Resolve sobreposições entre caixas de rótulo (grafos densos como o L55 têm
+  // nós muito próximos e vários rótulos concorrendo pelo mesmo espaço). Empurra
+  // pares de caixas que se sobrepõem para longe uma da outra, e também afasta
+  // qualquer rótulo que tenha caído em cima do círculo de um nó (arestas muito
+  // curtas fazem o offset perpendicular cair dentro do próprio nó vizinho).
+  // Poucas iterações bastam pois cada rótulo só precisa abrir espaço local.
+  const resolvedLabels = useMemo(() => {
+    const boxes = labelBoxes.map(b => ({ ...b }));
+    const nodeCircles = nodes.map(nd => {
+      const p = positions[nd.id];
+      return p ? { x: p.x, y: p.y, r: nd.isFinal ? nr + 8 : nr } : null;
+    }).filter(Boolean);
+    // Para rótulos de arestas retas (têm nx/ny/midX/midY), qualquer empurrão de
+    // colisão é reprojetado na componente perpendicular à linha (nx,ny) e
+    // aplicado como ajuste de baseOff — preserva a posição ao longo da linha,
+    // então o rótulo nunca "escorrega" para o lado e some do meio da aresta em
+    // diagonais acentuadas. Self-loops (sem nx/ny) continuam livres em X/Y.
+    const applyPush = (box, pushX, pushY) => {
+      if (box.nx !== undefined) {
+        const alongOff = pushX * box.nx + pushY * box.ny;
+        box.baseOff += alongOff;
+        box.x = box.midX + box.nx * box.baseOff;
+        box.y = box.midY + box.ny * box.baseOff;
+      } else {
+        box.x += pushX; box.y += pushY;
+      }
+    };
+    const PAD = 3;
+    for (let iter = 0; iter < 6; iter++) {
+      let moved = false;
+      for (let i = 0; i < boxes.length; i++) {
+        if (!boxes[i].valid) continue;
+        for (let j = i + 1; j < boxes.length; j++) {
+          if (!boxes[j].valid) continue;
+          const a = boxes[i], b = boxes[j];
+          const overlapX = (a.lw + b.lw) / 2 + PAD - Math.abs(a.x - b.x);
+          const overlapY = (a.lh + b.lh) / 2 + PAD - Math.abs(a.y - b.y);
+          if (overlapX > 0 && overlapY > 0) {
+            moved = true;
+            // Empurra ao longo do eixo de menor sobreposição (menor deslocamento necessário)
+            if (overlapX < overlapY) {
+              const push = overlapX / 2 + 0.5;
+              const dir = a.x <= b.x ? -1 : 1;
+              applyPush(a, dir * push, 0); applyPush(b, -dir * push, 0);
+            } else {
+              const push = overlapY / 2 + 0.5;
+              const dir = a.y <= b.y ? -1 : 1;
+              applyPush(a, 0, dir * push); applyPush(b, 0, -dir * push);
+            }
+          }
+        }
+      }
+      for (const box of boxes) {
+        if (!box.valid) continue;
+        for (const c of nodeCircles) {
+          const dx = box.x - c.x, dy = box.y - c.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const minDist = c.r + Math.max(box.lw, box.lh) / 2 + 2;
+          if (dist < minDist) {
+            moved = true;
+            const push = minDist - dist;
+            const ux = dist > 0.01 ? dx / dist : 0;
+            const uy = dist > 0.01 ? dy / dist : 1;
+            applyPush(box, ux * push, uy * push);
+          }
+        }
+      }
+      if (!moved) break;
+    }
+    return boxes;
+  }, [labelBoxes, nodes, positions, nr]);
 
   return (
     <svg
@@ -98,47 +241,14 @@ export default function GraphView({
         return <path key={i} d={pathD} fill="none" stroke="#000" strokeWidth="4" markerEnd="url(#gv-arr)" />;
       })}
 
-      {edges.map((edge, i) => {
-        const sp = positions[edge.from];
-        const tp = positions[edge.to];
-        if (!sp || !tp) return null;
-        const label = edge.syms.join(',');
-        const lw = label.length * 7 + 8, lh = 16;
-
-        if (edge.from === edge.to) {
-          const lbx = sp.x - lw / 2, lby = sp.y - nr - 32 - lh / 2;
-          return (
-            <g key={i}>
-              <rect x={lbx + 2} y={lby + 2} width={lw} height={lh} fill="#000" rx="3" />
-              <rect x={lbx} y={lby} width={lw} height={lh} fill="#fff" stroke="#000" strokeWidth="2" rx="3" />
-              <text x={sp.x} y={sp.y - nr - 32}
-                textAnchor="middle" dominantBaseline="middle" className="p2-edge-label">
-                {label}
-              </text>
-            </g>
-          );
-        }
-
-        const dx = tp.x - sp.x, dy = tp.y - sp.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const nx = -dy / dist, ny = dx / dist;
-        const bidir = hasBidir(edge.from, edge.to);
-        let lx, ly;
-        if (bidir) {
-          const off = 38;
-          const cx1 = (sp.x + tp.x) / 2 + nx * off;
-          const cy1 = (sp.y + tp.y) / 2 + ny * off;
-          lx = ((sp.x + tp.x) / 2 + cx1) / 2 + nx * 10;
-          ly = ((sp.y + tp.y) / 2 + cy1) / 2 + ny * 10;
-        } else {
-          lx = (sp.x + tp.x) / 2 + nx * 15;
-          ly = (sp.y + tp.y) / 2 + ny * 15;
-        }
+      {resolvedLabels.map((box, i) => {
+        if (!box.valid) return null;
+        const { x, y, lw, lh, label } = box;
         return (
           <g key={i}>
-            <rect x={lx - lw / 2 + 2} y={ly - lh / 2 + 2} width={lw} height={lh} fill="#000" rx="3" />
-            <rect x={lx - lw / 2} y={ly - lh / 2} width={lw} height={lh} fill="#fff" stroke="#000" strokeWidth="2" rx="3" />
-            <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" className="p2-edge-label">
+            <rect x={x - lw / 2 + 2} y={y - lh / 2 + 2} width={lw} height={lh} fill="#000" rx="3" />
+            <rect x={x - lw / 2} y={y - lh / 2} width={lw} height={lh} fill="#fff" stroke="#000" strokeWidth="2" rx="3" />
+            <text x={x} y={y} textAnchor="middle" dominantBaseline="middle" className="p2-edge-label">
               {label}
             </text>
           </g>
@@ -152,7 +262,7 @@ export default function GraphView({
         const fontSize = label.length > 4 ? 8 : label.length > 3 ? 9 : label.length > 2 ? 11 : 13;
         const fillColor = highlightNodeId === nd.id
           ? (highlightType === 'ok' ? '#fbbf24' : highlightType === 'done' ? '#86efac' : '#fca5a5')
-          : nd.isInitial ? '#bae6fd' : nd.isFinal ? '#86efac' : '#fff';
+          : nd.isFinal ? '#86efac' : nd.isInitial ? '#bae6fd' : '#fff';
         return (
           <g key={nd.id}>
             {nd.isInitial && (

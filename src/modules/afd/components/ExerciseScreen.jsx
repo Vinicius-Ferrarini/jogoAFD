@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { LEVEL_GRAPHS } from '../../../levels_graphs';
 import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../../../levels';
 import { SvgStars } from '../SvgStar';
@@ -25,36 +25,33 @@ const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowe
 export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev }) {
   const graph = LEVEL_GRAPHS[level.id];
 
-  const fixedPositions = useMemo(() => {
-    if (!level.layout || !graph) return null;
-    const entries = Object.entries(level.layout);
-    if (entries.length !== graph.nodes.length) return null;
+  // .p2-svg-box raramente tem a mesma proporção 580:340 do viewBox default —
+  // sobra margem vazia nas bordas. Medimos o container real via ResizeObserver
+  // e ajustamos vw/vh para casar com o tamanho REAL do container em px
+  // (escala ~1:1 unidade de viewBox = 1px CSS), em vez de manter vh fixo em
+  // 340 e só esticar vw — essa era a causa de nós/traços/fontes (definidos em
+  // unidades fixas) aparecerem gigantes em telas grandes: o container real
+  // podia ter quase 900px de altura espremidos em 340 unidades, inflando o
+  // fator de escala (px reais por unidade) bem acima do valor de referência.
+  const svgBoxRef = useRef(null);
+  const [dynVw, setDynVw] = useState(VW);
+  const [dynVh, setDynVh] = useState(VH);
 
-    // Layout coordinates are authored on an abstract grid; scale X and Y
-    // independently so the graph always fills the full canvas width and height,
-    // matching how AFD_1 positions nodes as % of canvas dimensions.
-    const xs = entries.map(([, v]) => v[0]);
-    const ys = entries.map(([, v]) => v[1]);
-    const minX = Math.min(...xs), maxX = Math.max(...xs);
-    const minY = Math.min(...ys), maxY = Math.max(...ys);
-    const NR = 23; // node radius — same as GraphView default
-    const PAD = NR + 14;
-    const spanX = maxX - minX;
-    const spanY = maxY - minY;
-    const scaleX = spanX > 0 ? (VW - 2 * PAD) / spanX : 1;
-    const scaleY = spanY > 0 ? (VH - 2 * PAD) / spanY : 1;
-    // When all nodes share the same axis value, center on that axis.
-    const offX = spanX > 0 ? PAD - minX * scaleX : VW / 2 - minX * scaleX;
-    const offY = spanY > 0 ? PAD - minY * scaleY : VH / 2 - minY * scaleY;
-
-    const pos = {};
-    graph.nodes.forEach(n => {
-      const ly = level.layout[n.id];
-      if (!ly) return;
-      pos[n.id] = { x: Math.round(ly[0] * scaleX + offX), y: Math.round(ly[1] * scaleY + offY) };
-    });
-    return Object.keys(pos).length === graph.nodes.length ? pos : null;
-  }, [level.layout, graph]);
+  useEffect(() => {
+    const el = svgBoxRef.current;
+    if (!el) return;
+    const update = () => {
+      const { width, height } = el.getBoundingClientRect();
+      if (width > 0 && height > 0) {
+        setDynVh(Math.round(height));
+        setDynVw(Math.round(width));
+      }
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const {
     answer,
@@ -273,17 +270,19 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
           </button>
 
           {graph ? (
-            <div className="p2-svg-box">
+            <div className="p2-svg-box" ref={svgBoxRef}>
               <GraphView
                 nodes={graph.nodes}
                 transitions={graph.transitions}
                 highlightNodeId={simHighlight.nodeId}
                 highlightType={simHighlight.type}
-                fixedPositions={fixedPositions}
+                rawLayout={level.layout}
+                vw={dynVw}
+                vh={dynVh}
               />
               {/* Drawing overlay */}
               <svg ref={overlayRef}
-                viewBox={`0 0 ${VW} ${VH}`}
+                viewBox={`0 0 ${dynVw} ${dynVh}`}
                 preserveAspectRatio="xMidYMid meet"
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%',
                   pointerEvents: isDrawMode ? 'auto' : 'none' }}
@@ -303,12 +302,12 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
 
           <div className="p2-legend">
             <span>
-              <span style={{ fontWeight: 'bold', fontSize: 11, marginRight: 3 }}>▶</span>
+              <span style={{ fontWeight: 'bold', fontSize: 16, marginRight: 4 }}>▶</span>
               <span className="p2-legend-dot initial" />
               {' '}Inicial
             </span>
             <span>
-              <span className="p2-legend-dot final" style={{ outline: '2px solid #000', outlineOffset: 2 }} />
+              <span className="p2-legend-dot final" style={{ outline: '3px solid #000', outlineOffset: 3 }} />
               {' '}Final
             </span>
           </div>

@@ -41,7 +41,10 @@
 }
 
 .mission-formula {
-  font-size: 20px;
+  /* Escala com a largura da viewport para não comprimir o resto do header em
+     telas menores (ex.: 1366px) — sem isso, fórmulas longas quebram em duas
+     linhas e encostam nos botões de navegação/badge de fase ao lado. */
+  font-size: clamp(13px, 1.05vw, 20px);
   font-weight: bold;
   background: #fff;
   padding: 4px 16px;
@@ -49,6 +52,11 @@
   border: 3px solid #000;
   color: #000;
   box-shadow: 4px 4px 0px #000;
+  flex-shrink: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .back-btn {

@@ -62,30 +62,42 @@ export default function CanvasArea({
   const [arrowTargetUid, setArrowTargetUid] = useState(null);
   const arrowTargetUidRef = useRef(null);
 
-  const hasAutoCenteredRef = useRef(false);
   useEffect(() => {
-    if (displayNodes.length === 0) {
-      hasAutoCenteredRef.current = false;
-      return;
-    }
-    // Só centraliza automaticamente quando a aula guiada está ativa
-    if (guidedLessonStep === null) return;
-    if (hasAutoCenteredRef.current) return;
-    hasAutoCenteredRef.current = true;
+    // Só centraliza/reajusta automaticamente quando a aula guiada está ativa.
+    // Recalcula a CADA mudança no grafo (não só na primeira vez), pois o
+    // modo Aula vai adicionando nós/setas passo a passo — se o zoom só fosse
+    // calculado no 1º passo (grafo com 1 nó só), fases com grafos grandes
+    // (ex.: L55, 12 estados) ficariam cortadas nos passos finais.
+    if (displayNodes.length === 0 || guidedLessonStep === null) return;
     setTimeout(() => {
       if (!viewportRef?.current) return;
-      const minX = Math.min(...displayNodes.map(n => n.x));
-      const maxX = Math.max(...displayNodes.map(n => n.x));
-      const minY = Math.min(...displayNodes.map(n => n.y));
-      const maxY = Math.max(...displayNodes.map(n => n.y));
+      const vp = viewportRef.current;
+      const NODE_R = 33; // metade do .node (65px) + folga
+      const minX = Math.min(...displayNodes.map(n => n.x)) - NODE_R;
+      const maxX = Math.max(...displayNodes.map(n => n.x)) + NODE_R;
+      const minY = Math.min(...displayNodes.map(n => n.y)) - NODE_R;
+      const maxY = Math.max(...displayNodes.map(n => n.y)) + NODE_R;
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
-      const scale = (zoom / 100) * 0.8;
-      const vp = viewportRef.current;
+      const spanX = maxX - minX;
+      const spanY = maxY - minY;
+
+      // Mede o espaço real do viewport e reduz o zoom (nunca aumenta acima de
+      // 100) o quanto for necessário para o grafo inteiro caber, tanto na
+      // largura quanto na altura — sem isso, grafos grandes (ex.: L55) ficam
+      // cortados nas bordas em telas menores.
+      const PAD = 0.9; // 10% de margem de respiro
+      const fitScaleX = spanX > 0 ? (vp.clientWidth  * PAD) / spanX : 0.8;
+      const fitScaleY = spanY > 0 ? (vp.clientHeight * PAD) / spanY : 0.8;
+      const fitScale = Math.min(0.8, fitScaleX, fitScaleY);
+      const fitZoom = Math.max(25, Math.min(100, Math.round((fitScale / 0.8) * 100)));
+      if (fitZoom !== zoom) setZoom(fitZoom);
+
+      const scale = (fitZoom / 100) * 0.8;
       vp.scrollLeft = centerX * scale - vp.clientWidth / 2;
       vp.scrollTop  = centerY * scale - vp.clientHeight / 2;
     }, 50);
-  }, [displayNodes, zoom, guidedLessonStep]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [displayNodes, zoom, guidedLessonStep, setZoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer: canvas ───────────────────────────────────────────────────────
   const handlePointerDownCanvas = useCallback((e) => {

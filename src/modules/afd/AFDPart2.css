@@ -67,30 +67,33 @@
   z-index: 0;
 }
 
-/* ── Legend ── */
+/* ── Legend ──
+   Tamanhos dobrados em relação ao original (13px→26px, fonte 11px→16px) —
+   com o grafo preenchendo containers grandes (ver ExerciseScreen.jsx), a
+   legenda pequena demais destoava do resto do desenho. */
 .p2-legend {
   position: absolute;
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 20px;
+  gap: 28px;
   background: #fff;
-  border: 2px solid #000;
-  border-radius: 8px;
-  padding: 4px 14px;
-  box-shadow: 3px 3px 0 #000;
-  font-size: 11px;
+  border: 3px solid #000;
+  border-radius: 10px;
+  padding: 6px 20px;
+  box-shadow: 4px 4px 0 #000;
+  font-size: 16px;
   font-weight: bold;
   white-space: nowrap;
   pointer-events: none;
 }
-.p2-legend span { display: flex; align-items: center; gap: 5px; }
+.p2-legend span { display: flex; align-items: center; gap: 7px; }
 .p2-legend-dot {
   display: inline-block;
-  width: 13px; height: 13px;
+  width: 26px; height: 26px;
   border-radius: 50%;
-  border: 2px solid #000;
+  border: 3px solid #000;
   background: #fff;
 }
 .p2-legend-dot.initial { background: #bae6fd; }
