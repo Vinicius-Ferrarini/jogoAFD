@@ -1,9 +1,13 @@
 // ─── GameHeader: cabeçalho da tela de jogo ───────────────────────────────────
-// Botões de sidebar/voltar, objetivo (fórmula) + atalho de Aula Guiada, rótulo
-// de dificuldade e estrelas. CSS: .game-header em AFDPart1.css.
+// Compartilhado entre AFD e AP. Botões de sidebar/voltar, objetivo (fórmula ou
+// linguagem) + atalho de Aula Guiada (e, opcionalmente, um 2º botão de ação —
+// usado pelo AP para "Descrição Formal"), rótulo de dificuldade e estrelas.
+// CSS: .game-header em AFDPart1.css (reusado também pelo AP).
+//
+// Props exclusivas do AFD (`toggleSidebar`) e do AP (`secondaryAction`) são
+// opcionais — omitidas, o header se comporta exatamente como antes.
 import './GameHeader.css';
 import { SvgStars } from '../SvgStar';
-import { LEVEL_DIFFICULTY, DIFF_COLOR, GAME_LEVELS } from '../../../levels';
 
 const navBtnStyle = {
   padding: '2px 8px', fontSize: 13, fontWeight: 900,
@@ -18,25 +22,47 @@ const navBtnDisabledStyle = {
 };
 
 export default function GameHeader({
-  currentLevel, progress,
-  toggleSidebar, onBack, onPrevLevel, onNextLevel, onStartLesson,
-  lessonActive, onCloseLesson,
+  // Dados do nível (genéricos): objective = texto mostrado como "Objetivo".
+  objective, label, diffColor, stars = 0, starsMax = 3,
+  isFirst, isLast,
+  progress, currentLevel, // legado (AFD): se objective/stars não vierem prontos, derivamos daqui
+  toggleSidebar, onBack, onPrevLevel, onNextLevel,
+  // Aula guiada: mostrada só se hasLesson (AFD passa currentLevel.guidedLesson).
+  // lessonToggleMode 'badge' (AFD, default): botão fica opaco + badge ✕ flutuante
+  // fecha a aula. 'swap' (AP): o próprio botão vira "✕ Sair da Aula" clicável.
+  hasLesson, onStartLesson, lessonActive, onCloseLesson, lessonLabel = '👨‍🏫 Aula',
+  lessonActiveLabel, lessonToggleMode = 'badge', lessonDisabled = false,
+  // Ação secundária opcional (AP: "📝 Descrição Formal"). Omitida no AFD.
+  secondaryAction,
 }) {
-  const diffBg = DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff';
-  const idx = GAME_LEVELS.findIndex(l => l.id === currentLevel?.id);
-  const isFirst = idx === 0;
-  const isLast  = idx === GAME_LEVELS.length - 1;
+  const objectiveText = objective ?? currentLevel?.formula ?? '';
+  const levelLabel = label ?? currentLevel?.label;
+  const diffBg = diffColor ?? '#fff';
+  const starsCount = progress ? (progress[currentLevel?.id]?.stars || 0) : stars;
+  const showLesson = hasLesson ?? !!currentLevel?.guidedLesson;
 
   return (
     <header className="game-header">
       <div className="header-left">
-        <button className="sidebar-toggle" onClick={toggleSidebar} title="Abrir Descrição Formal">☰</button>
+        {toggleSidebar && (
+          <button className="sidebar-toggle" onClick={toggleSidebar} title="Abrir Descrição Formal">☰</button>
+        )}
         <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
       </div>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
         <span className="mission-label">Objetivo</span>
-        <div className="mission-formula">{currentLevel?.formula || ''}</div>
-        {currentLevel?.guidedLesson && (
+        <div className="mission-formula">{objectiveText}</div>
+        {showLesson && lessonToggleMode === 'swap' && (
+          <button
+            className="menu-btn"
+            style={{ padding: '4px 12px', fontSize: 12, marginLeft: 6, opacity: lessonDisabled ? 0.5 : 1, cursor: lessonDisabled ? 'not-allowed' : 'pointer' }}
+            onClick={lessonActive ? onCloseLesson : onStartLesson}
+            disabled={lessonDisabled}
+          >
+            {lessonActive ? (lessonActiveLabel ?? lessonLabel) : lessonLabel}
+          </button>
+        )}
+        {showLesson && lessonToggleMode === 'badge' && (
           <div style={{ position: 'relative', display: 'inline-block', marginLeft: 6 }}>
             <button
               className="menu-btn"
@@ -44,7 +70,7 @@ export default function GameHeader({
               onClick={lessonActive ? undefined : onStartLesson}
               title={lessonActive ? undefined : 'Assistir demonstração passo a passo'}
             >
-              👨‍🏫 Aula
+              {lessonLabel}
             </button>
             {lessonActive && (
               <span
@@ -61,6 +87,16 @@ export default function GameHeader({
             )}
           </div>
         )}
+        {secondaryAction && (
+          <button
+            className="menu-btn"
+            style={{ padding: '4px 12px', fontSize: 12, marginLeft: 6, opacity: secondaryAction.disabled ? 0.5 : 1, cursor: secondaryAction.disabled ? 'not-allowed' : 'pointer' }}
+            onClick={secondaryAction.disabled ? undefined : secondaryAction.onClick}
+            disabled={secondaryAction.disabled}
+          >
+            {secondaryAction.label}
+          </button>
+        )}
       </div>
       <div style={{ width: 180, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -70,7 +106,7 @@ export default function GameHeader({
             disabled={isFirst}
             title="Fase anterior"
           >◀</button>
-          <span className="mission-label" style={{ background: diffBg }}>{currentLevel?.label}</span>
+          <span className="mission-label" style={{ background: diffBg }}>{levelLabel}</span>
           <button
             style={isLast ? navBtnDisabledStyle : navBtnStyle}
             onClick={onNextLevel}
@@ -78,7 +114,7 @@ export default function GameHeader({
             title="Próxima fase"
           >▶</button>
         </div>
-        <SvgStars count={progress[currentLevel?.id]?.stars || 0} size={15} max={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3} />
+        <SvgStars count={starsCount} size={15} max={starsMax} />
       </div>
     </header>
   );

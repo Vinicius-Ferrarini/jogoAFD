@@ -1,43 +1,71 @@
-// ─── APCanvas: canvas do AP (mesmo visual do AFD) ────────────────────────────
+// ─── APCanvas: canvas do AP (mesmo motor do AFD: canvas fixo 8000×8000px +
+// zoom real via CSS transform + viewport scrollável) ──────────────────────────
 // Modos: IDLE (arrastar nó), ADD_NODE, CONNECTING, ERASE, TOGGLE_INITIAL, DRAW
 // (rabisco). Transições do mesmo par (from→to) viram uma aresta com várias
 // triplas (JFLAP). Inclui camada de rabisco (StrokeEl) e toolbar de desenho.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import APTransitionLabel from './APTransitionLabel';
 import StrokeEl from '../../afd/components/StrokeEl';
 import { DRAW_COLORS } from '../hooks/useAPDrawing';
+import { INNER_W, INNER_H } from '../../afd/hooks/useCanvasState.js';
+
+function pxFromEvent(e, innerRef) {
+  const el = innerRef.current;
+  if (!el) return { x: 0, y: 0 };
+  const r = el.getBoundingClientRect();
+  return {
+    x: ((e.clientX - r.left) / r.width)  * INNER_W,
+    y: ((e.clientY - r.top)  / r.height) * INNER_H,
+  };
+}
 
 export default function APCanvas({
-  canvasRef, nodes, transitions, mode, setMode, simHighlight, beginDrag,
+  canvasRef, innerCanvasRef, viewportRef, zoom, setZoom,
+  nodes, transitions, mode, setMode, simHighlight, beginDrag,
   connectingSource, setConnectingSource,
   addNode, moveNode, toggleInitial, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
   draw, lessonActive, highlightEdge,
   selectedNodes = [], setSelectedNodes,
   selectionBox, setSelectionBox,
+  guidedLessonStep = null,
 }) {
-  const [size, setSize] = useState({ w: 1000, h: 600 });
+  const localInnerRef = useRef(null);
+  const innerRef = innerCanvasRef || localInnerRef;
   const dragRef = useRef(null);
   const isDraw = mode === 'DRAW';
 
-  useEffect(() => {
-    const el = canvasRef.current;
-    if (!el) return;
-    const measure = () => setSize({ w: el.clientWidth, h: el.clientHeight });
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [canvasRef]);
+  const actualScale = (zoom / 100) * 0.8;
+  const [zoomInput, setZoomInput] = useState(String(zoom));
+  useEffect(() => { setZoomInput(String(zoom)); }, [zoom]);
 
-  const pctFromEvent = (e) => {
-    const r = canvasRef.current.getBoundingClientRect();
-    const cssZoom = r.width / canvasRef.current.offsetWidth;
-    return {
-      x: ((e.clientX - r.left) / cssZoom / canvasRef.current.offsetWidth) * 100,
-      y: ((e.clientY - r.top)  / cssZoom / canvasRef.current.offsetHeight) * 100,
-    };
-  };
+  // ── Auto-fit do Modo Aula: recalcula o zoom a cada passo p/ o grafo inteiro
+  // caber no viewport (mesmo comportamento do CanvasArea.jsx do AFD).
+  useEffect(() => {
+    if (nodes.length === 0 || guidedLessonStep === null) return;
+    setTimeout(() => {
+      if (!viewportRef?.current) return;
+      const vp = viewportRef.current;
+      const NODE_R = 33;
+      const minX = Math.min(...nodes.map(n => n.x)) - NODE_R;
+      const maxX = Math.max(...nodes.map(n => n.x)) + NODE_R;
+      const minY = Math.min(...nodes.map(n => n.y)) - NODE_R;
+      const maxY = Math.max(...nodes.map(n => n.y)) + NODE_R;
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const spanX = maxX - minX;
+      const spanY = maxY - minY;
+      const PAD = 0.9;
+      const fitScaleX = spanX > 0 ? (vp.clientWidth  * PAD) / spanX : 0.8;
+      const fitScaleY = spanY > 0 ? (vp.clientHeight * PAD) / spanY : 0.8;
+      const fitScale = Math.min(0.8, fitScaleX, fitScaleY);
+      const fitZoom = Math.max(25, Math.min(100, Math.round((fitScale / 0.8) * 100)));
+      if (fitZoom !== zoom) setZoom(fitZoom);
+      const scale = (fitZoom / 100) * 0.8;
+      vp.scrollLeft = centerX * scale - vp.clientWidth / 2;
+      vp.scrollTop  = centerY * scale - vp.clientHeight / 2;
+    }, 50);
+  }, [nodes, zoom, guidedLessonStep, setZoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer no fundo ────────────────────────────────────────────────────────
   const onCanvasDown = useCallback((e) => {
@@ -48,12 +76,12 @@ export default function APCanvas({
     if (isDraw) { draw.onDown(e); return; }
     if (e.button !== 0) return;
     if (mode === 'ADD_NODE') {
-      const { x, y } = pctFromEvent(e);
-      addNode(Math.max(3, Math.min(97, x)), Math.max(6, Math.min(94, y)));
+      const { x, y } = pxFromEvent(e, innerRef);
+      addNode(Math.max(5, Math.min(INNER_W - 5, x)), Math.max(5, Math.min(INNER_H - 5, y)));
       return;
     }
     if (mode === 'IDLE') {
-      const { x, y } = pctFromEvent(e);
+      const { x, y } = pxFromEvent(e, innerRef);
       setSelectionBox({ startX: x, startY: y, currentX: x, currentY: y });
       if (!e.ctrlKey) setSelectedNodes([]);
       e.target.setPointerCapture?.(e.pointerId);
@@ -81,7 +109,8 @@ export default function APCanvas({
         : (selectedNodes.includes(node.uid) ? selectedNodes : [node.uid]);
       setSelectedNodes(newSel);
       beginDrag();
-      dragRef.current = { uid: node.uid, sx: e.clientX, sy: e.clientY, ox: node.x, oy: node.y };
+      const { x, y } = pxFromEvent(e, innerRef);
+      dragRef.current = { uid: node.uid, sx: x, sy: y, ox: node.x, oy: node.y };
       e.target.setPointerCapture?.(e.pointerId);
     }
   }, [isDraw, mode, connectingSource, nodes, deleteNode, toggleInitial, addTriple, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -89,21 +118,15 @@ export default function APCanvas({
   const onMove = useCallback((e) => {
     if (isDraw) { draw.onMove(e); return; }
     if (selectionBox) {
-      const r = canvasRef.current.getBoundingClientRect();
-      const cssZoom = r.width / canvasRef.current.offsetWidth;
-      setSelectionBox(s => s ? { ...s,
-        currentX: ((e.clientX - r.left) / cssZoom / canvasRef.current.offsetWidth)  * 100,
-        currentY: ((e.clientY - r.top)  / cssZoom / canvasRef.current.offsetHeight) * 100,
-      } : null);
+      const { x, y } = pxFromEvent(e, innerRef);
+      setSelectionBox(s => s ? { ...s, currentX: x, currentY: y } : null);
       return;
     }
     const d = dragRef.current;
     if (!d) return;
-    const r = canvasRef.current.getBoundingClientRect();
-    const cssZoom = r.width / canvasRef.current.offsetWidth;
-    const dx = ((e.clientX - d.sx) / cssZoom / canvasRef.current.offsetWidth) * 100;
-    const dy = ((e.clientY - d.sy) / cssZoom / canvasRef.current.offsetHeight) * 100;
-    moveNode(d.uid, Math.max(3, Math.min(97, d.ox + dx)), Math.max(6, Math.min(94, d.oy + dy)));
+    const { x, y } = pxFromEvent(e, innerRef);
+    const dx = x - d.sx, dy = y - d.sy;
+    moveNode(d.uid, Math.max(5, Math.min(INNER_W - 5, d.ox + dx)), Math.max(5, Math.min(INNER_H - 5, d.oy + dy)));
   }, [isDraw, draw, moveNode, selectionBox, setSelectionBox]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onUp = useCallback((e) => {
@@ -134,9 +157,8 @@ export default function APCanvas({
     const src = nodes.find(n => n.id === g.from);
     const tgt = nodes.find(n => n.id === g.to);
     if (!src || !tgt) return null;
-    const { w, h } = size;
-    const sx = (src.x * w) / 100, sy = (src.y * h) / 100;
-    const tx = (tgt.x * w) / 100, ty = (tgt.y * h) / 100;
+    const sx = src.x, sy = src.y;
+    const tx = tgt.x, ty = tgt.y;
     const selfLoop = g.from === g.to;
     const bidir = !selfLoop && transitions.some(o => o.from === g.to && o.to === g.from);
     let pathD, lx, ly;
@@ -147,14 +169,19 @@ export default function APCanvas({
       const dx = tx - sx, dy = ty - sy, dist = Math.hypot(dx, dy) || 1;
       const nx = -dy / dist, ny = dx / dist, off = 42;
       const qcx = (sx + tx) / 2 + nx * off, qcy = (sy + ty) / 2 + ny * off;
-      pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${tx} ${ty}`;
+      // Recua o fim do path ao longo da TANGENTE da curva (não da reta sp→tp),
+      // senão a ponta da seta (marker) fica torta perto do nó de destino.
+      const NR = 32;
+      const tanX = tx - qcx, tanY = ty - qcy, tanDist = Math.hypot(tanX, tanY) || 1;
+      const endX = tx - (tanX / tanDist) * NR, endY = ty - (tanY / tanDist) * NR;
+      pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${endX} ${endY}`;
       lx = ((sx + tx) / 2 + qcx) / 2 + nx * 12;
       ly = ((sy + ty) / 2 + qcy) / 2 + ny * 12;
     } else {
       pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
       lx = (sx + tx) / 2; ly = (sy + ty) / 2 - 14;
     }
-    return { ...g, src, tgt, selfLoop, pathD, lx, ly };
+    return { ...g, src, tgt, selfLoop, bidir, pathD, lx, ly };
   }).filter(Boolean);
 
   const eraseMode = mode === 'ERASE';
@@ -167,13 +194,9 @@ export default function APCanvas({
         isDraw              ? (draw.isErasing ? 'draw-erase-mode' : 'draw-mode') :
         mode !== 'IDLE'     ? 'connecting-mode' : ''}`}
       ref={canvasRef}
-      onPointerDown={onCanvasDown}
-      onPointerMove={onMove}
-      onPointerUp={onUp}
-      onPointerLeave={onUp}
     >
-      {/* HUD: botão Riscar (mesmo visual do AFD) */}
-      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>
+      {/* HUD: Zoom + botão Riscar (mesmo visual do AFD) */}
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 60, display: 'flex', gap: 4, alignItems: 'center' }}>
         <button onClick={() => setMode(isDraw ? 'IDLE' : 'DRAW')} title="Riscar"
           style={{ width: 30, height: 30, background: isDraw ? '#bfdbfe' : '#fef08a',
             border: isDraw ? '2.5px solid #3b82f6' : '2.5px solid #000',
@@ -186,6 +209,23 @@ export default function APCanvas({
             <path d="M3 12 L1.5 14.5 L5 14 Z" fill="#374151" stroke="#000" strokeWidth="1.2" strokeLinejoin="round"/>
           </svg>
         </button>
+        <div style={{ display: 'flex', gap: 2, background: '#fff', padding: '3px 6px', border: '2.5px solid #000', borderRadius: 8, boxShadow: '3px 3px 0 #000', alignItems: 'center' }}>
+          <button onClick={() => setZoom(z => Math.max(25, z - 10))}
+            style={{ fontWeight: 'bold', width: 20, height: 22, cursor: 'pointer', border: 'none', background: 'transparent', fontSize: 16, color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={zoomInput}
+            onChange={e => { const v = e.target.value; if (v === '' || /^\d+$/.test(v)) setZoomInput(v); }}
+            onBlur={() => { let v = Number(zoomInput); if (isNaN(v) || v < 25) v = 25; else if (v > 200) v = 200; setZoom(v); setZoomInput(String(v)); }}
+            onKeyDown={e => { if (e.key === 'Enter') { let v = Number(zoomInput); if (isNaN(v) || v < 25) v = 25; else if (v > 200) v = 200; setZoom(v); setZoomInput(String(v)); e.target.blur(); } }}
+            style={{ width: '32px', textAlign: 'center', border: 'none', background: 'transparent', outline: 'none', fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace', color: '#000', padding: 0, margin: 0 }}
+          /><span style={{ fontSize: 11, fontWeight: 'bold', color: '#000' }}>%</span>
+          <button onClick={() => setZoom(z => Math.min(200, z + 10))}
+            style={{ fontWeight: 'bold', width: 20, height: 22, cursor: 'pointer', border: 'none', background: 'transparent', fontSize: 16, color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+          <button onClick={() => { setZoom(100); const vp = viewportRef?.current; if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; } }}
+            style={{ fontWeight: 'bold', marginLeft: 2, cursor: 'pointer', border: 'none', background: 'transparent', color: 'var(--accent-blue)', fontSize: 11 }}>↺</button>
+        </div>
       </div>
 
       <div className="canvas-label">Área de Montagem</div>
@@ -254,70 +294,91 @@ export default function APCanvas({
         </div>
       )}
 
-      {/* SVG das setas */}
-      <svg className="connections-svg">
-        <defs>
-          <marker id="apah"  markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000" /></marker>
-          <marker id="apahs" markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000" /></marker>
-        </defs>
-        {edgeRenders.map((er) => (
-          <path key={`${er.from}->${er.to}`} d={er.pathD}
-            className={`transition-line ${eraseMode ? 'erasable' : ''} ${
-              highlightEdge && er.from === highlightEdge.from && er.to === highlightEdge.to ? 'lesson-hl' : ''}`}
-            markerEnd={`url(#${er.selfLoop ? 'apahs' : 'apah'})`}
-            style={{ pointerEvents: isDraw ? 'none' : 'stroke', cursor: eraseMode ? 'pointer' : 'default' }}
-            onClick={(e) => { if (eraseMode) { e.stopPropagation(); removeEdge(er.from, er.to); } }} />
-        ))}
-      </svg>
+      {/* ── Viewport scrollável ── */}
+      <div ref={viewportRef} style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
+        <div style={{ position: 'relative', width: INNER_W * actualScale, height: INNER_H * actualScale, overflow: 'hidden' }}>
+          <div
+            className="canvas-inner"
+            ref={innerRef}
+            style={{
+              position: 'absolute', top: 0, left: 0,
+              width: INNER_W, height: INNER_H,
+              transform: `scale(${actualScale})`,
+              transformOrigin: 'top left',
+            }}
+            onPointerDown={onCanvasDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerLeave={onUp}
+          >
+            {/* SVG das setas */}
+            <svg className="connections-svg">
+              <defs>
+                <marker id="apah"  markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000" /></marker>
+                <marker id="apahs" markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000" /></marker>
+              </defs>
+              {edgeRenders.map((er) => (
+                <path key={`${er.from}->${er.to}`} d={er.pathD}
+                  className={`transition-line ${eraseMode ? 'erasable' : ''} ${
+                    highlightEdge && er.from === highlightEdge.from && er.to === highlightEdge.to ? 'lesson-hl' : ''}`}
+                  markerEnd={`url(#${er.selfLoop || er.bidir ? 'apahs' : 'apah'})`}
+                  style={{ pointerEvents: isDraw ? 'none' : 'stroke', cursor: eraseMode ? 'pointer' : 'default' }}
+                  onClick={(e) => { if (eraseMode) { e.stopPropagation(); removeEdge(er.from, er.to); } }} />
+              ))}
+            </svg>
 
-      {/* Rótulos (triplas) */}
-      {edgeRenders.map((er) => (
-        <APTransitionLabel
-          key={`lbl-${er.from}->${er.to}`}
-          triples={er.triples}
-          eraseMode={eraseMode}
-          lessonActive={lessonActive}
-          style={{ left: `${er.lx}px`, top: `${er.ly}px`, pointerEvents: isDraw ? 'none' : undefined, ...(er.selfLoop && { transform: 'translate(-50%, -100%)' }) }}
-          onAddTriple={(tr) => addTriple(er.from, er.to, tr)}
-          onEditTriple={editTriple}
-          onRemoveTriple={removeTriple}
-        />
-      ))}
+            {/* Rótulos (triplas) */}
+            {edgeRenders.map((er) => (
+              <APTransitionLabel
+                key={`lbl-${er.from}->${er.to}`}
+                triples={er.triples}
+                eraseMode={eraseMode}
+                lessonActive={lessonActive}
+                style={{ left: `${er.lx}px`, top: `${er.ly}px`, pointerEvents: isDraw ? 'none' : undefined, ...(er.selfLoop && { transform: 'translate(-50%, -100%)' }) }}
+                onAddTriple={(tr) => addTriple(er.from, er.to, tr)}
+                onEditTriple={editTriple}
+                onRemoveTriple={removeTriple}
+              />
+            ))}
 
-      {/* Camada de rabiscos (acima das setas, abaixo dos nós) */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}>
-        {draw.drawings.map((s, i) => <StrokeEl key={i} stroke={s} idx={i} />)}
-        {draw.currentStroke && <StrokeEl stroke={draw.currentStroke} idx="cur" />}
-      </svg>
+            {/* Camada de rabiscos (acima das setas, abaixo dos nós) */}
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}>
+              {draw.drawings.map((s, i) => <StrokeEl key={i} stroke={s} idx={i} />)}
+              {draw.currentStroke && <StrokeEl stroke={draw.currentStroke} idx="cur" />}
+            </svg>
 
-      {/* Lasso de seleção */}
-      {selectionBox && (
-        <div style={{
-          position: 'absolute', pointerEvents: 'none', zIndex: 1000,
-          border: '2px dashed #2563eb', backgroundColor: 'rgba(59,130,246,0.15)',
-          left:   `${Math.min(selectionBox.startX, selectionBox.currentX)}%`,
-          top:    `${Math.min(selectionBox.startY, selectionBox.currentY)}%`,
-          width:  `${Math.abs(selectionBox.currentX - selectionBox.startX)}%`,
-          height: `${Math.abs(selectionBox.currentY - selectionBox.startY)}%`,
-        }} />
-      )}
+            {/* Lasso de seleção */}
+            {selectionBox && (
+              <div style={{
+                position: 'absolute', pointerEvents: 'none', zIndex: 1000,
+                border: '2px dashed #2563eb', backgroundColor: 'rgba(59,130,246,0.15)',
+                left:   Math.min(selectionBox.startX, selectionBox.currentX),
+                top:    Math.min(selectionBox.startY, selectionBox.currentY),
+                width:  Math.abs(selectionBox.currentX - selectionBox.startX),
+                height: Math.abs(selectionBox.currentY - selectionBox.startY),
+              }} />
+            )}
 
-      {/* Nós */}
-      {nodes.map((node) => {
-        const sim = simHighlight?.nodeId === node.id ? `sim-${simHighlight.type}` : '';
-        return (
-          <div key={node.uid}
-            className={`node ${node.isInitial ? 'initial' : ''} ${selectedNodes.includes(node.uid) ? 'selected' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''} ${sim}`}
-            style={{ top: `${node.y}%`, left: `${node.x}%`, pointerEvents: isDraw ? 'none' : 'auto' }}
-            onPointerDown={(e) => onNodeDown(e, node)}>
-            <input type="text" className="node-id-input" value={node.label ?? node.id}
-              translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
-              readOnly={mode !== 'IDLE' || lessonActive}
-              onChange={(e) => setNodeLabel(node.uid, e.target.value)}
-              onBlur={(e) => renameNode(node.uid, e.target.value)} />
+            {/* Nós — posicionados em px absolutos */}
+            {nodes.map((node) => {
+              const sim = simHighlight?.nodeId === node.id ? `sim-${simHighlight.type}` : '';
+              return (
+                <div key={node.uid}
+                  data-uid={node.uid}
+                  className={`node ${node.isInitial ? 'initial' : ''} ${selectedNodes.includes(node.uid) ? 'selected' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''} ${sim}`}
+                  style={{ top: `${node.y}px`, left: `${node.x}px`, pointerEvents: isDraw ? 'none' : 'auto' }}
+                  onPointerDown={(e) => onNodeDown(e, node)}>
+                  <input type="text" className="node-id-input" value={node.label ?? node.id}
+                    translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
+                    readOnly={mode !== 'IDLE' || lessonActive}
+                    onChange={(e) => setNodeLabel(node.uid, e.target.value)}
+                    onBlur={(e) => renameNode(node.uid, e.target.value)} />
+                </div>
+              );
+            })}
           </div>
-        );
-      })}
+        </div>
+      </div>
 
       {/* Bloqueador do Modo Aula: impede editar o grafo enquanto a aula roda */}
       {lessonActive && (

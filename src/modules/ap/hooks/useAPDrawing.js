@@ -1,11 +1,13 @@
 // ─── useAPDrawing: camada de rabisco do AP (lápis/linha/seta/retângulo) ──────
-// Espelha o useDrawing do AFD, mas mapeia coordenadas pelo MESMO cálculo manual
-// que o APCanvas usa para os nós (compensa o zoom:0.9), em vez do CTM do SVG.
-// Strokes ficam em pixels de layout do canvas; renderizados por StrokeEl.
+// Mesmo motor de coordenadas do canvas fixo (8000×8000px, zoom via CSS scale):
+// mapeia o ponteiro relativo ao canvas-inner, igual ao pxFromEvent do APCanvas/
+// CanvasArea do AFD, em vez do container visível. Strokes ficam em pixels
+// absolutos do canvas 8000×8000; renderizados por StrokeEl.
 import { useState, useRef, useCallback } from 'react';
+import { INNER_W, INNER_H } from '../../afd/hooks/useCanvasState.js';
 export { DRAW_COLORS } from '../../afd/hooks/useDrawing';
 
-export default function useAPDrawing(canvasRef) {
+export default function useAPDrawing(innerCanvasRef) {
   const [drawings, setDrawings]         = useState([]);
   const [drawingStack, setDrawingStack] = useState([]);
   const [currentStroke, setCurrentStroke] = useState(null);
@@ -19,12 +21,14 @@ export default function useAPDrawing(canvasRef) {
   const drawingsRef      = useRef([]);
 
   const coord = useCallback((e) => {
-    const el = canvasRef.current;
+    const el = innerCanvasRef.current;
     if (!el) return { x: 0, y: 0 };
     const r = el.getBoundingClientRect();
-    const cssZoom = r.width / el.offsetWidth; // compensa o zoom:0.9 do wrapper
-    return { x: (e.clientX - r.left) / cssZoom, y: (e.clientY - r.top) / cssZoom };
-  }, [canvasRef]);
+    return {
+      x: ((e.clientX - r.left) / r.width)  * INNER_W,
+      y: ((e.clientY - r.top)  / r.height) * INNER_H,
+    };
+  }, [innerCanvasRef]);
 
   const drawUndo = useCallback(() => {
     setDrawingStack(prev => {

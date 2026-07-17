@@ -15,7 +15,7 @@ import useHistory from './hooks/useHistory';
 import useGuidedLesson from './hooks/useGuidedLesson';
 import useAFDGraph, { lvlAccepts } from './hooks/useAFDGraph';
 import useCanvasState from './hooks/useCanvasState';
-import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../../levels';
+import { GAME_LEVELS, UNAVAILABLE_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 
 // ─── Utilitário: gera um UID curto ───────────────────────────────────────────
 let _uidCounter = 0;
@@ -441,6 +441,10 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       <GameHeader
         currentLevel={currentLevel}
         progress={progress}
+        diffColor={DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff'}
+        starsMax={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3}
+        isFirst={GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === 0}
+        isLast={GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === GAME_LEVELS.length - 1}
         toggleSidebar={toggleSidebar}
         onBack={() => setTela('MENU')}
         onPrevLevel={handlePrevLevel}

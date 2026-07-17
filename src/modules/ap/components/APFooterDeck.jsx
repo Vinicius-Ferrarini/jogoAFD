@@ -25,12 +25,24 @@ export default function APFooterDeck({
   canUndo, canRedo, onUndo, onRedo, lessonActive, hasNodes,
   showFinalCard = false,
   tape, tapeHead,
+  simPanel,
 }) {
   const CARDS = showFinalCard
     ? [...CARDS_BASE, CARD_FINAL, ...CARDS_TAIL]
     : [...CARDS_BASE, ...CARDS_TAIL];
   const dragRef = useRef(null);
   const profImg = profMood === 'serio' ? imgSerio : imgExplicando;
+
+  // Simulação ativa: o painel compacto (+ pilha) substitui as cartas e ocupa
+  // o rodapé inteiro (mais alto que o .bottom-hand padrão), igual ao SimPanel
+  // do AFD, mas sem o HUD do professor por baixo (o painel já é o foco).
+  if (simPanel) {
+    return (
+      <footer className="bottom-hand ap-simp-footer">
+        {simPanel}
+      </footer>
+    );
+  }
 
   return (
     <footer className="bottom-hand">

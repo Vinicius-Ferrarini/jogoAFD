@@ -7,28 +7,31 @@ import { pdaAccepts, validateStudentPda } from './pdaAlgorithms.js';
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-// Coordenadas do JFLAP (px) → percentuais no canvas (0–100), PRESERVANDO A
-// PROPORÇÃO (mesma escala em x e y). Escalar cada eixo isoladamente exageraria
-// diferenças mínimas — ex.: no L1 q0/q1 diferem 5px em y e a seta sairia diagonal.
+// Coordenadas do JFLAP (px) → pixels absolutos no canvas fixo INNER_W×INNER_H
+// (mesmo motor do AFD — ver useCanvasState.js), PRESERVANDO A PROPORÇÃO (mesma
+// escala em x e y). Escalar cada eixo isoladamente exageraria diferenças
+// mínimas — ex.: no L1 q0/q1 diferem 5px em y e a seta sairia diagonal.
+import { INNER_W, INNER_H } from '../../afd/hooks/useCanvasState.js';
+
 function layout(states) {
   const xs = states.map((s) => s.x), ys = states.map((s) => s.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
   const spanX = maxX - minX, spanY = maxY - minY;
-  const PADX = 14, PADY = 20;
-  const usableW = 100 - 2 * PADX, usableH = 100 - 2 * PADY;
+  const PADX = INNER_W * 0.14, PADY = INNER_H * 0.20;
+  const usableW = INNER_W - 2 * PADX, usableH = INNER_H - 2 * PADY;
   const kx = spanX > 0 ? usableW / spanX : Infinity;
   const ky = spanY > 0 ? usableH / spanY : Infinity;
   let k = Math.min(kx, ky);
   if (!Number.isFinite(k)) k = 1; // 1 estado (ou todos no mesmo ponto)
-  const offX = (100 - spanX * k) / 2, offY = (100 - spanY * k) / 2;
+  const offX = (INNER_W - spanX * k) / 2, offY = (INNER_H - spanY * k) / 2;
   // Estado único: posiciona mais abaixo para os chips do self-loop crescerem para
   // cima sem serem cortados pela borda superior do canvas.
   const singleState = states.length === 1;
   return states.map((s) => ({
     uid: s.id, id: s.id, label: s.name,
-    x: spanX > 0 ? offX + (s.x - minX) * k : 50,
-    y: spanY > 0 ? offY + (s.y - minY) * k : (singleState ? 82 : 50),
+    x: spanX > 0 ? offX + (s.x - minX) * k : INNER_W / 2,
+    y: spanY > 0 ? offY + (s.y - minY) * k : (singleState ? INNER_H * 0.82 : INNER_H / 2),
     isInitial: !!s.initial,
   }));
 }

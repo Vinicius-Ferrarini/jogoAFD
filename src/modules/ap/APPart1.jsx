@@ -11,16 +11,18 @@ import './APPart1.css';
 import { SvgStars, DifficultyLegend } from '../afd/SvgStar';
 import EndScreen from '../afd/components/EndScreen';
 import APCanvas from './components/APCanvas';
-import APStackSim from './components/APStackSim';
+import APSimPanel from './components/APSimPanel';
 import APFooterDeck from './components/APFooterDeck';
 import APFormalDescription from './components/APFormalDescription';
 import APBlackboardPanel from './components/APBlackboardPanel';
 import usePDAGraph from './hooks/usePDAGraph';
 import useAPDrawing from './hooks/useAPDrawing';
 import useAPGuidedLesson from './hooks/useAPGuidedLesson';
+import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js';
 import { AP_LEVELS } from '../../levels_data/ap/index.js';
 import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
+import GameHeader from '../afd/components/GameHeader';
 
 export default function APPart1({ onBack, progress, updateProgress, showToast }) {
   const [screen, setScreen] = useState('MENU');
@@ -40,11 +42,30 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   const [selectedNodes, setSelectedNodes] = useState([]);
   const [selectionBox, setSelectionBox]   = useState(null);
   const canvasRef = useRef(null);
+  const innerCanvasRef = useRef(null);
+  const viewportRef = useRef(null);
+  const noopRef = useRef(false);
 
   const g = usePDAGraph({ showToast, selectedNodes, setSelectedNodes });
-  const draw = useAPDrawing(canvasRef);
+  const draw = useAPDrawing(innerCanvasRef);
   const lesson = useAPGuidedLesson(level);
   const { goTo: lessonGoTo, finish: lessonFinishRaw, reset: lessonReset, steps: lessonSteps } = lesson;
+
+  // Canvas fixo (8000×8000px) + zoom real: mesmo motor do AFD (useCanvasState).
+  // O AP não usa a parte de "modo de interação"/desenho do hook (tem a própria
+  // via useAPDrawing/mode) — só reaproveita zoom/scroll/resetZoom.
+  const { zoom, setZoom, resetZoom } = useCanvasState({
+    isDrawingUnlocked: true,
+    setInteractionMode: () => {},
+    squashNextHistoryRef: noopRef,
+    setConnectingSource,
+    setSelectedSymbolCard: () => {},
+    setSelectedNodes,
+    tela: screen === 'GAME' ? 'JOGO' : screen,
+    isSidebarOpen: formalOpen,
+    canvasRef,
+    viewportRef,
+  });
 
   // Grafo exibido: durante a aula vem dos passos; senão é o grafo real do aluno.
   const viewNodes = lesson.active ? lesson.displayNodes : g.nodes;
@@ -118,11 +139,12 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setSelectedNodes([]); setSelectionBox(null);
     setTestedWords([]);
     draw.resetDrawings();
+    resetZoom();
     say(lv.impossible
       ? `${lv.language} é IMPOSSÍVEL com Autômato com Pilha — precisa de Máquina de Turing (MT).`
       : `Monte o AP que reconhece ${lv.language} por PILHA VAZIA e clique em Validar!`,
       lv.impossible ? 'serio' : 'explicando');
-  }, [g, draw, say, lessonReset]);
+  }, [g, draw, say, lessonReset, resetZoom]);
 
   const goLevel = useCallback((dir) => {
     const idx = AP_LEVELS.findIndex(l => l.id === level?.id);
@@ -136,14 +158,15 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   const handleDeckDrag = useCallback((x, y) => setDeckGhost({ x, y }), []);
   const handleDeckDrop = useCallback((clientX, clientY) => {
     setDeckGhost(null);
-    const el = canvasRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    if (clientX < r.left || clientX > r.right || clientY < r.top || clientY > r.bottom) return;
-    const cssZoom = r.width / el.offsetWidth;
-    const x = ((clientX - r.left) / cssZoom / el.offsetWidth) * 100;
-    const y = ((clientY - r.top)  / cssZoom / el.offsetHeight) * 100;
-    g.addNode(Math.max(3, Math.min(97, x)), Math.max(6, Math.min(94, y)));
+    const bounds = canvasRef.current;
+    const inner = innerCanvasRef.current;
+    if (!bounds || !inner) return;
+    const br = bounds.getBoundingClientRect();
+    if (clientX < br.left || clientX > br.right || clientY < br.top || clientY > br.bottom) return;
+    const ir = inner.getBoundingClientRect();
+    const x = ((clientX - ir.left) / ir.width)  * INNER_W;
+    const y = ((clientY - ir.top)  / ir.height) * INNER_H;
+    g.addNode(Math.max(5, Math.min(INNER_W - 5, x)), Math.max(5, Math.min(INNER_H - 5, y)));
   }, [g]);
   const handleDeckCancel = useCallback(() => setDeckGhost(null), []);
 
@@ -207,7 +230,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setSimWord('');
   }, [level, simWord, g.studentPda]);
 
-  // ── Simular palavra: abre APStackSim passo a passo + adiciona à lista ────────
+  // ── Simular palavra: abre APSimPanel passo a passo (rodapé) + adiciona à lista ─
   const simulate = useCallback(() => {
     if (!level) return;
     const word = simWord.trim();
@@ -278,31 +301,32 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         <div className="deck-drag-ghost" style={{ left: deckGhost.x, top: deckGhost.y }} />,
         document.body)}
 
-      {/* Header (mesmo layout do AFD: Objetivo + linguagem ao centro, L06 junto ao nav) */}
-      <div className="ap-header">
-        <button className="back-btn" onClick={() => setScreen('MENU')}>⬅ Voltar</button>
-
-        <div className="ap-header-center">
-          <span className="ap-mission-label">Objetivo</span>
-          <div className="ap-mission-formula">{level.language}</div>
-          <button className="ap-formal-toggle" disabled={!lesson.hasLesson}
-            onClick={lesson.active ? finishLesson : startLesson}>
-            {lesson.active ? '✕ Sair da Aula' : '👨‍🏫 Assistir Aula'}
-          </button>
-          <button className="ap-formal-toggle" disabled={stars < 1 || lesson.active} onClick={() => setFormalOpen(o => !o)}>
-            📝 Descrição Formal
-          </button>
-        </div>
-
-        <div className="ap-header-right">
-          <div className="ap-header-nav">
-            <button onClick={() => goLevel(-1)} title="Fase anterior">◀</button>
-            <span className="ap-level-label" style={{ background: DIFF_COLOR[level.level] }}>{level.label}</span>
-            <button onClick={() => goLevel(1)} title="Próxima fase">▶</button>
-          </div>
-          <div className="ap-header-stars">{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
-        </div>
-      </div>
+      {/* Header (compartilhado com o AFD — mesmo componente/estilo/motor) */}
+      <GameHeader
+        objective={level.language}
+        label={level.label}
+        diffColor={DIFF_COLOR[level.level] ?? '#fff'}
+        stars={stars}
+        starsMax={3}
+        isFirst={apIdx === 0}
+        isLast={apIdx === AP_LEVELS.length - 1}
+        onBack={() => setScreen('MENU')}
+        onPrevLevel={() => goLevel(-1)}
+        onNextLevel={() => goLevel(1)}
+        hasLesson={lesson.hasLesson}
+        lessonActive={lesson.active}
+        lessonToggleMode="swap"
+        lessonLabel="👨‍🏫 Assistir Aula"
+        lessonActiveLabel="✕ Sair da Aula"
+        lessonDisabled={!lesson.hasLesson}
+        onStartLesson={startLesson}
+        onCloseLesson={finishLesson}
+        secondaryAction={{
+          label: '📝 Descrição Formal',
+          disabled: stars < 1 || lesson.active,
+          onClick: () => setFormalOpen(o => !o),
+        }}
+      />
 
       <div className="workspace">
         {/* Sidebar: Descrição Formal */}
@@ -325,6 +349,11 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         {/* Canvas */}
         <APCanvas
           canvasRef={canvasRef}
+          innerCanvasRef={innerCanvasRef}
+          viewportRef={viewportRef}
+          zoom={zoom}
+          setZoom={setZoom}
+          guidedLessonStep={lesson.step}
           nodes={viewNodes}
           transitions={viewTransitions}
           mode={mode}
@@ -409,17 +438,13 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           <button className="validate-btn slide-up-fade" onClick={validate}>
             ✓ Validar AP
           </button>
-
-          {sim && (
-            <APStackSim key={simKey} run={sim.run} word={sim.word} title={sim.title}
-              message={sim.message} accepted={sim.accepted} reason={sim.reason}
-              onStepNarrate={narrateSim} onHighlight={handleHighlight} onClose={closeSim} />
-          )}
         </aside>
         )}
       </div>
 
-      {/* Rodapé: deck de cartas + Maurílio (mesmo visual do AFD) */}
+      {/* Rodapé: deck de cartas + Maurílio (mesmo visual do AFD), ou o
+          simulador compacto + pilha (mesmo estilo do SimPanel do AFD)
+          quando uma simulação está ativa. */}
       <APFooterDeck
         mode={mode}
         onPick={pickMode}
@@ -437,6 +462,11 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         onNodeDrag={handleDeckDrag}
         onNodeDrop={handleDeckDrop}
         onNodeDragCancel={handleDeckCancel}
+        simPanel={sim && (
+          <APSimPanel key={simKey} run={sim.run} word={sim.word}
+            accepted={sim.accepted} reason={sim.reason}
+            onStepNarrate={narrateSim} onHighlight={handleHighlight} onClose={closeSim} />
+        )}
       />
 
       {victory && (

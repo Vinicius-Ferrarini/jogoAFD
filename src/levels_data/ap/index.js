@@ -15,13 +15,15 @@ import {
 } from '../../modules/ap/utils/pdaAlgorithms.js';
 import { buildApLesson } from '../../modules/ap/utils/buildApLesson.js';
 
-// ── Gabaritos .jff crus (Vite ?raw). Única fonte; se o .jff mudar, o jogo segue. ─
-const RAW = import.meta.glob('../../../gabaritos_jflap/ap/*.jff', {
+// ── Gabaritos JFLAP crus (Vite ?raw). Única fonte; se o arquivo mudar, o jogo
+// segue. Aceita .xml (padrão atual, igual ao gabaritos_jflap/afd/) e .jff
+// (formato nativo do JFLAP, mesmo conteúdo XML) — ambos têm a mesma estrutura.
+const RAW = import.meta.glob('../../../gabaritos_jflap/ap/*.{xml,jff}', {
   query: '?raw', import: 'default', eager: true,
 });
 function gabarito(name) {
-  const key = Object.keys(RAW).find((k) => k.endsWith(`/${name}.jff`));
-  if (!key) throw new Error(`gabarito ${name}.jff não encontrado`);
+  const key = Object.keys(RAW).find((k) => k.endsWith(`/${name}.xml`) || k.endsWith(`/${name}.jff`));
+  if (!key) throw new Error(`gabarito ${name}.xml/.jff não encontrado`);
   return parseJff(RAW[key]);
 }
 
@@ -47,6 +49,10 @@ import L13_META from './L13.js';
 import L14_META from './L14.js';
 import L15_META from './L15.js';
 import L16_META from './L16.js';
+import L17_META from './L17.js';
+import L18_META from './L18.js';
+import L19_META from './L19.js';
+import L20_META from './L20.js';
 
 const META = {
   L1: L1_META,
@@ -65,10 +71,14 @@ const META = {
   L14: L14_META,
   L15: L15_META,
   L16: L16_META,
+  L17: L17_META,
+  L18: L18_META,
+  L19: L19_META,
+  L20: L20_META,
 };
 
 // ── Monta a lista de exercícios (combina META + gabarito parseado) ────────────
-// Ordem NUMÉRICA (L1, L2, …, L15); rótulo exibido com zero à esquerda (L01…L15).
+// Ordem NUMÉRICA (L1, L2, …, L20); rótulo exibido com zero à esquerda (L01…L20).
 export const AP_LEVELS = Object.keys(META)
   .map((id) => {
     const m = META[id];
