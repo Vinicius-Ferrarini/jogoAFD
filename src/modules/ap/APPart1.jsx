@@ -19,7 +19,7 @@ import usePDAGraph from './hooks/usePDAGraph';
 import useAPDrawing from './hooks/useAPDrawing';
 import useAPGuidedLesson from './hooks/useAPGuidedLesson';
 import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js';
-import { AP_LEVELS } from '../../levels_data/ap/index.js';
+import { AP_LEVELS, getShortestWord } from '../../levels_data/ap/index.js';
 import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
@@ -36,6 +36,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   const [simWord, setSimWord] = useState('');
   const [simKey, setSimKey]   = useState(0);
   const [testedWords, setTestedWords] = useState([]);
+  const [isDrawingUnlocked, setIsDrawingUnlocked] = useState(false);
   const [formalOpen, setFormalOpen] = useState(false);
   const [deckGhost, setDeckGhost]   = useState(null);
   const [victory, setVictory]       = useState(false);
@@ -138,11 +139,14 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setSimWord(''); setFormalOpen(false); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
     setTestedWords([]);
+    // L16 (impossível) não tem tabuleiro a desenhar — não precisa da mecânica
+    // de "descubra a menor palavra" pra destravar. Os demais começam travados.
+    setIsDrawingUnlocked(!!lv.impossible);
     draw.resetDrawings();
     resetZoom();
     say(lv.impossible
       ? `${lv.language} é IMPOSSÍVEL com Autômato com Pilha — precisa de Máquina de Turing (MT).`
-      : `Monte o AP que reconhece ${lv.language} por PILHA VAZIA e clique em Validar!`,
+      : `1ª coisa: descubra a MENOR palavra de ${lv.language}!`,
       lv.impossible ? 'serio' : 'explicando');
   }, [g, draw, say, lessonReset, resetZoom]);
 
@@ -178,7 +182,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setResult(res);
     if (res.ok) {
       say('Linguagem certa! Agora preencha a Descrição Formal. 🎉', 'feliz');
-      updateProgress?.(`ap-${level.id}`, 1);
+      updateProgress?.(`ap-${level.id}`, 2);
       showToast?.('AP validado por pilha vazia! ★', 'success');
       setFormalOpen(true);
     } else if (res.reason === 'counterexample') {
@@ -196,11 +200,11 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     }
   }, [level, g, say, updateProgress, showToast, openSim]);
 
-  // ── Descrição formal: ★2 (elementos) e ★3 (função δ → vitória) ──────────────
+  // ── Descrição formal: elementos corretos (sem estrela própria — a ★3 vem
+  // só da função δ completa) e função δ → vitória (★3) ─────────────────────────
   const onFormalElements = useCallback(() => {
-    updateProgress?.(`ap-${level.id}`, 2);
     say('Elementos corretos! Agora a função de transição δ.', 'feliz');
-  }, [level, updateProgress, say]);
+  }, [say]);
 
   const onFormalDone = useCallback(() => {
     updateProgress?.(`ap-${level.id}`, 3);
@@ -221,14 +225,37 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     say(`${read}, ${pop}, ${push}.`, 'explicando');
   }, [say]);
 
-  // ── Testar palavra: apenas adiciona à lista (✓/✗), sem abrir simulação ────────
+  // ── Testar palavra ──────────────────────────────────────────────────────────
+  // Antes de destravar: testa contra o GABARITO (menor/aceita/rejeitada) — é a
+  // mecânica de onboarding "descubra a menor palavra", igual ao AFD. Depois de
+  // destravar: testa contra o AP do ALUNO (✓/✗), sem mexer no estado de gate.
   const testWord = useCallback(() => {
     if (!level) return;
-    const word = simWord.trim();
+    const raw = simWord.trim();
+    // "null"/"vazio" (como no AFD) são a forma de digitar λ — testar uma string
+    // vazia direto não dá pro aluno saber o que está acontecendo.
+    const lower = raw.toLowerCase();
+    const word = (lower === 'null' || lower === 'vazio') ? '' : raw;
+    if (!isDrawingUnlocked) {
+      const display = word === '' ? 'λ' : word;
+      if (testedWords.some(t => t.word === display)) { setSimWord(''); return; }
+      const acceptedByGabarito = pdaAccepts(level.solution, word);
+      const shortest = getShortestWord(level);
+      const isShortest = acceptedByGabarito && word === shortest;
+      setTestedWords(prev => [{ word: display, status: isShortest ? 'shortest' : acceptedByGabarito ? 'correct' : 'wrong' }, ...prev]);
+      if (isShortest) {
+        setIsDrawingUnlocked(true);
+        updateProgress?.(`ap-${level.id}`, 1);
+        showToast?.('Sucesso! Tabuleiro liberado.', 'success');
+        say('Tabuleiro liberado! Monte o AP e clique em Validar. 💪', 'feliz');
+      }
+      setSimWord('');
+      return;
+    }
     setTestedWords(prev => prev.some(t => t.word === word)
-      ? prev : [...prev, { word, accepted: pdaAccepts(g.studentPda, word) }]);
+      ? prev : [{ word, accepted: pdaAccepts(g.studentPda, word) }, ...prev]);
     setSimWord('');
-  }, [level, simWord, g.studentPda]);
+  }, [level, simWord, isDrawingUnlocked, testedWords, g.studentPda, updateProgress, showToast, say]);
 
   // ── Simular palavra: abre APSimPanel passo a passo (rodapé) + adiciona à lista ─
   const simulate = useCallback(() => {
@@ -323,7 +350,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         onCloseLesson={finishLesson}
         secondaryAction={{
           label: '📝 Descrição Formal',
-          disabled: stars < 1 || lesson.active,
+          disabled: stars < 2 || lesson.active,
           onClick: () => setFormalOpen(o => !o),
         }}
       />
@@ -354,6 +381,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           zoom={zoom}
           setZoom={setZoom}
           guidedLessonStep={lesson.step}
+          isDrawingUnlocked={isDrawingUnlocked}
           nodes={viewNodes}
           transitions={viewTransitions}
           mode={mode}
@@ -413,20 +441,28 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           <div className="section-header" style={{ fontSize: 11 }}>Palavras aceitas pela linguagem</div>
 
           <div className="test-input-area">
-            <input type="text" className="word-input" placeholder="ex: aabb (vazio = λ)"
+            <input type="text" className="word-input"
+              placeholder={!isDrawingUnlocked && getShortestWord(level) === '' ? "Digite 'null'..." : "ex: aabb (vazio = λ)"}
               value={simWord} onChange={e => setSimWord(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && testWord()}
               translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
             <button className="add-test-btn" onClick={testWord}>+</button>
           </div>
 
-          <button className="simulate-btn" onClick={simulate}>🔬 Simular</button>
+          {isDrawingUnlocked && (
+            <button className="simulate-btn" onClick={simulate}>🔬 Simular</button>
+          )}
 
           <div className="words-list">
             {testedWords.map((t, i) => (
-              <div key={i} className={`word-row ${t.accepted ? 'correct' : 'wrong'}`}>
+              <div key={i} className={`word-row ${t.status ? t.status : t.accepted ? 'correct' : 'wrong'}`}>
                 <span>{t.word === '' ? 'λ' : t.word}</span>
-                <span>{t.accepted ? '✓' : '✗'}</span>
+                <span>
+                  {t.status === 'shortest' ? '★ MENOR'
+                    : t.status === 'correct' ? '✓'
+                    : t.status === 'wrong' ? '✕'
+                    : t.accepted ? '✓' : '✕'}
+                </span>
               </div>
             ))}
           </div>
@@ -435,9 +471,11 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
             <div className="ap-result err">{result.message}</div>
           )}
 
-          <button className="validate-btn slide-up-fade" onClick={validate}>
-            ✓ Validar AP
-          </button>
+          {isDrawingUnlocked && (
+            <button className="validate-btn slide-up-fade" onClick={validate}>
+              ✓ Validar AP
+            </button>
+          )}
         </aside>
         )}
       </div>
@@ -449,6 +487,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         mode={mode}
         onPick={pickMode}
         lessonActive={lesson.active}
+        isDrawingUnlocked={isDrawingUnlocked}
         hasNodes={g.nodes.length > 0}
         canUndo={g.canUndo}
         canRedo={g.canRedo}

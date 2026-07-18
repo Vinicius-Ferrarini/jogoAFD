@@ -26,6 +26,7 @@ export default function APFooterDeck({
   showFinalCard = false,
   tape, tapeHead,
   simPanel,
+  isDrawingUnlocked = true,
 }) {
   const CARDS = showFinalCard
     ? [...CARDS_BASE, CARD_FINAL, ...CARDS_TAIL]
@@ -40,6 +41,24 @@ export default function APFooterDeck({
     return (
       <footer className="bottom-hand ap-simp-footer">
         {simPanel}
+      </footer>
+    );
+  }
+
+  // Antes de destravar (menor palavra ainda não descoberta): sem cartas, só o
+  // HUD do professor — igual ao FooterDeck do AFD antes do isDrawingUnlocked.
+  if (!isDrawingUnlocked && !lessonActive) {
+    return (
+      <footer className="bottom-hand">
+        <div className="professor-hud">
+          {profMessage && (
+            <div className="professor-balloon ap-balloon" style={{ pointerEvents: 'none' }}>
+              <img src={imgBalaoFala} alt="" />
+              <div className="professor-balloon-text ap-balloon-text">{profMessage}</div>
+            </div>
+          )}
+          <img src={profImg} alt="Professor Maurílio" className="prof-img" onClick={onProfClick} />
+        </div>
       </footer>
     );
   }

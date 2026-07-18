@@ -8,6 +8,8 @@ import APTransitionLabel from './APTransitionLabel';
 import StrokeEl from '../../afd/components/StrokeEl';
 import { DRAW_COLORS } from '../hooks/useAPDrawing';
 import { INNER_W, INNER_H } from '../../afd/hooks/useCanvasState.js';
+import imgMaurilioApontando from '../../../assets/maurilio2_apontando_pro_lado.webp';
+import imgBalaoFala         from '../../../assets/balao_fala_redondo.webp';
 
 function pxFromEvent(e, innerRef) {
   const el = innerRef.current;
@@ -29,6 +31,7 @@ export default function APCanvas({
   selectedNodes = [], setSelectedNodes,
   selectionBox, setSelectionBox,
   guidedLessonStep = null,
+  isDrawingUnlocked = true,
 }) {
   const localInnerRef = useRef(null);
   const innerRef = innerCanvasRef || localInnerRef;
@@ -69,6 +72,7 @@ export default function APCanvas({
 
   // ── Pointer no fundo ────────────────────────────────────────────────────────
   const onCanvasDown = useCallback((e) => {
+    if (!isDrawingUnlocked) return;
     // Toques que começam num botão (HUD "Riscar" / toolbar de desenho) NÃO devem
     // virar traço nem capturar o ponteiro no canvas — senão o ponteiro é roubado
     // do botão e o clique (fechar lápis / trocar ferramenta) nunca dispara.
@@ -88,9 +92,10 @@ export default function APCanvas({
       return;
     }
     setSelectedNodes([]);
-  }, [isDraw, draw, mode, addNode, setSelectionBox, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, isDraw, draw, mode, addNode, setSelectionBox, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onNodeDown = useCallback((e, node) => {
+    if (!isDrawingUnlocked) return;
     if (isDraw) return;
     e.stopPropagation();
     if (e.button !== 0) return;
@@ -113,9 +118,10 @@ export default function APCanvas({
       dragRef.current = { uid: node.uid, sx: x, sy: y, ox: node.x, oy: node.y };
       e.target.setPointerCapture?.(e.pointerId);
     }
-  }, [isDraw, mode, connectingSource, nodes, deleteNode, toggleInitial, addTriple, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, isDraw, mode, connectingSource, nodes, deleteNode, toggleInitial, addTriple, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onMove = useCallback((e) => {
+    if (!isDrawingUnlocked) return;
     if (isDraw) { draw.onMove(e); return; }
     if (selectionBox) {
       const { x, y } = pxFromEvent(e, innerRef);
@@ -127,9 +133,10 @@ export default function APCanvas({
     const { x, y } = pxFromEvent(e, innerRef);
     const dx = x - d.sx, dy = y - d.sy;
     moveNode(d.uid, Math.max(5, Math.min(INNER_W - 5, d.ox + dx)), Math.max(5, Math.min(INNER_H - 5, d.oy + dy)));
-  }, [isDraw, draw, moveNode, selectionBox, setSelectionBox]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, isDraw, draw, moveNode, selectionBox, setSelectionBox]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onUp = useCallback((e) => {
+    if (!isDrawingUnlocked) return;
     if (isDraw) { draw.onUp(e); return; }
     if (selectionBox) {
       const minX = Math.min(selectionBox.startX, selectionBox.currentX);
@@ -142,7 +149,7 @@ export default function APCanvas({
       return;
     }
     dragRef.current = null;
-  }, [isDraw, draw, selectionBox, nodes, selectedNodes, setSelectedNodes, setSelectionBox]);
+  }, [isDrawingUnlocked, isDraw, draw, selectionBox, nodes, selectedNodes, setSelectedNodes, setSelectionBox]);
 
   // ── Agrupa transições por aresta (from→to) ──────────────────────────────────
   const groups = [];
@@ -195,41 +202,43 @@ export default function APCanvas({
         mode !== 'IDLE'     ? 'connecting-mode' : ''}`}
       ref={canvasRef}
     >
-      {/* HUD: Zoom + botão Riscar (mesmo visual do AFD) */}
-      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 60, display: 'flex', gap: 4, alignItems: 'center' }}>
-        <button onClick={() => setMode(isDraw ? 'IDLE' : 'DRAW')} title="Riscar"
-          style={{ width: 30, height: 30, background: isDraw ? '#bfdbfe' : '#fef08a',
-            border: isDraw ? '2.5px solid #3b82f6' : '2.5px solid #000',
-            borderRadius: 8, fontSize: 15, cursor: 'pointer',
-            boxShadow: isDraw ? '2px 2px 0 #1d4ed8' : '2px 2px 0 #000',
-            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="16" height="16" viewBox="0 0 16 16">
-            <path d="M3 12 L10 5 L12 7 L5 14 Z" fill="#fbbf24" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
-            <path d="M10 5 L12 3 L14 5 L12 7 Z" fill="#fb923c" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
-            <path d="M3 12 L1.5 14.5 L5 14 Z" fill="#374151" stroke="#000" strokeWidth="1.2" strokeLinejoin="round"/>
-          </svg>
-        </button>
-        <div style={{ display: 'flex', gap: 2, background: '#fff', padding: '3px 6px', border: '2.5px solid #000', borderRadius: 8, boxShadow: '3px 3px 0 #000', alignItems: 'center' }}>
-          <button onClick={() => setZoom(z => Math.max(25, z - 10))}
-            style={{ fontWeight: 'bold', width: 20, height: 22, cursor: 'pointer', border: 'none', background: 'transparent', fontSize: 16, color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={zoomInput}
-            onChange={e => { const v = e.target.value; if (v === '' || /^\d+$/.test(v)) setZoomInput(v); }}
-            onBlur={() => { let v = Number(zoomInput); if (isNaN(v) || v < 25) v = 25; else if (v > 200) v = 200; setZoom(v); setZoomInput(String(v)); }}
-            onKeyDown={e => { if (e.key === 'Enter') { let v = Number(zoomInput); if (isNaN(v) || v < 25) v = 25; else if (v > 200) v = 200; setZoom(v); setZoomInput(String(v)); e.target.blur(); } }}
-            style={{ width: '32px', textAlign: 'center', border: 'none', background: 'transparent', outline: 'none', fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace', color: '#000', padding: 0, margin: 0 }}
-          /><span style={{ fontSize: 11, fontWeight: 'bold', color: '#000' }}>%</span>
-          <button onClick={() => setZoom(z => Math.min(200, z + 10))}
-            style={{ fontWeight: 'bold', width: 20, height: 22, cursor: 'pointer', border: 'none', background: 'transparent', fontSize: 16, color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-          <button onClick={() => { setZoom(100); const vp = viewportRef?.current; if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; } }}
-            style={{ fontWeight: 'bold', marginLeft: 2, cursor: 'pointer', border: 'none', background: 'transparent', color: 'var(--accent-blue)', fontSize: 11 }}>↺</button>
+      {/* HUD: Zoom + botão Riscar (mesmo visual do AFD; só depois de destravado) */}
+      {isDrawingUnlocked && (
+        <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 60, display: 'flex', gap: 4, alignItems: 'center' }}>
+          <button onClick={() => setMode(isDraw ? 'IDLE' : 'DRAW')} title="Riscar"
+            style={{ width: 30, height: 30, background: isDraw ? '#bfdbfe' : '#fef08a',
+              border: isDraw ? '2.5px solid #3b82f6' : '2.5px solid #000',
+              borderRadius: 8, fontSize: 15, cursor: 'pointer',
+              boxShadow: isDraw ? '2px 2px 0 #1d4ed8' : '2px 2px 0 #000',
+              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="16" height="16" viewBox="0 0 16 16">
+              <path d="M3 12 L10 5 L12 7 L5 14 Z" fill="#fbbf24" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
+              <path d="M10 5 L12 3 L14 5 L12 7 Z" fill="#fb923c" stroke="#000" strokeWidth="1.3" strokeLinejoin="round"/>
+              <path d="M3 12 L1.5 14.5 L5 14 Z" fill="#374151" stroke="#000" strokeWidth="1.2" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <div style={{ display: 'flex', gap: 2, background: '#fff', padding: '3px 6px', border: '2.5px solid #000', borderRadius: 8, boxShadow: '3px 3px 0 #000', alignItems: 'center' }}>
+            <button onClick={() => setZoom(z => Math.max(25, z - 10))}
+              style={{ fontWeight: 'bold', width: 20, height: 22, cursor: 'pointer', border: 'none', background: 'transparent', fontSize: 16, color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={zoomInput}
+              onChange={e => { const v = e.target.value; if (v === '' || /^\d+$/.test(v)) setZoomInput(v); }}
+              onBlur={() => { let v = Number(zoomInput); if (isNaN(v) || v < 25) v = 25; else if (v > 200) v = 200; setZoom(v); setZoomInput(String(v)); }}
+              onKeyDown={e => { if (e.key === 'Enter') { let v = Number(zoomInput); if (isNaN(v) || v < 25) v = 25; else if (v > 200) v = 200; setZoom(v); setZoomInput(String(v)); e.target.blur(); } }}
+              style={{ width: '32px', textAlign: 'center', border: 'none', background: 'transparent', outline: 'none', fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace', color: '#000', padding: 0, margin: 0 }}
+            /><span style={{ fontSize: 11, fontWeight: 'bold', color: '#000' }}>%</span>
+            <button onClick={() => setZoom(z => Math.min(200, z + 10))}
+              style={{ fontWeight: 'bold', width: 20, height: 22, cursor: 'pointer', border: 'none', background: 'transparent', fontSize: 16, color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+            <button onClick={() => { setZoom(100); const vp = viewportRef?.current; if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; } }}
+              style={{ fontWeight: 'bold', marginLeft: 2, cursor: 'pointer', border: 'none', background: 'transparent', color: 'var(--accent-blue)', fontSize: 11 }}>↺</button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="canvas-label">Área de Montagem</div>
-      {mode !== 'IDLE' && (
+      {isDrawingUnlocked && mode !== 'IDLE' && (
         <div className="canvas-action-label">
           {mode === 'ADD_NODE'       && '◯ Novo Estado'}
           {mode === 'CONNECTING'     && (connectingSource ? '↗ Clique no destino' : '↗ Clique na origem')}
@@ -239,6 +248,21 @@ export default function APCanvas({
         </div>
       )}
 
+      {!isDrawingUnlocked && !lessonActive ? (
+        <div className="locked-overlay">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 80 }}>
+            <img src={imgMaurilioApontando} alt="Professor" style={{ height: 320, zIndex: 1 }} />
+            <div style={{ position: 'relative', width: 210, height: 140, marginLeft: -80, alignSelf: 'flex-start', marginTop: -80 }}>
+              <img src={imgBalaoFala} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1 }} />
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '14px 14px 34px 14px', boxSizing: 'border-box', color: '#000', fontWeight: 'bold', fontSize: 16, textAlign: 'center', zIndex: 2 }}>
+                1ª Coisa: Descubra a Menor Palavra!
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+      <>
       {nodes.length === 0 && !isDraw && !lessonActive && (
         <div className="ap-empty-hint">Clique em <b>◯ Novo Estado</b> e comece a montar seu AP!</div>
       )}
@@ -379,6 +403,8 @@ export default function APCanvas({
           </div>
         </div>
       </div>
+      </>
+      )}
 
       {/* Bloqueador do Modo Aula: impede editar o grafo enquanto a aula roda */}
       {lessonActive && (

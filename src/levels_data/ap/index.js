@@ -134,3 +134,11 @@ export function getLesson(level) {
   _lessonCache.set(level.id, lesson);
   return lesson;
 }
+
+// ── Menor palavra aceita (mecânica de onboarding, igual ao AFD) ───────────────
+// Derivada da própria bateria (já ordenada por comprimento) — sem campo manual
+// por nível. `null` para o único nível sem gabarito (impossível).
+export function getShortestWord(level) {
+  if (level.impossible) return null;
+  return getBattery(level).accepted[0] ?? '';
+}
