@@ -313,7 +313,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
             </button>
           ))}
         </div>
-        <DifficultyLegend keys={['easy', 'medium', 'hard', 'impossible']} />
+        <DifficultyLegend keys={['easy', 'medium', 'hard', 'trabalho', 'prova', 'impossible']} />
       </div>
     );
   }
