@@ -144,10 +144,15 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setIsDrawingUnlocked(!!lv.impossible);
     draw.resetDrawings();
     resetZoom();
+    // Níveis travados já mostram "descubra a menor palavra" no locked-overlay do
+    // canvas (APCanvas.jsx) — o balão do professor fica vazio, igual ao AFD, para
+    // não duplicar a instrução nem "grudar" uma mensagem estática que sobreviveria
+    // ao destravamento. Só o nível impossível (sem overlay) precisa da explicação
+    // no balão, já que ele não passa pelo fluxo de desenho.
     say(lv.impossible
       ? `${lv.language} é IMPOSSÍVEL com Autômato com Pilha — precisa de Máquina de Turing (MT).`
-      : `1ª coisa: descubra a MENOR palavra de ${lv.language}!`,
-      lv.impossible ? 'serio' : 'explicando');
+      : '',
+      'serio');
   }, [g, draw, say, lessonReset, resetZoom]);
 
   const goLevel = useCallback((dir) => {
@@ -187,12 +192,15 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
       setFormalOpen(true);
     } else if (res.reason === 'counterexample') {
       say(res.message, 'serio');
+      showToast?.(res.message, 'error');
       if (res.run) {
-        openSim({ run: res.run, word: res.counterexample.word,
+        // res.run vem de pdaAcceptingRun (gabarito ou aluno) — é sempre uma
+        // computação que ACEITA (pilha esvazia); accepted:true reflete isso.
+        // O contexto de "isso está ERRADO" vem do banner (title/message), não
+        // do veredito ✓/✗ do próprio passo a passo.
+        openSim({ run: res.run, word: res.counterexample.word, accepted: true,
           title: `Contraexemplo: "${res.counterexample.word === '' ? 'λ' : res.counterexample.word}"`,
-          message: res.runSource === 'gabarito'
-            ? 'Caminho do gabarito (como deveria aceitar):'
-            : 'Caminho indevido do seu AP:' });
+          message: res.message });
       }
     } else {
       say(res.message, 'serio');
@@ -239,15 +247,19 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     if (!isDrawingUnlocked) {
       const display = word === '' ? 'λ' : word;
       if (testedWords.some(t => t.word === display)) { setSimWord(''); return; }
-      const acceptedByGabarito = pdaAccepts(level.solution, word);
+      // level.truth corrige a verdade quando o gabarito .jff diverge do enunciado
+      // só nas bordas (ex.: L1 exige n>0, mas o .jff aceita λ) — sem isso, λ seria
+      // classificado "correto" indevidamente.
+      const acceptedByTruth = level.truth
+        ? level.truth(word, pdaAccepts(level.solution, word))
+        : pdaAccepts(level.solution, word);
       const shortest = getShortestWord(level);
-      const isShortest = acceptedByGabarito && word === shortest;
-      setTestedWords(prev => [{ word: display, status: isShortest ? 'shortest' : acceptedByGabarito ? 'correct' : 'wrong' }, ...prev]);
+      const isShortest = acceptedByTruth && word === shortest;
+      setTestedWords(prev => [{ word: display, status: isShortest ? 'shortest' : acceptedByTruth ? 'correct' : 'wrong' }, ...prev]);
       if (isShortest) {
         setIsDrawingUnlocked(true);
         updateProgress?.(`ap-${level.id}`, 1);
         showToast?.('Sucesso! Tabuleiro liberado.', 'success');
-        say('Tabuleiro liberado! Monte o AP e clique em Validar. 💪', 'feliz');
       }
       setSimWord('');
       return;
@@ -255,7 +267,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setTestedWords(prev => prev.some(t => t.word === word)
       ? prev : [{ word, accepted: pdaAccepts(g.studentPda, word) }, ...prev]);
     setSimWord('');
-  }, [level, simWord, isDrawingUnlocked, testedWords, g.studentPda, updateProgress, showToast, say]);
+  }, [level, simWord, isDrawingUnlocked, testedWords, g.studentPda, updateProgress, showToast]);
 
   // ── Simular palavra: abre APSimPanel passo a passo (rodapé) + adiciona à lista ─
   const simulate = useCallback(() => {
@@ -503,7 +515,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         onNodeDragCancel={handleDeckCancel}
         simPanel={sim && (
           <APSimPanel key={simKey} run={sim.run} word={sim.word}
-            accepted={sim.accepted} reason={sim.reason}
+            accepted={sim.accepted} reason={sim.reason} title={sim.title} message={sim.message}
             onStepNarrate={narrateSim} onHighlight={handleHighlight} onClose={closeSim} />
         )}
       />

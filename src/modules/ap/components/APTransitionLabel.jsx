@@ -6,6 +6,8 @@ import { useState, useRef, useEffect } from 'react';
 
 const LAMBDA = 'λ';
 const show = (v) => (v === '' || v == null ? LAMBDA : v);
+// Sentinela distinta de qualquer autoEdit real (null | 'new' | number).
+const NO_AUTO_EDIT_YET = Symbol('no-auto-edit-yet');
 
 function TripleEditor({ initial, onCommit, onCancel }) {
   const [read, setRead] = useState(initial?.read ?? '');
@@ -42,8 +44,27 @@ function TripleEditor({ initial, onCommit, onCancel }) {
 export default function APTransitionLabel({
   triples, style, eraseMode, lessonActive,
   onAddTriple, onEditTriple, onRemoveTriple,
+  autoEdit = null, onAutoEditConsumed,
 }) {
   const [editing, setEditing] = useState(null); // null | 'new' | tIdx
+
+  // Tripla recém-criada (seta nova, ainda "λ, λ ; λ"): abre o editor sozinha,
+  // sem exigir que o aluno descubra que precisa clicar na tripla depois. O
+  // próprio estado (editing) é ajustado durante o render — padrão oficial do
+  // React p/ "derivar de prop" — para não disparar um cascading render via
+  // setState num efeito. Avisar o pai (onAutoEditConsumed) já mexe em estado
+  // de OUTRO componente, então isso continua num efeito.
+  // Garante que o 1º render de uma tripla NOVA (que já nasce com autoEdit
+  // setado, pois o componente monta na mesma passada em que a seta é criada)
+  // conte como "mudou" — useRef(autoEdit) tomaria o mesmo valor logo no mount.
+  const prevAutoEditRef = useRef(NO_AUTO_EDIT_YET);
+  if (autoEdit !== prevAutoEditRef.current) {
+    prevAutoEditRef.current = autoEdit;
+    if (autoEdit != null) setEditing(autoEdit);
+  }
+  useEffect(() => {
+    if (autoEdit != null) onAutoEditConsumed?.();
+  }, [autoEdit, onAutoEditConsumed]);
 
   const clickChip = (e, t) => {
     e.stopPropagation();

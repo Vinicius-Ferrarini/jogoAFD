@@ -33,7 +33,7 @@ const REJECT_TITLE = {
 };
 
 export default function APSimPanel({
-  run, word, accepted, reason,
+  run, word, accepted, reason, title, message,
   onHighlight, onStepNarrate, onClose,
   stackBottom = 'Z',
 }) {
@@ -65,6 +65,12 @@ export default function APSimPanel({
       <div className="ap-simp-body">
         {/* ── Painel compacto (mesmo estilo do SimPanel do AFD) ── */}
         <div className="ap-simp-main">
+          {(title || message) && (
+            <div className="ap-simp-banner">
+              {title && <b>{title}</b>}
+              {message && <span>{message}</span>}
+            </div>
+          )}
           <div className="sim-panel-header">
             <span className="sim-panel-title">🔍 AP</span>
             <div className="sim-word-display">

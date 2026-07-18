@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AP_LEVELS, getBattery, getLesson } from '../levels_data/ap/index.js';
+import { AP_LEVELS, getBattery, getLesson, getShortestWord } from '../levels_data/ap/index.js';
 import { pdaAccepts, enumerateWords } from '../modules/ap/utils/pdaAlgorithms.js';
 
 // ─── Suite 1: bateria auto-consistente — o gabarito não contradiz a si mesmo ──
@@ -34,6 +34,40 @@ describe('AP Levels — bateria auto-consistente (todos os níveis)', () => {
       }
     });
   }
+});
+
+// ─── Suite 1b: classificação da mecânica "menor palavra" respeita truth ───────
+// Regressão do bug: testWord() (APPart1.jsx) classificava contra o gabarito CRU
+// (pdaAccepts direto), ignorando level.truth — em níveis onde o .jff diverge do
+// enunciado nas bordas (ex.: L1 exige n>0 mas o .jff aceita λ), isso rotulava λ
+// como "correto" incorretamente. Este teste replica a fórmula de classificação
+// que testWord() usa (level.truth ? level.truth(w, pdaAccepts(...)) : pdaAccepts(...))
+// e garante que ela nunca aceita uma palavra que a bateria (já truth-corrigida)
+// rejeita — i.e., as duas fontes de verdade não podem divergir.
+describe('AP Levels — classificação truth-corrigida da mecânica de onboarding', () => {
+  for (const level of AP_LEVELS) {
+    if (level.impossible || !level.truth) continue;
+    const label = level.label ?? level.id;
+
+    it(`${label}: level.truth(word, pdaAccepts(...)) concorda com battery.accepted/rejected`, () => {
+      const battery = getBattery(level);
+      const classify = (w) => level.truth(w, pdaAccepts(level.solution, w));
+      for (const w of battery.accepted) {
+        expect(classify(w), `${label}: truth rejeitou "${w || 'λ'}" mas a bateria aceita`).toBe(true);
+      }
+      for (const w of battery.rejected) {
+        expect(classify(w), `${label}: truth aceitou "${w || 'λ'}" mas a bateria rejeita`).toBe(false);
+      }
+    });
+  }
+
+  it('L1: λ é rejeitado por truth mesmo aceito pelo gabarito cru (regressão do bug relatado)', () => {
+    const l1 = AP_LEVELS.find((l) => l.id === 'L1');
+    const rawAccepts = pdaAccepts(l1.solution, '');
+    expect(rawAccepts, 'pré-condição do bug: gabarito cru deveria aceitar λ').toBe(true);
+    expect(l1.truth('', rawAccepts), 'truth deveria rejeitar λ (L1 exige n>0)').toBe(false);
+    expect(getShortestWord(l1), 'menor palavra do L1 deveria ser "ab", não λ').toBe('ab');
+  });
 });
 
 // ─── Suite 2: níveis impossíveis (L16) permanecem sem gabarito ────────────────

@@ -151,6 +151,13 @@
 .ap-simp-main {
   flex: 1; display: flex; flex-direction: column; min-width: 0;
 }
+.ap-simp-banner {
+  display: flex; flex-direction: column; gap: 1px;
+  background: #fef3c7; border: 2px solid #000; border-radius: 6px;
+  padding: 4px 8px; margin-bottom: 6px;
+  font-family: 'Comic Sans MS', cursive; font-size: 11px; line-height: 1.25;
+}
+.ap-simp-banner b { font-size: 12px; }
 .ap-simp-step {
   gap: 12px; flex-wrap: wrap;
 }

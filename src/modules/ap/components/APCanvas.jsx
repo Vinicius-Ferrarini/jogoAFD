@@ -38,6 +38,10 @@ export default function APCanvas({
   const dragRef = useRef(null);
   const isDraw = mode === 'DRAW';
 
+  // Seta recém-criada (modo "Criar Seta"): abre o editor da tripla sozinho, sem
+  // exigir que o aluno descubra que precisa clicar no chip "λ, λ ; λ" depois.
+  const [autoEditKey, setAutoEditKey] = useState(null); // { from, to, tIdx } | null
+
   const actualScale = (zoom / 100) * 0.8;
   const [zoomInput, setZoomInput] = useState(String(zoom));
   useEffect(() => { setZoomInput(String(zoom)); }, [zoom]);
@@ -104,7 +108,11 @@ export default function APCanvas({
     if (mode === 'CONNECTING') {
       if (!connectingSource) { setConnectingSource(node.uid); return; }
       const src = nodes.find(n => n.uid === connectingSource);
-      if (src) addTriple(src.id, node.id, { read: '', pop: '', push: '' });
+      if (src) {
+        const newTIdx = transitions.length;
+        const ok = addTriple(src.id, node.id, { read: '', pop: '', push: '' });
+        if (ok) setAutoEditKey({ from: src.id, to: node.id, tIdx: newTIdx });
+      }
       setConnectingSource(null);
       return;
     }
@@ -118,7 +126,7 @@ export default function APCanvas({
       dragRef.current = { uid: node.uid, sx: x, sy: y, ox: node.x, oy: node.y };
       e.target.setPointerCapture?.(e.pointerId);
     }
-  }, [isDrawingUnlocked, isDraw, mode, connectingSource, nodes, deleteNode, toggleInitial, addTriple, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, isDraw, mode, connectingSource, nodes, transitions, deleteNode, toggleInitial, addTriple, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onMove = useCallback((e) => {
     if (!isDrawingUnlocked) return;
@@ -362,6 +370,8 @@ export default function APCanvas({
                 onAddTriple={(tr) => addTriple(er.from, er.to, tr)}
                 onEditTriple={editTriple}
                 onRemoveTriple={removeTriple}
+                autoEdit={autoEditKey && autoEditKey.from === er.from && autoEditKey.to === er.to ? autoEditKey.tIdx : null}
+                onAutoEditConsumed={() => setAutoEditKey(null)}
               />
             ))}
 

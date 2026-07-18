@@ -78,6 +78,10 @@ export default function usePDAGraph({ showToast, selectedNodes = [], setSelected
     if (!me) return;
     const oldId = me.id;
     const trimmed = (raw || '').trim();
+    // Sem mudança de verdade (ex.: blur sem editar nada, ou blur roubado pelo
+    // autofoco do editor de tripla): não despacha nada — evita resetar
+    // hist.lastEmptyAdd à toa e criar uma entrada vazia no histórico.
+    if (trimmed === oldId) return;
     if (!trimmed || nodes.some(n => n.uid !== uid && n.id === trimmed)) {
       dispatch({ type: 'SET', next: { nodes: nodes.map(n => n.uid === uid ? { ...n, label: oldId, id: oldId } : n), transitions } });
       return;
