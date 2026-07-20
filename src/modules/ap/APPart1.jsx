@@ -349,6 +349,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         starsMax={3}
         isFirst={apIdx === 0}
         isLast={apIdx === AP_LEVELS.length - 1}
+        toggleSidebar={() => setFormalOpen(o => !o)}
         onBack={() => setScreen('MENU')}
         onPrevLevel={() => goLevel(-1)}
         onNextLevel={() => goLevel(1)}
@@ -357,12 +358,26 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         lessonDisabled={!lesson.hasLesson}
         onStartLesson={startLesson}
         onCloseLesson={finishLesson}
-        secondaryAction={{
-          label: '📝 Descrição Formal',
-          disabled: stars < 2 || lesson.active,
-          onClick: () => setFormalOpen(o => !o),
-        }}
       />
+
+      {/* ── Barra de palavras testadas (mesmo comportamento do AFD, oculta na Aula) ── */}
+      {!lesson.active && (
+        <div className="words-hint-bar">
+          <div className="words-hint-group">
+            <span className="words-hint-label accept">✓ Aceita</span>
+            {testedWords.filter(t => t.status === 'correct' || t.status === 'shortest' || (!t.status && t.accepted)).map((t, i) => (
+              <span key={i} className="words-hint-chip accept">{t.word}</span>
+            ))}
+          </div>
+          <div className="words-hint-sep" />
+          <div className="words-hint-group">
+            <span className="words-hint-label reject">✗ Rejeita</span>
+            {testedWords.filter(t => t.status === 'wrong' || (!t.status && !t.accepted)).map((t, i) => (
+              <span key={i} className="words-hint-chip reject">{t.word}</span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="workspace">
         {/* Sidebar: Descrição Formal */}
