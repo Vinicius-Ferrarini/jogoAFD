@@ -309,21 +309,30 @@ svg circle.progress-fill {
   background: #FFF;
   border: 2px solid #000;
   border-radius: 8px;
-  padding: 4px 8px;
+  padding: 4px 24px 4px 8px;
+  overflow: hidden;
 }
 
+/* Faixa diagonal cobrindo o canto — sash reto (sem pontas triangulares): o
+   corte tem que ser feito pela borda do PRÓPRIO card (.last-commit-date, que
+   já tem overflow:hidden), nunca por um container quadrado interno menor —
+   um recorte quadrado num ângulo diferente do da faixa é o que cria o bico
+   triangular indesejado nas pontas. */
 .last-commit-today-flag {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  background: #4ade80;
-  color: #000;
-  font-size: 10px;
+  top: 1px;
+  right: -30px;
+  width: 84px;
+  background: #ef4444;
+  color: #FFF;
+  font-size: 7px;
   font-weight: 900;
-  border: 2px solid #000;
-  border-radius: 6px;
-  padding: 1px 6px;
-  box-shadow: 2px 2px 0 #000;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 0.3px;
+  padding: 0;
+  transform: rotate(45deg);
+  pointer-events: none;
 }
 
 @keyframes slideDownFade {

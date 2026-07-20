@@ -21,6 +21,10 @@ import { GAME_LEVELS, UNAVAILABLE_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '.
 let _uidCounter = 0;
 const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6)}`;
 
+// Dimensões lógicas do canvas interno (devem casar com INNER_W/INNER_H de CanvasArea.jsx)
+const INNER_W = 8000;
+const INNER_H = 8000;
+
 // ─── Rastreio de palavra no Modo Aula ────────────────────────────────────────
 // Simula a palavra no grafo CONGELADO do passo atual e devolve os "quadros" da
 // animação: cada quadro marca o estado ativo, a última letra consumida e o tipo
@@ -387,8 +391,10 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     if (!isDrawingUnlocked || !innerCanvasRef.current) return;
     const rect = innerCanvasRef.current.getBoundingClientRect();
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return;
-    const ix = Math.max(5, Math.min(1995, (clientX - rect.left) / zoom));
-    const iy = Math.max(5, Math.min(1995, (clientY - rect.top)  / zoom));
+    const rawX = ((clientX - rect.left) / rect.width)  * INNER_W;
+    const rawY = ((clientY - rect.top)  / rect.height) * INNER_H;
+    const ix = Math.max(5, Math.min(INNER_W - 5, rawX));
+    const iy = Math.max(5, Math.min(INNER_H - 5, rawY));
     let num = nodes.length;
     const usedLabels = new Set(nodes.map(n => n.label));
     while (usedLabels.has(`q${num}`)) num++;
@@ -396,7 +402,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     const newNodes = [...nodes, { uid: genUid(), id: newLabel, label: newLabel, x: ix, y: iy, isInitial: false, isFinal: false }];
     setNodes(newNodes);
     recordHistory(newNodes, transitions);
-  }, [isDrawingUnlocked, zoom, nodes, transitions, recordHistory]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, nodes, transitions, recordHistory]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDeckNodeDragCancel = useCallback(() => {
     setDeckGhostPos(null);

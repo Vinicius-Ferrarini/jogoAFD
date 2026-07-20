@@ -111,7 +111,9 @@ export default function MainMenu({ onStart, progress }) {
           {lastCommit && (
             <p id="last-commit-date" className="last-commit-date">
               {lastCommit}
-              {lastCommitIsToday && <span className="last-commit-today-flag">Hoje</span>}
+              {lastCommitIsToday && (
+                <span className="last-commit-today-flag">Hoje</span>
+              )}
             </p>
           )}
         </div>

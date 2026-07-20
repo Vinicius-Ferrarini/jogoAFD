@@ -61,12 +61,18 @@ describe('AP Levels — classificação truth-corrigida da mecânica de onboardi
     });
   }
 
-  it('L1: λ é rejeitado por truth mesmo aceito pelo gabarito cru (regressão do bug relatado)', () => {
+});
+
+// ─── Suite 1c: L1 aceita λ (enunciado correto é n ≥ 0, sem truth override) ────
+// L1 = { aⁿbⁿ / n ≥ 0 }: o gabarito cru já aceita λ (n=0) e não precisa de
+// `truth` para corrigir bordas — ao contrário do que um enunciado antigo (n>0)
+// exigia.
+describe('AP Levels — L1 aceita λ', () => {
+  it('L1: gabarito cru aceita λ e o exercício não sobrescreve isso com truth', () => {
     const l1 = AP_LEVELS.find((l) => l.id === 'L1');
-    const rawAccepts = pdaAccepts(l1.solution, '');
-    expect(rawAccepts, 'pré-condição do bug: gabarito cru deveria aceitar λ').toBe(true);
-    expect(l1.truth('', rawAccepts), 'truth deveria rejeitar λ (L1 exige n>0)').toBe(false);
-    expect(getShortestWord(l1), 'menor palavra do L1 deveria ser "ab", não λ').toBe('ab');
+    expect(pdaAccepts(l1.solution, ''), 'gabarito cru deveria aceitar λ').toBe(true);
+    expect(l1.truth, 'L1 não deveria ter truth override (n ≥ 0 já casa com o gabarito)').toBeUndefined();
+    expect(getShortestWord(l1), 'menor palavra do L1 deveria ser λ (n ≥ 0)').toBe('');
   });
 });
 

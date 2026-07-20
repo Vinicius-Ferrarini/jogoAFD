@@ -354,9 +354,6 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
         onNextLevel={() => goLevel(1)}
         hasLesson={lesson.hasLesson}
         lessonActive={lesson.active}
-        lessonToggleMode="swap"
-        lessonLabel="👨‍🏫 Assistir Aula"
-        lessonActiveLabel="✕ Sair da Aula"
         lessonDisabled={!lesson.hasLesson}
         onStartLesson={startLesson}
         onCloseLesson={finishLesson}
