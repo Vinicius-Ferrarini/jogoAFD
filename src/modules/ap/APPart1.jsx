@@ -24,7 +24,16 @@ import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgor
 import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
 
-export default function APPart1({ onBack, progress, updateProgress, showToast }) {
+export default function APPart1({ onBack, progress, updateProgress }) {
+  // ── Toast (mesmo padrão do AFD1: local, ignora o showToast no-op do App.jsx) ─
+  const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
+  const toastRef = useRef(null);
+  const showToast = useCallback((message, type = 'info') => {
+    setToastData({ show: true, message, type });
+    if (toastRef.current) clearTimeout(toastRef.current);
+    toastRef.current = setTimeout(() => setToastData(d => ({ ...d, show: false })), 4000);
+  }, []);
+
   const [screen, setScreen] = useState('MENU');
   const [level, setLevel]   = useState(null);
   const [mode, setMode]     = useState('IDLE');
@@ -36,6 +45,11 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   const [simWord, setSimWord] = useState('');
   const [simKey, setSimKey]   = useState(0);
   const [testedWords, setTestedWords] = useState([]);
+  // Depois de destravado, o aluno escolhe contra o que testar: a LINGUAGEM
+  // (gabarito/regex do enunciado) ou o DESENHO (o AP que ele mesmo montou).
+  // Antes de destravar, sempre testa contra a linguagem (mecânica de achar a
+  // menor palavra) — não há o que escolher ainda.
+  const [testMode, setTestMode] = useState('LANGUAGE'); // 'LANGUAGE' | 'DRAWING'
   const [isDrawingUnlocked, setIsDrawingUnlocked] = useState(false);
   const [formalOpen, setFormalOpen] = useState(false);
   const [deckGhost, setDeckGhost]   = useState(null);
@@ -139,6 +153,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     setSimWord(''); setFormalOpen(false); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
     setTestedWords([]);
+    setTestMode('LANGUAGE');
     // L16 (impossível) não tem tabuleiro a desenhar — não precisa da mecânica
     // de "descubra a menor palavra" pra destravar. Os demais começam travados.
     setIsDrawingUnlocked(!!lv.impossible);
@@ -234,9 +249,10 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
   }, [say]);
 
   // ── Testar palavra ──────────────────────────────────────────────────────────
-  // Antes de destravar: testa contra o GABARITO (menor/aceita/rejeitada) — é a
-  // mecânica de onboarding "descubra a menor palavra", igual ao AFD. Depois de
-  // destravar: testa contra o AP do ALUNO (✓/✗), sem mexer no estado de gate.
+  // Antes de destravar: sempre testa contra a LINGUAGEM (gabarito/enunciado) —
+  // é a mecânica de onboarding "descubra a menor palavra", igual ao AFD.
+  // Depois de destravar: o aluno escolhe o modo (testMode) — LANGUAGE continua
+  // testando contra o enunciado; DRAWING testa contra o AP que ele desenhou.
   const testWord = useCallback(() => {
     if (!level) return;
     const raw = simWord.trim();
@@ -244,30 +260,37 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
     // vazia direto não dá pro aluno saber o que está acontecendo.
     const lower = raw.toLowerCase();
     const word = (lower === 'null' || lower === 'vazio') ? '' : raw;
-    if (!isDrawingUnlocked) {
-      const display = word === '' ? 'λ' : word;
-      if (testedWords.some(t => t.word === display)) { setSimWord(''); return; }
+    const display = word === '' ? 'λ' : word;
+
+    if (!isDrawingUnlocked || testMode === 'LANGUAGE') {
+      if (testedWords.some(t => t.word === display && t.mode === 'LANGUAGE')) { setSimWord(''); return; }
       // level.truth corrige a verdade quando o gabarito .jff diverge do enunciado
       // só nas bordas (ex.: L1 exige n>0, mas o .jff aceita λ) — sem isso, λ seria
       // classificado "correto" indevidamente.
       const acceptedByTruth = level.truth
         ? level.truth(word, pdaAccepts(level.solution, word))
         : pdaAccepts(level.solution, word);
-      const shortest = getShortestWord(level);
-      const isShortest = acceptedByTruth && word === shortest;
-      setTestedWords(prev => [{ word: display, status: isShortest ? 'shortest' : acceptedByTruth ? 'correct' : 'wrong' }, ...prev]);
-      if (isShortest) {
-        setIsDrawingUnlocked(true);
-        updateProgress?.(`ap-${level.id}`, 1);
-        showToast?.('Sucesso! Tabuleiro liberado.', 'success');
+      if (!isDrawingUnlocked) {
+        const shortest = getShortestWord(level);
+        const isShortest = acceptedByTruth && word === shortest;
+        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: isShortest ? 'shortest' : acceptedByTruth ? 'correct' : 'wrong' }, ...prev]);
+        if (isShortest) {
+          setIsDrawingUnlocked(true);
+          updateProgress?.(`ap-${level.id}`, 1);
+          showToast?.('Sucesso! Tabuleiro liberado.', 'success');
+        }
+      } else {
+        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: acceptedByTruth ? 'correct' : 'wrong' }, ...prev]);
       }
       setSimWord('');
       return;
     }
-    setTestedWords(prev => prev.some(t => t.word === word)
-      ? prev : [{ word, accepted: pdaAccepts(g.studentPda, word) }, ...prev]);
+
+    // testMode === 'DRAWING': testa contra o AP do ALUNO.
+    setTestedWords(prev => prev.some(t => t.word === display && t.mode === 'DRAWING')
+      ? prev : [{ word: display, mode: 'DRAWING', accepted: pdaAccepts(g.studentPda, word) }, ...prev]);
     setSimWord('');
-  }, [level, simWord, isDrawingUnlocked, testedWords, g.studentPda, updateProgress, showToast]);
+  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.studentPda, updateProgress, showToast]);
 
   // ── Simular palavra: abre APSimPanel passo a passo (rodapé) + adiciona à lista ─
   const simulate = useCallback(() => {
@@ -336,6 +359,8 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
 
   return (
     <div className="workspace-wrapper">
+      {toastData.show && <div className={`toast-notification ${toastData.type}`}>{toastData.message}</div>}
+
       {deckGhost && createPortal(
         <div className="deck-drag-ghost" style={{ left: deckGhost.x, top: deckGhost.y }} />,
         document.body)}
@@ -411,6 +436,7 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           mode={mode}
           setMode={setMode}
           beginDrag={g.beginDrag}
+          discardSnapshot={g.discardSnapshot}
           draw={draw}
           lessonActive={lesson.active}
           highlightEdge={lesson.highlightEdge}
@@ -462,7 +488,24 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           </aside>
         ) : (
         <aside className="test-panel ap-test-panel">
-          <div className="section-header" style={{ fontSize: 11 }}>Palavras aceitas pela linguagem</div>
+          <div className="section-header ap-section-header-thin" style={{ fontSize: 11 }}>Palavras aceitas</div>
+
+          {isDrawingUnlocked && (
+            <div className="ap-test-mode-toggle">
+              <button
+                className={`ap-test-mode-btn${testMode === 'LANGUAGE' ? ' active' : ''}`}
+                onClick={() => setTestMode('LANGUAGE')}
+                title="Testar contra o enunciado da linguagem">
+                📖 Linguagem
+              </button>
+              <button
+                className={`ap-test-mode-btn${testMode === 'DRAWING' ? ' active' : ''}`}
+                onClick={() => setTestMode('DRAWING')}
+                title="Testar contra o AP que você desenhou">
+                ✏️ Desenho
+              </button>
+            </div>
+          )}
 
           <div className="test-input-area">
             <input type="text" className="word-input"
@@ -480,7 +523,14 @@ export default function APPart1({ onBack, progress, updateProgress, showToast })
           <div className="words-list">
             {testedWords.map((t, i) => (
               <div key={i} className={`word-row ${t.status ? t.status : t.accepted ? 'correct' : 'wrong'}`}>
-                <span>{t.word === '' ? 'λ' : t.word}</span>
+                <span>
+                  {isDrawingUnlocked && (
+                    <span className={`ap-word-mode-tag ${t.mode === 'DRAWING' ? 'drawing' : 'language'}`}>
+                      {t.mode === 'DRAWING' ? 'D' : 'L'}
+                    </span>
+                  )}
+                  {t.word === '' ? 'λ' : t.word}
+                </span>
                 <span>
                   {t.status === 'shortest' ? '★ MENOR'
                     : t.status === 'correct' ? '✓'

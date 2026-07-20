@@ -99,9 +99,60 @@
 
 /* ── Painel de testes do AP: scrollável ── */
 .ap-test-panel { overflow-y: auto !important; }
+/* Título "Palavras aceitas" mais fino (menos padding vertical) que o
+   .section-header padrão do AFD, já que o texto é mais curto (1 linha). */
+.ap-section-header-thin { padding: 2px 5px; }
 /* words-list no AFD usa flex:1 (ocupa todo espaço disponível). No AP, precisamos
    que o validate-btn apareça após a lista, então limitamos a altura. */
 .ap-test-panel .words-list { flex: 0 0 auto; max-height: 140px; }
+/* Botão "Validar AP" fixo no rodapé do painel (não sobe/flutua no meio do
+   espaço vazio quando há poucas palavras testadas) — gruda no fim mesmo com
+   o painel rolando por cima dele. */
+.ap-test-panel .validate-btn {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+}
+
+/* ── Seletor "Linguagem" vs "Desenho" (contra o que a palavra é testada) ── */
+.ap-test-mode-toggle {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.ap-test-mode-btn {
+  flex: 1;
+  background: #fff;
+  color: #000;
+  font-weight: 900;
+  font-size: 11px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  border: 3px solid #000;
+  cursor: pointer;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  box-shadow: 3px 3px 0px #000;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+}
+.ap-test-mode-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+.ap-test-mode-btn.active { background: #fef08a; box-shadow: 1px 1px 0px #000; transform: translate(2px, 2px); }
+
+/* Tag L/D nos itens da lista de palavras testadas, indicando o modo usado */
+.ap-word-mode-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  border: 2px solid #000;
+  font-size: 9px;
+  font-weight: 900;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.ap-word-mode-tag.language { background: var(--accent-blue); }
+.ap-word-mode-tag.drawing  { background: #fef08a; }
 
 /* ── Histórico de palavras testadas (chips ✓/✗) ── */
 .ap-tested { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }

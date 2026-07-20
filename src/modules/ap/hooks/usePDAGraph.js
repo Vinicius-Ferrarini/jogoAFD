@@ -2,7 +2,7 @@
 // Transição = { from, to, read, pop, push } (qualquer campo λ), não-determinístico,
 // aceitação por PILHA VAZIA. O estado (nós/transições) vive num reducer com
 // past/present/future para dar Undo/Redo. Validação por bateria do gabarito.
-import { useCallback, useMemo, useReducer } from 'react';
+import { useCallback, useMemo, useReducer, useRef } from 'react';
 import { getBattery } from '../../../levels_data/ap/index.js';
 import { validateStudentPda, pdaAcceptingRun } from '../utils/pdaAlgorithms';
 
@@ -14,6 +14,8 @@ const initial = { past: [], present: EMPTY, future: [], lastEmptyAdd: null };
 
 // COMMIT = muda com histórico; SET = muda sem histórico (arraste/rascunho);
 // SNAPSHOT = marca um ponto de histórico no estado atual (início do arraste);
+// DISCARD_SNAPSHOT = desfaz um SNAPSHOT que não gerou mudança real (clique sem
+// arrastar/renomear) — remove a última entrada de past sem tocar em present/future;
 // SQUASH = funde no commit anterior (preencher a seta recém-criada não vira 2 passos).
 // lastEmptyAdd = índice da seta recém-criada vazia (p/ a fusão); qualquer outra ação zera.
 function reducer(state, action) {
@@ -23,6 +25,10 @@ function reducer(state, action) {
     case 'SET':      return { ...state, present: action.next, lastEmptyAdd: null };
     case 'SQUASH':   return { ...state, present: action.next, future: [], lastEmptyAdd: null };
     case 'SNAPSHOT': return { past: [...past, present], present, future: [], lastEmptyAdd: null };
+    // restoreFuture: o "future" de ANTES do SNAPSHOT que este descarta — sem
+    // isso, um clique sem mudança depois de um "desfazer" apagaria o "refazer"
+    // que estava disponível (SNAPSHOT sempre zera future).
+    case 'DISCARD_SNAPSHOT': return past.length ? { ...state, past: past.slice(0, -1), future: action.restoreFuture ?? future } : state;
     case 'UNDO': {
       if (!past.length) return state;
       return { past: past.slice(0, -1), present: past[past.length - 1], future: [present, ...future], lastEmptyAdd: null };
@@ -43,9 +49,31 @@ export default function usePDAGraph({ showToast, selectedNodes = [], setSelected
   const canRedo = hist.future.length > 0;
 
   const reset    = useCallback(() => { _uid = 0; dispatch({ type: 'RESET', next: EMPTY }); }, []);
-  const undo     = useCallback(() => dispatch({ type: 'UNDO' }), []);
-  const redo     = useCallback(() => dispatch({ type: 'REDO' }), []);
-  const beginDrag = useCallback(() => dispatch({ type: 'SNAPSHOT' }), []); // 1 entrada por arraste
+  const undo     = useCallback(() => {
+    if (!hist.past.length) return;
+    dispatch({ type: 'UNDO' });
+    showToast?.('↶ Desfeito', 'info');
+  }, [hist.past.length, showToast]);
+  const redo     = useCallback(() => {
+    if (!hist.future.length) return;
+    dispatch({ type: 'REDO' });
+    showToast?.('↷ Refeito', 'info');
+  }, [hist.future.length, showToast]);
+  // Guarda o "future" (pilha de refazer) de ANTES do próximo SNAPSHOT, pra
+  // poder restaurá-lo se o snapshot for descartado (ver discardSnapshot).
+  const preDragFutureRef = useRef([]);
+  const beginDrag = useCallback(() => {
+    preDragFutureRef.current = hist.future;
+    dispatch({ type: 'SNAPSHOT' });
+  }, [hist.future]); // 1 entrada por arraste
+  // Cancela o SNAPSHOT do beginDrag quando o clique não mudou nada de verdade
+  // (nó não se moveu e o rótulo não foi renomeado) — sem isso, um clique simples
+  // no nó (ex.: focar o campo de nome e sair sem editar) já empurraria uma
+  // entrada vazia no histórico, fazendo o 1º "desfazer" parecer não fazer nada
+  // E ainda apagaria o "refazer" que estava disponível (SNAPSHOT zera future).
+  const discardSnapshot = useCallback(() => {
+    dispatch({ type: 'DISCARD_SNAPSHOT', restoreFuture: preDragFutureRef.current });
+  }, []);
 
   // ── Estados (nós) ───────────────────────────────────────────────────────────
   const addNode = useCallback((x, y) => {
@@ -209,7 +237,7 @@ export default function usePDAGraph({ showToast, selectedNodes = [], setSelected
 
   return {
     nodes, transitions, studentPda, canUndo, canRedo,
-    reset, undo, redo, beginDrag,
+    reset, undo, redo, beginDrag, discardSnapshot,
     addNode, moveNode, toggleInitial, setNodeLabel, renameNode, deleteNode,
     addTriple, editTriple, removeTriple, removeEdge,
     validatePDA, deleteSelected,

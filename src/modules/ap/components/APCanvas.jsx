@@ -23,7 +23,7 @@ function pxFromEvent(e, innerRef) {
 
 export default function APCanvas({
   canvasRef, innerCanvasRef, viewportRef, zoom, setZoom,
-  nodes, transitions, mode, setMode, simHighlight, beginDrag,
+  nodes, transitions, mode, setMode, simHighlight, beginDrag, discardSnapshot,
   connectingSource, setConnectingSource,
   addNode, moveNode, toggleInitial, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
@@ -41,6 +41,16 @@ export default function APCanvas({
   // Seta recém-criada (modo "Criar Seta"): abre o editor da tripla sozinho, sem
   // exigir que o aluno descubra que precisa clicar no chip "λ, λ ; λ" depois.
   const [autoEditKey, setAutoEditKey] = useState(null); // { from, to, tIdx } | null
+
+  // ── Drag de seta estilo JFLAP (mesmo mecanismo do CanvasArea.jsx do AFD):
+  // clique simples só seleciona a origem; é preciso ARRASTAR até o destino
+  // (dist > 8) pra criar a transição — evita disparar addTriple num clique só.
+  const [arrowDrag, setArrowDrag] = useState(null); // { srcUid, x1, y1, x2, y2 }
+  const arrowDragRef = useRef(null);
+  const arrowDragStartRef = useRef(null); // { x, y } posição inicial do pointerDown
+  const prevConnectingSourceRef = useRef(null); // connectingSource antes do pointerDown atual
+  const [arrowTargetUid, setArrowTargetUid] = useState(null);
+  const arrowTargetUidRef = useRef(null);
 
   const actualScale = (zoom / 100) * 0.8;
   const [zoomInput, setZoomInput] = useState(String(zoom));
@@ -98,6 +108,18 @@ export default function APCanvas({
     setSelectedNodes([]);
   }, [isDrawingUnlocked, isDraw, draw, mode, addNode, setSelectionBox, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Cria a transição (tripla em branco) entre srcUid → tgtUid e abre o editor
+  // automaticamente, igual ao clique único de antes — só chamado após um
+  // arraste real ou um 2º clique simples (loop / nó diferente).
+  const commitEdge = useCallback((srcUid, tgtUid) => {
+    const src = nodes.find(n => n.uid === srcUid);
+    const tgt = nodes.find(n => n.uid === tgtUid);
+    if (!src || !tgt) return;
+    const newTIdx = transitions.length;
+    const ok = addTriple(src.id, tgt.id, { read: '', pop: '', push: '' });
+    if (ok) setAutoEditKey({ from: src.id, to: tgt.id, tIdx: newTIdx });
+  }, [nodes, transitions, addTriple]);
+
   const onNodeDown = useCallback((e, node) => {
     if (!isDrawingUnlocked) return;
     if (isDraw) return;
@@ -106,14 +128,12 @@ export default function APCanvas({
     if (mode === 'ERASE')          { deleteNode(node.uid); return; }
     if (mode === 'TOGGLE_INITIAL') { toggleInitial(node.uid); return; }
     if (mode === 'CONNECTING') {
-      if (!connectingSource) { setConnectingSource(node.uid); return; }
-      const src = nodes.find(n => n.uid === connectingSource);
-      if (src) {
-        const newTIdx = transitions.length;
-        const ok = addTriple(src.id, node.id, { read: '', pop: '', push: '' });
-        if (ok) setAutoEditKey({ from: src.id, to: node.id, tIdx: newTIdx });
-      }
-      setConnectingSource(null);
+      prevConnectingSourceRef.current = connectingSource;
+      const drag = { srcUid: node.uid, x1: node.x, y1: node.y, x2: node.x, y2: node.y };
+      arrowDragRef.current = drag;
+      arrowDragStartRef.current = { x: node.x, y: node.y };
+      setArrowDrag({ ...drag });
+      setConnectingSource(node.uid);
       return;
     }
     if (mode === 'IDLE') {
@@ -126,11 +146,55 @@ export default function APCanvas({
       dragRef.current = { uid: node.uid, sx: x, sy: y, ox: node.x, oy: node.y };
       e.target.setPointerCapture?.(e.pointerId);
     }
-  }, [isDrawingUnlocked, isDraw, mode, connectingSource, nodes, transitions, deleteNode, toggleInitial, addTriple, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, isDraw, mode, connectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Pointer up no nó: trata clique simples (sem arraste) no modo CONNECTING —
+  // mesma lógica do handlePointerUpNode do AFD (loop / seta pra outro nó).
+  const onNodeUp = useCallback((e, node) => {
+    if (!isDrawingUnlocked || mode !== 'CONNECTING') return;
+    if (!arrowDragRef.current) return;
+
+    const start = arrowDragStartRef.current;
+    const cur = arrowDragRef.current;
+    const dist = start ? Math.hypot(cur.x2 - start.x, cur.y2 - start.y) : 0;
+    const isDrag = dist > 8;
+
+    // Se foi um arraste real, deixa o onUp do canvas resolver.
+    if (isDrag) return;
+
+    e.stopPropagation();
+    arrowDragRef.current = null;
+    arrowDragStartRef.current = null;
+    arrowTargetUidRef.current = null;
+    setArrowDrag(null);
+    setArrowTargetUid(null);
+
+    const prevSrc = prevConnectingSourceRef.current;
+    if (!prevSrc) {
+      // 1º clique: nó já virou fonte no pointerDown — só o highlight aparece.
+    } else {
+      // 2º clique (mesmo nó = loop, ou nó diferente): cria a transição.
+      setConnectingSource(null);
+      commitEdge(prevSrc, node.uid);
+    }
+  }, [isDrawingUnlocked, mode, commitEdge, setConnectingSource]);
 
   const onMove = useCallback((e) => {
     if (!isDrawingUnlocked) return;
     if (isDraw) { draw.onMove(e); return; }
+    if (arrowDragRef.current) {
+      const { x, y } = pxFromEvent(e, innerRef);
+      const upd = { ...arrowDragRef.current, x2: x, y2: y };
+      arrowDragRef.current = upd;
+      setArrowDrag({ ...upd });
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const nodeEl = el?.closest('[data-uid]');
+      const hoveredUid = nodeEl?.dataset.uid ?? null;
+      const targetUid = hoveredUid && hoveredUid !== arrowDragRef.current.srcUid ? hoveredUid : null;
+      arrowTargetUidRef.current = targetUid;
+      setArrowTargetUid(targetUid);
+      return;
+    }
     if (selectionBox) {
       const { x, y } = pxFromEvent(e, innerRef);
       setSelectionBox(s => s ? { ...s, currentX: x, currentY: y } : null);
@@ -145,6 +209,31 @@ export default function APCanvas({
 
   const onUp = useCallback((e) => {
     if (!isDrawingUnlocked) return;
+    try { e.target.releasePointerCapture?.(e.pointerId); } catch { /* ignore */ }
+
+    // Drag de seta: cria transição se soltou em cima de um nó-alvo, senão cancela.
+    if (arrowDragRef.current) {
+      const start = arrowDragStartRef.current;
+      const cur = arrowDragRef.current;
+      const dist = start ? Math.hypot(cur.x2 - start.x, cur.y2 - start.y) : 0;
+      const isDrag = dist > 8;
+
+      const srcUid = arrowDragRef.current.srcUid;
+      const tgtUid = arrowTargetUidRef.current;
+      arrowDragRef.current = null;
+      arrowDragStartRef.current = null;
+      arrowTargetUidRef.current = null;
+      setArrowDrag(null);
+      setArrowTargetUid(null);
+
+      if (isDrag) {
+        setConnectingSource(null);
+        if (tgtUid) commitEdge(srcUid, tgtUid);
+      }
+      // Clique simples já foi tratado pelo onNodeUp — não faz nada aqui.
+      return;
+    }
+
     if (isDraw) { draw.onUp(e); return; }
     if (selectionBox) {
       const minX = Math.min(selectionBox.startX, selectionBox.currentX);
@@ -156,8 +245,17 @@ export default function APCanvas({
       setSelectionBox(null);
       return;
     }
+    // Clique simples no nó sem arrastar (ex.: só focar o campo de nome e sair
+    // sem editar): o beginDrag do onNodeDown já empurrou um SNAPSHOT — como o
+    // nó não se moveu, cancela esse snapshot pra não sujar o "desfazer".
+    if (dragRef.current) {
+      const d = dragRef.current;
+      const cur = nodes.find(n => n.uid === d.uid);
+      const moved = cur && (Math.abs(cur.x - d.ox) > 1 || Math.abs(cur.y - d.oy) > 1);
+      if (!moved) discardSnapshot?.();
+    }
     dragRef.current = null;
-  }, [isDrawingUnlocked, isDraw, draw, selectionBox, nodes, selectedNodes, setSelectedNodes, setSelectionBox]);
+  }, [isDrawingUnlocked, isDraw, draw, selectionBox, nodes, selectedNodes, setSelectedNodes, setSelectionBox, commitEdge, setConnectingSource, discardSnapshot]);
 
   // ── Agrupa transições por aresta (from→to) ──────────────────────────────────
   const groups = [];
@@ -348,6 +446,7 @@ export default function APCanvas({
               <defs>
                 <marker id="apah"  markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000" /></marker>
                 <marker id="apahs" markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000" /></marker>
+                <marker id="apah-ghost" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#888"/></marker>
               </defs>
               {edgeRenders.map((er) => (
                 <path key={`${er.from}->${er.to}`} d={er.pathD}
@@ -357,6 +456,23 @@ export default function APCanvas({
                   style={{ pointerEvents: isDraw ? 'none' : 'stroke', cursor: eraseMode ? 'pointer' : 'default' }}
                   onClick={(e) => { if (eraseMode) { e.stopPropagation(); removeEdge(er.from, er.to); } }} />
               ))}
+              {arrowDrag && (() => {
+                const dx = arrowDrag.x2 - arrowDrag.x1;
+                const dy = arrowDrag.y2 - arrowDrag.y1;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                const tip = 14;
+                const ex = arrowDrag.x2 - (dx / dist) * tip;
+                const ey = arrowDrag.y2 - (dy / dist) * tip;
+                return (
+                  <line
+                    x1={arrowDrag.x1} y1={arrowDrag.y1}
+                    x2={ex} y2={ey}
+                    stroke="#888" strokeWidth="2" strokeDasharray="8 4"
+                    markerEnd="url(#apah-ghost)"
+                    style={{ pointerEvents: 'none' }}
+                  />
+                );
+              })()}
             </svg>
 
             {/* Rótulos (triplas) */}
@@ -399,9 +515,10 @@ export default function APCanvas({
               return (
                 <div key={node.uid}
                   data-uid={node.uid}
-                  className={`node ${node.isInitial ? 'initial' : ''} ${selectedNodes.includes(node.uid) ? 'selected' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''} ${sim}`}
+                  className={`node ${node.isInitial ? 'initial' : ''} ${selectedNodes.includes(node.uid) ? 'selected' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''} ${sim} ${arrowTargetUid === node.uid ? 'arrow-target' : ''}`}
                   style={{ top: `${node.y}px`, left: `${node.x}px`, pointerEvents: isDraw ? 'none' : 'auto' }}
-                  onPointerDown={(e) => onNodeDown(e, node)}>
+                  onPointerDown={(e) => onNodeDown(e, node)}
+                  onPointerUp={(e) => onNodeUp(e, node)}>
                   <input type="text" className="node-id-input" value={node.label ?? node.id}
                     translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
                     readOnly={mode !== 'IDLE' || lessonActive}
