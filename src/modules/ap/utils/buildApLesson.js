@@ -13,6 +13,13 @@ const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 // mínimas — ex.: no L1 q0/q1 diferem 5px em y e a seta sairia diagonal.
 import { INNER_W, INNER_H } from '../../afd/hooks/useCanvasState.js';
 
+// Escala fixa (JFLAP px → canvas px): mapeia a faixa típica de coordenadas do
+// editor JFLAP (dezenas a poucas centenas de px) para uma distância confortável
+// entre nós no canvas — sem isso, um grafo de 2 estados com pouca diferença
+// num eixo (ex.: L1: spanX=289, spanY=5) seria esticado até preencher quase
+// todo o canvas de 8000px só pra "preservar proporção", forçando o zoom
+// automático lá embaixo (25%) pra caber tudo de novo no viewport.
+const FIXED_SCALE = 5;
 function layout(states) {
   const xs = states.map((s) => s.x), ys = states.map((s) => s.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs);
@@ -22,8 +29,10 @@ function layout(states) {
   const usableW = INNER_W - 2 * PADX, usableH = INNER_H - 2 * PADY;
   const kx = spanX > 0 ? usableW / spanX : Infinity;
   const ky = spanY > 0 ? usableH / spanY : Infinity;
-  let k = Math.min(kx, ky);
-  if (!Number.isFinite(k)) k = 1; // 1 estado (ou todos no mesmo ponto)
+  // Nunca estica além da escala fixa — só encolhe (kx/ky) se o grafo for grande
+  // demais pra caber no canvas nessa escala.
+  let k = Math.min(FIXED_SCALE, kx, ky);
+  if (!Number.isFinite(k)) k = FIXED_SCALE; // 1 estado (ou todos no mesmo ponto)
   const offX = (INNER_W - spanX * k) / 2, offY = (INNER_H - spanY * k) / 2;
   // Estado único: posiciona mais abaixo para os chips do self-loop crescerem para
   // cima sem serem cortados pela borda superior do canvas.
