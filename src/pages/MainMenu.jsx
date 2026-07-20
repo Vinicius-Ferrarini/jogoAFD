@@ -7,6 +7,7 @@ import FeedbackButton, { RepoButton } from '../components/FeedbackButton';
 
 function useLastCommitDate() {
   const [label, setLabel] = useState(null);
+  const [isToday, setIsToday] = useState(false);
 
   useEffect(() => {
     fetch('https://api.github.com/repos/Vinicius-Ferrarini/jogoAFD/commits?per_page=1')
@@ -16,6 +17,12 @@ function useLastCommitDate() {
         if (!raw) return;
         const d = new Date(raw);
         const pad = n => String(n).padStart(2, '0');
+        const now = new Date();
+        setIsToday(
+          d.getDate() === now.getDate() &&
+          d.getMonth() === now.getMonth() &&
+          d.getFullYear() === now.getFullYear()
+        );
         setLabel(
           `Última atualização: ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`
         );
@@ -23,7 +30,7 @@ function useLastCommitDate() {
       .catch(() => {});
   }, []);
 
-  return label;
+  return { label, isToday };
 }
 
 const AVAILABLE_AFD_LEVELS = GAME_LEVELS.filter(l => !UNAVAILABLE_LEVELS.has(l.id));
@@ -34,7 +41,7 @@ const AP_MAX_STARS        = 45; // 15 níveis × 3 (L16 impossível excluído)
 const GRAND_MAX_STARS     = P1P2_MAX_STARS + MINIMIZER_MAX_STARS + AP_MAX_STARS;
 
 export default function MainMenu({ onStart, progress }) {
-  const lastCommit = useLastCommitDate();
+  const { label: lastCommit, isToday: lastCommitIsToday } = useLastCommitDate();
   const p2Progress = (() => {
     try { return JSON.parse(localStorage.getItem('turinglab_progress_p2') || '{}'); }
     catch { return {}; }
@@ -102,7 +109,10 @@ export default function MainMenu({ onStart, progress }) {
         <div className="menu-footer">
           <p>🔬 Iniciação Científica | Teoria da Computação</p>
           {lastCommit && (
-            <p id="last-commit-date" className="last-commit-date">{lastCommit}</p>
+            <p id="last-commit-date" className="last-commit-date">
+              {lastCommit}
+              {lastCommitIsToday && <span className="last-commit-today-flag">Hoje</span>}
+            </p>
           )}
         </div>
       </div> {/* fim main-menu-content */}
