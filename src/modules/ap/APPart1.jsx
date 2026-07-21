@@ -568,7 +568,6 @@ export default function APPart1({ onBack, progress, updateProgress }) {
         onUndo={g.undo}
         onRedo={g.redo}
         profMessage={prof.message}
-        profMood={prof.mood}
         onProfClick={() => setProf(p => p.message
           ? { ...p, message: '' }
           : { message: level.hint || 'Lembre: aceita por pilha vazia (esvazie o Z no fim).', mood: 'explicando' })}

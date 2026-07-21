@@ -4,7 +4,6 @@
 import { useRef } from 'react';
 import '../../afd/components/FooterDeck.css';
 import imgSerio      from '../../../assets/maurilio1_serio.webp';
-import imgExplicando from '../../../assets/maurilio3_explicando.webp';
 import imgBalaoFala  from '../../../assets/balao_fala_redondo.webp';
 import TuringTape from '../../mt/components/TuringTape';
 
@@ -20,7 +19,7 @@ const CARDS_TAIL = [
 ];
 
 export default function APFooterDeck({
-  mode, onPick, profMessage, profMood, onProfClick,
+  mode, onPick, profMessage, onProfClick,
   onNodeDrag, onNodeDrop, onNodeDragCancel,
   canUndo, canRedo, onUndo, onRedo, lessonActive, hasNodes,
   showFinalCard = false,
@@ -32,7 +31,9 @@ export default function APFooterDeck({
     ? [...CARDS_BASE, CARD_FINAL, ...CARDS_TAIL]
     : [...CARDS_BASE, ...CARDS_TAIL];
   const dragRef = useRef(null);
-  const profImg = profMood === 'serio' ? imgSerio : imgExplicando;
+  // O Maurílio do rodapé (canto) sempre usa o sprite sério — mesmo falando,
+  // não troca de expressão (diferente do Modo Aula, que usa outro sprite).
+  const profImg = imgSerio;
 
   // Simulação ativa: o painel compacto (+ pilha) substitui as cartas e ocupa
   // o rodapé inteiro (mais alto que o .bottom-hand padrão), igual ao SimPanel
@@ -45,22 +46,12 @@ export default function APFooterDeck({
     );
   }
 
-  // Antes de destravar (menor palavra ainda não descoberta): sem cartas, só o
-  // HUD do professor — igual ao FooterDeck do AFD antes do isDrawingUnlocked.
+  // Antes de destravar (menor palavra ainda não descoberta): rodapé vazio —
+  // igual ao FooterDeck do AFD, que só mostra o HUD do professor quando
+  // isDrawingUnlocked. Sem isso, o Maurílio do canto duplicava o Maurílio do
+  // locked-overlay (canvas), que já mostra a dica "descubra a menor palavra".
   if (!isDrawingUnlocked && !lessonActive) {
-    return (
-      <footer className="bottom-hand">
-        <div className="professor-hud">
-          {profMessage && (
-            <div className="professor-balloon ap-balloon" style={{ pointerEvents: 'none' }}>
-              <img src={imgBalaoFala} alt="" />
-              <div className="professor-balloon-text ap-balloon-text">{profMessage}</div>
-            </div>
-          )}
-          <img src={profImg} alt="Professor Maurílio" className="prof-img" onClick={onProfClick} />
-        </div>
-      </footer>
-    );
+    return <footer className="bottom-hand" />;
   }
 
   return (
