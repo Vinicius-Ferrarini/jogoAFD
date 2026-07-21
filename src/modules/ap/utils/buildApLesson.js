@@ -18,8 +18,13 @@ import { INNER_W, INNER_H } from '../../afd/hooks/useCanvasState.js';
 // entre nós no canvas — sem isso, um grafo de 2 estados com pouca diferença
 // num eixo (ex.: L1: spanX=289, spanY=5) seria esticado até preencher quase
 // todo o canvas de 8000px só pra "preservar proporção", forçando o zoom
-// automático lá embaixo (25%) pra caber tudo de novo no viewport.
-const FIXED_SCALE = 5;
+// automático lá embaixo pra caber tudo de novo no viewport.
+// Valor calibrado p/ os estados ficarem tão juntos quanto os layouts do AFD
+// (hand-tuned em lessonBuilder.js, spanX tipicamente 800-1000px no mesmo
+// canvas de 8000px) — com FIXED_SCALE=5 um grafo de 2-3 estados (spanX
+// 289-458 no .jff) virava spanX 1445-2290px, largo demais p/ caber a 100%
+// de zoom na maioria das telas (forçava algo como 82-94%).
+const FIXED_SCALE = 1.8;
 function layout(states) {
   const xs = states.map((s) => s.x), ys = states.map((s) => s.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs);

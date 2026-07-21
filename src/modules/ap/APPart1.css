@@ -54,14 +54,33 @@
   font-weight: 900; cursor: pointer; line-height: 1; color: #166534; box-shadow: 2px 2px 0 rgba(22,163,74,.4);
 }
 .ap-tl-editor {
+  position: relative;
   display: flex; align-items: center; gap: 4px; background: #fff7ed; border: 2.5px solid #7c3aed;
   border-radius: 8px; padding: 4px 6px; box-shadow: 3px 3px 0 rgba(124,58,237,.4);
+}
+/* Dica contextual (campo focado): lê / desempilha / empilha */
+.ap-tl-field-hint {
+  position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -6px);
+  background: #1e293b; color: #fff; font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap; z-index: 30;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.35); pointer-events: none;
+}
+.ap-tl-field-hint::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: #1e293b;
 }
 .ap-tl-fields { display: flex; align-items: center; gap: 3px; }
 .ap-tl-sep { font-weight: 900; color: #7c3aed; }
 .ap-tl-input {
   width: 30px; border: 2px solid #7c3aed; border-radius: 5px; text-align: center;
   font-family: inherit; font-size: 13px; font-weight: 900; color: #5b21b6; padding: 1px 2px; outline: none;
+  caret-color: #5b21b6; background: #fff;
+}
+/* Campo "empilha": aceita até 6 símbolos (ex.: "AA", "XYZ") — precisa de mais
+   espaço que os outros 2 (quase sempre 1 símbolo só) para caber ~3 sem cortar. */
+.ap-tl-input-wide { width: 42px; }
+.ap-tl-input:focus {
+  background: #ede9fe; border-color: #5b21b6; box-shadow: 0 0 0 2px #c4b5fd;
 }
 .ap-tl-actions { display: flex; gap: 2px; }
 .ap-tl-ok, .ap-tl-cancel { width: 22px; height: 22px; border: 2px solid #000; border-radius: 5px; cursor: pointer; font-weight: 900; }

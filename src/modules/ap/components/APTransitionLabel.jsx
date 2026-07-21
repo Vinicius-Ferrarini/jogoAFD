@@ -9,10 +9,15 @@ const show = (v) => (v === '' || v == null ? LAMBDA : v);
 // Sentinela distinta de qualquer autoEdit real (null | 'new' | number).
 const NO_AUTO_EDIT_YET = Symbol('no-auto-edit-yet');
 
+// Dica contextual por campo — explica o que cada um dos 3 significa (JFLAP:
+// lê, desempilha ; empilha), mostrada acima do campo focado no momento.
+const FIELD_HINT = { read: 'Letra lida', pop: 'Letra no topo que remove', push: 'Letra a inserir' };
+
 function TripleEditor({ initial, onCommit, onCancel }) {
   const [read, setRead] = useState(initial?.read ?? '');
   const [pop,  setPop]  = useState(initial?.pop  ?? '');
   const [push, setPush] = useState(initial?.push ?? '');
+  const [focusedField, setFocusedField] = useState(null); // 'read' | 'pop' | 'push' | null
   const firstRef = useRef(null);
   useEffect(() => { const t = setTimeout(() => firstRef.current?.focus(), 20); return () => clearTimeout(t); }, []);
 
@@ -21,17 +26,19 @@ function TripleEditor({ initial, onCommit, onCancel }) {
     if (e.key === 'Enter') { e.preventDefault(); commit(); }
     if (e.key === 'Escape') { e.preventDefault(); onCancel(); }
   };
-  const inp = (val, set, ref) => (
-    <input ref={ref} className="ap-tl-input" value={val} placeholder={LAMBDA}
+  const inp = (field, val, set, ref) => (
+    <input ref={ref} className={`ap-tl-input${field === 'push' ? ' ap-tl-input-wide' : ''}`} value={val} placeholder={LAMBDA}
       onChange={e => set(e.target.value)} onKeyDown={onKey}
+      onFocus={() => setFocusedField(field)} onBlur={() => setFocusedField(null)}
       onClick={e => e.stopPropagation()} maxLength={6} autoComplete="off" spellCheck={false} />
   );
   return (
     <div className="ap-tl-editor" onClick={e => e.stopPropagation()}>
+      {focusedField && <div className="ap-tl-field-hint">{FIELD_HINT[focusedField]}</div>}
       <div className="ap-tl-fields">
-        {inp(read, setRead, firstRef)}<span className="ap-tl-sep">,</span>
-        {inp(pop, setPop)}<span className="ap-tl-sep">;</span>
-        {inp(push, setPush)}
+        {inp('read', read, setRead, firstRef)}<span className="ap-tl-sep">,</span>
+        {inp('pop', pop, setPop)}<span className="ap-tl-sep">;</span>
+        {inp('push', push, setPush)}
       </div>
       <div className="ap-tl-actions">
         <button className="ap-tl-ok" onClick={commit} title="Confirmar">✓</button>
