@@ -385,25 +385,6 @@ export default function APPart1({ onBack, progress, updateProgress }) {
         onCloseLesson={finishLesson}
       />
 
-      {/* ── Barra de palavras testadas (mesmo comportamento do AFD, oculta na Aula) ── */}
-      {!lesson.active && (
-        <div className="words-hint-bar">
-          <div className="words-hint-group">
-            <span className="words-hint-label accept">✓ Aceita</span>
-            {testedWords.filter(t => t.status === 'correct' || t.status === 'shortest' || (!t.status && t.accepted)).map((t, i) => (
-              <span key={i} className="words-hint-chip accept">{t.word}</span>
-            ))}
-          </div>
-          <div className="words-hint-sep" />
-          <div className="words-hint-group">
-            <span className="words-hint-label reject">✗ Rejeita</span>
-            {testedWords.filter(t => t.status === 'wrong' || (!t.status && !t.accepted)).map((t, i) => (
-              <span key={i} className="words-hint-chip reject">{t.word}</span>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="workspace">
         {/* Sidebar: Descrição Formal */}
         <aside className={`formal-panel ${formalOpen ? 'open' : ''}`}>
@@ -421,6 +402,29 @@ export default function APPart1({ onBack, progress, updateProgress }) {
             showToast={showToast}
           />
         </aside>
+
+        {/* Coluna do canvas: barra de palavras testadas + canvas, lado a lado
+            com o painel de testes (que agora ocupa a altura inteira da direita,
+            começando do topo em vez de ficar abaixo da barra). */}
+        <div className="canvas-column">
+        {/* ── Barra de palavras testadas (mesmo comportamento do AFD, oculta na Aula) ── */}
+        {!lesson.active && (
+          <div className="words-hint-bar">
+            <div className="words-hint-group">
+              <span className="words-hint-label accept">✓ Aceita</span>
+              {testedWords.filter(t => t.status === 'correct' || t.status === 'shortest' || (!t.status && t.accepted)).map((t, i) => (
+                <span key={i} className="words-hint-chip accept">{t.word}</span>
+              ))}
+            </div>
+            <div className="words-hint-sep" />
+            <div className="words-hint-group">
+              <span className="words-hint-label reject">✗ Rejeita</span>
+              {testedWords.filter(t => t.status === 'wrong' || (!t.status && !t.accepted)).map((t, i) => (
+                <span key={i} className="words-hint-chip reject">{t.word}</span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Canvas */}
         <APCanvas
@@ -458,6 +462,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
           selectionBox={selectionBox}
           setSelectionBox={setSelectionBox}
         />
+        </div>
 
         {/* Painel direito: quadro da Aula (durante a aula) ou TestPanel (normal) */}
         {lesson.active ? (

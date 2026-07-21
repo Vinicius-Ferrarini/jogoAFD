@@ -464,25 +464,6 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         onCloseLesson={handleLessonFinish}
       />
 
-      {/* ── Barra de palavras testadas (oculta no modo Aula V2) ── */}
-      {currentLevel && !isNewLessonUI && (
-        <div className="words-hint-bar">
-          <div className="words-hint-group">
-            <span className="words-hint-label accept">✓ Aceita</span>
-            {testWords.filter(w => w.status === 'correct' || w.status === 'shortest').map((w, i) => (
-              <span key={i} className="words-hint-chip accept">{w.word}</span>
-            ))}
-          </div>
-          <div className="words-hint-sep" />
-          <div className="words-hint-group">
-            <span className="words-hint-label reject">✗ Rejeita</span>
-            {testWords.filter(w => w.status === 'wrong').map((w, i) => (
-              <span key={i} className="words-hint-chip reject">{w.word}</span>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="workspace">
         {/* ── Sidebar Esquerda ── */}
         <aside className={`formal-panel ${isSidebarOpen ? 'open' : ''}`}>
@@ -507,6 +488,28 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
             }}
           />
         </aside>
+
+        {/* Coluna do canvas: barra de palavras testadas + canvas, lado a lado
+            com o painel direito (que ocupa a altura inteira, começando do topo). */}
+        <div className="canvas-column">
+        {/* ── Barra de palavras testadas (oculta no modo Aula V2) ── */}
+        {currentLevel && !isNewLessonUI && (
+          <div className="words-hint-bar">
+            <div className="words-hint-group">
+              <span className="words-hint-label accept">✓ Aceita</span>
+              {testWords.filter(w => w.status === 'correct' || w.status === 'shortest').map((w, i) => (
+                <span key={i} className="words-hint-chip accept">{w.word}</span>
+              ))}
+            </div>
+            <div className="words-hint-sep" />
+            <div className="words-hint-group">
+              <span className="words-hint-label reject">✗ Rejeita</span>
+              {testWords.filter(w => w.status === 'wrong').map((w, i) => (
+                <span key={i} className="words-hint-chip reject">{w.word}</span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Canvas ── */}
         <CanvasArea
@@ -573,6 +576,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           resetHistory={resetHistory}
           lessonActive={lessonActive}
         />
+        </div>
 
         {/* ── Painel Direito: TestPanel normal ou BlackboardPanel (Aula V2) ── */}
         {isNewLessonUI ? (

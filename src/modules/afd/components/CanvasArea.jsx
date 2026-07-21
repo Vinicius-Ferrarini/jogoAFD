@@ -23,6 +23,26 @@ function pxFromEvent(e, innerRef) {
   };
 }
 
+// Estilo JFLAP: um estado nunca pode ser arrastado para fora da área visível
+// do quadro — trava na borda do que está sendo mostrado na tela (viewport com
+// o scroll/zoom atuais), não apenas nos limites do canvas gigante de 8000px
+// (que na prática nunca são atingidos pelo ponteiro, já que o canvas inteiro
+// normalmente excede a tela). NODE_R é a margem (metade do nó) para o círculo
+// não ficar meio cortado na borda.
+const NODE_R = 33;
+function clampToViewport(x, y, viewportRef, actualScale) {
+  const vp = viewportRef?.current;
+  if (!vp) return { x, y };
+  const minX = vp.scrollLeft / actualScale + NODE_R;
+  const maxX = (vp.scrollLeft + vp.clientWidth) / actualScale - NODE_R;
+  const minY = vp.scrollTop / actualScale + NODE_R;
+  const maxY = (vp.scrollTop + vp.clientHeight) / actualScale - NODE_R;
+  return {
+    x: Math.max(minX, Math.min(maxX, x)),
+    y: Math.max(minY, Math.min(maxY, y)),
+  };
+}
+
 export default function CanvasArea({
   canvasRef, innerCanvasRef, viewportRef, genUid,
   isDrawingUnlocked, interactionMode, setInteractionMode,
@@ -322,14 +342,15 @@ export default function CanvasArea({
         if (!selectedNodes.includes(n.uid)) return n;
         const init = dragInfo.initialNodes.find(i => i.uid === n.uid);
         if (!init) return n;
+        const { x: cx, y: cy } = clampToViewport(init.x + dx, init.y + dy, viewportRef, actualScale);
         return {
           ...n,
-          x: Math.max(5, Math.min(INNER_W - 5, init.x + dx)),
-          y: Math.max(5, Math.min(INNER_H - 5, init.y + dy)),
+          x: cx,
+          y: cy,
         };
       }));
     }
-  }, [isDrawingUnlocked, zoom, selectionBox, dragInfo, selectedNodes, interactionMode, isErasing, drawTool]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, zoom, selectionBox, dragInfo, selectedNodes, interactionMode, isErasing, drawTool, viewportRef, actualScale]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer: up ───────────────────────────────────────────────────────────
   const handlePointerUp = useCallback((e) => {

@@ -1,6 +1,9 @@
 /* ═══ Módulo AP (Autômato com Pilha) — estilo neo-brutalista (igual AFD) ═══ */
 /* Professor Maurílio vem do rodapé (APFooterDeck reusa FooterDeck.css). */
 
+/* .canvas-column (barra "Aceita/Rejeita" + canvas lado a lado com o painel de
+   testes) é compartilhada com o AFD — ver AFDPart1.css. */
+
 /* O menu de exercícios reusa o estilo do AFD_1 (.menu-screen-fases/.levels-grid/
    .menu-btn de AFDPart1.css) + DifficultyLegend, então não precisa de CSS aqui. */
 

@@ -166,6 +166,21 @@ body { color: var(--text-main); }
   flex-shrink: 0;
 }
 
+/* ── Coluna do canvas: barra "Aceita/Rejeita" + canvas, empilhados DENTRO do
+   .workspace (ao lado do painel de testes) — assim a barra ocupa só a largura
+   do canvas em vez de atravessar a tela inteira, e o painel de testes
+   (test-panel) sobe e ocupa a altura inteira da coluna direita, começando do
+   topo (em vez de começar abaixo da barra). Usado pelo AFD e pelo AP. ── */
+.canvas-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.canvas-column .words-hint-bar { flex-shrink: 0; }
+.canvas-column .canvas-area { flex: 1; min-height: 0; }
+
 .workspace {
   display: flex;
   flex: 1;

@@ -21,6 +21,25 @@ function pxFromEvent(e, innerRef) {
   };
 }
 
+// Estilo JFLAP: um estado nunca pode ser arrastado para fora da área visível
+// do quadro — trava na borda do que está sendo mostrado na tela (viewport com
+// o scroll/zoom atuais), não apenas nos limites do canvas gigante de 8000px
+// (mesma lógica do CanvasArea.jsx do AFD). NODE_R é a margem (metade do nó)
+// para o círculo não ficar meio cortado na borda.
+const NODE_R = 33;
+function clampToViewport(x, y, viewportRef, actualScale) {
+  const vp = viewportRef?.current;
+  if (!vp) return { x, y };
+  const minX = vp.scrollLeft / actualScale + NODE_R;
+  const maxX = (vp.scrollLeft + vp.clientWidth) / actualScale - NODE_R;
+  const minY = vp.scrollTop / actualScale + NODE_R;
+  const maxY = (vp.scrollTop + vp.clientHeight) / actualScale - NODE_R;
+  return {
+    x: Math.max(minX, Math.min(maxX, x)),
+    y: Math.max(minY, Math.min(maxY, y)),
+  };
+}
+
 export default function APCanvas({
   canvasRef, innerCanvasRef, viewportRef, zoom, setZoom,
   nodes, transitions, mode, setMode, simHighlight, beginDrag, discardSnapshot,
@@ -204,8 +223,9 @@ export default function APCanvas({
     if (!d) return;
     const { x, y } = pxFromEvent(e, innerRef);
     const dx = x - d.sx, dy = y - d.sy;
-    moveNode(d.uid, Math.max(5, Math.min(INNER_W - 5, d.ox + dx)), Math.max(5, Math.min(INNER_H - 5, d.oy + dy)));
-  }, [isDrawingUnlocked, isDraw, draw, moveNode, selectionBox, setSelectionBox]); // eslint-disable-line react-hooks/exhaustive-deps
+    const { x: nx, y: ny } = clampToViewport(d.ox + dx, d.oy + dy, viewportRef, actualScale);
+    moveNode(d.uid, nx, ny);
+  }, [isDrawingUnlocked, isDraw, draw, moveNode, selectionBox, setSelectionBox, viewportRef, actualScale]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onUp = useCallback((e) => {
     if (!isDrawingUnlocked) return;
