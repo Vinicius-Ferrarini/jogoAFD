@@ -762,6 +762,46 @@ body { color: var(--text-main); }
 .toast-notification.success { background-color: var(--accent-green); }
 .toast-notification.info    { background-color: var(--accent-blue); }
 
+/* ── Menu de contexto do nó (botão direito, estilo JFLAP) ── */
+.node-ctx-menu {
+  position: fixed;
+  z-index: 100000;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 8px;
+  box-shadow: 4px 4px 0px #000;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+.node-ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: #000;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: left;
+}
+.node-ctx-item:hover { background: #fef08a; }
+.node-ctx-check {
+  width: 13px; height: 13px;
+  border: 2px solid #000;
+  border-radius: 3px;
+  background: #fff;
+  flex-shrink: 0;
+}
+.node-ctx-check.on { background: #4ade80; }
+
 /* ── Pulso de erro severo ── */
 @keyframes severePulse {
   0%   { box-shadow: 0 0 0 0 rgba(220,38,38,0.8);  background-color: #fecaca; transform: scale(1); }

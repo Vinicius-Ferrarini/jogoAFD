@@ -6,6 +6,7 @@ import { useCallback, useRef, useState, useEffect } from 'react';
 import TransitionLabel from './TransitionLabel';
 import StrokeEl from './StrokeEl';
 import GuidedLessonOverlay from '../GuidedLessonOverlay';
+import NodeContextMenu from './NodeContextMenu';
 import { DRAW_COLORS } from '../hooks/useDrawing';
 import imgMaurilioApontando from '../../../assets/maurilio2_apontando_pro_lado.webp';
 import imgBalaoFala         from '../../../assets/balao_fala_redondo.webp';
@@ -64,10 +65,34 @@ export default function CanvasArea({
   userNodesSnapshot, userTransitionsSnapshot, resetHistory,
   lessonActive = false,
   errorNodeIds = null,
+  enableContextMenu = true,
 }) {
   // Ref local para o canvas-inner (se não for fornecido externamente)
   const localInnerRef = useRef(null);
   const innerRef = innerCanvasRef || localInnerRef;
+
+  // ── Menu de contexto do nó (botão direito, estilo JFLAP) ────────────────────
+  const [ctxMenu, setCtxMenu] = useState(null); // { x, y, uid } | null
+  const handleNodeContextMenu = useCallback((e, uid) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!enableContextMenu || !isDrawingUnlocked || guidedLessonStep !== null) return;
+    setCtxMenu({ x: e.clientX, y: e.clientY, uid });
+  }, [enableContextMenu, isDrawingUnlocked, guidedLessonStep]);
+  const ctxNode = ctxMenu ? nodes.find(n => n.uid === ctxMenu.uid) : null;
+  const ctxToggleInitial = useCallback(() => {
+    if (!ctxNode) return;
+    const wasInitial = ctxNode.isInitial;
+    const newNodes = nodes.map(n => ({ ...n, isInitial: wasInitial ? false : n.uid === ctxNode.uid }));
+    setNodes(newNodes);
+    recordHistory(newNodes, transitions);
+  }, [ctxNode, nodes, transitions, recordHistory]);
+  const ctxToggleFinal = useCallback(() => {
+    if (!ctxNode) return;
+    const newNodes = nodes.map(n => n.uid === ctxNode.uid ? { ...n, isFinal: !n.isFinal } : n);
+    setNodes(newNodes);
+    recordHistory(newNodes, transitions);
+  }, [ctxNode, nodes, transitions, recordHistory]);
 
   const actualScale = (zoom / 100) * 0.8;
 
@@ -189,7 +214,9 @@ export default function CanvasArea({
       return;
     }
     if (interactionMode === 'TOGGLE_INITIAL') {
-      const newNodes = nodes.map(n => ({ ...n, isInitial: n.uid === uid }));
+      const target = nodes.find(n => n.uid === uid);
+      const wasInitial = target?.isInitial;
+      const newNodes = nodes.map(n => ({ ...n, isInitial: wasInitial ? false : n.uid === uid }));
       setNodes(newNodes);
       recordHistory(newNodes, transitions);
       return;
@@ -704,7 +731,8 @@ export default function CanvasArea({
                     className={`node ${node.isInitial?'initial':''} ${node.isFinal?'final':''} ${selectedNodes.includes(node.uid)?'selected':''} ${interactionMode==='ERASE'?'erasable-node':''} ${connectingSource===node.uid?'selected-source':''} ${errorNodeIds?.has(node.id)?'node-error':''} ${highlightedError===node.id?'error-pulse-severe':''} ${simCls} ${arrowTargetUid===node.uid?'arrow-target':''}`}
                     style={{ top:`${node.y}px`, left:`${node.x}px` }}
                     onPointerDown={e => handlePointerDownNode(e, node.uid)}
-                    onPointerUp={e => handlePointerUpNode(e, node.uid)}>
+                    onPointerUp={e => handlePointerUpNode(e, node.uid)}
+                    onContextMenu={e => handleNodeContextMenu(e, node.uid)}>
                     <input
                       type="text"
                       className="node-id-input"
@@ -744,6 +772,15 @@ export default function CanvasArea({
           />
         )}
         </>
+      )}
+
+      {ctxMenu && ctxNode && (
+        <NodeContextMenu
+          x={ctxMenu.x} y={ctxMenu.y}
+          isInitial={ctxNode.isInitial} isFinal={ctxNode.isFinal}
+          onToggleInitial={ctxToggleInitial} onToggleFinal={ctxToggleFinal}
+          onClose={() => setCtxMenu(null)}
+        />
       )}
     </section>
   );

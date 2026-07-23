@@ -55,7 +55,8 @@ export default function useTMGraph({ showToast, selectedNodes = [], setSelectedN
   }, [nodes, transitions]);
 
   const toggleInitial = useCallback((uid) => {
-    dispatch({ type: 'COMMIT', next: { nodes: nodes.map(n => ({ ...n, isInitial: n.uid === uid })), transitions } });
+    const wasInitial = nodes.find(n => n.uid === uid)?.isInitial;
+    dispatch({ type: 'COMMIT', next: { nodes: nodes.map(n => ({ ...n, isInitial: wasInitial ? false : n.uid === uid })), transitions } });
   }, [nodes, transitions]);
 
   const toggleFinal = useCallback((uid) => {

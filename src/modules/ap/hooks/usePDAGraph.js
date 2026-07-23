@@ -93,7 +93,8 @@ export default function usePDAGraph({ showToast, selectedNodes = [], setSelected
   }, [nodes, transitions]);
 
   const toggleInitial = useCallback((uid) => {
-    dispatch({ type: 'COMMIT', next: { nodes: nodes.map(n => ({ ...n, isInitial: n.uid === uid })), transitions } });
+    const wasInitial = nodes.find(n => n.uid === uid)?.isInitial;
+    dispatch({ type: 'COMMIT', next: { nodes: nodes.map(n => ({ ...n, isInitial: wasInitial ? false : n.uid === uid })), transitions } });
   }, [nodes, transitions]);
 
   // rascunho do rótulo enquanto digita (sem histórico, sem commitar id/arestas)

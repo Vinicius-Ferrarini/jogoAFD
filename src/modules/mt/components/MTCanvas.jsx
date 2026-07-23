@@ -9,6 +9,7 @@ import { useCallback, useRef, useState } from 'react';
 import TMTransitionLabel from './TMTransitionLabel';
 import TMTransitionEditor from './TMTransitionEditor';
 import StrokeEl from '../../afd/components/StrokeEl';
+import NodeContextMenu from '../../afd/components/NodeContextMenu';
 import { DRAW_COLORS } from '../../ap/hooks/useAPDrawing';
 
 const INNER_W = 2000;
@@ -30,6 +31,16 @@ export default function MTCanvas({
   const [zoom, setZoom] = useState(0.5);
   const dragRef = useRef(null);
   const isDraw = mode === 'DRAW';
+
+  // ── Menu de contexto do nó (botão direito, estilo JFLAP) ────────────────────
+  const [ctxMenu, setCtxMenu] = useState(null); // { x, y, uid } | null
+  const handleNodeContextMenu = useCallback((e, uid) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (lessonActive) return;
+    setCtxMenu({ x: e.clientX, y: e.clientY, uid });
+  }, [lessonActive]);
+  const ctxNode = ctxMenu ? nodes.find(n => n.uid === ctxMenu.uid) : null;
 
   // Convert pointer event → percentage coords relative to inner canvas (zoom-aware).
   // getBoundingClientRect() returns the visual (scaled) rect, so dividing by r.width/r.height
@@ -392,6 +403,7 @@ export default function MTCanvas({
               const isActive = lessonActive && activeNodeId && node.id === activeNodeId;
               return (
               <div key={node.uid}
+                data-uid={node.uid}
                 className={`node ${node.isInitial ? 'initial' : ''} ${node.isFinal ? 'final' : ''} ${selectedNodes.includes(node.uid) ? 'selected' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''}`}
                 style={{
                   top:  `${node.y}%`,
@@ -401,7 +413,8 @@ export default function MTCanvas({
                     background: '#fde047', borderColor: '#a16207', color: '#422006',
                     boxShadow: '0 0 0 5px rgba(253,224,71,.45), 3px 3px 0 #000', zIndex: 6,
                   } : {}) }}
-                onPointerDown={(e) => onNodeDown(e, node)}>
+                onPointerDown={(e) => onNodeDown(e, node)}
+                onContextMenu={(e) => handleNodeContextMenu(e, node.uid)}>
                 <input type="text" className="node-id-input" value={node.label ?? node.id}
                   translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
                   readOnly={mode !== 'IDLE' || lessonActive}
@@ -418,6 +431,16 @@ export default function MTCanvas({
           </div>
         </div>
       </div>
+
+      {ctxMenu && ctxNode && (
+        <NodeContextMenu
+          x={ctxMenu.x} y={ctxMenu.y}
+          isInitial={ctxNode.isInitial} isFinal={ctxNode.isFinal}
+          onToggleInitial={() => toggleInitial(ctxNode.uid)}
+          onToggleFinal={() => toggleFinal(ctxNode.uid)}
+          onClose={() => setCtxMenu(null)}
+        />
+      )}
     </section>
   );
 }

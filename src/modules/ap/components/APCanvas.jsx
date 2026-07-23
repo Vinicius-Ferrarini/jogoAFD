@@ -6,6 +6,7 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import APTransitionLabel from './APTransitionLabel';
 import StrokeEl from '../../afd/components/StrokeEl';
+import NodeContextMenu from '../../afd/components/NodeContextMenu';
 import { DRAW_COLORS } from '../hooks/useAPDrawing';
 import { INNER_W, INNER_H } from '../../afd/hooks/useCanvasState.js';
 import imgMaurilioApontando from '../../../assets/maurilio2_apontando_pro_lado.webp';
@@ -56,6 +57,17 @@ export default function APCanvas({
   const innerRef = innerCanvasRef || localInnerRef;
   const dragRef = useRef(null);
   const isDraw = mode === 'DRAW';
+
+  // ── Menu de contexto do nó (botão direito, estilo JFLAP) — AP só tem Estado
+  // Inicial (aceita por pilha vazia, sem estado final). ──────────────────────
+  const [ctxMenu, setCtxMenu] = useState(null); // { x, y, uid } | null
+  const handleNodeContextMenu = useCallback((e, uid) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDrawingUnlocked || lessonActive || guidedLessonStep !== null) return;
+    setCtxMenu({ x: e.clientX, y: e.clientY, uid });
+  }, [isDrawingUnlocked, lessonActive, guidedLessonStep]);
+  const ctxNode = ctxMenu ? nodes.find(n => n.uid === ctxMenu.uid) : null;
 
   // Seta recém-criada (modo "Criar Seta"): abre o editor da tripla sozinho, sem
   // exigir que o aluno descubra que precisa clicar no chip "λ, λ ; λ" depois.
@@ -308,8 +320,11 @@ export default function APCanvas({
       const tanX = tx - qcx, tanY = ty - qcy, tanDist = Math.hypot(tanX, tanY) || 1;
       const endX = tx - (tanX / tanDist) * NR, endY = ty - (tanY / tanDist) * NR;
       pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${endX} ${endY}`;
-      lx = ((sx + tx) / 2 + qcx) / 2 + nx * 12;
-      ly = ((sy + ty) / 2 + qcy) / 2 + ny * 12;
+      // Rótulo colado na curva (não na reta central) e empurrado mais para fora
+      // — evita sobrepor o rótulo da aresta oposta quando há várias triplas
+      // empilhadas (chip cresce verticalmente e "esbarra" no outro lado).
+      lx = qcx + nx * 22;
+      ly = qcy + ny * 22;
     } else {
       pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
       lx = (sx + tx) / 2; ly = (sy + ty) / 2 - 14;
@@ -538,7 +553,8 @@ export default function APCanvas({
                   className={`node ${node.isInitial ? 'initial' : ''} ${selectedNodes.includes(node.uid) ? 'selected' : ''} ${connectingSource === node.uid ? 'selected-source selected' : ''} ${eraseMode ? 'erasable-node' : ''} ${sim} ${arrowTargetUid === node.uid ? 'arrow-target' : ''}`}
                   style={{ top: `${node.y}px`, left: `${node.x}px`, pointerEvents: isDraw ? 'none' : 'auto' }}
                   onPointerDown={(e) => onNodeDown(e, node)}
-                  onPointerUp={(e) => onNodeUp(e, node)}>
+                  onPointerUp={(e) => onNodeUp(e, node)}
+                  onContextMenu={(e) => handleNodeContextMenu(e, node.uid)}>
                   <input type="text" className="node-id-input" value={node.label ?? node.id}
                     translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
                     readOnly={mode !== 'IDLE' || lessonActive}
@@ -556,6 +572,15 @@ export default function APCanvas({
       {/* Bloqueador do Modo Aula: impede editar o grafo enquanto a aula roda */}
       {lessonActive && (
         <div className="ap-lesson-blocker" onPointerDown={(e) => { e.stopPropagation(); e.preventDefault(); }} />
+      )}
+
+      {ctxMenu && ctxNode && (
+        <NodeContextMenu
+          x={ctxMenu.x} y={ctxMenu.y}
+          isInitial={ctxNode.isInitial} showFinal={false}
+          onToggleInitial={() => toggleInitial(ctxNode.uid)}
+          onClose={() => setCtxMenu(null)}
+        />
       )}
     </section>
   );

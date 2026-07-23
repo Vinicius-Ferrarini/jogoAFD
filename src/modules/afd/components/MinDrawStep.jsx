@@ -236,6 +236,7 @@ export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, on
             userTransitionsSnapshot={snapT}
             resetHistory={resetHistory}
             errorNodeIds={errorNodeIds}
+            enableContextMenu={false}
           />
         </div>
 
