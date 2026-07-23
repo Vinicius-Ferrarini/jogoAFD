@@ -1,0 +1,1 @@
+var e=`/jogoAFD/assets/maurilio2_apontando_pro_lado-cma7otjb.webp`;export{e as t};
