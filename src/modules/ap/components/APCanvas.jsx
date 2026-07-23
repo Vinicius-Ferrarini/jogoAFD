@@ -88,17 +88,53 @@ export default function APCanvas({
   useEffect(() => { setZoomInput(String(zoom)); }, [zoom]);
 
   // ── Auto-fit do Modo Aula: recalcula o zoom a cada passo p/ o grafo inteiro
-  // caber no viewport (mesmo comportamento do CanvasArea.jsx do AFD).
+  // caber no viewport (mesmo comportamento do CanvasArea.jsx do AFD), MAS aqui
+  // o bounding box também precisa "esticar" pelos rótulos de transição — em
+  // self-loops (ex.: L18, q0→q0 recebendo muitas triplas durante a aula) o
+  // chip cresce verticalmente pra cima do nó (empilha read/pop/push por
+  // tripla, ~27px cada) e, sem essa folga, o auto-fit calcula o enquadramento
+  // só pelas posições dos nós — o chip cresce pra fora da tela sem a câmera
+  // "seguir". Aproxima a altura de cada chip por triplas × ~27px e soma ao
+  // offset fixo de cada tipo de aresta (self-loop já nasce 92px acima do nó;
+  // bidir/reta ficam perto da reta central).
   useEffect(() => {
     if (nodes.length === 0 || guidedLessonStep === null) return;
     setTimeout(() => {
       if (!viewportRef?.current) return;
       const vp = viewportRef.current;
       const NODE_R = 33;
-      const minX = Math.min(...nodes.map(n => n.x)) - NODE_R;
-      const maxX = Math.max(...nodes.map(n => n.x)) + NODE_R;
-      const minY = Math.min(...nodes.map(n => n.y)) - NODE_R;
-      const maxY = Math.max(...nodes.map(n => n.y)) + NODE_R;
+      const CHIP_H = 27; // altura aproximada de cada tripla empilhada no chip
+
+      // Maior nº de triplas por aresta (agrupando por from->to, como no render).
+      const tripleCountByKey = new Map();
+      transitions.forEach(t => {
+        const key = `${t.from}->${t.to}`;
+        tripleCountByKey.set(key, (tripleCountByKey.get(key) || 0) + 1);
+      });
+
+      let minX = Math.min(...nodes.map(n => n.x)) - NODE_R;
+      let maxX = Math.max(...nodes.map(n => n.x)) + NODE_R;
+      let minY = Math.min(...nodes.map(n => n.y)) - NODE_R;
+      let maxY = Math.max(...nodes.map(n => n.y)) + NODE_R;
+
+      tripleCountByKey.forEach((count, key) => {
+        const [from, to] = key.split('->');
+        const node = nodes.find(n => n.id === from);
+        if (!node) return;
+        const stackH = count * CHIP_H;
+        if (from === to) {
+          // Self-loop: label ancorada 92px acima do nó pela BASE (translate
+          // -100% no render) — o chip inteiro cresce pra cima a partir dali.
+          minY = Math.min(minY, node.y - 92 - stackH);
+        } else {
+          // Aresta reta/bidir: label perto do meio do segmento — folga vertical
+          // básica (metade do chip) já cobre o caso comum sem exigir achar o
+          // nó de destino aqui.
+          minY = Math.min(minY, node.y - stackH / 2);
+          maxY = Math.max(maxY, node.y + stackH / 2);
+        }
+      });
+
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
       const spanX = maxX - minX;
@@ -110,10 +146,15 @@ export default function APCanvas({
       const fitZoom = Math.max(25, Math.min(100, Math.round((fitScale / 0.8) * 100)));
       if (fitZoom !== zoom) setZoom(fitZoom);
       const scale = (fitZoom / 100) * 0.8;
+      // Desce a "câmera" mais uns 20px de tela (não de coordenada do canvas) em
+      // relação ao centro geométrico — abre uma folga extra acima do conteúdo
+      // (ex.: chip do self-loop mais próximo da curva) sem alterar a distância
+      // do chip até a própria curva.
+      const EXTRA_TOP_GAP = 20;
       vp.scrollLeft = centerX * scale - vp.clientWidth / 2;
-      vp.scrollTop  = centerY * scale - vp.clientHeight / 2;
+      vp.scrollTop  = centerY * scale - vp.clientHeight / 2 - EXTRA_TOP_GAP;
     }, 50);
-  }, [nodes, zoom, guidedLessonStep, setZoom]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [nodes, transitions, zoom, guidedLessonStep, setZoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer no fundo ────────────────────────────────────────────────────────
   const onCanvasDown = useCallback((e) => {
