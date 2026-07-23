@@ -2,7 +2,8 @@
 // Paginação 20/página, progresso de estrelas e legenda de dificuldade.
 // CSS: .menu-screen / .levels-grid / .menu-btn em AFDPart1.css.
 import { SvgStars, DifficultyLegend } from '../SvgStar';
-import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../../levels';
+import { LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../../levels';
+import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
 
 export default function LevelMenu({ progress, currentPage, setCurrentPage, onBack, onSelect }) {
   const maxStars    = GAME_LEVELS.reduce((a, l) => a + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : (l.impossible || l.wordOnly ? 1 : 3)), 0);

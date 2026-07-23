@@ -5,8 +5,9 @@ import './App.css';
 // Importar páginas e módulos
 import MainMenu from './pages/MainMenu';
 import FeedbackButton from './components/FeedbackButton';
-import { GAME_LEVELS, UNAVAILABLE_LEVELS } from './levels';
-import { EXERCISES } from './modules/afd/AFDMinimizer';
+import LoadingScreen from './components/LoadingScreen';
+import { LEVEL_IDS, UNAVAILABLE_LEVELS } from './levels';
+import { EXERCISES } from './modules/afd/afdMinimizerExercises';
 const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
 const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
@@ -106,13 +107,13 @@ export default function App() {
     })();
 
     return (
-      <Suspense fallback={<div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', fontFamily:'Comic Sans MS, cursive' }}>Carregando...</div>}>
+      <Suspense fallback={<LoadingScreen />}>
         {gameNode}
       </Suspense>
     );
   }
 
-  return <div>Carregando...</div>;
+  return <LoadingScreen />;
 }
 
 // ✨ Seleção de Módulos Principais
@@ -190,11 +191,11 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
     catch { return {}; }
   })();
 
-  const availableLevels = GAME_LEVELS.filter(l => !UNAVAILABLE_LEVELS.has(l.id));
-  const p1Total  = availableLevels.length * 3;
-  const p1Earned = availableLevels.reduce((s, l) => s + (progress[l.id]?.stars || 0), 0);
-  const p2Total  = availableLevels.length * 3;
-  const p2Earned = availableLevels.reduce((s, l) => s + (p2Progress[l.id]?.stars || 0), 0);
+  const availableLevelIds = LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS.has(id));
+  const p1Total  = availableLevelIds.length * 3;
+  const p1Earned = availableLevelIds.reduce((s, id) => s + (progress[id]?.stars || 0), 0);
+  const p2Total  = availableLevelIds.length * 3;
+  const p2Earned = availableLevelIds.reduce((s, id) => s + (p2Progress[id]?.stars || 0), 0);
   const minTotal  = EXERCISES.length * 3;
   const minEarned = EXERCISES.reduce((s, ex) => s + (progress[`afd-min-${ex.id}`]?.stars || 0), 0);
 

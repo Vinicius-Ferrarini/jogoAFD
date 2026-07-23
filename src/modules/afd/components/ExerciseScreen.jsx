@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { LEVEL_GRAPHS } from '../../../levels_graphs';
-import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../../../levels';
+import { UNAVAILABLE_LEVELS } from '../../../levels';
+import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
 import { SvgStars } from '../SvgStar';
 import GraphView       from './GraphView';
 import { DrawStroke }  from './StrokeEl';

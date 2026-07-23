@@ -28,6 +28,9 @@ export default function MTCanvas({
   const innerRef = innerCanvasRefProp || localInnerRef;
   // null | { type:'edit', tIdx } | { type:'new', from, to, lx, ly }
   const [editing, setEditing] = useState(null);
+  // Estável — evita recriar a função a cada tripla no .map() abaixo, o que
+  // quebraria o React.memo do TMTransitionLabel.
+  const startEditTriple = useCallback((tIdx) => setEditing({ type: 'edit', tIdx }), []);
   const [zoom, setZoom] = useState(0.5);
   const dragRef = useRef(null);
   const isDraw = mode === 'DRAW';
@@ -346,9 +349,9 @@ export default function MTCanvas({
                     <TMTransitionLabel key={t.tIdx}
                       transition={t}
                       eraseMode={eraseMode}
-                      onClick={() => eraseMode
-                        ? removeTriple(t.tIdx)
-                        : (!lessonActive && setEditing({ type: 'edit', tIdx: t.tIdx }))}
+                      lessonActive={lessonActive}
+                      onRemove={removeTriple}
+                      onEdit={startEditTriple}
                     />
                   )
                 ))}

@@ -1,5 +1,6 @@
 // Renderização de um traço SVG único (lápis, linha, seta, retângulo)
 // Usado nos sistemas de anotação de AFDPart1 e AFDPart2.
+import { memo } from 'react';
 
 function pointsToPath(pts) {
   if (pts.length < 2) return '';
@@ -26,7 +27,7 @@ function arrowHeadPoints(x1, y1, x2, y2, sw) {
   ].map(v => +v.toFixed(2)).join(' ');
 }
 
-export default function StrokeEl({ stroke, idx }) {
+function StrokeEl({ stroke, idx }) {
   const common = { stroke: stroke.color, strokeWidth: stroke.width, fill: 'none', opacity: 0.88 };
   if (stroke.type === 'pencil' || !stroke.type) {
     return <path key={idx} d={pointsToPath(stroke.points)} {...common}
@@ -53,5 +54,7 @@ export default function StrokeEl({ stroke, idx }) {
   return null;
 }
 
+const MemoStrokeEl = memo(StrokeEl);
+export default MemoStrokeEl;
 // Alias para compatibilidade com AFDPart2 (que chama DrawStroke)
-export { StrokeEl as DrawStroke };
+export { MemoStrokeEl as DrawStroke };

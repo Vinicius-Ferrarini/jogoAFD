@@ -71,6 +71,19 @@ export default function CanvasArea({
   const localInnerRef = useRef(null);
   const innerRef = innerCanvasRef || localInnerRef;
 
+  // Callback de ref estável por idx (cache) — um `ref={el => ...}` inline no
+  // .map() recriaria a função a cada render, o que quebraria o React.memo do
+  // TransitionLabel (toda prop de função nova "diferente" força re-render).
+  const labelRefSettersRef = useRef(new Map());
+  const getLabelRefSetter = useCallback((idx) => {
+    let fn = labelRefSettersRef.current.get(idx);
+    if (!fn) {
+      fn = (el) => { transitionLabelRefs.current[idx] = el; };
+      labelRefSettersRef.current.set(idx, fn);
+    }
+    return fn;
+  }, [transitionLabelRefs]);
+
   // ── Menu de contexto do nó (botão direito, estilo JFLAP) ────────────────────
   const [ctxMenu, setCtxMenu] = useState(null); // { x, y, uid } | null
   const handleNodeContextMenu = useCallback((e, uid) => {
@@ -691,7 +704,7 @@ export default function CanvasArea({
               {transitionRenders.map(tr => (
                 <TransitionLabel
                   key={`lbl-${tr.from}-${tr.to}`}
-                  ref={el => { transitionLabelRefs.current[tr.idx] = el; }}
+                  ref={getLabelRefSetter(tr.idx)}
                   idx={tr.idx}
                   symbol={tr.symbol}
                   interactionMode={interactionMode}
@@ -700,10 +713,8 @@ export default function CanvasArea({
                   lessonActive={lessonActive}
                   isError={highlightedError === `transition-${tr.idx}`}
                   labelSide={tr.labelSide}
-                  style={{
-                    left: `${tr.labelPxX}px`,
-                    top:  `${tr.labelPxY}px`,
-                  }}
+                  left={tr.labelPxX}
+                  top={tr.labelPxY}
                   onAdd={handleAddSymbol}
                   onEdit={handleEditSymbol}
                   onErase={handleEraseTransition}

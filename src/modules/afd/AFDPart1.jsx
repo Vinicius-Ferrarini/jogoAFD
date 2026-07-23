@@ -15,7 +15,8 @@ import useHistory from './hooks/useHistory';
 import useGuidedLesson from './hooks/useGuidedLesson';
 import useAFDGraph, { lvlAccepts } from './hooks/useAFDGraph';
 import useCanvasState from './hooks/useCanvasState';
-import { GAME_LEVELS, UNAVAILABLE_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
+import { UNAVAILABLE_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
+import { AFD_LEVELS as GAME_LEVELS } from '../../levels_data/afd/index.js';
 
 // ─── Utilitário: gera um UID curto ───────────────────────────────────────────
 let _uidCounter = 0;

@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import './AFDPart1.css';
 import './AFDPart2.css';
 import { SvgStars, DifficultyLegend } from './SvgStar';
-import { GAME_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../levels';
+import { LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../levels';
+import { AFD_LEVELS as GAME_LEVELS } from '../../levels_data/afd/index.js';
 import ExerciseScreen from './components/ExerciseScreen';
 
 // ── P2 Progress (localStorage, separate from P1) ──────────────────────────────

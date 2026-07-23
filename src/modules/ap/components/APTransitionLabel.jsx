@@ -2,7 +2,11 @@
 // Estilo JFLAP: cada tripla é "lê, desempilha ; empilha" (λ p/ vazio). Uma aresta
 // pode ter várias (não-determinismo). Clicar numa tripla edita; "＋" adiciona.
 // Em modo ERASE, clicar numa tripla a remove.
-import { useState, useRef, useEffect } from 'react';
+// Memoizado: left/top/pointerEventsNone/selfLoop chegam como valores escalares
+// (não um `style` inline recriado a cada render do pai), e onAddTriple recebe
+// from/to como argumentos em vez de vir pré-fechado por edge — ambos eram
+// necessários pra comparação do memo funcionar de verdade.
+import { useState, useRef, useEffect, memo, useCallback } from 'react';
 
 const LAMBDA = 'λ';
 const show = (v) => (v === '' || v == null ? LAMBDA : v);
@@ -48,12 +52,18 @@ function TripleEditor({ initial, onCommit, onCancel }) {
   );
 }
 
-export default function APTransitionLabel({
-  triples, style, eraseMode, lessonActive,
+function APTransitionLabel({
+  from, to, triples, left, top, pointerEventsNone, selfLoop, eraseMode, lessonActive,
   onAddTriple, onEditTriple, onRemoveTriple,
   autoEdit = null, onAutoEditConsumed,
 }) {
   const [editing, setEditing] = useState(null); // null | 'new' | tIdx
+  const style = {
+    left: `${left}px`, top: `${top}px`,
+    pointerEvents: pointerEventsNone ? 'none' : undefined,
+    ...(selfLoop && { transform: 'translate(-50%, -100%)' }),
+  };
+  const addTripleHere = useCallback((tr) => onAddTriple(from, to, tr), [onAddTriple, from, to]);
 
   // Tripla recém-criada (seta nova, ainda "λ, λ ; λ"): abre o editor sozinha,
   // sem exigir que o aluno descubra que precisa clicar na tripla depois. O
@@ -96,7 +106,7 @@ export default function APTransitionLabel({
         ))}
         {editing === 'new' ? (
           <TripleEditor
-            onCommit={(tr) => { if (onAddTriple(tr) !== false) setEditing(null); }}
+            onCommit={(tr) => { if (addTripleHere(tr) !== false) setEditing(null); }}
             onCancel={() => setEditing(null)} />
         ) : (!eraseMode && !lessonActive) ? (
           <button className="ap-tl-add" onClick={e => { e.stopPropagation(); setEditing('new'); }}
@@ -106,3 +116,5 @@ export default function APTransitionLabel({
     </div>
   );
 }
+
+export default memo(APTransitionLabel);

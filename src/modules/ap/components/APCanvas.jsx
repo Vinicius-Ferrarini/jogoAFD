@@ -72,6 +72,9 @@ export default function APCanvas({
   // Seta recém-criada (modo "Criar Seta"): abre o editor da tripla sozinho, sem
   // exigir que o aluno descubra que precisa clicar no chip "λ, λ ; λ" depois.
   const [autoEditKey, setAutoEditKey] = useState(null); // { from, to, tIdx } | null
+  // Estável (sem depender de `er`) — evita recriar a função a cada edge no
+  // .map() abaixo, o que quebraria o React.memo do APTransitionLabel.
+  const clearAutoEditKey = useCallback(() => setAutoEditKey(null), []);
 
   // ── Drag de seta estilo JFLAP (mesmo mecanismo do CanvasArea.jsx do AFD):
   // clique simples só seleciona a origem; é preciso ARRASTAR até o destino
@@ -555,15 +558,20 @@ export default function APCanvas({
             {edgeRenders.map((er) => (
               <APTransitionLabel
                 key={`lbl-${er.from}->${er.to}`}
+                from={er.from}
+                to={er.to}
                 triples={er.triples}
                 eraseMode={eraseMode}
                 lessonActive={lessonActive}
-                style={{ left: `${er.lx}px`, top: `${er.ly}px`, pointerEvents: isDraw ? 'none' : undefined, ...(er.selfLoop && { transform: 'translate(-50%, -100%)' }) }}
-                onAddTriple={(tr) => addTriple(er.from, er.to, tr)}
+                left={er.lx}
+                top={er.ly}
+                pointerEventsNone={isDraw}
+                selfLoop={er.selfLoop}
+                onAddTriple={addTriple}
                 onEditTriple={editTriple}
                 onRemoveTriple={removeTriple}
                 autoEdit={autoEditKey && autoEditKey.from === er.from && autoEditKey.to === er.to ? autoEditKey.tIdx : null}
-                onAutoEditConsumed={() => setAutoEditKey(null)}
+                onAutoEditConsumed={clearAutoEditKey}
               />
             ))}
 

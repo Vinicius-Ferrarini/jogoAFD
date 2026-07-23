@@ -1,9 +1,11 @@
 // ─── TransitionLabel: chips verticais com edição inline ─────────────────────
 // Renderiza o rótulo de uma transição como chips de símbolos com edição inline.
 // CSS: classes .transition-label / .transition-chip(-input) em AFDPart1.css.
-import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+// Memoizado: left/top chegam como números (não um objeto `style` inline, que
+// seria recriado a cada render do pai e invalidaria a comparação do memo).
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle, memo } from 'react';
 
-const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, labelSide, style, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
+const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, labelSide, left, top, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
   const [mode, setMode] = useState(null); // null | 'adding' | { type:'editing', chipIdx:number }
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef(null);
@@ -72,7 +74,7 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
   return (
     <div
       className={`transition-label${labelSide ? ` label-${labelSide}` : ''}${interactionMode === 'ERASE' ? ' erasable-target' : ''}${selectedSymbolCard ? ' clickable action-target' : ''}${isError ? ' error-pulse-severe' : ''}${className ? ' ' + className : ''}`}
-      style={style}
+      style={{ left: `${left}px`, top: `${top}px` }}
       onClick={handleContainerClick}
     >
       <div className="transition-chips">
@@ -108,4 +110,4 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
   );
 });
 
-export default TransitionLabel;
+export default memo(TransitionLabel);

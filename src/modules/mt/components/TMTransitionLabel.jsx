@@ -1,21 +1,31 @@
 // ─── TMTransitionLabel: chip de uma transição da MT sobre uma aresta ─────────
 // Formato exibido: "read ; write , move"  (ex: a ; A , R  |  □ ; □ , L)
 // Props:
-//   transition  — { read, write, move }  (string vazia = branco)
+//   transition  — { read, write, move, tIdx }  (string vazia = branco)
 //   style       — posicionamento absoluto passado pelo canvas
 //   eraseMode   — boolean; chip fica vermelho e clique remove
-//   onClick     — callback disparado ao clicar (abre editor ou remove)
+//   lessonActive, onRemove(tIdx), onEdit(tIdx) — tIdx chega via prop (não
+//   fechado num onClick inline) + onRemove/onEdit estáveis (useCallback na
+//   origem) para o React.memo abaixo conseguir de fato pular re-renders.
+import { memo, useCallback } from 'react';
 import { BLANK } from '../utils/tmAlgorithms';
 import './MTTransitions.css';
 
 const show = (v) => (v === '' || v == null ? BLANK : v);
 
-export default function TMTransitionLabel({ transition, style, eraseMode, onClick }) {
+function TMTransitionLabel({ transition, style, eraseMode, lessonActive, onRemove, onEdit }) {
+  const tIdx = transition.tIdx;
+  const handleClick = useCallback((e) => {
+    e.stopPropagation();
+    if (eraseMode) onRemove(tIdx);
+    else if (!lessonActive) onEdit(tIdx);
+  }, [eraseMode, lessonActive, onRemove, onEdit, tIdx]);
+
   return (
     <div
       className={`tm-transition-label${eraseMode ? ' erasable' : ''}`}
       style={style}
-      onClick={e => { e.stopPropagation(); onClick?.(); }}
+      onClick={handleClick}
       title={eraseMode ? 'Clique para remover' : 'Clique para editar'}
     >
       <span className="tm-tl-chip">
@@ -28,3 +38,5 @@ export default function TMTransitionLabel({ transition, style, eraseMode, onClic
     </div>
   );
 }
+
+export default memo(TMTransitionLabel);

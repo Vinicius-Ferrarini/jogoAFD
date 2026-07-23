@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
-import { GAME_LEVELS, UNAVAILABLE_LEVELS } from '../levels';
+import { LEVEL_IDS, UNAVAILABLE_LEVELS } from '../levels';
 import FeedbackButton, { RepoButton } from '../components/FeedbackButton';
 
 const LAST_COMMIT_CACHE_KEY = 'turinglab_last_commit_cache';
@@ -57,9 +57,9 @@ function useLastCommitDate() {
   return { label, isToday };
 }
 
-const AVAILABLE_AFD_LEVELS = GAME_LEVELS.filter(l => !UNAVAILABLE_LEVELS.has(l.id));
+const AVAILABLE_AFD_LEVEL_IDS = LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS.has(id));
 // AFD_1 e AFD_2 usam os mesmos níveis disponíveis, com progresso separado
-const P1P2_MAX_STARS    = AVAILABLE_AFD_LEVELS.length * 3 * 2;
+const P1P2_MAX_STARS    = AVAILABLE_AFD_LEVEL_IDS.length * 3 * 2;
 const MINIMIZER_MAX_STARS = 42; // 14 exercícios × 3
 const AP_MAX_STARS        = 45; // 15 níveis × 3 (L16 impossível excluído)
 const GRAND_MAX_STARS     = P1P2_MAX_STARS + MINIMIZER_MAX_STARS + AP_MAX_STARS;
@@ -70,7 +70,7 @@ export default function MainMenu({ onStart, progress }) {
     try { return JSON.parse(localStorage.getItem('turinglab_progress_p2') || '{}'); }
     catch { return {}; }
   })();
-  const p2Earned   = AVAILABLE_AFD_LEVELS.reduce((s, l) => s + (p2Progress[l.id]?.stars || 0), 0);
+  const p2Earned   = AVAILABLE_AFD_LEVEL_IDS.reduce((s, id) => s + (p2Progress[id]?.stars || 0), 0);
   const totalStars = Object.values(progress).reduce((sum, p) => sum + (p.stars || 0), 0) + p2Earned;
   const maxStars   = GRAND_MAX_STARS;
 

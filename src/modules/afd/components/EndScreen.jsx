@@ -1,7 +1,7 @@
 // ─── EndScreen: overlay de fim de fase (Vitória / Impossível) ────────────────
 // Tela cheia com Maurílio + balão e botões "Voltar ao Menu" / "Próxima". Usada
 // tanto na vitória quanto no caso "impossível com AFD". Mantém o visual gibi.
-import { GAME_LEVELS } from '../../../levels';
+import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
 import imgMaurilioExplicando from '../../../assets/maurilio3_explicando.webp';
 import imgBalaoFala          from '../../../assets/balao_fala_redondo.webp';
 
