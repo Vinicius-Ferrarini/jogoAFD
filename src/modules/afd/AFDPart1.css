@@ -527,6 +527,7 @@ body { color: var(--text-main); }
 
 /* ── Chips de símbolos nas setas ── */
 .transition-chips {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -582,11 +583,20 @@ body { color: var(--text-main); }
 .transition-label.action-target:hover .transition-chip { background: var(--accent-green); }
 
 .afd-tl-add {
-  width: 22px; height: 22px; border: 2.5px solid #16a34a; border-radius: 6px; background: #bbf7d0;
+  position: absolute;
+  left: 100%;
+  margin-left: 2px;
+  width: 18px; height: 18px; border: 2px solid #16a34a; border-radius: 5px; background: #bbf7d0;
   font-weight: 900; cursor: pointer; line-height: 1; color: #166534; box-shadow: 2px 2px 0 rgba(22,163,74,.4);
-  display: flex; align-items: center; justify-content: center; font-size: 14px; padding: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 11px; padding: 0;
 }
 .afd-tl-add:hover { background: #86efac; }
+/* Ancora o "+" na altura do chip mais próximo da seta (ver comentário em
+   TransitionLabel.jsx) em vez de flutuar no fim do empilhamento vertical.
+   Relativo a .transition-chips (sem padding), então top/bottom:0 alinha
+   exatamente com a borda do chip extremo, não com o padding do container pai. */
+.afd-tl-add-top    { top: 0; }
+.afd-tl-add-bottom { bottom: 0; }
 
 /* ── Toolbar de desenho ── */
 .draw-toolbar {
@@ -684,6 +694,25 @@ body { color: var(--text-main); }
   background: rgba(255, 255, 255, 0.88);
   transform: translate(-50%, -50%) scale(1.25);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2), 3px 3px 0 #000;
+}
+/* Setas de um par bidirecional (q0<->q1): o ponto-âncora (left/top) fica sobre
+   a curva, mas o chip de símbolos cresce verticalmente (várias triplas). Sem
+   isso, cada rótulo crescia igual pra cima E pra baixo a partir do centro e
+   acabava cobrindo a seta oposta. Ancorando pela borda externa (bottom/top
+   em vez do centro), o chip só cresce PARA FORA, nunca em direção à outra seta. */
+.transition-label.label-top {
+  transform: translate(-50%, -100%);
+  transform-origin: 50% 100%;
+}
+.transition-label.label-top:not(.erasable-target):hover {
+  transform: translate(-50%, -100%) scale(1.25);
+}
+.transition-label.label-bottom {
+  transform: translate(-50%, 0%);
+  transform-origin: 50% 0%;
+}
+.transition-label.label-bottom:not(.erasable-target):hover {
+  transform: translate(-50%, 0%) scale(1.25);
 }
 
 /* Modos de cursor */

@@ -3,7 +3,7 @@
 // CSS: classes .transition-label / .transition-chip(-input) em AFDPart1.css.
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
-const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, style, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
+const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, labelSide, style, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
   const [mode, setMode] = useState(null); // null | 'adding' | { type:'editing', chipIdx:number }
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef(null);
@@ -60,9 +60,18 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
   // Largura dinâmica: cresce com o conteúdo (mínimo 2ch, 1ch por caractere extra)
   const inputWidth = `${Math.max(2, inputVal.length + 0.5)}ch`;
 
+  // O "+" fica fixo do lado direito, na altura do chip mais PRÓXIMO DA SETA (não
+  // no fim da pilha). Em label-top o bloco cresce pra cima e a seta fica embaixo
+  // dele → o chip mais próximo é o ÚLTIMO da lista (ancora no bottom). Em
+  // label-bottom o bloco cresce pra baixo e a seta fica em cima → o chip mais
+  // próximo é o PRIMEIRO (ancora no top).
+  const addBtnAnchor = labelSide === 'bottom' ? 'top' : 'bottom';
+  const showAddBtn = mode !== 'adding' && symList.length > 0 &&
+    isDrawingUnlocked && !lessonActive && interactionMode !== 'ERASE' && !selectedSymbolCard;
+
   return (
     <div
-      className={`transition-label${interactionMode === 'ERASE' ? ' erasable-target' : ''}${selectedSymbolCard ? ' clickable action-target' : ''}${isError ? ' error-pulse-severe' : ''}${className ? ' ' + className : ''}`}
+      className={`transition-label${labelSide ? ` label-${labelSide}` : ''}${interactionMode === 'ERASE' ? ' erasable-target' : ''}${selectedSymbolCard ? ' clickable action-target' : ''}${isError ? ' error-pulse-severe' : ''}${className ? ' ' + className : ''}`}
       style={style}
       onClick={handleContainerClick}
     >
@@ -79,19 +88,21 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
             <span key={i} className="transition-chip" onClick={e => handleChipClick(e, i)}>{sym}</span>
           )
         )}
-        {mode === 'adding' ? (
+        {mode === 'adding' && (
           <input ref={inputRef} className="transition-chip-input"
             value={inputVal} onChange={e => setInputVal(e.target.value)}
             onBlur={commitAdd} onKeyDown={handleKeyDown}
             onClick={e => e.stopPropagation()}
             style={{ width: inputWidth }}
             autoComplete="off" spellCheck={false} />
-        ) : symList.length === 0 ? (
+        )}
+        {symList.length === 0 && mode !== 'adding' && (
           <span className="transition-chip empty">?</span>
-        ) : (isDrawingUnlocked && !lessonActive && interactionMode !== 'ERASE' && !selectedSymbolCard) ? (
-          <button className="afd-tl-add" title="Adicionar símbolo à transição"
+        )}
+        {showAddBtn && (
+          <button className={`afd-tl-add afd-tl-add-${addBtnAnchor}`} title="Adicionar símbolo à transição"
             onClick={e => { e.stopPropagation(); setMode('adding'); setInputVal(''); }}>＋</button>
-        ) : null}
+        )}
       </div>
     </div>
   );

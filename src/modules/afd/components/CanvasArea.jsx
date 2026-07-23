@@ -699,6 +699,7 @@ export default function CanvasArea({
                   isDrawingUnlocked={isDrawingUnlocked}
                   lessonActive={lessonActive}
                   isError={highlightedError === `transition-${tr.idx}`}
+                  labelSide={tr.labelSide}
                   style={{
                     left: `${tr.labelPxX}px`,
                     top:  `${tr.labelPxY}px`,

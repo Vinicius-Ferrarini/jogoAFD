@@ -356,10 +356,11 @@ export default function useAFDGraph({
       const tx = tgt.x, ty = tgt.y;
       const bidir = src.uid !== tgt.uid && displayTransitions.some(o => o.from === tgt.id && o.to === src.id);
 
-      let pathD, lx, ly;
+      let pathD, lx, ly, labelSide = null;
       if (src.uid === tgt.uid) {
         pathD = `M ${sx - 16} ${sy - 29} C ${sx - 58} ${sy - 96} ${sx + 58} ${sy - 96} ${sx + 16} ${sy - 29}`;
         lx = sx; ly = sy - 82;
+        labelSide = 'top';
       } else if (t.curve != null && t.curve !== false) {
         // Bypass com curvatura explícita: arco por cima do caminho linear.
         // t.curve = deslocamento (px) ao longo da normal.
@@ -392,11 +393,17 @@ export default function useAFDGraph({
         // em vez de flutuando além dela.
         lx = ((sx+tx)/2 + qcx)/2;
         ly = ((sy+ty)/2 + qcy)/2;
+        // Lado da curva (sinal de ny, a componente vertical da normal usada no
+        // offset): ny<0 a curva sobe (bow para cima), ny>0 desce. O chip de
+        // símbolos (que cresce verticalmente com várias triplas) precisa
+        // crescer PARA FORA da curva — nunca em direção à aresta oposta do par
+        // bidirecional — senão o chip de uma seta cobre a outra seta.
+        labelSide = ny < 0 ? 'top' : 'bottom';
       } else {
         pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
         lx = (sx+tx)/2; ly = (sy+ty)/2;
       }
-      return { ...t, idx, src, tgt, pathD, labelPxX: lx, labelPxY: ly, bidir };
+      return { ...t, idx, src, tgt, pathD, labelPxX: lx, labelPxY: ly, bidir, labelSide };
     }).filter(Boolean);
   }, [displayTransitions, displayNodes]);
 
