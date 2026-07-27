@@ -50,11 +50,11 @@ export default function APSimPanel({
   const isRejected = last && accepted === false;
 
   useEffect(() => {
-    if (!cur?.state) onHighlight?.(null, null);
-    else onHighlight?.(cur.state, last ? 'done' : 'active');
+    if (!cur?.state) onHighlight?.(null, null, null);
+    else onHighlight?.(cur.state, last ? 'done' : 'active', cur.step?.tIdx ?? null);
     onStepNarrate?.(cur);
   }, [cur, last, onHighlight, onStepNarrate]);
-  useEffect(() => () => onHighlight?.(null, null), [onHighlight]);
+  useEffect(() => () => onHighlight?.(null, null, null), [onHighlight]);
 
   const chars    = (word || '').split('');
   const stackArr = (cur?.stack ?? '').split('').filter(Boolean);
@@ -62,6 +62,7 @@ export default function APSimPanel({
 
   return (
     <div className="sim-panel-container ap-simp-container">
+      <button className="sim-panel-close" onClick={onClose} title="Fechar">✕</button>
       <div className="ap-simp-body">
         {/* ── Painel compacto (mesmo estilo do SimPanel do AFD) ── */}
         <div className="ap-simp-main">
@@ -89,7 +90,6 @@ export default function APSimPanel({
                 {isAccepted ? '✅ ACEITA' : '❌ REJEITADA'}
               </span>
             )}
-            <button className="sim-panel-close" onClick={onClose} title="Fechar">✕</button>
           </div>
 
           <div className="sim-panel-body">

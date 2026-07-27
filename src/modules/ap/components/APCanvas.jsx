@@ -350,10 +350,11 @@ export default function APCanvas({
     const tx = tgt.x, ty = tgt.y;
     const selfLoop = g.from === g.to;
     const bidir = !selfLoop && transitions.some(o => o.from === g.to && o.to === g.from);
-    let pathD, lx, ly;
+    let pathD, lx, ly, labelSide = null;
     if (selfLoop) {
       pathD = `M ${sx - 16} ${sy - 29} C ${sx - 58} ${sy - 96} ${sx + 58} ${sy - 96} ${sx + 16} ${sy - 29}`;
       lx = sx; ly = sy - 92;
+      labelSide = 'top';
     } else if (bidir) {
       const dx = tx - sx, dy = ty - sy, dist = Math.hypot(dx, dy) || 1;
       const nx = -dy / dist, ny = dx / dist, off = 42;
@@ -364,16 +365,22 @@ export default function APCanvas({
       const tanX = tx - qcx, tanY = ty - qcy, tanDist = Math.hypot(tanX, tanY) || 1;
       const endX = tx - (tanX / tanDist) * NR, endY = ty - (tanY / tanDist) * NR;
       pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${endX} ${endY}`;
-      // Rótulo colado na curva (não na reta central) e empurrado mais para fora
-      // — evita sobrepor o rótulo da aresta oposta quando há várias triplas
-      // empilhadas (chip cresce verticalmente e "esbarra" no outro lado).
-      lx = qcx + nx * 22;
-      ly = qcy + ny * 22;
+      // Rótulo colado na curva (não na reta central). O offset extra é pequeno
+      // de propósito: como o chip agora ancora pela BORDA externa (ver
+      // labelSide abaixo), ele já cresce inteiro para fora da curva sozinho —
+      // um offset grande aqui só afasta a tripla mais próxima sem necessidade.
+      lx = qcx;
+      ly = qcy;
+      // Lado da curva (mesmo raciocínio do AFD, useAFDGraph.js): ny<0 a curva
+      // sobe, ny>0 desce. O chip (várias triplas empilhadas) precisa crescer
+      // PARA FORA da curva — nunca em direção à aresta oposta do par
+      // bidirecional — senão o chip de uma seta cobre a outra seta.
+      labelSide = ny < 0 ? 'top' : 'bottom';
     } else {
       pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
       lx = (sx + tx) / 2; ly = (sy + ty) / 2 - 14;
     }
-    return { ...g, src, tgt, selfLoop, bidir, pathD, lx, ly };
+    return { ...g, src, tgt, selfLoop, bidir, pathD, lx, ly, labelSide };
   }).filter(Boolean);
 
   const eraseMode = mode === 'ERASE';
@@ -566,12 +573,13 @@ export default function APCanvas({
                 left={er.lx}
                 top={er.ly}
                 pointerEventsNone={isDraw}
-                selfLoop={er.selfLoop}
+                labelSide={er.labelSide}
                 onAddTriple={addTriple}
                 onEditTriple={editTriple}
                 onRemoveTriple={removeTriple}
                 autoEdit={autoEditKey && autoEditKey.from === er.from && autoEditKey.to === er.to ? autoEditKey.tIdx : null}
                 onAutoEditConsumed={clearAutoEditKey}
+                highlightTIdx={simHighlight?.tIdx ?? null}
               />
             ))}
 
@@ -628,6 +636,7 @@ export default function APCanvas({
           x={ctxMenu.x} y={ctxMenu.y}
           isInitial={ctxNode.isInitial} showFinal={false}
           onToggleInitial={() => toggleInitial(ctxNode.uid)}
+          onDelete={() => deleteNode(ctxNode.uid)}
           onClose={() => setCtxMenu(null)}
         />
       )}

@@ -106,6 +106,14 @@ export default function CanvasArea({
     setNodes(newNodes);
     recordHistory(newNodes, transitions);
   }, [ctxNode, nodes, transitions, recordHistory]);
+  const ctxDeleteNode = useCallback(() => {
+    if (!ctxNode) return;
+    const newNodes = nodes.filter(n => n.uid !== ctxNode.uid);
+    const newTrans = transitions.filter(t => t.from !== ctxNode.id && t.to !== ctxNode.id);
+    setNodes(newNodes);
+    setTransitions(newTrans);
+    recordHistory(newNodes, newTrans);
+  }, [ctxNode, nodes, transitions, recordHistory]);
 
   const actualScale = (zoom / 100) * 0.8;
 
@@ -791,6 +799,7 @@ export default function CanvasArea({
           x={ctxMenu.x} y={ctxMenu.y}
           isInitial={ctxNode.isInitial} isFinal={ctxNode.isFinal}
           onToggleInitial={ctxToggleInitial} onToggleFinal={ctxToggleFinal}
+          onDelete={ctxDeleteNode}
           onClose={() => setCtxMenu(null)}
         />
       )}

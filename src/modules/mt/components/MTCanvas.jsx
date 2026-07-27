@@ -441,6 +441,7 @@ export default function MTCanvas({
           isInitial={ctxNode.isInitial} isFinal={ctxNode.isFinal}
           onToggleInitial={() => toggleInitial(ctxNode.uid)}
           onToggleFinal={() => toggleFinal(ctxNode.uid)}
+          onDelete={() => deleteNode(ctxNode.uid)}
           onClose={() => setCtxMenu(null)}
         />
       )}

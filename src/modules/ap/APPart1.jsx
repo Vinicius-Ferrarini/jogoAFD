@@ -41,7 +41,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   const [prof, setProf]     = useState({ message: '', mood: 'serio' });
   const [result, setResult] = useState(null);
   const [sim, setSim]       = useState(null);
-  const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null });
+  const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null, tIdx: null });
   const [simWord, setSimWord] = useState('');
   const [simKey, setSimKey]   = useState(0);
   const [testedWords, setTestedWords] = useState([]);
@@ -93,18 +93,42 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     setProf(st?.prof ?? { message: '', mood: 'serio' });
     setFormalOpen(st?.phase === 'FORMAL');
   }, []);
+  // Posição/zoom do canvas do ALUNO antes de entrar na aula — o Modo Aula
+  // reenquadra a câmera pro grafo de cada passo (ver auto-fit em APCanvas.jsx),
+  // então sem isso, ao sair, a tela ficava onde o último passo da aula deixou
+  // (quase sempre nada a ver com o que o aluno estava desenhando).
+  const preLessonViewRef = useRef(null);
   const startLesson = useCallback(() => {
     if (!lesson.hasLesson) return;
+    preLessonViewRef.current = {
+      scrollLeft: viewportRef.current?.scrollLeft ?? 0,
+      scrollTop: viewportRef.current?.scrollTop ?? 0,
+      zoom,
+    };
     setMode('IDLE'); setConnectingSource(null);
-    setSim(null); setSimHighlight({ nodeId: null, type: null }); setResult(null);
+    setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null }); setResult(null);
     lessonGoTo(0);
     applyStep(lessonSteps[0]);
-  }, [lesson.hasLesson, lessonGoTo, lessonSteps, applyStep]);
+  }, [lesson.hasLesson, lessonGoTo, lessonSteps, applyStep, zoom]);
   const finishLesson = useCallback(() => {
     lessonFinishRaw();
     setFormalOpen(false);
     say('Aula encerrada! Agora monte o seu AP e clique em Validar. 💪', 'explicando');
-  }, [lessonFinishRaw, say]);
+    const saved = preLessonViewRef.current;
+    if (saved) {
+      setZoom(saved.zoom);
+      // Aguarda o próximo frame (canvas volta a exibir o grafo do aluno antes
+      // do scroll ser restaurado, senão o navegador clampa scrollLeft/Top ao
+      // tamanho do conteúdo ainda em transição).
+      requestAnimationFrame(() => {
+        if (viewportRef.current) {
+          viewportRef.current.scrollLeft = saved.scrollLeft;
+          viewportRef.current.scrollTop = saved.scrollTop;
+        }
+      });
+      preLessonViewRef.current = null;
+    }
+  }, [lessonFinishRaw, say, setZoom]);
   const lessonGo = useCallback((dir) => {
     const target = Math.max(0, Math.min(lessonSteps.length - 1, (lesson.step ?? 0) + dir));
     lessonGoTo(target);
@@ -140,16 +164,16 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [gUndo, gRedo, gDeleteSelected, drawUndo, drawingStack, lesson.active, finishLesson]);
-  const handleHighlight = useCallback((nodeId, type) => setSimHighlight({ nodeId, type }), []);
+  const handleHighlight = useCallback((nodeId, type, tIdx) => setSimHighlight({ nodeId, type, tIdx: tIdx ?? null }), []);
   const openSim  = useCallback((s) => { setSim(s); setSimKey(k => k + 1); }, []);
-  const closeSim = useCallback(() => { setSim(null); setSimHighlight({ nodeId: null, type: null }); }, []);
+  const closeSim = useCallback(() => { setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null }); }, []);
 
   // ── Carregar exercício ──────────────────────────────────────────────────────
   const loadLevel = useCallback((lv) => {
     g.reset();
     lessonReset();
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
-    setResult(null); setSim(null); setSimHighlight({ nodeId: null, type: null });
+    setResult(null); setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     setSimWord(''); setFormalOpen(false); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
     setTestedWords([]);
@@ -197,7 +221,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   // ── Validar (bateria) = ★1 ──────────────────────────────────────────────────
   const validate = useCallback(() => {
     if (!level || level.impossible) return;
-    setSim(null); setSimHighlight({ nodeId: null, type: null });
+    setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     const res = g.validatePDA(level);
     setResult(res);
     if (res.ok) {

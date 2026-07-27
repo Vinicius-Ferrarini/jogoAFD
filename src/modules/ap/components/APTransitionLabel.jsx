@@ -2,7 +2,7 @@
 // Estilo JFLAP: cada tripla é "lê, desempilha ; empilha" (λ p/ vazio). Uma aresta
 // pode ter várias (não-determinismo). Clicar numa tripla edita; "＋" adiciona.
 // Em modo ERASE, clicar numa tripla a remove.
-// Memoizado: left/top/pointerEventsNone/selfLoop chegam como valores escalares
+// Memoizado: left/top/pointerEventsNone/labelSide chegam como valores escalares
 // (não um `style` inline recriado a cada render do pai), e onAddTriple recebe
 // from/to como argumentos em vez de vir pré-fechado por edge — ambos eram
 // necessários pra comparação do memo funcionar de verdade.
@@ -53,17 +53,33 @@ function TripleEditor({ initial, onCommit, onCancel }) {
 }
 
 function APTransitionLabel({
-  from, to, triples, left, top, pointerEventsNone, selfLoop, eraseMode, lessonActive,
+  from, to, triples, left, top, pointerEventsNone, labelSide, eraseMode, lessonActive,
   onAddTriple, onEditTriple, onRemoveTriple,
   autoEdit = null, onAutoEditConsumed,
+  highlightTIdx = null,
 }) {
   const [editing, setEditing] = useState(null); // null | 'new' | tIdx
+  // Setas de um par bidirecional (q0<->q1): o ponto-âncora (left/top) fica
+  // sobre a curva, mas o chip de triplas cresce verticalmente — sem ancorar
+  // pela borda externa (não o centro), cada chip cresceria pros dois lados e
+  // acabaria cobrindo a seta oposta (mesmo raciocínio do AFD, TransitionLabel.jsx).
+  const anchorTransform = labelSide === 'bottom' ? 'translate(-50%, 0%)'
+    : labelSide === 'top' ? 'translate(-50%, -100%)'
+    : undefined; // aresta simples: sem labelSide, mantém o centralizado default do CSS
   const style = {
     left: `${left}px`, top: `${top}px`,
     pointerEvents: pointerEventsNone ? 'none' : undefined,
-    ...(selfLoop && { transform: 'translate(-50%, -100%)' }),
+    ...(anchorTransform && { transform: anchorTransform }),
   };
   const addTripleHere = useCallback((tr) => onAddTriple(from, to, tr), [onAddTriple, from, to]);
+
+  // O "+" fica fixo do lado direito, na altura do chip mais PRÓXIMO DA SETA (não
+  // no fim da pilha) — mesmo padrão do AFD (ver TransitionLabel.jsx). Em
+  // label-top o bloco cresce pra cima e a seta fica embaixo dele → o chip mais
+  // próximo é o ÚLTIMO (ancora no bottom). Em label-bottom o bloco cresce pra
+  // baixo e a seta fica em cima → o chip mais próximo é o PRIMEIRO (ancora no
+  // top). Sem labelSide (aresta simples), mantém o default 'bottom'.
+  const addBtnAnchor = labelSide === 'bottom' ? 'top' : 'bottom';
 
   // Tripla recém-criada (seta nova, ainda "λ, λ ; λ"): abre o editor sozinha,
   // sem exigir que o aluno descubra que precisa clicar na tripla depois. O
@@ -99,7 +115,7 @@ function APTransitionLabel({
               onCommit={(tr) => { if (onEditTriple(t.tIdx, tr) !== false) setEditing(null); }}
               onCancel={() => setEditing(null)} />
           ) : (
-            <span key={t.tIdx} className="ap-tl-chip" onClick={e => clickChip(e, t)}>
+            <span key={t.tIdx} className={`ap-tl-chip${t.tIdx === highlightTIdx ? ' sim-active' : ''}`} onClick={e => clickChip(e, t)}>
               {show(t.read)}, {show(t.pop)} <b>;</b> {show(t.push)}
             </span>
           )
@@ -109,7 +125,7 @@ function APTransitionLabel({
             onCommit={(tr) => { if (addTripleHere(tr) !== false) setEditing(null); }}
             onCancel={() => setEditing(null)} />
         ) : (!eraseMode && !lessonActive) ? (
-          <button className="ap-tl-add" onClick={e => { e.stopPropagation(); setEditing('new'); }}
+          <button className={`ap-tl-add ap-tl-add-${addBtnAnchor}`} onClick={e => { e.stopPropagation(); setEditing('new'); }}
             title="Adicionar transição (não-determinismo)">＋</button>
         ) : null}
       </div>

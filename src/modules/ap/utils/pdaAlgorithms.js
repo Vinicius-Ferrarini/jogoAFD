@@ -82,15 +82,15 @@ export function deriveStackAlphabet(pda) {
 // Resultado: stack' = push + (stack sem topo, se pop≠λ); pos' = pos + (read≠λ ? 1:0).
 function stepConfigs(pda, word, q, pos, stack) {
   const out = [];
-  for (const t of pda.transitions) {
-    if (t.from !== q) continue;
-    if (t.read !== '' && (pos >= word.length || word[pos] !== t.read)) continue;
-    if (t.pop !== '' && stack[0] !== t.pop) continue; // topo precisa casar (pilha vazia não casa)
+  pda.transitions.forEach((t, tIdx) => {
+    if (t.from !== q) return;
+    if (t.read !== '' && (pos >= word.length || word[pos] !== t.read)) return;
+    if (t.pop !== '' && stack[0] !== t.pop) return; // topo precisa casar (pilha vazia não casa)
     const afterPop = t.pop === '' ? stack : stack.slice(1);
     const nStack = (t.push || '') + afterPop; // 1º char do push vira topo
     const nPos = pos + (t.read === '' ? 0 : 1);
-    out.push({ t, to: t.to, pos: nPos, stack: nStack });
-  }
+    out.push({ t, tIdx, to: t.to, pos: nPos, stack: nStack });
+  });
   return out;
 }
 
@@ -150,7 +150,7 @@ export function pdaAcceptingRun(pda, word, limits = DEFAULT_LIMITS) {
       parent.set(nKey, {
         prevKey: cur.key,
         step: {
-          from: cur.q, to: nx.to, read: nx.t.read, pop: nx.t.pop, push: nx.t.push,
+          from: cur.q, to: nx.to, read: nx.t.read, pop: nx.t.pop, push: nx.t.push, tIdx: nx.tIdx,
           posBefore: cur.pos, posAfter: nx.pos, stackBefore: cur.stack, stackAfter: nx.stack,
         },
       });
@@ -191,7 +191,7 @@ export function pdaRejectingTrace(pda, word, limits = DEFAULT_LIMITS) {
       parent.set(nKey, {
         prevKey: cur.key,
         step: {
-          from: cur.q, to: nx.to, read: nx.t.read, pop: nx.t.pop, push: nx.t.push,
+          from: cur.q, to: nx.to, read: nx.t.read, pop: nx.t.pop, push: nx.t.push, tIdx: nx.tIdx,
           posBefore: cur.pos, posAfter: nx.pos, stackBefore: cur.stack, stackAfter: nx.stack,
         },
       });

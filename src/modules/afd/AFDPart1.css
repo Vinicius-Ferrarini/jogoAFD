@@ -444,17 +444,26 @@ body { color: var(--text-main); }
 .sim-result-badge.rejected { background: #fecaca; color: #991b1b; }
 
 .sim-panel-close {
-  background: transparent;
-  border: none;
-  font-size: 20px;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #fecaca;
+  border: 2px solid #dc2626;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
   cursor: pointer;
-  color: #000;
+  color: #dc2626;
   font-weight: 900;
   transition: transform 0.1s;
-  margin-left: auto;
-  flex-shrink: 0;
+  z-index: 40;
+  box-shadow: 2px 2px 0 rgba(220,38,38,.4);
 }
-.sim-panel-close:hover { transform: scale(1.2); }
+.sim-panel-close:hover { transform: scale(1.1); background: #fca5a5; }
 
 .sim-panel-body {
   flex: 1;
@@ -822,6 +831,9 @@ body { color: var(--text-main); }
   text-align: left;
 }
 .node-ctx-item:hover { background: #fef08a; }
+.node-ctx-sep { height: 2px; margin: 2px 4px; background: #000; opacity: 0.15; }
+.node-ctx-delete { color: #dc2626; }
+.node-ctx-delete:hover { background: #fecaca; }
 .node-ctx-check {
   width: 13px; height: 13px;
   border: 2px solid #000;
@@ -830,6 +842,9 @@ body { color: var(--text-main); }
   flex-shrink: 0;
 }
 .node-ctx-check.on { background: #4ade80; }
+/* Emoji nativo é colorido por padrão (lixeira cinza/marrom) — grayscale+contrast
+   força ele a ficar preto sólido, igual aos outros ícones do menu. */
+.node-ctx-delete-icon { filter: grayscale(1) contrast(0) brightness(0); }
 
 /* ── Pulso de erro severo ── */
 @keyframes severePulse {

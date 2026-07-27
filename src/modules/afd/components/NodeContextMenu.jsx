@@ -16,7 +16,7 @@ function MenuItem({ label, checked, onClick }) {
 }
 
 export default function NodeContextMenu({
-  x, y, isInitial, isFinal, showFinal = true, onToggleInitial, onToggleFinal, onClose,
+  x, y, isInitial, isFinal, showFinal = true, onToggleInitial, onToggleFinal, onDelete, onClose,
 }) {
   const ref = useRef(null);
 
@@ -37,7 +37,8 @@ export default function NodeContextMenu({
 
   // Evita o menu nascer cortado pela borda direita/inferior da janela.
   const MENU_W = 168, MENU_H_1 = 40, MENU_H_2 = 74;
-  const menuH = showFinal ? MENU_H_2 : MENU_H_1;
+  const deleteH = onDelete ? 33 : 0; // item + separador
+  const menuH = (showFinal ? MENU_H_2 : MENU_H_1) + deleteH;
   const left = Math.min(x, window.innerWidth - MENU_W - 8);
   const top = Math.min(y, window.innerHeight - menuH - 8);
 
@@ -49,6 +50,14 @@ export default function NodeContextMenu({
       {showFinal && (
         <MenuItem label="Estado Final" checked={isFinal}
           onClick={() => { onToggleFinal(); onClose(); }} />
+      )}
+      {onDelete && (
+        <>
+          <div className="node-ctx-sep" />
+          <button className="node-ctx-item node-ctx-delete" onClick={() => { onDelete(); onClose(); }}>
+            <span className="node-ctx-delete-icon">🗑</span> Excluir
+          </button>
+        </>
       )}
     </div>,
     document.body
