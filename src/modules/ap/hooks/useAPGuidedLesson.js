@@ -44,6 +44,7 @@ export default function useAPGuidedLesson(level) {
     boardWords: lesson?.boardWords ?? [],
     boardStatus: cur?.boardStatus ?? null,
     highlightEdge: active ? (cur?.highlightEdge ?? null) : null,
+    highlightTIdx: active ? (cur?.highlightTIdx ?? null) : null,
     displayNodes, displayTransitions, reveal,
     goTo, finish, reset,
   };

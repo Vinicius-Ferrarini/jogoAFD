@@ -113,6 +113,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   const finishLesson = useCallback(() => {
     lessonFinishRaw();
     setFormalOpen(false);
+    setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     say('Aula encerrada! Agora monte o seu AP e clique em Validar. 💪', 'explicando');
     const saved = preLessonViewRef.current;
     if (saved) {
@@ -129,8 +130,12 @@ export default function APPart1({ onBack, progress, updateProgress }) {
       preLessonViewRef.current = null;
     }
   }, [lessonFinishRaw, say, setZoom]);
+  // Trocar de passo com uma simulação aberta (▶ de uma palavra da lousa) deixa
+  // o painel mostrando a computação de um grafo que não é mais o exibido —
+  // fecha a simulação ao navegar, igual ao startLesson.
   const lessonGo = useCallback((dir) => {
     const target = Math.max(0, Math.min(lessonSteps.length - 1, (lesson.step ?? 0) + dir));
+    setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     lessonGoTo(target);
     applyStep(lessonSteps[target]);
   }, [lesson.step, lessonSteps, lessonGoTo, applyStep]);
@@ -138,6 +143,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   const formalStart = lessonSteps.findIndex(s => s.phase === 'FORMAL');
   const goFormal = useCallback(() => {
     if (formalStart < 0) return;
+    setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     lessonGoTo(formalStart);
     applyStep(lessonSteps[formalStart]);
   }, [formalStart, lessonGoTo, lessonSteps, applyStep]);
@@ -336,6 +342,35 @@ export default function APPart1({ onBack, progress, updateProgress }) {
       ? prev : [...prev, { word, accepted: !!run }]));
   }, [level, simWord, g.studentPda, say, openSim]);
 
+  // ── "▶" da lousa (Modo Aula): simula uma palavra-alvo contra o grafo
+  // CONGELADO do passo atual da aula (viewTransitions/viewNodes), não contra o
+  // desenho do aluno — mesmo painel/mecânica do "Simular" de fora da aula.
+  const simulateLessonWord = useCallback((word) => {
+    // viewNodes.id é o id NUMÉRICO do JFLAP ("0","1"); o rótulo exibido no
+    // grafo (e o que o SimPanel deve narrar) é viewNodes.label ("q0","q1").
+    // Sem esse mapeamento, o painel mostraria "estado 0" em vez de "estado q0".
+    const lessonPda = {
+      states: viewNodes.map(n => ({ id: n.label, name: n.label, initial: n.isInitial })),
+      transitions: viewTransitions.map(t => ({
+        ...t,
+        from: viewNodes.find(n => n.id === t.from)?.label ?? t.from,
+        to:   viewNodes.find(n => n.id === t.to)?.label   ?? t.to,
+      })),
+      initial: viewNodes.find(n => n.isInitial)?.label ?? null,
+      stackBottom: 'Z',
+    };
+    const show = word === '' ? 'λ' : word;
+    const run = pdaAcceptingRun(lessonPda, word);
+    if (run) {
+      openSim({ run, word, accepted: true, title: `Simulação: "${show}"`,
+        message: 'Computação que ACEITA (a pilha esvazia):' });
+    } else {
+      const { run: trace, reason } = pdaRejectingTrace(lessonPda, word);
+      openSim({ run: trace, word, accepted: false, reason, title: `Simulação: "${show}" (rejeita)`,
+        message: 'Melhor tentativa do grafo até aqui (a pilha não esvazia):' });
+    }
+  }, [viewNodes, viewTransitions, openSim]);
+
   const stars = level ? (progress?.[`ap-${level.id}`]?.stars || 0) : 0;
 
   // ── Menu de exercícios (padrão AFD_1: TuringLab + grade + legenda) ──────────
@@ -468,6 +503,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
           draw={draw}
           lessonActive={lesson.active}
           highlightEdge={lesson.highlightEdge}
+          lessonHighlightTIdx={lesson.highlightTIdx}
           simHighlight={simHighlight}
           connectingSource={connectingSource}
           setConnectingSource={setConnectingSource}
@@ -502,6 +538,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
             onNext={() => lessonGo(1)}
             onPrev={() => lessonGo(-1)}
             onFinish={finishLesson}
+            onPlayWord={simulateLessonWord}
           />
         ) : level.impossible ? (
           <aside className="test-panel">

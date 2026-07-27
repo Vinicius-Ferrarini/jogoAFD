@@ -52,9 +52,10 @@
 }
 .ap-tl-chip:hover { background: #dbeafe; }
 .ap-transition-label.erasable .ap-tl-chip { border-color: #dc2626; color: #dc2626; box-shadow: 2px 2px 0 rgba(220,38,38,.35); }
-/* Tripla usada no passo atual da Simulação: pisca em amarelo pra guiar o olho
-   até a transição certa em meio às outras empilhadas no mesmo chip. */
-.ap-tl-chip.sim-active { animation: ap-tl-chip-blink 0.9s ease-in-out infinite; }
+/* Tripla usada no passo atual da Simulação (ou recém-adicionada na Aula):
+   pisca em amarelo só 2x pra guiar o olho, depois some (infinite cansa a vista
+   num passo que fica um tempo parado na tela). */
+.ap-tl-chip.sim-active { animation: ap-tl-chip-blink 0.6s ease-in-out 2; }
 @keyframes ap-tl-chip-blink {
   0%, 100% { background: #fff; box-shadow: 2px 2px 0 rgba(30,58,138,.35); }
   50% { background: #fde047; box-shadow: 0 0 0 3px #fbbf24, 2px 2px 0 rgba(30,58,138,.35); }

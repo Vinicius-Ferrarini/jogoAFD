@@ -3,7 +3,7 @@
 // nível pode sobrescrever com narração à mão via META.apLesson (flagship).
 // Estrutura da aula: FASE 1 (constrói o grafo passo a passo) → FASE 2 (descrição
 // formal baseada no grafo pronto). Ver PLAN_MODO_AULA_AP.md.
-import { pdaAccepts, validateStudentPda } from './pdaAlgorithms.js';
+import { pdaAccepts, pdaAcceptingRun, validateStudentPda } from './pdaAlgorithms.js';
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
@@ -95,6 +95,95 @@ function pruneToEnunciado(sol, battery) {
   return keep;
 }
 
+// Reordena T (mantendo o CONJUNTO intacto — só muda a ordem de exibição da
+// FASE 1) para seguir a lógica real de construção do aluno: primeiro as
+// transições que fazem a MENOR palavra-alvo funcionar, depois só as que faltam
+// para a 2ª menor, etc. — em vez da ordem arbitrária em que saíram do .jff.
+// Dentro de cada "leva" nova, ordena pela ordem cronológica em que a transição
+// é de fato usada ao rodar a palavra (1º uso primeiro), não por índice no
+// gabarito — senão "desempilha no b" apareceria antes de "empilha no a".
+// Busca por combinação (força bruta) — só seguro p/ poucas transições restantes
+// por palavra; win.length é pequeno nos níveis onde isso está habilitado.
+const MAX_COMBO_SIZE = 8;
+function smallestAddition(includedPda, notIncluded, word) {
+  for (let size = 1; size <= Math.min(MAX_COMBO_SIZE, notIncluded.length); size++) {
+    const combos = combinations(notIncluded, size);
+    for (const combo of combos) {
+      const candidate = { ...includedPda, transitions: [...includedPda.transitions, ...combo.map((x) => x.t)] };
+      if (pdaAccepts(candidate, word)) return combo;
+    }
+  }
+  return null;
+}
+function* combinations(arr, k) {
+  if (k === 0) { yield []; return; }
+  for (let i = 0; i <= arr.length - k; i++) {
+    for (const rest of combinations(arr.slice(i + 1), k - 1)) yield [arr[i], ...rest];
+  }
+}
+// Retorna { order: T reordenado (mesmo conjunto, nova ordem de exibição),
+// groups: [{ word, transitions }] — cada grupo é a "leva" de transições novas
+// que fez aquela palavra-alvo passar a ser aceita (na ordem de introdução).
+// Sobras (transições não atreladas a nenhuma boardWord) viram groups[].word = null.
+function orderByTargetWord(sol, T, boardWords) {
+  let included = [];
+  let remaining = T.map((t, i) => ({ t, i }));
+  const order = [];
+  const groups = [];
+  const pdaOf = (transitions) => ({ states: sol.states, transitions, initial: sol.initial, stackBottom: 'Z' });
+
+  for (const w of boardWords) {
+    if (pdaAccepts(pdaOf(included), w)) continue; // já funciona com o que já foi incluído
+    const add = smallestAddition(pdaOf(included), remaining, w);
+    if (!add) continue; // não deveria acontecer (T já garante 100% da bateria) — mantém o resto na ordem original no fim
+
+    // Dentro dessa leva nova, ordena pela 1ª vez que cada transição é usada na
+    // computação real da palavra (não pelo índice no gabarito).
+    const fullSet = [...included, ...add.map((x) => x.t)];
+    const run = pdaAcceptingRun(pdaOf(fullSet), w) ?? [];
+    const seen = new Set();
+    const chronological = [];
+    for (const step of run) {
+      const entry = add.find((x) => x.t === fullSet[step.tIdx]);
+      if (entry && !seen.has(entry.i)) { seen.add(entry.i); chronological.push(entry); }
+    }
+    for (const entry of add) if (!seen.has(entry.i)) chronological.push(entry);
+
+    for (const { t, i } of chronological) { included.push(t); order.push(i); }
+    groups.push({ word: w, transitions: chronological.map((e) => e.t) });
+    remaining = remaining.filter((x) => !add.includes(x));
+  }
+  if (remaining.length) {
+    for (const { t, i } of remaining) { included.push(t); order.push(i); }
+    // Sobras (não são "a peça que falta" p/ nenhuma boardWord sozinhas — em
+    // geral não-determinismo redundante do gabarito cobrindo casos que a
+    // lista curta de palavras não exercita, ex.: L17). Anexa ao ÚLTIMO grupo
+    // de palavra já criado (sem intro própria) em vez de virar um grupo
+    // isolado — mantém tudo dentro da lógica "por palavra". Só cai no grupo
+    // isolado (word: null) se nenhuma palavra gerou grupo algum (não deveria
+    // acontecer em nenhum nível real, mas evita perder transições).
+    const lastWordGroup = [...groups].reverse().find((g) => g.word != null);
+    if (lastWordGroup) lastWordGroup.transitions.push(...remaining.map((e) => e.t));
+    else groups.push({ word: null, transitions: remaining.map((e) => e.t) });
+  }
+  return { order: order.map((i) => T[i]), groups };
+}
+
+// Frase de contexto ANTES de entrar as transições de uma palavra-alvo — conta
+// o "porquê" separado do "o quê" (que vem no(s) passo(s) seguinte(s) já com o
+// grafo mudando). λ ganha uma explicação própria (não é "a próxima palavra",
+// é a palavra vazia — merece dizer por que ela exige zerar a pilha sem ler).
+function introMessage(word, boardWords) {
+  if (word === '') {
+    return 'Como a linguagem aceita a palavra vazia (λ), precisa de uma transição de λ que tire o fundo da pilha sem ler nada.';
+  }
+  const isFirst = boardWords.indexOf(word) === (boardWords.includes('') ? 1 : 0);
+  const show = `"${word}"`;
+  return isFirst
+    ? `Agora vamos para a palavra ${show}.`
+    : `Próxima palavra: ${show}. Só falta adicionar o que ainda não existe no grafo.`;
+}
+
 export function buildApLesson(level, battery) {
   const sol = level.solution;
   const states = sol.states;
@@ -130,20 +219,40 @@ export function buildApLesson(level, battery) {
     prof: { message: `Comece pelos estados. ${initLabel} é o inicial (▶). Sem estado final — basta esvaziar a pilha.`, mood: 'explicando' },
   });
 
+  // Ordem de exibição segue a lógica "menor palavra primeiro" (ver
+  // orderByTargetWord) em vez da ordem arbitrária do .jff — só o DESENHO muda;
+  // o conjunto T e os índices δ da FASE 2 continuam intocados. Cada grupo de
+  // transições ganha um passo de CONTEXTO antes ("vamos para a palavra X")
+  // sem mexer no grafo — o aluno lê o porquê primeiro, sem ver o grafo mudar
+  // ao mesmo tempo (2 coisas simultâneas = confuso), só depois entra a(s)
+  // transição(ões) daquela palavra.
   let prevAcc = boardWords.map(() => false);
-  T.forEach((t, i) => {
-    const pda = pdaFrom(sol, T.slice(0, i + 1));
-    const { acc, status } = statusFor(pda, prevAcc);
-    prevAcc = acc;
-    const d = describe(t, states);
-    steps.push({
-      phase: 'GRAPH',
-      stateUpdate: { nodes: fullNodes, transitions: T.slice(0, i + 1) },
-      boardStatus: status,
-      highlightEdge: { from: t.from, to: t.to },
-      prof: { message: `Transição ${i + 1}: ${d.reading}, ${d.act} (${d.move}).`, mood: 'explicando' },
-    });
-  });
+  const { groups } = orderByTargetWord(sol, T, boardWords);
+  let acc = [];
+  for (const { word, transitions } of groups) {
+    if (word != null) {
+      const { status } = statusFor(pdaFrom(sol, acc), prevAcc);
+      steps.push({
+        phase: 'GRAPH', stateUpdate: { nodes: fullNodes, transitions: acc.slice() },
+        boardStatus: status,
+        prof: { message: introMessage(word, boardWords), mood: 'explicando' },
+      });
+    }
+    for (const t of transitions) {
+      acc = [...acc, t];
+      const { acc: accFlags, status } = statusFor(pdaFrom(sol, acc), prevAcc);
+      prevAcc = accFlags;
+      const d = describe(t, states);
+      steps.push({
+        phase: 'GRAPH',
+        stateUpdate: { nodes: fullNodes, transitions: acc.slice() },
+        boardStatus: status,
+        highlightEdge: { from: t.from, to: t.to },
+        highlightTIdx: acc.length - 1,
+        prof: { message: `${cap(d.reading)}, ${d.act} (${d.move}).`, mood: 'explicando' },
+      });
+    }
+  }
 
   steps.push({
     phase: 'GRAPH', stateUpdate: { nodes: fullNodes, transitions: T },

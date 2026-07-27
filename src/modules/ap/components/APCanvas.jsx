@@ -47,7 +47,7 @@ export default function APCanvas({
   connectingSource, setConnectingSource,
   addNode, moveNode, toggleInitial, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
-  draw, lessonActive, highlightEdge,
+  draw, lessonActive, highlightEdge, lessonHighlightTIdx = null,
   selectedNodes = [], setSelectedNodes,
   selectionBox, setSelectionBox,
   guidedLessonStep = null,
@@ -579,7 +579,7 @@ export default function APCanvas({
                 onRemoveTriple={removeTriple}
                 autoEdit={autoEditKey && autoEditKey.from === er.from && autoEditKey.to === er.to ? autoEditKey.tIdx : null}
                 onAutoEditConsumed={clearAutoEditKey}
-                highlightTIdx={simHighlight?.tIdx ?? null}
+                highlightTIdx={simHighlight?.tIdx ?? lessonHighlightTIdx ?? null}
               />
             ))}
 
