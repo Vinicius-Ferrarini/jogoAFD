@@ -31,6 +31,7 @@ export default function APFooterDeck({
     ? [...CARDS_BASE, CARD_FINAL, ...CARDS_TAIL]
     : [...CARDS_BASE, ...CARDS_TAIL];
   const dragRef = useRef(null);
+  const justDraggedRef = useRef(false);
   // O Maurílio do rodapé (canto) sempre usa o sprite sério — mesmo falando,
   // não troca de expressão (diferente do Modo Aula, que usa outro sprite).
   const profImg = imgSerio;
@@ -86,7 +87,11 @@ export default function APFooterDeck({
             className={`card ${c.cls} ${mode === c.action ? 'selected-card' : ''} ${locked ? 'card-locked' : ''}`}
             style={locked ? { opacity: 0.4, cursor: 'not-allowed', filter: 'grayscale(0.6)' } : undefined}
             title={locked ? 'Crie um estado primeiro (◯ Novo Estado)' : undefined}
-            onClick={() => { if (locked) return; onPick(mode === c.action ? 'IDLE' : c.action); }}
+            onClick={() => {
+              if (locked) return;
+              if (justDraggedRef.current) { justDraggedRef.current = false; return; }
+              onPick(mode === c.action ? 'IDLE' : c.action);
+            }}
             onPointerDown={(e) => {
               if (c.action !== 'ADD_NODE') return;
               dragRef.current = { sx: e.clientX, sy: e.clientY, dragging: false };
@@ -102,7 +107,11 @@ export default function APFooterDeck({
               if (!dragRef.current) return;
               const was = dragRef.current.dragging;
               dragRef.current = null;
-              if (was) { e.preventDefault(); onNodeDrop?.(e.clientX, e.clientY); }
+              if (was) {
+                e.preventDefault();
+                justDraggedRef.current = true;
+                onNodeDrop?.(e.clientX, e.clientY);
+              }
             }}
             onPointerCancel={() => {
               if (dragRef.current?.dragging) onNodeDragCancel?.();

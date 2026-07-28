@@ -41,7 +41,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   const [prof, setProf]     = useState({ message: '', mood: 'serio' });
   const [result, setResult] = useState(null);
   const [sim, setSim]       = useState(null);
-  const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null, tIdx: null });
+  const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null, tIdx: null, seq: 0 });
   const [simWord, setSimWord] = useState('');
   const [simKey, setSimKey]   = useState(0);
   const [testedWords, setTestedWords] = useState([]);
@@ -170,9 +170,10 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [gUndo, gRedo, gDeleteSelected, drawUndo, drawingStack, lesson.active, finishLesson]);
-  const handleHighlight = useCallback((nodeId, type, tIdx) => setSimHighlight({ nodeId, type, tIdx: tIdx ?? null }), []);
+  const handleHighlight = useCallback((nodeId, type, tIdx) =>
+    setSimHighlight(prev => ({ nodeId, type, tIdx: tIdx ?? null, seq: prev.seq + 1 })), []);
   const openSim  = useCallback((s) => { setSim(s); setSimKey(k => k + 1); }, []);
-  const closeSim = useCallback(() => { setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null }); }, []);
+  const closeSim = useCallback(() => { setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null, seq: 0 }); }, []);
 
   // ── Carregar exercício ──────────────────────────────────────────────────────
   const loadLevel = useCallback((lv) => {

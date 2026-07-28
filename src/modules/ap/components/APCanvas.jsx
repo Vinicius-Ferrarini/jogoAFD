@@ -580,6 +580,7 @@ export default function APCanvas({
                 autoEdit={autoEditKey && autoEditKey.from === er.from && autoEditKey.to === er.to ? autoEditKey.tIdx : null}
                 onAutoEditConsumed={clearAutoEditKey}
                 highlightTIdx={simHighlight?.tIdx ?? lessonHighlightTIdx ?? null}
+                highlightSeq={simHighlight?.tIdx != null ? simHighlight.seq : null}
               />
             ))}
 

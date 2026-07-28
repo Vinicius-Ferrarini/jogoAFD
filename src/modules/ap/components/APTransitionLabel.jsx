@@ -56,7 +56,7 @@ function APTransitionLabel({
   from, to, triples, left, top, pointerEventsNone, labelSide, eraseMode, lessonActive,
   onAddTriple, onEditTriple, onRemoveTriple,
   autoEdit = null, onAutoEditConsumed,
-  highlightTIdx = null,
+  highlightTIdx = null, highlightSeq = null,
 }) {
   const [editing, setEditing] = useState(null); // null | 'new' | tIdx
   // Setas de um par bidirecional (q0<->q1): o ponto-âncora (left/top) fica
@@ -115,7 +115,8 @@ function APTransitionLabel({
               onCommit={(tr) => { if (onEditTriple(t.tIdx, tr) !== false) setEditing(null); }}
               onCancel={() => setEditing(null)} />
           ) : (
-            <span key={t.tIdx} className={`ap-tl-chip${t.tIdx === highlightTIdx ? ' sim-active' : ''}`} onClick={e => clickChip(e, t)}>
+            <span key={t.tIdx === highlightTIdx ? `${t.tIdx}-${highlightSeq}` : t.tIdx}
+              className={`ap-tl-chip${t.tIdx === highlightTIdx ? ' sim-active' : ''}`} onClick={e => clickChip(e, t)}>
               {show(t.read)}, {show(t.pop)} <b>;</b> {show(t.push)}
             </span>
           )
