@@ -35,7 +35,8 @@
       "Bash(node split_afd.cjs)",
       "Bash(node split_ap.cjs)",
       "Bash(node --input-type=module)",
-      "Bash(node migrador_afd.js)"
+      "Bash(node migrador_afd.js)",
+      "Bash(node scripts/migrador_afd.js)"
     ],
     "additionalDirectories": [
       "c:\\Users\\sg\\.claude\\projects\\c--github-jogoAFD\\memory",

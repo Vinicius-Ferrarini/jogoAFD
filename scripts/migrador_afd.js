@@ -11,8 +11,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
-const XML_DIR = path.join(__dirname, 'gabaritos_jflap', 'afd');
-const OUT_DIR = path.join(__dirname, 'src', 'levels_data', 'afd');
+const ROOT_DIR = path.join(__dirname, '..');
+const XML_DIR = path.join(ROOT_DIR, 'gabaritos_jflap', 'afd');
+const OUT_DIR = path.join(ROOT_DIR, 'src', 'levels_data', 'afd');
 
 // Mapeamento: nome-do-arquivo-JFLAP → chave em LEVEL_GRAPHS / id do nível
 // L35 foi dividido em dois exercícios no jogo:
