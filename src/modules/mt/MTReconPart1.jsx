@@ -82,18 +82,43 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
     setProf(st.prof ?? { message: '', mood: 'serio' });
   }, []);
 
+  // Posição/zoom do canvas do ALUNO antes de entrar na aula — o Modo Aula
+  // reenquadra a câmera pro grafo de cada passo (auto-fit em MTCanvas.jsx),
+  // então sem isso, ao sair, a tela ficava onde o último passo da aula deixou
+  // (quase sempre nada a ver com o que o aluno estava desenhando). Mesmo
+  // padrão do AP (ver preLessonViewRef em APPart1.jsx).
+  const preLessonViewRef = useRef(null);
   const startLesson = useCallback(() => {
     if (!lesson.hasLesson) return;
+    preLessonViewRef.current = {
+      scrollLeft: viewportRef.current?.scrollLeft ?? 0,
+      scrollTop: viewportRef.current?.scrollTop ?? 0,
+      zoom,
+    };
     setMode('IDLE'); setConnectingSource(null); setResult(null);
     setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
     lesson.goTo(0);
     applyStep(lesson.steps[0]);
-  }, [lesson, applyStep]);
+  }, [lesson, applyStep, zoom]);
 
   const finishLesson = useCallback(() => {
     lesson.finish();
     say('Aula encerrada! Agora monte a sua MT e clique em Validar. 💪', 'explicando');
-  }, [lesson, say]);
+    const saved = preLessonViewRef.current;
+    if (saved) {
+      setZoom(saved.zoom);
+      // Aguarda o próximo frame (canvas volta a exibir o grafo do aluno antes
+      // do scroll ser restaurado, senão o navegador clampa scrollLeft/Top ao
+      // tamanho do conteúdo ainda em transição).
+      requestAnimationFrame(() => {
+        if (viewportRef.current) {
+          viewportRef.current.scrollLeft = saved.scrollLeft;
+          viewportRef.current.scrollTop = saved.scrollTop;
+        }
+      });
+      preLessonViewRef.current = null;
+    }
+  }, [lesson, say, setZoom]);
 
   const lessonGo = useCallback((dir) => {
     if (!lesson.active) return;
