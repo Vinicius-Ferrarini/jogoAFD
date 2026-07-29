@@ -9,13 +9,15 @@ import '../afd/components/TestPanel.css';
 import '../ap/APPart1.css';
 import { SvgStars, DifficultyLegend } from '../afd/SvgStar';
 import EndScreen from '../afd/components/EndScreen';
+import GameHeader from '../afd/components/GameHeader';
 import MTCanvas from './components/MTCanvas';
 import APFooterDeck from '../ap/components/APFooterDeck';
 import useTMGraph from './hooks/useTMGraph';
 import useMTGuidedLesson from './hooks/useMTGuidedLesson';
 import useAPDrawing from '../ap/hooks/useAPDrawing';
+import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js';
 import { MT_LEVELS } from '../../levels_data/mt/index.js';
-import { fuzzTMTransducer, simulateTM, BLANK } from './utils/tmAlgorithms';
+import { fuzzTMTransducer, simulateTM, extractTapeOutput, BLANK } from './utils/tmAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 
 // Estado inicial vazio do formulário da descrição formal (7-tupla)
@@ -43,7 +45,9 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const [inputError, setInputError]           = useState(null); // erro inline no campo de teste de palavra
   const canvasRef      = useRef(null);
   const innerCanvasRef = useRef(null);
+  const viewportRef    = useRef(null);
   const formalRef = useRef(null); // container rolável do painel formal (auto-scroll)
+  const noopRef = useRef(false);
 
   // ── Aula Guiada ──────────────────────────────────────────────────────────────
   // Storyboard frame a frame: cada passo é um objeto independente (grafo + fita).
@@ -52,6 +56,20 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
 
   const g    = useTMGraph({ showToast, selectedNodes, setSelectedNodes });
   const draw = useAPDrawing(innerCanvasRef);
+
+  // Canvas fixo (8000×8000px) + zoom real: mesmo motor do AP/AFD/MTRecon.
+  const { zoom, setZoom, resetZoom } = useCanvasState({
+    isDrawingUnlocked: true,
+    setInteractionMode: () => {},
+    squashNextHistoryRef: noopRef,
+    setConnectingSource,
+    setSelectedSymbolCard: () => {},
+    setSelectedNodes,
+    tela: screen === 'GAME' ? 'JOGO' : screen,
+    isSidebarOpen: formalMode || lesson.phase === 'FORMAL',
+    canvasRef,
+    viewportRef,
+  });
 
   // O canvas exibe o grafo da aula (overlay) ou o grafo real do aluno
   const viewNodes       = lesson.active ? lesson.displayNodes       : g.nodes;
@@ -143,8 +161,9 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
     setSelectedNodes([]); setSelectionBox(null);
     setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
     draw.resetDrawings();
+    resetZoom();
     say(`Monte a MT Transdutora que ${lv.description.toLowerCase()} e clique em Validar!`, 'explicando');
-  }, [g, lesson, draw, say]);
+  }, [g, lesson, draw, say, resetZoom]);
 
   const goLevel = useCallback((dir) => {
     const idx = MT_LEVELS.findIndex(l => l.id === level?.id);
@@ -164,9 +183,9 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
     const r = outer.getBoundingClientRect();
     if (clientX < r.left || clientX > r.right || clientY < r.top || clientY > r.bottom) return;
     const ri = inner.getBoundingClientRect();
-    const x = ((clientX - ri.left) / ri.width)  * 100;
-    const y = ((clientY - ri.top)  / ri.height) * 100;
-    g.addNode(Math.max(3, Math.min(97, x)), Math.max(6, Math.min(94, y)));
+    const x = ((clientX - ri.left) / ri.width)  * INNER_W;
+    const y = ((clientY - ri.top)  / ri.height) * INNER_H;
+    g.addNode(Math.max(5, Math.min(INNER_W - 5, x)), Math.max(5, Math.min(INNER_H - 5, y)));
   }, [g]);
   const handleDeckCancel = useCallback(() => setDeckGhost(null), []);
 
@@ -195,13 +214,10 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
     } else {
       // Simulação contra o grafo atual do aluno
       const mtGraph = { states: g.nodes, transitions: g.transitions };
-      const { status, tape } = simulateTM(mtGraph, word);
+      const { status, tape } = simulateTM(mtGraph, word, 2000, level.startMarker ?? null);
       let output = '';
       if (status === 'ACCEPTED') {
-        let lo = 0, hi = tape.length - 1;
-        while (lo <= hi && tape[lo] === BLANK) lo++;
-        while (hi >= lo && tape[hi] === BLANK) hi--;
-        output = tape.slice(lo, hi + 1).join('') || BLANK;
+        output = extractTapeOutput(tape, level.startMarker ?? level.outputMarker ?? null) || BLANK;
       }
       setDesenhoTests(prev => [...prev, { word, status, output }]);
     }
@@ -341,29 +357,25 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         <div className="deck-drag-ghost" style={{ left: deckGhost.x, top: deckGhost.y }} />,
         document.body)}
 
-      {/* Header */}
-      <div className="ap-header">
-        <button className="back-btn" onClick={() => { lesson.finish(); setScreen('MENU'); }}>⬅ Voltar</button>
-        <div className="ap-header-center">
-          <span className="ap-mission-label">Objetivo</span>
-          <div className="ap-mission-formula" title={level.description}
-            style={{ fontSize: 12, maxWidth: 340, whiteSpace: 'normal', lineHeight: 1.2, wordWrap: 'break-word' }}>
-            {level.description}
-          </div>
-          <button className="ap-formal-toggle" disabled={!lesson.hasLesson}
-            onClick={lesson.active ? finishLesson : startLesson}>
-            {lesson.active ? '✕ Sair da Aula' : '👨‍🏫 Assistir Aula'}
-          </button>
-        </div>
-        <div className="ap-header-right">
-          <div className="ap-header-nav">
-            <button onClick={() => goLevel(-1)} title="Fase anterior">◀</button>
-            <span className="ap-level-label" style={{ background: DIFF_COLOR[level.level] }}>{level.label}</span>
-            <button onClick={() => goLevel(1)} title="Próxima fase">▶</button>
-          </div>
-          <div className="ap-header-stars">{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
-        </div>
-      </div>
+      {/* Header (compartilhado com AFD/AP/MTRecon — mesmo componente/estilo/motor) */}
+      <GameHeader
+        objective={level.description}
+        label={level.label}
+        diffColor={DIFF_COLOR[level.level] ?? '#fff'}
+        stars={stars}
+        starsMax={3}
+        isFirst={mtIdx === 0}
+        isLast={mtIdx === MT_LEVELS.length - 1}
+        toggleSidebar={() => setFormalMode(o => !o)}
+        onBack={() => { lesson.finish(); setScreen('MENU'); }}
+        onPrevLevel={() => goLevel(-1)}
+        onNextLevel={() => goLevel(1)}
+        hasLesson={lesson.hasLesson}
+        lessonActive={lesson.active}
+        lessonDisabled={!lesson.hasLesson}
+        onStartLesson={startLesson}
+        onCloseLesson={finishLesson}
+      />
 
       {/* Banner de erro estrutural (vermelho, no topo — como no AFD) */}
       {validationError && (
@@ -458,6 +470,9 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         <MTCanvas
           canvasRef={canvasRef}
           innerCanvasRef={innerCanvasRef}
+          viewportRef={viewportRef}
+          zoom={zoom}
+          setZoom={setZoom}
           nodes={viewNodes}
           transitions={viewTransitions}
           mode={mode}
@@ -483,6 +498,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
           setSelectedNodes={setSelectedNodes}
           selectionBox={selectionBox}
           setSelectionBox={setSelectionBox}
+          guidedLessonStep={lesson.step}
         />
 
         {/* Painel direito: modo aula ou teste */}

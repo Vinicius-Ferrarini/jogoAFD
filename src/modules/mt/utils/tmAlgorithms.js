@@ -8,15 +8,33 @@
 export const BLANK = '□';
 export const MOVE_DELTA = { R: 1, L: -1, S: 0 };
 
+// Extrai a saída "visível" de uma fita final: remove os brancos de borda e,
+// se a MT usa um marcador de controle na 1ª célula — seja porque foi inserido
+// de fora (level.startMarker) ou porque a própria MT o escreve sozinha ao
+// iniciar (level.outputMarker, ex.: '@') — remove essa célula também. O aluno
+// vê só o resultado da transformação, não o marcador de controle interno.
+export function extractTapeOutput(tape, marker = null) {
+  let lo = 0, hi = tape.length - 1;
+  while (lo <= hi && tape[lo] === BLANK) lo++;
+  while (hi >= lo && tape[hi] === BLANK) hi--;
+  if (marker != null && tape[lo] === marker) lo++;
+  return tape.slice(lo, hi + 1).join('');
+}
+
 // ── Simulador principal ───────────────────────────────────────────────────────
-export function simulateTM(graph, inputWord, maxSteps = 2000) {
+// startMarker: símbolo opcional escrito ANTES da palavra (ex.: '<'), para MTs
+// que dependem de um marcador explícito de início-de-fita (convenção usada em
+// parte dos gabaritos importados do professor) — o cabeçote começa sobre ele,
+// não sobre a palavra.
+export function simulateTM(graph, inputWord, maxSteps = 2000, startMarker = null) {
   const stateMap = new Map((graph.states ?? []).map(s => [s.id, s]));
   const initial  = (graph.states ?? []).find(s => s.isInitial);
   if (!initial) return { status: 'REJECTED', tape: [BLANK], finalState: null, steps: 0 };
 
-  // Fita: dois brancos de padding + palavra + dois brancos de padding
-  const tape = [BLANK, BLANK, ...(inputWord === '' ? [] : inputWord.split('')), BLANK, BLANK];
-  let head    = 2;           // índice do primeiro caractere da palavra (ou branco se vazia)
+  // Fita: dois brancos de padding + [marcador opcional] + palavra + dois brancos
+  const tape = [BLANK, BLANK, ...(startMarker != null ? [startMarker] : []),
+    ...(inputWord === '' ? [] : inputWord.split('')), BLANK, BLANK];
+  let head    = 2;           // índice do marcador (se houver) ou 1º caractere da palavra
   let stateId = initial.id;
   let steps   = 0;
 
@@ -64,9 +82,26 @@ export function fuzzTMTransducer(graph, level) {
   // final (isFinal), independentemente do conteúdo escrito na fita — coerente
   // com a natureza transdutora (a transformação é verificada na aba Transdução).
   for (const word of words) {
-    const { status } = simulateTM(graph, word);
+    const { status } = simulateTM(graph, word, 2000, level.startMarker ?? null);
     if (status === 'LOOP')     return { ok: false, counterexample: word, reason: 'loop' };
     if (status !== 'ACCEPTED') return { ok: false, counterexample: word, reason: 'rejected' };
+  }
+  return { ok: true };
+}
+
+// ── Validador de MT Reconhecedora ─────────────────────────────────────────────
+// Recebe a MT do aluno e o objeto de nível. Aceita se para em estado final —
+// o conteúdo da fita ao final NÃO importa (diferente da transdutora). Compara
+// contra level.acceptedWords/rejectedWords (mesmo padrão de bateria do AFD/AP).
+export function fuzzTMRecognizer(graph, level) {
+  for (const word of level.acceptedWords ?? []) {
+    const { status } = simulateTM(graph, word);
+    if (status === 'LOOP')     return { ok: false, counterexample: word, reason: 'loop', expectedAccept: true };
+    if (status !== 'ACCEPTED') return { ok: false, counterexample: word, reason: 'rejected', expectedAccept: true };
+  }
+  for (const word of level.rejectedWords ?? []) {
+    const { status } = simulateTM(graph, word);
+    if (status === 'ACCEPTED') return { ok: false, counterexample: word, reason: 'wrongly-accepted', expectedAccept: false };
   }
   return { ok: true };
 }
@@ -74,12 +109,13 @@ export function fuzzTMTransducer(graph, level) {
 // ── Simulador passo a passo (para animação da aula guiada) ──────────────────
 // Retorna um array de configs { tape, head, stateId, step, status? }.
 // status só existe na última config: 'ACCEPTED' | 'REJECTED' | 'LOOP'.
-export function simulateTMSteps(graph, inputWord, maxSteps = 80) {
+export function simulateTMSteps(graph, inputWord, maxSteps = 80, startMarker = null) {
   const stateMap = new Map((graph.states ?? []).map(s => [s.id, s]));
   const initial  = (graph.states ?? []).find(s => s.isInitial);
   if (!initial) return [{ tape: [BLANK], head: 0, stateId: null, step: 0, status: 'REJECTED' }];
 
-  const tape = [BLANK, BLANK, ...(inputWord === '' ? [] : inputWord.split('')), BLANK, BLANK];
+  const tape = [BLANK, BLANK, ...(startMarker != null ? [startMarker] : []),
+    ...(inputWord === '' ? [] : inputWord.split('')), BLANK, BLANK];
   let head    = 2;
   let stateId = initial.id;
   const configs = [{ tape: [...tape], head, stateId, step: 0 }];
@@ -107,18 +143,52 @@ export function simulateTMSteps(graph, inputWord, maxSteps = 80) {
   return configs;
 }
 
-// ── Parser JFLAP (MT multi-fita, formato block) — para aula guiada futura ────
-// Converte XML JFLAP (tipo "turing") no mesmo formato de graph acima.
+// ── Parser JFLAP (MT single-fita) — importação de gabaritos (.jff/.xml) ──────
+// Converte XML JFLAP (tipo "turing" ou "turingbb") no mesmo formato de graph
+// acima. JFLAP usa <state> para MT normal e <block> para "Building Blocks"
+// (type turingbb) — na prática ambos são a mesma estrutura plana de
+// estados+transições (sem submáquinas aninhadas de verdade); <block> só
+// acrescenta um <tag>MachineN</tag> decorativo que é ignorado aqui.
+// Coordenadas: JFLAP salva x/y em pixels absolutos do canvas de edição; o
+// jogo usa um canvas fixo de 8000×8000px (mesmo motor do AP/AFD). Escala FIXA
+// e proporcional (não estica cada eixo até preencher o canvas — ver mesmo
+// raciocínio/calibração em buildApLesson.js `layout()`): um grafo pequeno no
+// JFLAP (poucas centenas de px de span) deve continuar com estados PRÓXIMOS
+// no canvas do jogo, do mesmo jeito que AP/AFD ficam. Só encolhe (nunca
+// estica além de FIXED_SCALE) se o grafo for grande demais pra caber.
 export function parseJffTM(xml) {
   const doc = new DOMParser().parseFromString(xml, 'text/xml');
 
-  const states = [...doc.querySelectorAll('block')].map(b => ({
+  const stateEls = [...doc.querySelectorAll('state'), ...doc.querySelectorAll('block')];
+  const rawStates = stateEls.map(b => ({
     id:        b.getAttribute('id') ?? '',
     name:      b.getAttribute('name') ?? '',
     x:         parseFloat(b.querySelector('x')?.textContent ?? '0'),
     y:         parseFloat(b.querySelector('y')?.textContent ?? '0'),
     isInitial: !!b.querySelector('initial'),
     isFinal:   !!b.querySelector('final'),
+  }));
+
+  const INNER_W = 8000, INNER_H = 8000;
+  const FIXED_SCALE = 1.8;
+  const xs = rawStates.map(s => s.x), ys = rawStates.map(s => s.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const spanX = maxX - minX, spanY = maxY - minY;
+  const PADX = INNER_W * 0.14, PADY = INNER_H * 0.20;
+  const usableW = INNER_W - 2 * PADX, usableH = INNER_H - 2 * PADY;
+  const kx = spanX > 0 ? usableW / spanX : Infinity;
+  const ky = spanY > 0 ? usableH / spanY : Infinity;
+  let k = Math.min(FIXED_SCALE, kx, ky);
+  if (!Number.isFinite(k)) k = FIXED_SCALE;
+  const offX = (INNER_W - spanX * k) / 2, offY = (INNER_H - spanY * k) / 2;
+  const normX = (v) => Math.round(spanX > 0 ? offX + (v - minX) * k : INNER_W / 2);
+  const normY = (v) => Math.round(spanY > 0 ? offY + (v - minY) * k : INNER_H / 2);
+
+  const states = rawStates.map(s => ({
+    ...s,
+    x: normX(s.x),
+    y: normY(s.y),
   }));
 
   // Transições: read/write vazios mantidos como '' (blank) — simulateTM já trata '' → □

@@ -1,8 +1,8 @@
 // Estados (revelados incrementalmente). q0→q1 convertem; q2 varre de volta; q3 final.
-const Q0 = { uid: 'q0', id: 'q0', label: 'q0', x: 10, y: 50, isInitial: true,  isFinal: false };
-const Q1 = { uid: 'q1', id: 'q1', label: 'q1', x: 37, y: 50, isInitial: false, isFinal: false };
-const Q2 = { uid: 'q2', id: 'q2', label: 'q2', x: 63, y: 50, isInitial: false, isFinal: false };
-const Q3 = { uid: 'q3', id: 'q3', label: 'q3', x: 88, y: 50, isInitial: false, isFinal: true  };
+const Q0 = { uid: 'q0', id: 'q0', label: 'q0', x: 3493, y: 3932, isInitial: true,  isFinal: false };
+const Q1 = { uid: 'q1', id: 'q1', label: 'q1', x: 3868, y: 4023, isInitial: false, isFinal: false };
+const Q2 = { uid: 'q2', id: 'q2', label: 'q2', x: 4127, y: 4059, isInitial: false, isFinal: false };
+const Q3 = { uid: 'q3', id: 'q3', label: 'q3', x: 4507, y: 4068, isInitial: false, isFinal: true  };
 
 const N_0    = [Q0];
 const N_01   = [Q0, Q1];

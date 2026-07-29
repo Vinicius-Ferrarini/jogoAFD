@@ -1,8 +1,8 @@
 // ── L11: Complemento de Dois ──────────────────────────────────────────────────────────
-const L11_Q0   = { uid: 'q0',   id: 'q0',   label: 'q0',   x: 15, y: 50, isInitial: true,  isFinal: false };
-const L11_QCR  = { uid: 'q_cr', id: 'q_cr', label: 'q_cr', x: 45, y: 50, isInitial: false, isFinal: false };
-const L11_QRW  = { uid: 'q_rw', id: 'q_rw', label: 'q_rw', x: 72, y: 50, isInitial: false, isFinal: false };
-const L11_QF   = { uid: 'qf',   id: 'qf',   label: 'qf',   x: 92, y: 50, isInitial: false, isFinal: true  };
+const L11_Q0   = { uid: 'q0',   id: 'q0',   label: 'q0',   x: 3931, y: 4000, isInitial: true,  isFinal: false };
+const L11_QCR  = { uid: 'q_cr', id: 'q_cr', label: 'q_cr', x: 3985, y: 4000, isInitial: false, isFinal: false };
+const L11_QRW  = { uid: 'q_rw', id: 'q_rw', label: 'q_rw', x: 4033, y: 4000, isInitial: false, isFinal: false };
+const L11_QF   = { uid: 'qf',   id: 'qf',   label: 'qf',   x: 4069, y: 4000, isInitial: false, isFinal: true  };
 
 // q0: flip de todos os bits (0<->1) avancando para a direita
 const L11_E_Q0_0   = { from: 'q0',   to: 'q0',   read: '0', write: '1', move: 'R' };

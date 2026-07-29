@@ -7,14 +7,11 @@ import imgSerio      from '../../../assets/maurilio1_serio.webp';
 import imgBalaoFala  from '../../../assets/balao_fala_redondo.webp';
 import TuringTape from '../../mt/components/TuringTape';
 
-const CARDS_BASE = [
-  { action: 'TOGGLE_INITIAL', cls: 'initial',    icon: '▶', label: 'Estado Inicial' },
+const CARD_INITIAL = { action: 'TOGGLE_INITIAL', cls: 'initial',    icon: '▶', label: 'Estado Inicial' };
+const CARD_FINAL   = { action: 'TOGGLE_FINAL',   cls: 'final',      icon: '◎', label: 'Definir Final' };
+const CARDS_TAIL = [
   { action: 'ADD_NODE',       cls: 'state',      icon: '◯', label: 'Novo Estado' },
   { action: 'CONNECTING',     cls: 'transition', icon: '↗', label: 'Criar Seta' },
-];
-const CARD_FINAL = { action: 'TOGGLE_FINAL', cls: 'final', icon: '◎', label: 'Estado Final' };
-const CARDS_TAIL = [
-  { sep: true },
   { action: 'ERASE',          cls: 'erase',      icon: '🗑', label: 'Apagar' },
 ];
 
@@ -28,8 +25,8 @@ export default function APFooterDeck({
   isDrawingUnlocked = true,
 }) {
   const CARDS = showFinalCard
-    ? [...CARDS_BASE, CARD_FINAL, ...CARDS_TAIL]
-    : [...CARDS_BASE, ...CARDS_TAIL];
+    ? [CARD_INITIAL, CARD_FINAL, ...CARDS_TAIL]
+    : [CARD_INITIAL, ...CARDS_TAIL];
   const dragRef = useRef(null);
   const justDraggedRef = useRef(false);
   // O Maurílio do rodapé (canto) sempre usa o sprite sério — mesmo falando,
@@ -124,7 +121,6 @@ export default function APFooterDeck({
           );
         })())}
 
-        <div className="card-separator" />
         {[
           { key: 'undo', icon: '↶', label: 'Desfazer', on: onUndo, can: canUndo },
           { key: 'redo', icon: '↷', label: 'Refazer',  on: onRedo, can: canRedo },

@@ -1,7 +1,7 @@
 // ── L2: Complemento Bit-a-Bit ─────────────────────────────────────────────────────
-const L2_Q0   = { uid: 'q0',   id: 'q0',   label: 'q0',   x: 15, y: 50, isInitial: true,  isFinal: false };
-const L2_QRW  = { uid: 'q_rw', id: 'q_rw', label: 'q_rw', x: 50, y: 50, isInitial: false, isFinal: false };
-const L2_QF   = { uid: 'qf',   id: 'qf',   label: 'qf',   x: 85, y: 50, isInitial: false, isFinal: true  };
+const L2_Q0   = { uid: 'q0',   id: 'q0',   label: 'q0',   x: 3937, y: 4000, isInitial: true,  isFinal: false };
+const L2_QRW  = { uid: 'q_rw', id: 'q_rw', label: 'q_rw', x: 4000, y: 4000, isInitial: false, isFinal: false };
+const L2_QF   = { uid: 'qf',   id: 'qf',   label: 'qf',   x: 4063, y: 4000, isInitial: false, isFinal: true  };
 
 const L2_E_01    = { from: 'q0',   to: 'q0',   read: '0', write: '1', move: 'R' };
 const L2_E_10    = { from: 'q0',   to: 'q0',   read: '1', write: '0', move: 'R' };

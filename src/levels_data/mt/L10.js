@@ -4,25 +4,25 @@
 //          propaga shifts com marcadores R/S, decodifica de volta ao final.
 // Exemplo: aba → a0b1a0
 
-const L10_Q0  = { uid: 'q0',  id: 'q0',  label: 'q0',  x: 10, y: 50, isInitial: true,  isFinal: false };
-const L10_Q1  = { uid: 'q1',  id: 'q1',  label: 'q1',  x: 24, y: 50, isInitial: false, isFinal: false };
-const L10_Q2  = { uid: 'q2',  id: 'q2',  label: 'q2',  x: 38, y: 30, isInitial: false, isFinal: false };
-const L10_Q3  = { uid: 'q3',  id: 'q3',  label: 'q3',  x: 55, y: 38, isInitial: false, isFinal: false };
-const L10_Q4  = { uid: 'q4',  id: 'q4',  label: 'q4',  x: 10, y: 72, isInitial: false, isFinal: false };
-const L10_Q5  = { uid: 'q5',  id: 'q5',  label: 'q5',  x: 36, y: 75, isInitial: false, isFinal: false };
-const L10_Q6  = { uid: 'q6',  id: 'q6',  label: 'q6',  x: 55, y: 75, isInitial: false, isFinal: false };
-const L10_Q7  = { uid: 'q7',  id: 'q7',  label: 'q7',  x: 80, y: 72, isInitial: false, isFinal: false };
-const L10_Q8  = { uid: 'q8',  id: 'q8',  label: 'q8',  x: 67, y: 42, isInitial: false, isFinal: false };
-const L10_Q9  = { uid: 'q9',  id: 'q9',  label: 'q9',  x: 67, y: 88, isInitial: false, isFinal: false };
-const L10_Q10 = { uid: 'q10', id: 'q10', label: 'q10', x: 88, y: 25, isInitial: false, isFinal: false };
-const L10_Q11 = { uid: 'q11', id: 'q11', label: 'q11', x: 100, y: 12, isInitial: false, isFinal: false };
-const L10_Q12 = { uid: 'q12', id: 'q12', label: 'q12', x: 113, y: 20, isInitial: false, isFinal: false };
-const L10_Q13 = { uid: 'q13', id: 'q13', label: 'q13', x: 88, y: 93, isInitial: false, isFinal: false };
-const L10_Q14 = { uid: 'q14', id: 'q14', label: 'q14', x: 100, y: 93, isInitial: false, isFinal: false };
-const L10_Q15 = { uid: 'q15', id: 'q15', label: 'q15', x: 113, y: 93, isInitial: false, isFinal: false };
-const L10_Q16 = { uid: 'q16', id: 'q16', label: 'q16', x: 100, y: 68, isInitial: false, isFinal: false };
-const L10_Q17 = { uid: 'q17', id: 'q17', label: 'q17', x: 113, y: 70, isInitial: false, isFinal: false };
-const L10_Q18 = { uid: 'q18', id: 'q18', label: 'q18', x: 120, y: 70, isInitial: false, isFinal: true  };
+const L10_Q0  = { uid: 'q0',  id: 'q0',  label: 'q0',  x: 2925, y: 3856, isInitial: true,  isFinal: false };
+const L10_Q1  = { uid: 'q1',  id: 'q1',  label: 'q1',  x: 3132, y: 3860, isInitial: false, isFinal: false };
+const L10_Q2  = { uid: 'q2',  id: 'q2',  label: 'q2',  x: 3363, y: 3694, isInitial: false, isFinal: false };
+const L10_Q3  = { uid: 'q3',  id: 'q3',  label: 'q3',  x: 3674, y: 3777, isInitial: false, isFinal: false };
+const L10_Q4  = { uid: 'q4',  id: 'q4',  label: 'q4',  x: 2861, y: 4047, isInitial: false, isFinal: false };
+const L10_Q5  = { uid: 'q5',  id: 'q5',  label: 'q5',  x: 3343, y: 4068, isInitial: false, isFinal: false };
+const L10_Q6  = { uid: 'q6',  id: 'q6',  label: 'q6',  x: 3665, y: 4065, isInitial: false, isFinal: false };
+const L10_Q7  = { uid: 'q7',  id: 'q7',  label: 'q7',  x: 4113, y: 4052, isInitial: false, isFinal: false };
+const L10_Q8  = { uid: 'q8',  id: 'q8',  label: 'q8',  x: 3852, y: 3815, isInitial: false, isFinal: false };
+const L10_Q9  = { uid: 'q9',  id: 'q9',  label: 'q9',  x: 3852, y: 4337, isInitial: false, isFinal: false };
+const L10_Q10 = { uid: 'q10', id: 'q10', label: 'q10', x: 4238, y: 3689, isInitial: false, isFinal: false };
+const L10_Q11 = { uid: 'q11', id: 'q11', label: 'q11', x: 4601, y: 3584, isInitial: false, isFinal: false };
+const L10_Q12 = { uid: 'q12', id: 'q12', label: 'q12', x: 5118, y: 3658, isInitial: false, isFinal: false };
+const L10_Q13 = { uid: 'q13', id: 'q13', label: 'q13', x: 4220, y: 4416, isInitial: false, isFinal: false };
+const L10_Q14 = { uid: 'q14', id: 'q14', label: 'q14', x: 4572, y: 4414, isInitial: false, isFinal: false };
+const L10_Q15 = { uid: 'q15', id: 'q15', label: 'q15', x: 5109, y: 4407, isInitial: false, isFinal: false };
+const L10_Q16 = { uid: 'q16', id: 'q16', label: 'q16', x: 4495, y: 4031, isInitial: false, isFinal: false };
+const L10_Q17 = { uid: 'q17', id: 'q17', label: 'q17', x: 4950, y: 4045, isInitial: false, isFinal: false };
+const L10_Q18 = { uid: 'q18', id: 'q18', label: 'q18', x: 5139, y: 4052, isInitial: false, isFinal: true  };
 
 // Transições extraídas do JFLAP L10.xml
 // q0: lê <
@@ -153,6 +153,7 @@ const MT_L10 = {
     level:        'hard',
     alphabet:     ['a', 'b'],
     tapeAlphabet: ['a', 'b', 'A', 'B', 'X', 'R', 'S', '0', '1', '<', '□'],
+    startMarker:  '<',
     description:  "Tem como entrada uma palavra com a e b e gera como saída 0 ou 1 intercalados entre os as e bs. Ex: aba -> a0b1a0. DESAFIO",
     hint:         "Técnica de Shift de fita: marque cada símbolo com A/B, insira um placeholder X após ele, e use R/S para codificar temporariamente 'a'/'b'. No final, decodifique R→a, S→b e os X's viram 0 ou 1.",
     validate:     (w) => {

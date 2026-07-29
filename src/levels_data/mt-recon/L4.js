@@ -1,0 +1,9028 @@
+// ── MT Reconhecedora L4: {a²ⁿbⁿ / n ≥ 0} ──────────────────────────────
+// Gabarito importado de implementar/MT/gabaritos_oficiais/reconhecedora/L4.xml
+// (verificado por fuzz contra a linguagem formal antes da conversão).
+
+const MT_RECON_L4 = {
+  id:          'MT_RECON_L4',
+  label:       'L4',
+  type:        'recognizer',
+  level:       'medium',
+  alphabet:    ["a","b"],
+  tapeAlphabet: ["A","B","a","b","□"],
+  language:    '{a²ⁿbⁿ / n ≥ 0}',
+  description: 'Reconheça a²ⁿbⁿ: para cada "b", exatamente dois "a" correspondentes no início.',
+  hint:        'Para cada "b" (da direita pra esquerda), marque DOIS "a" no início da fita.',
+  acceptedWords: ["","aab","aaaabb","aaaaaabbb"],
+  rejectedWords: ["a","b","ab","aaab","aabb","aaaab","aaaaabb"],
+  formalDescription: {
+    sigma:   '{a,b}',
+    gamma:   '{A,B,a,b,□}',
+    states:  '{q0,q1,q2,q3,q4,q5,q6}',
+    initial: 'q0',
+    final:   '{q6}',
+    blank:   '□',
+  },
+
+  guidedLesson: {
+    steps: [
+      {
+        "prof": {
+          "message": "Bem-vindo! Vamos construir a MT Reconhecedora da linguagem {a²ⁿbⁿ / n ≥ 0}.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [],
+          "transitions": []
+        }
+      },
+      {
+        "prof": {
+          "message": "Vamos testar a palavra \"aab\". Começamos no estado inicial q0.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            }
+          ],
+          "transitions": []
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "a",
+          "a",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 2,
+        "activeNode": "q0"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q0, ao ler 'a', vamos para q1, escrevemos 'A' e movemos à DIREITA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "a",
+          "a",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 2,
+        "activeNode": "q0"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'A' e moveu. Agora em q1.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "a",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q1"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q1, ao ler 'a', vamos para q2, escrevemos 'A' e movemos à DIREITA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "a",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q1"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'A' e moveu. Agora em q2.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q2, ao ler 'b', vamos para q3, escrevemos 'B' e movemos à ESQUERDA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'b', escreveu 'B' e moveu. Agora em q3.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q3, ao ler 'A', vamos para q0, escrevemos 'A' e movemos à DIREITA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q0.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q0"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q0, ao ler 'B', vamos para q4, escrevemos 'B' e movemos à DIREITA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q0"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'B', escreveu 'B' e moveu. Agora em q4.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 5,
+        "activeNode": "q4"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q4, ao ler '□', vamos para q5, escrevemos '□' e movemos à ESQUERDA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 5,
+        "activeNode": "q4"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu '□', escreveu '□' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q5, ao ler 'B', vamos para q5, escrevemos 'B' e movemos à ESQUERDA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'B', escreveu 'B' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q5, ao ler 'A', vamos para q5, escrevemos 'A' e movemos à ESQUERDA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 2,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 1,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q5, ao ler '□', vamos para q6, escrevemos '□' e movemos à DIREITA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 1,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Chegamos em q6 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+          "mood": "feliz"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aab",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 2,
+        "activeNode": "q6",
+        "status": "ACCEPTED"
+      },
+      {
+        "prof": {
+          "message": "Próxima palavra: \"aaaabb\". Mesma máquina, novo teste.",
+          "mood": "serio"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "a",
+          "a",
+          "a",
+          "a",
+          "b",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 2,
+        "activeNode": "q0"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'A' e moveu. Agora em q1.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "a",
+          "a",
+          "a",
+          "b",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q1"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'A' e moveu. Agora em q2.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "b",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q2, ao ler 'a', vamos para q2, escrevemos 'a' e movemos à DIREITA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "b",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'a' e moveu. Agora em q2.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "b",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 5,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'a' e moveu. Agora em q2.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "b",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 6,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'b', escreveu 'B' e moveu. Agora em q3.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 5,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q3, ao ler 'a', vamos para q3, escrevemos 'a' e movemos à ESQUERDA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 5,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'a' e moveu. Agora em q3.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'a' e moveu. Agora em q3.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q0.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "a",
+          "a",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q0"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'A' e moveu. Agora em q1.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "a",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 5,
+        "activeNode": "q1"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'a', escreveu 'A' e moveu. Agora em q2.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 6,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q2, ao ler 'B', vamos para q2, escrevemos 'B' e movemos à DIREITA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 6,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'B', escreveu 'B' e moveu. Agora em q2.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "b",
+          "□",
+          "□"
+        ],
+        "head": 7,
+        "activeNode": "q2"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'b', escreveu 'B' e moveu. Agora em q3.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 6,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q3, ao ler 'B', vamos para q3, escrevemos 'B' e movemos à ESQUERDA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 6,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'B', escreveu 'B' e moveu. Agora em q3.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 5,
+        "activeNode": "q3"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q0.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 6,
+        "activeNode": "q0"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'B', escreveu 'B' e moveu. Agora em q4.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 7,
+        "activeNode": "q4"
+      },
+      {
+        "prof": {
+          "message": "Nova regra: em q4, ao ler 'B', vamos para q4, escrevemos 'B' e movemos à DIREITA.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 7,
+        "activeNode": "q4"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'B', escreveu 'B' e moveu. Agora em q4.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 8,
+        "activeNode": "q4"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu '□', escreveu '□' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 7,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'B', escreveu 'B' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 6,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'B', escreveu 'B' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 5,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 4,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 3,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 2,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Executou: leu 'A', escreveu 'A' e moveu. Agora em q5.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 1,
+        "activeNode": "q5"
+      },
+      {
+        "prof": {
+          "message": "Chegamos em q6 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+          "mood": "feliz"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "simulateWord": "aaaabb",
+        "tape": [
+          "□",
+          "□",
+          "A",
+          "A",
+          "A",
+          "A",
+          "B",
+          "B",
+          "□",
+          "□"
+        ],
+        "head": 2,
+        "activeNode": "q6",
+        "status": "ACCEPTED"
+      },
+      {
+        "prof": {
+          "message": "Para cobrir todos os casos da linguagem, completamos a máquina com as regras restantes.",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        }
+      },
+      {
+        "prof": {
+          "message": "Grafo finalizado! 🎉 Agora vamos formalizar matematicamente a nossa Máquina de Turing.",
+          "mood": "feliz"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "formalIntro": true
+      },
+      {
+        "prof": {
+          "message": "Q é o conjunto de ESTADOS: {q0,q1,q2,q3,q4,q5,q6}",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "phase": "FORMAL",
+        "formalFill": {
+          "states": "{q0,q1,q2,q3,q4,q5,q6}"
+        }
+      },
+      {
+        "prof": {
+          "message": "Σ é o alfabeto de ENTRADA: {a,b}",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "phase": "FORMAL",
+        "formalFill": {
+          "sigma": "{a,b}"
+        }
+      },
+      {
+        "prof": {
+          "message": "Γ é o alfabeto da FITA: {A,B,a,b,□}",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "phase": "FORMAL",
+        "formalFill": {
+          "gamma": "{A,B,a,b,□}"
+        }
+      },
+      {
+        "prof": {
+          "message": "q0 é o estado INICIAL: q0",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "phase": "FORMAL",
+        "formalFill": {
+          "initial": "q0"
+        }
+      },
+      {
+        "prof": {
+          "message": "O símbolo BRANCO: □",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "phase": "FORMAL",
+        "formalFill": {
+          "blank": "□"
+        }
+      },
+      {
+        "prof": {
+          "message": "F é o conjunto de estados de ACEITAÇÃO: {q6}",
+          "mood": "explicando"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "phase": "FORMAL",
+        "formalFill": {
+          "final": "{q6}"
+        }
+      },
+      {
+        "prof": {
+          "message": "Por fim, a função δ completa — Máquina formalizada! ✓",
+          "mood": "feliz"
+        },
+        "stateUpdate": {
+          "nodes": [
+            {
+              "uid": "q0",
+              "id": "q0",
+              "label": "q0",
+              "x": 3440,
+              "y": 3944,
+              "isInitial": true,
+              "isFinal": false
+            },
+            {
+              "uid": "q1",
+              "id": "q1",
+              "label": "q1",
+              "x": 3699,
+              "y": 3806,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q2",
+              "id": "q2",
+              "label": "q2",
+              "x": 3919,
+              "y": 3789,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q3",
+              "id": "q3",
+              "label": "q3",
+              "x": 4151,
+              "y": 3960,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q4",
+              "id": "q4",
+              "label": "q4",
+              "x": 3744,
+              "y": 4200,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q5",
+              "id": "q5",
+              "label": "q5",
+              "x": 4032,
+              "y": 4211,
+              "isInitial": false,
+              "isFinal": false
+            },
+            {
+              "uid": "q6",
+              "id": "q6",
+              "label": "q6",
+              "x": 4560,
+              "y": 4158,
+              "isInitial": false,
+              "isFinal": true
+            }
+          ],
+          "transitions": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        },
+        "phase": "FORMAL",
+        "formalFill": {
+          "delta": [
+            {
+              "from": "q0",
+              "to": "q1",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q3",
+              "to": "q3",
+              "read": "a",
+              "write": "a",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "A",
+              "write": "A",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q5",
+              "read": "B",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q1",
+              "to": "q2",
+              "read": "a",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q3",
+              "read": "b",
+              "write": "B",
+              "move": "L"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "a",
+              "write": "a",
+              "move": "R"
+            },
+            {
+              "from": "q2",
+              "to": "q2",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q0",
+              "to": "q4",
+              "read": "B",
+              "write": "B",
+              "move": "R"
+            },
+            {
+              "from": "q3",
+              "to": "q0",
+              "read": "A",
+              "write": "A",
+              "move": "R"
+            },
+            {
+              "from": "q4",
+              "to": "q5",
+              "read": "",
+              "write": "",
+              "move": "L"
+            },
+            {
+              "from": "q5",
+              "to": "q6",
+              "read": "",
+              "write": "",
+              "move": "R"
+            }
+          ]
+        }
+      }
+    ],
+  },
+};
+
+export default MT_RECON_L4;

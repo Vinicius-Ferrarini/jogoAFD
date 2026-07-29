@@ -8,15 +8,20 @@ import FeedbackButton from './components/FeedbackButton';
 import LoadingScreen from './components/LoadingScreen';
 import { LEVEL_IDS, UNAVAILABLE_LEVELS } from './levels';
 import { EXERCISES } from './modules/afd/afdMinimizerExercises';
+import { MT_RECON_LEVELS } from './levels_data/mt-recon/index.js';
+import { MT_LEVELS } from './levels_data/mt/index.js';
 const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
 const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
 const APPart1     = lazy(() => import('./modules/ap/APPart1'));
 const MTPart1     = lazy(() => import('./modules/mt/MTPart1'));
+const MTReconPart1 = lazy(() => import('./modules/mt/MTReconPart1'));
 
 // Módulos com uma ÚNICA atividade pulam a tela de submódulos e vão direto ao jogo
 // (ex.: AP só tem "Autômato com Pilha" — não faz sentido escolher pilha 2x).
-const DIRECT_GAME = { ap: 'ap-pilha', mt: 'mt-trans' };
+// MT tem 2 atividades (Reconhecedora + Transdutora), então passa pela tela de
+// submódulos como o AFD.
+const DIRECT_GAME = { ap: 'ap-pilha' };
 
 export default function App() {
   const [screen, setScreen] = useState('HOME');
@@ -101,7 +106,8 @@ export default function App() {
         case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
         case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
         case 'ap-pilha':  return <APPart1  {...moduleProps} onBack={goModules} />;
-        case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={goModules} />;
+        case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={() => goSubmodule('mt')} />;
+        case 'mt-recon':  return <MTReconPart1 {...moduleProps} onBack={() => goSubmodule('mt')} />;
         default:          return <div>Módulo não encontrado</div>;
       }
     })();
@@ -198,6 +204,10 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
   const p2Earned = availableLevelIds.reduce((s, id) => s + (p2Progress[id]?.stars || 0), 0);
   const minTotal  = EXERCISES.length * 3;
   const minEarned = EXERCISES.reduce((s, ex) => s + (progress[`afd-min-${ex.id}`]?.stars || 0), 0);
+  const mtReconTotal  = MT_RECON_LEVELS.length * 3;
+  const mtReconEarned = MT_RECON_LEVELS.reduce((s, l) => s + (progress[`mt-recon-${l.id}`]?.stars || 0), 0);
+  const mtTransTotal  = MT_LEVELS.length * 3;
+  const mtTransEarned = MT_LEVELS.reduce((s, l) => s + (progress[`mt-trans-${l.id}`]?.stars || 0), 0);
 
   const submodules = {
     afd: [
@@ -212,8 +222,10 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
         earned: minEarned, total: minTotal },
     ],
     mt: [
-      { id: 'mt-recon', icon: '🔍', label: 'Reconhecedora', desc: 'Em breve!', locked: true },
-      { id: 'mt-trans', icon: '🔄', label: 'Transdutora',   desc: 'Desenhe a MT e valide', color: '#fed7aa' },
+      { id: 'mt-recon', icon: '🔍', label: 'Reconhecedora', desc: 'Desenhe a MT e valide se aceita a linguagem',
+        color: '#c7d2fe', earned: mtReconEarned, total: mtReconTotal },
+      { id: 'mt-trans', icon: '🔄', label: 'Transdutora',   desc: 'Desenhe a MT e valide', color: '#fed7aa',
+        earned: mtTransEarned, total: mtTransTotal },
     ],
   };
 
