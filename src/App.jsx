@@ -8,8 +8,7 @@ import FeedbackButton from './components/FeedbackButton';
 import LoadingScreen from './components/LoadingScreen';
 import { LEVEL_IDS, UNAVAILABLE_LEVELS } from './levels';
 import { EXERCISES } from './modules/afd/afdMinimizerExercises';
-import { MT_RECON_LEVELS } from './levels_data/mt-recon/index.js';
-import { MT_LEVELS } from './levels_data/mt/index.js';
+import { MT_RECON_LEVEL_IDS, MT_LEVEL_IDS } from './levels_data/mt-ids.js';
 const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
 const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
@@ -204,10 +203,10 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
   const p2Earned = availableLevelIds.reduce((s, id) => s + (p2Progress[id]?.stars || 0), 0);
   const minTotal  = EXERCISES.length * 3;
   const minEarned = EXERCISES.reduce((s, ex) => s + (progress[`afd-min-${ex.id}`]?.stars || 0), 0);
-  const mtReconTotal  = MT_RECON_LEVELS.length * 3;
-  const mtReconEarned = MT_RECON_LEVELS.reduce((s, l) => s + (progress[`mt-recon-${l.id}`]?.stars || 0), 0);
-  const mtTransTotal  = MT_LEVELS.length * 3;
-  const mtTransEarned = MT_LEVELS.reduce((s, l) => s + (progress[`mt-trans-${l.id}`]?.stars || 0), 0);
+  const mtReconTotal  = MT_RECON_LEVEL_IDS.length * 3;
+  const mtReconEarned = MT_RECON_LEVEL_IDS.reduce((s, id) => s + (progress[`mt-recon-${id}`]?.stars || 0), 0);
+  const mtTransTotal  = MT_LEVEL_IDS.length * 3;
+  const mtTransEarned = MT_LEVEL_IDS.reduce((s, id) => s + (progress[`mt-trans-${id}`]?.stars || 0), 0);
 
   const submodules = {
     afd: [

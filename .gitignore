@@ -24,3 +24,7 @@ playwright-report
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code — config/estado local (não deve ser compartilhado entre colaboradores)
+.claude/settings.local.json
+.claude/*.lock

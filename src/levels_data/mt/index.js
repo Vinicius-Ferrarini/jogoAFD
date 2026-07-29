@@ -10,6 +10,13 @@ import MT_L11 from './L11.js';
 import MT_L12 from './L12.js';
 import MT_L14 from './L14.js';
 import MT_L16 from './L16.js';
+import MT_L17 from './L17.js';
+import MT_L18 from './L18.js';
+import MT_L19 from './L19.js';
+import MT_L20 from './L20.js';
+import MT_L21 from './L21.js';
+import MT_L22 from './L22.js';
+import MT_L23 from './L23.js';
 import MT_L24 from './L24.js';
 
 export const MT_LEVELS = [
@@ -25,5 +32,12 @@ export const MT_LEVELS = [
   MT_L12,
   MT_L14,
   MT_L16,
+  MT_L17,
+  MT_L18,
+  MT_L19,
+  MT_L20,
+  MT_L21,
+  MT_L22,
+  MT_L23,
   MT_L24,
 ];

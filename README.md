@@ -37,7 +37,7 @@ O visual segue o estilo neo-brutalismo / gibi (inspirado na Turma da Mônica), c
 | 📊 | **Grafo → Linguagem (P2)** | Modo inverso: dado um autômato, o aluno deve identificar a linguagem formal aceita |
 | 🔽 | **Minimização de AFD** | Reduz um autômato ao equivalente mínimo em passos guiados |
 | 📚 | **Autômatos com Pilha** | Construção de AP com aceitação por pilha vazia |
-| 🎞️ | **Máquinas de Turing** | Construção de MT transdutora com fita e simulação passo a passo |
+| 🎞️ | **Máquinas de Turing** | Reconhecedora (aceita/rejeita) e Transdutora (transforma a fita) — construção passo a passo com simulação em tempo real |
 | ⭐ | **Sistema de Estrelas** | Até 3 estrelas por fase com base no número de tentativas |
 
 ---
@@ -50,7 +50,9 @@ TuringLab
 ├── AFD Parte 2 — Identificar a linguagem a partir do grafo
 ├── AFD Minimização — reduzir um autômato ao seu equivalente mínimo
 ├── Autômatos com Pilha — construção e aceitação por pilha vazia
-└── Máquinas de Turing (Transdutora) — construção passo a passo com fita
+└── Máquinas de Turing
+    ├── Reconhecedora — aceita ou rejeita a palavra na fita
+    └── Transdutora — transforma a fita de entrada numa saída
 ```
 
 ---

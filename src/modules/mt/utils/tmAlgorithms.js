@@ -192,12 +192,18 @@ export function parseJffTM(xml) {
   }));
 
   // Transições: read/write vazios mantidos como '' (blank) — simulateTM já trata '' → □
+  // IMPORTANTE: read/write NÃO usam .trim() — o JFLAP nunca insere espaço/
+  // indentação dentro da própria tag (<read>a</read>, sem espaço ao redor de
+  // "a"), então um espaço literal ali É o símbolo de fita ' ' (usado por
+  // MTs que processam texto com espaços, ex.: cifra que preserva espaços
+  // entre palavras). from/to/move continuam com .trim() — são sempre IDs/
+  // direção, nunca precisam preservar espaço.
   const transitions = [...doc.querySelectorAll('transition')].map(t => ({
-    from:  t.querySelector('from')?.textContent.trim()  ?? '',
-    to:    t.querySelector('to')?.textContent.trim()    ?? '',
-    read:  t.querySelector('read')?.textContent.trim()  ?? '',
-    write: t.querySelector('write')?.textContent.trim() ?? '',
-    move:  t.querySelector('move')?.textContent.trim()  ?? 'S',
+    from:  t.querySelector('from')?.textContent.trim() ?? '',
+    to:    t.querySelector('to')?.textContent.trim()   ?? '',
+    read:  t.querySelector('read')?.textContent  ?? '',
+    write: t.querySelector('write')?.textContent ?? '',
+    move:  t.querySelector('move')?.textContent.trim() ?? 'S',
   }));
 
   return { states, transitions };
