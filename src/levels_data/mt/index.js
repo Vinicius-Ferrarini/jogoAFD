@@ -19,6 +19,13 @@ import MT_L22 from './L22.js';
 import MT_L23 from './L23.js';
 import MT_L24 from './L24.js';
 
+// Rótulo exibido com zero à esquerda (L01…L24), igual ao AFD e ao AP —
+// derivado do id (MT_L{n}) em vez do label hardcoded de cada arquivo.
+function withPaddedLabel(level) {
+  const num = level.id.match(/(\d+)$/)?.[0];
+  return num ? { ...level, label: 'L' + num.padStart(2, '0') } : level;
+}
+
 export const MT_LEVELS = [
   MT_L1,
   MT_L2,
@@ -40,4 +47,4 @@ export const MT_LEVELS = [
   MT_L22,
   MT_L23,
   MT_L24,
-];
+].map(withPaddedLabel);

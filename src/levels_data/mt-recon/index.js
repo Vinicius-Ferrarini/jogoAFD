@@ -14,6 +14,13 @@ import MT_RECON_L16 from './L16.js';
 import MT_RECON_L17 from './L17.js';
 import { simulateTM } from '../../modules/mt/utils/tmAlgorithms.js';
 
+// Rótulo exibido com zero à esquerda (L01…L17), igual ao AFD e ao AP —
+// derivado do id (MT_RECON_L{n}) em vez do label hardcoded de cada arquivo.
+function withPaddedLabel(level) {
+  const num = level.id.match(/(\d+)$/)?.[0];
+  return num ? { ...level, label: 'L' + num.padStart(2, '0') } : level;
+}
+
 export const MT_RECON_LEVELS = [
   MT_RECON_L1,
   MT_RECON_L2,
@@ -29,7 +36,7 @@ export const MT_RECON_LEVELS = [
   MT_RECON_L15,
   MT_RECON_L16,
   MT_RECON_L17,
-];
+].map(withPaddedLabel);
 
 export const getLevel = (id) => MT_RECON_LEVELS.find((l) => l.id === id || l.label === id);
 
