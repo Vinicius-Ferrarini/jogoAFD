@@ -24,13 +24,22 @@ import { DIFF_COLOR } from '../../levels';
 // deltaCells: mapa "estado|símbolo" → "destino, escreve, move" (matriz δ)
 const EMPTY_FORMAL = { states: '', sigma: '', gamma: '', initial: '', blank: '', final: '', deltaCells: {} };
 
-export default function MTPart1({ onBack, progress, updateProgress, showToast }) {
+export default function MTPart1({ onBack, progress, updateProgress }) {
+  // ── Toast (mesmo padrão do AFD1/AP: local, ignora o showToast no-op do App.jsx) ─
+  const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
+  const toastRef = useRef(null);
+  const showToast = useCallback((message, type = 'info') => {
+    setToastData({ show: true, message, type });
+    if (toastRef.current) clearTimeout(toastRef.current);
+    toastRef.current = setTimeout(() => setToastData(d => ({ ...d, show: false })), 4000);
+  }, []);
+
   const [screen, setScreen] = useState('MENU');
   const [level,  setLevel]  = useState(null);
   const [mode,   setMode]   = useState('IDLE');
   const [connectingSource, setConnectingSource] = useState(null);
+  const [errAction, setErrAction] = useState(null);
   const [prof,   setProf]   = useState({ message: '', mood: 'serio' });
-  const [result, setResult] = useState(null);
   const [simWord, setSimWord]     = useState('');
   const [linguagemTests, setLinguagemTests] = useState([]); // histórico isolado: gabarito estático
   const [desenhoTests,   setDesenhoTests]   = useState([]); // histórico isolado: simulação do grafo
@@ -41,7 +50,6 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const [selectionBox, setSelectionBox]     = useState(null);
   const [formalAnswers, setFormalAnswers]   = useState(EMPTY_FORMAL);
   const [formalMode, setFormalMode]         = useState(false); // jogo: MT válida → preencher descrição formal
-  const [validationError, setValidationError] = useState(null); // banner vermelho de erro estrutural
   const [inputError, setInputError]           = useState(null); // erro inline no campo de teste de palavra
   const canvasRef      = useRef(null);
   const innerCanvasRef = useRef(null);
@@ -96,8 +104,8 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
       scrollTop: viewportRef.current?.scrollTop ?? 0,
       zoom,
     };
-    setMode('IDLE'); setConnectingSource(null); setResult(null);
-    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
+    setMode('IDLE'); setConnectingSource(null);
+    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
     lesson.goTo(0);
     applyStep(lesson.steps[0]);
   }, [lesson, applyStep, zoom]);
@@ -182,9 +190,9 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
     g.reset();
     lesson.reset();
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
-    setResult(null); setSimWord(''); setLinguagemTests([]); setDesenhoTests([]); setDeckGhost(null); setVictory(false);
+    setSimWord(''); setLinguagemTests([]); setDesenhoTests([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
-    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
+    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
     draw.resetDrawings();
     resetZoom();
     say(`Monte a MT Transdutora que ${lv.description.toLowerCase()} e clique em Validar!`, 'explicando');
@@ -225,7 +233,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
       const alphabet = level.alphabet ?? ['a', 'b'];
       const invalid = [...word].find(ch => !alphabet.includes(ch));
       if (invalid) {
-        setInputError(`Caractere inválido '${invalid}'! Alfabeto: ${alphabet.join(', ')}`);
+        setInputError(`O símbolo "${invalid}" não faz parte do alfabeto (${alphabet.join(', ')}).`);
         return;
       }
     }
@@ -253,13 +261,17 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
   const validate = useCallback(() => {
     if (!level) return;
 
-    // ── Validações estruturais (banner vermelho no topo) ───────────────────────
+    // ── Validações estruturais (toast do topo, como no AP) ──────────────────
     if (!g.nodes.find(n => n.isInitial)) {
-      setValidationError('Erro Crítico: Defina um Estado Inicial (▶)!');
+      showToast('Defina um estado inicial (▶) antes de validar.', 'error');
+      setErrAction('TOGGLE_INITIAL');
+      setTimeout(() => setErrAction(null), 3000);
       return;
     }
     if (!g.nodes.some(n => n.isFinal)) {
-      setValidationError('Erro Crítico: Defina um Estado Final (◎)!');
+      showToast('Defina um estado final (◎) antes de validar.', 'error');
+      setErrAction('TOGGLE_FINAL');
+      setTimeout(() => setErrAction(null), 3000);
       return;
     }
     // Não-determinismo: mesmo estado lendo o mesmo símbolo com ações diferentes
@@ -270,16 +282,14 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
       const sig = `${t.to}|${t.write}|${t.move}`;
       if (seen.has(key) && seen.get(key) !== sig) {
         const lbl = g.nodes.find(n => n.id === t.from)?.label ?? t.from;
-        setValidationError(`Erro: Transição não-determinística no estado ${lbl} para o símbolo ${sym}`);
+        showToast(`O estado ${lbl} tem duas regras diferentes para o símbolo "${sym}" — ajuste antes de validar.`, 'error');
         return;
       }
       if (!seen.has(key)) seen.set(key, sig);
     }
-    setValidationError(null);
 
     const mtGraph = { states: g.nodes, transitions: g.transitions };
     const res = fuzzTMTransducer(mtGraph, level);
-    setResult(res);
     if (res.ok) {
       updateProgress?.(`mt-trans-${level.id}`, 3);
       say('Perfeito! Sua MT está correta! Agora preencha a Descrição Formal à esquerda e clique em Concluir. 📝', 'feliz');
@@ -292,7 +302,8 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         : res.reason === 'rejected'
         ? `Sua MT não aceita "${show}" (parou em estado não-final).`
         : `Para "${show}": esperado "${res.expected}", obteve "${res.got}".`;
-      say(msg, 'serio');
+      // Erro fica só no balão vermelho do painel lateral (result.*) — o
+      // Maurílio não comenta erros, só sucesso/dicas.
       showToast?.(msg, 'error');
     }
   }, [level, g, say, updateProgress, showToast]);
@@ -378,6 +389,8 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
 
   return (
     <div className="workspace-wrapper">
+      {toastData.show && <div className={`toast-notification ${toastData.type}`}>{toastData.message}</div>}
+
       {deckGhost && createPortal(
         <div className="deck-drag-ghost" style={{ left: deckGhost.x, top: deckGhost.y }} />,
         document.body)}
@@ -401,20 +414,6 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         onStartLesson={startLesson}
         onCloseLesson={finishLesson}
       />
-
-      {/* Banner de erro estrutural (vermelho, no topo — como no AFD) */}
-      {validationError && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          padding: '8px 14px', background: '#dc2626', color: '#fff',
-          fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, fontSize: 13,
-          borderBottom: '3px solid #7f1d1d' }}>
-          <span>⛔ {validationError}</span>
-          <button onClick={() => setValidationError(null)}
-            style={{ background: '#fff', color: '#dc2626', border: 'none', borderRadius: 6,
-              fontWeight: 900, fontFamily: "'Comic Sans MS',cursive", cursor: 'pointer',
-              padding: '2px 8px', fontSize: 12 }}>✕</button>
-        </div>
-      )}
 
       <div className="workspace">
         {/* Painel ESQUERDO: Descrição Formal (espelha o AFD) — aula formal OU pós-validação */}
@@ -780,16 +779,6 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
               </>
             )}
 
-            {result && !result.ok && (
-              <div className="ap-result err" style={{ fontSize: 11 }}>
-                {result.reason === 'wrong-output'
-                  ? `"${result.counterexample || 'λ'}": esperado "${result.expected}", obteve "${result.got}"`
-                  : result.reason === 'rejected'
-                  ? `Não aceita "${result.counterexample || 'λ'}"`
-                  : `Loop em "${result.counterexample || 'λ'}"`}
-              </div>
-            )}
-
             <button className="validate-btn slide-up-fade" onClick={formalMode ? concludePhase : validate}>
               {formalMode ? '🏁 Concluir Fase' : '✓ Validar MT'}
             </button>
@@ -819,6 +808,7 @@ export default function MTPart1({ onBack, progress, updateProgress, showToast })
         onNodeDragCancel={handleDeckCancel}
         tape={lesson.active && lesson.cur?.tape ? lesson.cur.tape : null}
         tapeHead={lesson.cur?.head ?? 0}
+        errAction={errAction}
       />
 
       {victory && (

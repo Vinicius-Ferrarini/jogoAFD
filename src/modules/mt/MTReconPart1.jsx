@@ -25,13 +25,22 @@ import { DIFF_COLOR } from '../../levels';
 
 const EMPTY_FORMAL = { states: '', sigma: '', gamma: '', initial: '', blank: '', final: '', deltaCells: {} };
 
-export default function MTReconPart1({ onBack, progress, updateProgress, showToast }) {
+export default function MTReconPart1({ onBack, progress, updateProgress }) {
+  // ── Toast (mesmo padrão do AFD1/AP: local, ignora o showToast no-op do App.jsx) ─
+  const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
+  const toastRef = useRef(null);
+  const showToast = useCallback((message, type = 'info') => {
+    setToastData({ show: true, message, type });
+    if (toastRef.current) clearTimeout(toastRef.current);
+    toastRef.current = setTimeout(() => setToastData(d => ({ ...d, show: false })), 4000);
+  }, []);
+
   const [screen, setScreen] = useState('MENU');
   const [level,  setLevel]  = useState(null);
   const [mode,   setMode]   = useState('IDLE');
   const [connectingSource, setConnectingSource] = useState(null);
+  const [errAction, setErrAction] = useState(null);
   const [prof,   setProf]   = useState({ message: '', mood: 'serio' });
-  const [result, setResult] = useState(null);
   const [simWord, setSimWord] = useState('');
   const [testedWords, setTestedWords] = useState([]);
   // Antes de destravar: sempre testa contra a LINGUAGEM (mecânica de achar a
@@ -45,7 +54,6 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
   const [selectionBox, setSelectionBox]     = useState(null);
   const [formalAnswers, setFormalAnswers]   = useState(EMPTY_FORMAL);
   const [formalMode, setFormalMode]         = useState(false);
-  const [validationError, setValidationError] = useState(null);
   const [inputError, setInputError]           = useState(null);
   const canvasRef      = useRef(null);
   const innerCanvasRef = useRef(null);
@@ -95,8 +103,8 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
       scrollTop: viewportRef.current?.scrollTop ?? 0,
       zoom,
     };
-    setMode('IDLE'); setConnectingSource(null); setResult(null);
-    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
+    setMode('IDLE'); setConnectingSource(null);
+    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
     lesson.goTo(0);
     applyStep(lesson.steps[0]);
   }, [lesson, applyStep, zoom]);
@@ -177,10 +185,10 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
     g.reset();
     lesson.reset();
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
-    setResult(null); setSimWord(''); setTestedWords([]); setDeckGhost(null); setVictory(false);
+    setSimWord(''); setTestedWords([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
     setTestMode('LANGUAGE'); setIsDrawingUnlocked(false);
-    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false); setValidationError(null);
+    setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
     draw.resetDrawings();
     resetZoom();
     say('', 'serio');
@@ -224,7 +232,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
       const alphabet = level.alphabet ?? [];
       const invalid = [...word].find(ch => !alphabet.includes(ch));
       if (invalid) {
-        setInputError(`Caractere inválido '${invalid}'! Alfabeto: ${alphabet.join(', ')}`);
+        setInputError(`O símbolo "${invalid}" não faz parte do alfabeto (${alphabet.join(', ')}).`);
         return;
       }
     }
@@ -264,11 +272,15 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
     if (!level) return;
 
     if (!g.nodes.find(n => n.isInitial)) {
-      setValidationError('Erro Crítico: Defina um Estado Inicial (▶)!');
+      showToast('Defina um estado inicial (▶) antes de validar.', 'error');
+      setErrAction('TOGGLE_INITIAL');
+      setTimeout(() => setErrAction(null), 3000);
       return;
     }
     if (!g.nodes.some(n => n.isFinal)) {
-      setValidationError('Erro Crítico: Defina um Estado Final (◎)!');
+      showToast('Defina um estado final (◎) antes de validar.', 'error');
+      setErrAction('TOGGLE_FINAL');
+      setTimeout(() => setErrAction(null), 3000);
       return;
     }
     const seen = new Map();
@@ -278,16 +290,14 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
       const sig = `${t.to}|${t.write}|${t.move}`;
       if (seen.has(key) && seen.get(key) !== sig) {
         const lbl = g.nodes.find(n => n.id === t.from)?.label ?? t.from;
-        setValidationError(`Erro: Transição não-determinística no estado ${lbl} para o símbolo ${sym}`);
+        showToast(`O estado ${lbl} tem duas regras diferentes para o símbolo "${sym}" — ajuste antes de validar.`, 'error');
         return;
       }
       if (!seen.has(key)) seen.set(key, sig);
     }
-    setValidationError(null);
 
     const mtGraph = { states: g.nodes, transitions: g.transitions };
     const res = fuzzTMRecognizer(mtGraph, level);
-    setResult(res);
     if (res.ok) {
       updateProgress?.(`mt-recon-${level.id}`, 2);
       say('Perfeito! Sua MT reconhece a linguagem corretamente! Agora preencha a Descrição Formal. 📝', 'feliz');
@@ -300,7 +310,8 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
         : res.reason === 'wrongly-accepted'
         ? `Sua MT aceita "${show}" indevidamente (não pertence à linguagem).`
         : `Sua MT não aceita "${show}" (deveria pertencer à linguagem).`;
-      say(msg, 'serio');
+      // Erro fica só no toast do topo — o Maurílio não comenta erros, só
+      // sucesso/dicas.
       showToast?.(msg, 'error');
     }
   }, [level, g, say, updateProgress, showToast]);
@@ -384,6 +395,8 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
 
   return (
     <div className="workspace-wrapper">
+      {toastData.show && <div className={`toast-notification ${toastData.type}`}>{toastData.message}</div>}
+
       {deckGhost && createPortal(
         <div className="deck-drag-ghost" style={{ left: deckGhost.x, top: deckGhost.y }} />,
         document.body)}
@@ -407,20 +420,6 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
         onStartLesson={startLesson}
         onCloseLesson={finishLesson}
       />
-
-      {/* Banner de erro estrutural */}
-      {validationError && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          padding: '8px 14px', background: '#dc2626', color: '#fff',
-          fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, fontSize: 13,
-          borderBottom: '3px solid #7f1d1d' }}>
-          <span>⛔ {validationError}</span>
-          <button onClick={() => setValidationError(null)}
-            style={{ background: '#fff', color: '#dc2626', border: 'none', borderRadius: 6,
-              fontWeight: 900, fontFamily: "'Comic Sans MS',cursive", cursor: 'pointer',
-              padding: '2px 8px', fontSize: 12 }}>✕</button>
-        </div>
-      )}
 
       <div className="workspace">
         {formalOpen && (
@@ -692,16 +691,6 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
             ))}
           </div>
 
-          {result && !result.ok && (
-            <div className="ap-result err" style={{ fontSize: 11 }}>
-              {result.reason === 'wrongly-accepted'
-                ? `Aceita "${result.counterexample || 'λ'}" indevidamente`
-                : result.reason === 'rejected'
-                ? `Não aceita "${result.counterexample || 'λ'}"`
-                : `Loop em "${result.counterexample || 'λ'}"`}
-            </div>
-          )}
-
           {isDrawingUnlocked && (
             <button className="validate-btn slide-up-fade" onClick={formalMode ? concludePhase : validate}>
               {formalMode ? '🏁 Concluir Fase' : '✓ Validar MT'}
@@ -734,6 +723,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress, showToa
         onNodeDragCancel={handleDeckCancel}
         tape={lesson.active && lesson.cur?.tape ? lesson.cur.tape : null}
         tapeHead={lesson.cur?.head ?? 0}
+        errAction={errAction}
       />
 
       {victory && (

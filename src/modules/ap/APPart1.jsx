@@ -38,8 +38,8 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   const [level, setLevel]   = useState(null);
   const [mode, setMode]     = useState('IDLE');
   const [connectingSource, setConnectingSource] = useState(null);
+  const [errAction, setErrAction] = useState(null);
   const [prof, setProf]     = useState({ message: '', mood: 'serio' });
-  const [result, setResult] = useState(null);
   const [sim, setSim]       = useState(null);
   const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null, tIdx: null, seq: 0 });
   const [simWord, setSimWord] = useState('');
@@ -106,7 +106,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
       zoom,
     };
     setMode('IDLE'); setConnectingSource(null);
-    setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null }); setResult(null);
+    setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     lessonGoTo(0);
     applyStep(lessonSteps[0]);
   }, [lesson.hasLesson, lessonGoTo, lessonSteps, applyStep, zoom]);
@@ -180,7 +180,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     g.reset();
     lessonReset();
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
-    setResult(null); setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
+    setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     setSimWord(''); setFormalOpen(false); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
     setTestedWords([]);
@@ -230,14 +230,14 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     if (!level || level.impossible) return;
     setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     const res = g.validatePDA(level);
-    setResult(res);
     if (res.ok) {
       say('Linguagem certa! Agora preencha a Descrição Formal. 🎉', 'feliz');
       updateProgress?.(`ap-${level.id}`, 2);
       showToast?.('AP validado por pilha vazia! ★', 'success');
       setFormalOpen(true);
     } else if (res.reason === 'counterexample') {
-      say(res.message, 'serio');
+      // Erro fica só no toast do topo (res.message) — o Maurílio não comenta
+      // erros, só sucesso/dicas.
       showToast?.(res.message, 'error');
       if (res.run) {
         // res.run vem de pdaAcceptingRun (gabarito ou aluno) — é sempre uma
@@ -249,8 +249,11 @@ export default function APPart1({ onBack, progress, updateProgress }) {
           message: res.message });
       }
     } else {
-      say(res.message, 'serio');
       showToast?.(res.message, 'error');
+      if (res.reason === 'no-initial') {
+        setErrAction('TOGGLE_INITIAL');
+        setTimeout(() => setErrAction(null), 3000);
+      }
     }
   }, [level, g, say, updateProgress, showToast, openSim]);
 
@@ -608,10 +611,6 @@ export default function APPart1({ onBack, progress, updateProgress }) {
             ))}
           </div>
 
-          {result && !result.ok && result.reason !== 'counterexample' && (
-            <div className="ap-result err">{result.message}</div>
-          )}
-
           {isDrawingUnlocked && (
             <button className="validate-btn slide-up-fade" onClick={validate}>
               ✓ Validar AP
@@ -641,6 +640,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
         onNodeDrag={handleDeckDrag}
         onNodeDrop={handleDeckDrop}
         onNodeDragCancel={handleDeckCancel}
+        errAction={errAction}
         simPanel={sim && (
           <APSimPanel key={simKey} run={sim.run} word={sim.word}
             accepted={sim.accepted} reason={sim.reason} title={sim.title} message={sim.message}

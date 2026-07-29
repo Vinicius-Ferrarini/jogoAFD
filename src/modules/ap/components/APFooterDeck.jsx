@@ -23,6 +23,7 @@ export default function APFooterDeck({
   tape, tapeHead,
   simPanel,
   isDrawingUnlocked = true,
+  errAction,
 }) {
   const CARDS = showFinalCard
     ? [CARD_INITIAL, CARD_FINAL, ...CARDS_TAIL]
@@ -78,10 +79,11 @@ export default function APFooterDeck({
         ) : (() => {
           // Antes do 1º estado, só "Novo Estado" funciona; as demais ficam travadas.
           const locked = !hasNodes && c.action !== 'ADD_NODE';
+          const isErr = errAction === c.action;
           return (
           <div key={c.action}
             data-icon={c.icon}
-            className={`card ${c.cls} ${mode === c.action ? 'selected-card' : ''} ${locked ? 'card-locked' : ''}`}
+            className={`card ${c.cls} ${mode === c.action ? 'selected-card' : ''} ${locked ? 'card-locked' : ''} ${isErr ? 'error-pulse-severe' : ''}`}
             style={locked ? { opacity: 0.4, cursor: 'not-allowed', filter: 'grayscale(0.6)' } : undefined}
             title={locked ? 'Crie um estado primeiro (◯ Novo Estado)' : undefined}
             onClick={() => {

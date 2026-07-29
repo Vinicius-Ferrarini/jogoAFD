@@ -19,7 +19,7 @@
 
 ## O que é o TuringLab?
 
-O **TuringLab** é uma plataforma educacional construída como projeto de **Iniciação Científica**. O objetivo é tornar o aprendizado de **Autômatos Finitos Determinísticos (AFD)** concreto e acessível por meio de mecânicas de jogo — cartas, canvas interativo e validação em tempo real.
+O **TuringLab** é uma plataforma educacional construída como projeto de **Iniciação Científica**. O objetivo é tornar o aprendizado de **Teoria da Computação** — Autômatos Finitos Determinísticos (AFD), Autômatos com Pilha (AP) e Máquinas de Turing (MT) — concreto e acessível por meio de mecânicas de jogo — cartas, canvas interativo e validação em tempo real.
 
 O visual segue o estilo neo-brutalismo / gibi (inspirado na Turma da Mônica), com o professor **Maurílio** guiando o jogador em cada fase.
 
@@ -29,10 +29,10 @@ O visual segue o estilo neo-brutalismo / gibi (inspirado na Turma da Mônica), c
 
 | # | Funcionalidade | Descrição |
 |---|---|---|
-| 🔒 | **Desbloqueio por Descoberta** | O canvas de desenho só é liberado quando o aluno descobre a menor palavra aceita pela linguagem |
+| 🔒 | **Desbloqueio por Descoberta** | O canvas de desenho só é liberado quando o aluno descobre o exemplo mínimo da fase (a menor palavra aceita ou o menor caso de entrada/saída) |
 | 🃏 | **Mecânica de Cartas** | Estados, setas e símbolos são distribuídos como cartas interativas na mão do jogador |
-| 🖱️ | **Canvas Drag & Drop** | Construção do AFD via arrastar, conectar e rotular estados diretamente no grafo |
-| 🧠 | **Validação Automática** | O sistema simula o autômato desenhado contra a expressão regular da fase e rejeita erros de não-determinismo |
+| 🖱️ | **Canvas Drag & Drop** | Construção do autômato (AFD, AP ou MT) via arrastar, conectar e rotular estados diretamente no grafo |
+| 🧠 | **Validação Automática** | O sistema simula o autômato desenhado contra a especificação da fase (linguagem, bateria de testes ou entrada/saída) e rejeita erros estruturais e de não-determinismo |
 | 🔬 | **Simulação Passo a Passo** | Percorre cada transição com destaque visual em tempo real |
 | 📊 | **Grafo → Linguagem (P2)** | Modo inverso: dado um autômato, o aluno deve identificar a linguagem formal aceita |
 | 🔽 | **Minimização de AFD** | Reduz um autômato ao equivalente mínimo em passos guiados |
@@ -86,7 +86,7 @@ Abra **http://localhost:5173** no navegador.
 
 ## Contexto Acadêmico
 
-Este software é um artefato de **Iniciação Científica** focado no ensino de Teoria da Computação em cursos de Engenharia de Software e Ciência da Computação. O design foi concebido para reduzir a carga cognitiva associada à quíntupla formal **M = (Q, Σ, δ, q₀, F)**, apresentando cada componente de forma progressiva e tangível dentro do jogo.
+Este software é um artefato de **Iniciação Científica** focado no ensino de Teoria da Computação em cursos de Engenharia de Software e Ciência da Computação. O design foi concebido para reduzir a carga cognitiva associada às definições formais de cada modelo — a quíntupla do AFD **M = (Q, Σ, δ, q₀, F)**, a sêxtupla do AP (com pilha) e a séxtupla/séptupla da MT (com fita) —, apresentando cada componente de forma progressiva e tangível dentro do jogo.
 
 ---
 
