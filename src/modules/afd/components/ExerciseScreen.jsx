@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { LEVEL_GRAPHS } from '../../../levels_graphs';
-import { UNAVAILABLE_LEVELS } from '../../../levels';
+import { UNAVAILABLE_LEVELS, LEVEL_DIFFICULTY } from '../../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
+import { logEvent } from '../../../services/telemetry';
 import { SvgStars } from '../SvgStar';
 import GraphView       from './GraphView';
 import { DrawStroke }  from './StrokeEl';
@@ -105,6 +106,80 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [isDrawMode, drawUndo]);
+
+  // ── Telemetria (módulo afd-p2) ─────────────────────────────────────────────
+  // ExerciseScreen remonta por nível (key={level.id} no AFDPart2), então cada
+  // nível = novo mount = refs zeradas.
+  const phaseStartRef = useRef(null);
+  const tutorialOpensRef = useRef(0);
+  const errorSinceTutorialRef = useRef(false);
+  const starsBeforeRef = useRef(0);
+  const loggedAttemptRef = useRef(0);
+  const initedRef = useRef(false);
+
+  // inicio_fase — uma vez por nível (initedRef evita a duplicação do StrictMode em dev).
+  useEffect(() => {
+    if (initedRef.current) return;
+    initedRef.current = true;
+    phaseStartRef.current = performance.now();
+    logEvent({
+      tipo_evento: 'inicio_fase',
+      modulo: 'afd-p2',
+      nivel_id: level.id,
+      dificuldade: LEVEL_DIFFICULTY[level.id] ?? null,
+    });
+  }, [level.id]);
+
+  // tentativa (+ fim_fase no acerto) — reage a cada avaliação: handleCheck
+  // incrementa `attempts` e define `result`. P2 dá 1 fim_fase por nível.
+  useEffect(() => {
+    if (attempts === 0) { loggedAttemptRef.current = 0; return; }  // mount/reset
+    if (attempts === loggedAttemptRef.current) return;             // já logado
+    loggedAttemptRef.current = attempts;
+    const resultado = result === 'correct' ? 'correct' : 'wrong';
+    if (resultado === 'wrong') errorSinceTutorialRef.current = true;
+    logEvent({
+      tipo_evento: 'tentativa',
+      modulo: 'afd-p2',
+      nivel_id: level.id,
+      resultado,
+      numero_tentativas: attempts,
+    });
+    if (result === 'correct') {
+      logEvent({
+        tipo_evento: 'fim_fase',
+        modulo: 'afd-p2',
+        nivel_id: level.id,
+        estrelas_obtidas: earnedStars,
+        novo_recorde: earnedStars > starsBeforeRef.current,
+        tempo_gasto_segundos: phaseStartRef.current == null
+          ? null : Math.round((performance.now() - phaseStartRef.current) / 1000),
+        numero_tentativas: attempts,
+        dificuldade: LEVEL_DIFFICULTY[level.id] ?? null,
+        assistiu_tutorial: tutorialOpensRef.current > 0,
+        acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
+      });
+    }
+  }, [attempts, result, earnedStars, level.id]);
+
+  // Captura o recorde ANTES de avaliar (para novo_recorde no fim_fase).
+  const handleCheckTelemetry = useCallback(() => {
+    starsBeforeRef.current = progress[level.id]?.stars || 0;
+    handleCheck();
+  }, [handleCheck, progress, level.id]);
+
+  // Abertura de ajuda (dica do professor) — mesma métrica de "uso de ajuda" do afd-p1.
+  const openHelp = useCallback((msg) => {
+    tutorialOpensRef.current += 1;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
+      modulo: 'afd-p2',
+      nivel_id: level.id,
+      origem: 'dica',
+    });
+    showProf(msg);
+  }, [showProf, level.id]);
 
   const stars    = progress[level.id]?.stars || 0;
   const levelIdx = GAME_LEVELS.findIndex(l => l.id === level.id);
@@ -355,7 +430,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
               placeholder="Ex: { a^n | n > 0 }"
               value={answer}
               onChange={e => setAnswerText(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (result !== 'correct') handleCheck(); } }}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (result !== 'correct') handleCheckTelemetry(); } }}
               onSelect={e => { savedCursor.current = { start: e.target.selectionStart, end: e.target.selectionEnd }; }}
               onBlur={e => { savedCursor.current = { start: e.target.selectionStart, end: e.target.selectionEnd }; }}
               disabled={result === 'correct'}
@@ -376,7 +451,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
 
           {/* Actions */}
           {result !== 'correct' && (
-            <button className="validate-btn slide-up-fade" onClick={handleCheck}>
+            <button className="validate-btn slide-up-fade" onClick={handleCheckTelemetry}>
               ✔ Verificar Resposta
             </button>
           )}
@@ -389,7 +464,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
 
           {attempts > 0 && result !== 'correct' && attempts < 2 && (
             <button className="simulate-btn" style={{ background: '#fef08a', marginTop: 4 }}
-              onClick={() => showProf(level.hint || 'Analise os estados finais e as transições!')}>
+              onClick={() => openHelp(level.hint || 'Analise os estados finais e as transições!')}>
               💡 Pedir Dica
             </button>
           )}
@@ -430,7 +505,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
           src={imgMaurilioSerio}
           alt="Professor Maurílio"
           className="prof-img"
-          onClick={() => profMsg ? clearProf() : showProf(
+          onClick={() => profMsg ? clearProf() : openHelp(
             attempts === 0
               ? 'Observe os estados: iniciais, finais e as transições entre eles!'
               : (level.hint || 'Siga o caminho das setas e note onde o autômato aceita!')

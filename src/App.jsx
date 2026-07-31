@@ -1,14 +1,20 @@
 // TuringLab – App.jsx v3.0 (ROUTER CENTRAL)
-import { useState, useCallback, lazy, Suspense } from 'react';
+import { useState, useCallback, useRef, useEffect, lazy, Suspense } from 'react';
 import './App.css';
 
 // Importar páginas e módulos
 import MainMenu from './pages/MainMenu';
+import ConsentGate from './components/ConsentGate';
 import FeedbackButton from './components/FeedbackButton';
+import FeedbackModal from './components/FeedbackModal';
 import LoadingScreen from './components/LoadingScreen';
 import { LEVEL_IDS, UNAVAILABLE_LEVELS } from './levels';
 import { EXERCISES } from './modules/afd/afdMinimizerExercises';
 import { MT_RECON_LEVEL_IDS, MT_LEVEL_IDS } from './levels_data/mt-ids.js';
+import {
+  logEvent, hasConsent,
+  hasFeedbackShownOnce, markFeedbackShownOnce, hasFeedbackResponded,
+} from './services/telemetry';
 const AFDPart1    = lazy(() => import('./modules/afd/AFDPart1'));
 const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
@@ -25,6 +31,8 @@ const DIRECT_GAME = { ap: 'ap-pilha' };
 export default function App() {
   const [screen, setScreen] = useState('HOME');
   const [currentModule, setCurrentModule] = useState(null);
+  // Consentimento de telemetria: enquanto false, mostra o ConsentGate no lugar do jogo.
+  const [consented, setConsented] = useState(hasConsent());
 
   // ✨ Progresso Persistente
   const getProgress = () => {
@@ -37,13 +45,31 @@ export default function App() {
 
   const [progress, setProgress] = useState(getProgress);
 
-  const updateProgress = useCallback((moduleId, stars) => {
+  // Espelho sempre-atual do progresso: permite calcular `novo_recorde` em
+  // updateProgress sem colocar `progress` nas deps do useCallback (mantém a
+  // identidade da função estável para os módulos que a recebem por prop).
+  const progressRef = useRef(progress);
+  useEffect(() => { progressRef.current = progress; }, [progress]);
+
+  const updateProgress = useCallback((moduleId, stars, extras = {}) => {
+    const previousStars = progressRef.current[moduleId]?.stars || 0;
     setProgress(prev => {
       const cur = prev[moduleId]?.stars || 0;
       if (stars <= cur) return prev;
       const next = { ...prev, [moduleId]: { stars, timestamp: Date.now() } };
       localStorage.setItem('turinglab_progress', JSON.stringify(next));
       return next;
+    });
+    // Efeito colateral fora do updater do setProgress: sob StrictMode o updater
+    // pode rodar 2x em dev, então logamos aqui para não duplicar o evento.
+    // `novo_recorde` separa melhora real de rejogada; `extras` traz campos
+    // específicos do módulo (modulo, nivel_id, tempo_gasto_segundos, dificuldade).
+    logEvent({
+      tipo_evento: 'fim_fase',
+      modulo: moduleId,
+      estrelas_obtidas: stars,
+      novo_recorde: stars > previousStars,
+      ...extras,
     });
   }, []);
 
@@ -52,77 +78,118 @@ export default function App() {
   // essa função. Precisa de um componente de toast de verdade no futuro.
   const showToast = useCallback(() => {}, []);
 
+  // ── Fase 6: feedback de satisfação ──────────────────────────────────────────
+  // O modal vive no nível do App (como o ConsentGate) para aparecer sobre
+  // qualquer tela. `feedbackResponded` (visual do FAB) espelha a flag local.
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackResponded, setFeedbackResponded] = useState(hasFeedbackResponded());
+  const openFeedback = useCallback(() => setFeedbackOpen(true), []);
+  // Popup automático (forçado, 1x): só ao SAIR de uma fase (GAME → MODULES/HOME),
+  // nunca no meio dela, e só se já houver ≥1 fase concluída E consentimento dado.
+  const maybeAutoFeedback = useCallback(() => {
+    if (!hasConsent()) return;                                  // não coleta sem consentimento
+    if (hasFeedbackShownOnce()) return;                         // popup forçado é 1x só
+    if (Object.keys(progressRef.current).length === 0) return;  // precisa de ≥1 fase concluída
+    markFeedbackShownOnce();
+    setFeedbackOpen(true);
+  }, []);
+
   // ✨ Navegação
-  const goHome = () => setScreen('HOME');
-  const goModules = () => { setScreen('MODULES'); setCurrentModule(null); };
+  const goHome = () => { const leavingGame = screen === 'GAME'; setScreen('HOME'); if (leavingGame) maybeAutoFeedback(); };
+  const goModules = () => { const leavingGame = screen === 'GAME'; setScreen('MODULES'); setCurrentModule(null); if (leavingGame) maybeAutoFeedback(); };
   const loadGame = (gameId) => {
     setCurrentModule(gameId);
     setScreen('GAME');
   };
   const goSubmodule = (moduleId) => {
+    // afd/mt saem da fase para a tela de SUBMÓDULOS (não p/ MODULES/HOME), então o
+    // popup de feedback também precisa ser disparado aqui — senão só o AP (que volta
+    // via goModules) acionaria. Mantém "só ao SAIR" (nunca ao entrar num módulo).
+    const leavingGame = screen === 'GAME';
     const direct = DIRECT_GAME[moduleId];
-    if (direct) { loadGame(direct); return; }   // pula a tela de submódulos
+    if (direct) { loadGame(direct); return; }   // pula a tela de submódulos (ex.: AP)
     setScreen('SUBMODULES'); setCurrentModule(moduleId);
+    if (leavingGame) maybeAutoFeedback();
   };
 
   // ✨ Renderização
-  if (screen === 'HOME') {
-    return <MainMenu onStart={goModules} progress={progress} />;
-  }
+  const screenNode = (() => {
+    if (screen === 'HOME') {
+      return <MainMenu onStart={goModules} progress={progress} />;
+    }
 
-  if (screen === 'MODULES') {
-    return (
-      <ModuleSelection
-        progress={progress}
-        onSelectModule={goSubmodule}
-        onBack={goHome}
-      />
-    );
-  }
+    if (screen === 'MODULES') {
+      return (
+        <ModuleSelection
+          progress={progress}
+          onSelectModule={goSubmodule}
+          onBack={goHome}
+          onFeedback={openFeedback}
+          feedbackResponded={feedbackResponded}
+        />
+      );
+    }
 
-  if (screen === 'SUBMODULES') {
-    return (
-      <SubmoduleSelection
-        moduleId={currentModule}
-        progress={progress}
-        onSelectGame={loadGame}
-        onBack={goModules}
-      />
-    );
-  }
+    if (screen === 'SUBMODULES') {
+      return (
+        <SubmoduleSelection
+          moduleId={currentModule}
+          progress={progress}
+          onSelectGame={loadGame}
+          onBack={goModules}
+        />
+      );
+    }
 
-  if (screen === 'GAME') {
-    const moduleProps = {
-      onBack: goSubmodule,
-      progress,
-      updateProgress,
-      showToast,
-    };
+    if (screen === 'GAME') {
+      const moduleProps = {
+        onBack: goSubmodule,
+        progress,
+        updateProgress,
+        showToast,
+      };
 
-    const gameNode = (() => {
-      switch (currentModule) {
-        case 'afd-p1':  return <AFDPart1 {...moduleProps} onBack={() => goSubmodule('afd')} />;
-        case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
-        case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
-        case 'ap-pilha':  return <APPart1  {...moduleProps} onBack={goModules} />;
-        case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={() => goSubmodule('mt')} />;
-        case 'mt-recon':  return <MTReconPart1 {...moduleProps} onBack={() => goSubmodule('mt')} />;
-        default:          return <div>Módulo não encontrado</div>;
-      }
-    })();
+      const gameNode = (() => {
+        switch (currentModule) {
+          case 'afd-p1':  return <AFDPart1 {...moduleProps} onBack={() => goSubmodule('afd')} />;
+          case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
+          case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
+          case 'ap-pilha':  return <APPart1  {...moduleProps} onBack={goModules} />;
+          case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={() => goSubmodule('mt')} />;
+          case 'mt-recon':  return <MTReconPart1 {...moduleProps} onBack={() => goSubmodule('mt')} />;
+          default:          return <div>Módulo não encontrado</div>;
+        }
+      })();
 
-    return (
-      <Suspense fallback={<LoadingScreen />}>
-        {gameNode}
-      </Suspense>
-    );
-  }
+      return (
+        <Suspense fallback={<LoadingScreen />}>
+          {gameNode}
+        </Suspense>
+      );
+    }
 
-  return <LoadingScreen />;
+    return <LoadingScreen />;
+  })();
+
+  // Banner de consentimento: overlay NÃO bloqueante (o jogo segue visível/jogável
+  // por trás). Só o botão "Aceito" chama grantConsent(); fechar no ✕ apenas oculta.
+  return (
+    <>
+      {screenNode}
+      {!consented && <ConsentGate onAccept={() => setConsented(true)} />}
+      {feedbackOpen && (
+        <FeedbackModal
+          alreadyResponded={feedbackResponded}
+          onClose={() => setFeedbackOpen(false)}
+          onSubmitted={() => setFeedbackResponded(true)}
+        />
+      )}
+    </>
+  );
 }
 
 // ✨ Seleção de Módulos Principais
-function ModuleSelection({ onSelectModule, onBack }) {
+function ModuleSelection({ onSelectModule, onBack, onFeedback, feedbackResponded }) {
   const modules = [
     { id: 'afd',     badge: 'AFD',   label: 'Autômatos Finitos',    icon: '🤖', color: '#60a5fa',
       desc: 'Desenhe, analise e minimize AFDs' },
@@ -168,7 +235,7 @@ function ModuleSelection({ onSelectModule, onBack }) {
       </div>
 
       {/* Botão flutuante de feedback (position:fixed — não afeta o layout) */}
-      <FeedbackButton />
+      <FeedbackButton onOpen={onFeedback} responded={feedbackResponded} />
     </div>
   );
 }

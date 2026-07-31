@@ -4,7 +4,7 @@ import TriangularTable from './TriangularTable';
 // Step3_TrivialMarking — caso-base de Myhill–Nerode (passo TRIVIAL).
 // Marca × em todo par com EXATAMENTE um estado final. Componente "burro":
 // `marks` é elevado ao MinGame; a verdade vem de game.validateTrivial.
-export default function Step3_TrivialMarking({ game, marks, setMarks, showProf, onAdvance }) {
+export default function Step3_TrivialMarking({ game, marks, setMarks, showProf, onAttempt, onAdvance }) {
   const { rStates, rFinals, validateTrivial } = game;
   const [wrongCells, setWrongCells] = useState(new Set());
 
@@ -17,6 +17,7 @@ export default function Step3_TrivialMarking({ game, marks, setMarks, showProf, 
 
   const verify = () => {
     const res = validateTrivial(marks);
+    onAttempt?.(res.ok ? 'correct' : 'wrong', res.ok ? null : 'trivial_incorreta');
     if (!res.ok) {
       setWrongCells(res.errorCells);
       showProf(res.message, 'serio');

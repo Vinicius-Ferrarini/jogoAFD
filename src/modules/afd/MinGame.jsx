@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import './AFDPart1.css';
 import './AFDMinimizer.css';
 import useMinimizationGame from './hooks/useMinimizationGame';
@@ -12,6 +12,7 @@ import Step4_Propagation    from './components/Step4_Propagation';
 import Step5_Result         from './components/Step5_Result';
 import MinDrawStep          from './components/MinDrawStep';
 import MinLessonOverlay     from './components/MinLessonOverlay';
+import { logEvent } from '../../services/telemetry';
 
 // Máquina de 6 passos: PREP → SETUP → TRIVIAL → PROP → GROUPS → DRAW
 const STEP_ORDER  = ['PREP', 'SETUP', 'TRIVIAL', 'PROP', 'GROUPS', 'DRAW'];
@@ -70,6 +71,77 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
 
   const stars = progress[`afd-min-${exercise.id}`]?.stars || 0;
 
+  // ── Telemetria (módulo afd-min) ────────────────────────────────────────────
+  // MinGame NÃO remonta ao trocar de exercício (sem key), então o inicio_fase e
+  // o reset dos contadores dependem de exercise.id via effect.
+  const phaseStartRef = useRef(null);
+  const attemptsRef = useRef(0);               // numero_tentativas da fase atual
+  const tutorialOpensRef = useRef(0);
+  const errorSinceTutorialRef = useRef(false); // true se houve erro desde a última ajuda
+  const lastInicioRef = useRef(null);
+
+  const elapsedSeconds = useCallback(() => (
+    phaseStartRef.current == null ? null
+      : Math.round((performance.now() - phaseStartRef.current) / 1000)
+  ), []);
+
+  // Campos comuns aos fim_fase. Marcos do minimizer: "propagacao" (2★) e
+  // "desenho_minimo" (3★) — não há marco de 1★ aqui.
+  const phaseExtras = useCallback((marco) => ({
+    modulo: 'afd-min',
+    nivel_id: exercise.id,
+    tempo_gasto_segundos: elapsedSeconds(),
+    numero_tentativas: attemptsRef.current,
+    dificuldade: exercise.level ?? null,
+    marco,
+    assistiu_tutorial: tutorialOpensRef.current > 0,
+    acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
+  }), [exercise.id, exercise.level, elapsedSeconds]);
+
+  // "Uso de ajuda": dica do professor (origem 'dica') ou Aula (origem 'aula_guiada').
+  const logTutorialOpen = useCallback((origem) => {
+    tutorialOpensRef.current += 1;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
+      modulo: 'afd-min',
+      nivel_id: exercise.id,
+      origem,
+    });
+  }, [exercise.id]);
+
+  // inicio_fase — ao entrar/trocar de exercício; lastInicioRef evita duplicar
+  // (StrictMode em dev e re-renders com o mesmo exercício).
+  useEffect(() => {
+    if (lastInicioRef.current === exercise.id) return;
+    lastInicioRef.current = exercise.id;
+    phaseStartRef.current = performance.now();
+    attemptsRef.current = 0;
+    tutorialOpensRef.current = 0;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: 'inicio_fase',
+      modulo: 'afd-min',
+      nivel_id: exercise.id,
+      dificuldade: exercise.level ?? null,
+    });
+  }, [exercise.id, exercise.level]);
+
+  // tentativa/tipo_erro — chamado pelos componentes de passo a cada validação
+  // avaliada (juiz invisível). resultado 'correct'|'wrong'; tipo_erro só no erro.
+  const onAttempt = useCallback((resultado, tipo_erro = null) => {
+    attemptsRef.current += 1;
+    if (resultado === 'wrong') errorSinceTutorialRef.current = true;
+    logEvent({
+      tipo_evento: 'tentativa',
+      modulo: 'afd-min',
+      nivel_id: exercise.id,
+      resultado,
+      tipo_erro,
+      numero_tentativas: attemptsRef.current,
+    });
+  }, [exercise.id]);
+
   // ── Transições entre passos ──
   const lockTrivialAndGoProp = useCallback(() => {
     setLockedCells(new Set(allPairs.filter(k => trivialTable[k])));
@@ -78,16 +150,16 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
 
   // Propagação concluída → 2 estrelas; a 3ª só vem ao desenhar o AFD mínimo.
   const finishPropagation = useCallback(() => {
-    updateProgress(`afd-min-${exercise.id}`, 2);
+    updateProgress(`afd-min-${exercise.id}`, 2, phaseExtras('propagacao'));
     showBanner('Distinções completas! ★★ — falta desenhar o AFD mínimo.', 'success');
     setStep('GROUPS');
-  }, [updateProgress, exercise.id, showBanner]);
+  }, [updateProgress, exercise.id, showBanner, phaseExtras]);
 
   // Desenho do AFD mínimo validado → 3ª estrela.
   const handleDrawSolved = useCallback(() => {
-    updateProgress(`afd-min-${exercise.id}`, 3);
+    updateProgress(`afd-min-${exercise.id}`, 3, phaseExtras('desenho_minimo'));
     showBanner('AFD mínimo desenhado! ★★★', 'success');
-  }, [updateProgress, exercise.id, showBanner]);
+  }, [updateProgress, exercise.id, showBanner, phaseExtras]);
 
   // Voltar um passo (descarta propagação ao sair de PROP→TRIVIAL)
   const goBackStep = useCallback(() => {
@@ -160,7 +232,7 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
         <div style={{ display: 'flex', gap: 5, marginRight: 10, alignItems: 'center' }}>
           {!lesson && (
             <button className="min-lesson-open"
-              onClick={() => setLesson({ stepIdx: STEP_ORDER.indexOf(step), frameIdx: 0 })}
+              onClick={() => { logTutorialOpen('aula_guiada'); setLesson({ stepIdx: STEP_ORDER.indexOf(step), frameIdx: 0 }); }}
               title="Assistir o professor demonstrar este passo (não dá estrela)">
               👨‍🏫 Aula
             </button>
@@ -188,7 +260,8 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
       ) : step === 'DRAW' ? (
         <MinDrawStep
           game={game} prep={prep} showProf={showProf} stars={stars}
-          onSolved={handleDrawSolved} onBack={onBack} onNext={onNext} nextLabel={nextLabel}
+          onSolved={handleDrawSolved} onAttempt={onAttempt}
+          onBack={onBack} onNext={onNext} nextLabel={nextLabel}
         />
       ) : (
       <div className="min-main">
@@ -234,26 +307,26 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
         {/* Painel direito — conteúdo do passo */}
         <section className="min-right">
           {step === 'PREP' && (
-            <Step1_Preparation game={game} prep={prep} setPrep={setPrep} showProf={showProf} onAdvance={() => setStep('SETUP')} />
+            <Step1_Preparation game={game} prep={prep} setPrep={setPrep} showProf={showProf} onAttempt={onAttempt} onAdvance={() => setStep('SETUP')} />
           )}
           {step === 'SETUP' && (
             <Step2_TableSetup
               game={game}
               axisRows={axisRows} axisCols={axisCols}
               setAxisRows={setAxisRows} setAxisCols={setAxisCols}
-              showProf={showProf} onAdvance={() => setStep('TRIVIAL')}
+              showProf={showProf} onAttempt={onAttempt} onAdvance={() => setStep('TRIVIAL')}
             />
           )}
           {step === 'TRIVIAL' && (
             <Step3_TrivialMarking
               game={game} marks={marks} setMarks={setMarks}
-              showProf={showProf} onAdvance={lockTrivialAndGoProp}
+              showProf={showProf} onAttempt={onAttempt} onAdvance={lockTrivialAndGoProp}
             />
           )}
           {step === 'PROP' && (
             <Step4_Propagation
               game={game} marks={marks} setMarks={setMarks} lockedCells={lockedCells}
-              showProf={showProf} onAdvance={finishPropagation}
+              showProf={showProf} onAttempt={onAttempt} onAdvance={finishPropagation}
             />
           )}
           {step === 'GROUPS' && (
@@ -273,7 +346,7 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
           mood={profMood}
           onClick={() => {
             if (profMsg) { if (speechRef.current) clearTimeout(speechRef.current); setProfMsg(''); }
-            else showProf(exercise.hint || 'Agrupe os estados equivalentes para simplificar o autômato!', 'explicando');
+            else { logTutorialOpen('dica'); showProf(exercise.hint || 'Agrupe os estados equivalentes para simplificar o autômato!', 'explicando'); }
           }}
         />
       )}

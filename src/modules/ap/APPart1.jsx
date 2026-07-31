@@ -23,6 +23,7 @@ import { AP_LEVELS, getShortestWord } from '../../levels_data/ap/index.js';
 import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
+import { logEvent } from '../../services/telemetry';
 
 export default function APPart1({ onBack, progress, updateProgress }) {
   // ── Toast (mesmo padrão do AFD1: local, ignora o showToast no-op do App.jsx) ─
@@ -88,6 +89,37 @@ export default function APPart1({ onBack, progress, updateProgress }) {
 
   const say = useCallback((message, mood = 'serio') => setProf({ message, mood }), []);
 
+  // ── Telemetria (módulo ap) ─────────────────────────────────────────────────
+  const phaseStartRef = useRef(null);
+  const attemptsRef = useRef(0);
+  const tutorialOpensRef = useRef(0);
+  const errorSinceTutorialRef = useRef(false);
+  const elapsedSeconds = useCallback(() => (
+    phaseStartRef.current == null ? null
+      : Math.round((performance.now() - phaseStartRef.current) / 1000)
+  ), []);
+  // Marcos: descoberta_palavra (★1), validacao_ap (★2), tabela_formal (★3).
+  const phaseExtras = useCallback((marco) => ({
+    modulo: 'ap',
+    nivel_id: level?.id,
+    tempo_gasto_segundos: elapsedSeconds(),
+    numero_tentativas: attemptsRef.current,
+    dificuldade: level?.level ?? null,
+    marco,
+    assistiu_tutorial: tutorialOpensRef.current > 0,
+    acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
+  }), [level, elapsedSeconds]);
+  const logTutorialOpen = useCallback((origem) => {
+    tutorialOpensRef.current += 1;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
+      modulo: 'ap',
+      nivel_id: level?.id,
+      origem,
+    });
+  }, [level]);
+
   // ── Modo Aula: iniciar / sair / navegar (narração + painel formal sem efeito) ─
   const applyStep = useCallback((st) => {
     setProf(st?.prof ?? { message: '', mood: 'serio' });
@@ -100,6 +132,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   const preLessonViewRef = useRef(null);
   const startLesson = useCallback(() => {
     if (!lesson.hasLesson) return;
+    logTutorialOpen('aula_guiada'); // mesma métrica de "uso de ajuda"
     preLessonViewRef.current = {
       scrollLeft: viewportRef.current?.scrollLeft ?? 0,
       scrollTop: viewportRef.current?.scrollTop ?? 0,
@@ -109,7 +142,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     lessonGoTo(0);
     applyStep(lessonSteps[0]);
-  }, [lesson.hasLesson, lessonGoTo, lessonSteps, applyStep, zoom]);
+  }, [lesson.hasLesson, lessonGoTo, lessonSteps, applyStep, zoom, logTutorialOpen]);
   const finishLesson = useCallback(() => {
     lessonFinishRaw();
     setFormalOpen(false);
@@ -179,6 +212,17 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   const loadLevel = useCallback((lv) => {
     g.reset();
     lessonReset();
+    // Telemetria: início da fase + reset de contadores.
+    phaseStartRef.current = performance.now();
+    attemptsRef.current = 0;
+    tutorialOpensRef.current = 0;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: 'inicio_fase',
+      modulo: 'ap',
+      nivel_id: lv.id,
+      dificuldade: lv.level ?? null,
+    });
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
     setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     setSimWord(''); setFormalOpen(false); setDeckGhost(null); setVictory(false);
@@ -230,9 +274,22 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     if (!level || level.impossible) return;
     setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null });
     const res = g.validatePDA(level);
+    if (!res.ok) {
+      // Telemetria: validação do AP falhou (tentativa de validação).
+      errorSinceTutorialRef.current = true;
+      attemptsRef.current += 1;
+      logEvent({
+        tipo_evento: 'tentativa',
+        modulo: 'ap',
+        nivel_id: level.id,
+        resultado: 'validacao_falhou',
+        tipo_erro: res.reason ?? null,
+        numero_tentativas: attemptsRef.current,
+      });
+    }
     if (res.ok) {
       say('Linguagem certa! Agora preencha a Descrição Formal. 🎉', 'feliz');
-      updateProgress?.(`ap-${level.id}`, 2);
+      updateProgress?.(`ap-${level.id}`, 2, phaseExtras('validacao'));
       showToast?.('AP validado por pilha vazia! ★', 'success');
       setFormalOpen(true);
     } else if (res.reason === 'counterexample') {
@@ -255,7 +312,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
         setTimeout(() => setErrAction(null), 3000);
       }
     }
-  }, [level, g, say, updateProgress, showToast, openSim]);
+  }, [level, g, say, updateProgress, showToast, openSim, phaseExtras]);
 
   // ── Descrição formal: elementos corretos (sem estrela própria — a ★3 vem
   // só da função δ completa) e função δ → vitória (★3) ─────────────────────────
@@ -264,9 +321,9 @@ export default function APPart1({ onBack, progress, updateProgress }) {
   }, [say]);
 
   const onFormalDone = useCallback(() => {
-    updateProgress?.(`ap-${level.id}`, 3);
+    updateProgress?.(`ap-${level.id}`, 3, phaseExtras('tabela_formal'));
     setFormalOpen(false); setVictory(true);
-  }, [level, updateProgress]);
+  }, [level, updateProgress, phaseExtras]);
 
   const checkGraph = useCallback(
     () => g.nodes.some(n => n.isInitial) && g.transitions.length > 0,
@@ -307,14 +364,22 @@ export default function APPart1({ onBack, progress, updateProgress }) {
       if (!isDrawingUnlocked) {
         const shortest = getShortestWord(level);
         const isShortest = acceptedByTruth && word === shortest;
-        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: isShortest ? 'shortest' : acceptedByTruth ? 'correct' : 'wrong' }, ...prev]);
+        const status = isShortest ? 'shortest' : acceptedByTruth ? 'correct' : 'wrong';
+        attemptsRef.current += 1;
+        if (status === 'wrong') errorSinceTutorialRef.current = true;
+        logEvent({ tipo_evento: 'tentativa', modulo: 'ap', nivel_id: level.id, resultado: status, numero_tentativas: attemptsRef.current });
+        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status }, ...prev]);
         if (isShortest) {
           setIsDrawingUnlocked(true);
-          updateProgress?.(`ap-${level.id}`, 1);
+          updateProgress?.(`ap-${level.id}`, 1, phaseExtras('descoberta_palavra'));
           showToast?.('Sucesso! Tabuleiro liberado.', 'success');
         }
       } else {
-        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: acceptedByTruth ? 'correct' : 'wrong' }, ...prev]);
+        const status = acceptedByTruth ? 'correct' : 'wrong';
+        attemptsRef.current += 1;
+        if (status === 'wrong') errorSinceTutorialRef.current = true;
+        logEvent({ tipo_evento: 'tentativa', modulo: 'ap', nivel_id: level.id, resultado: status, numero_tentativas: attemptsRef.current });
+        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status }, ...prev]);
       }
       setSimWord('');
       return;
@@ -324,7 +389,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     setTestedWords(prev => prev.some(t => t.word === display && t.mode === 'DRAWING')
       ? prev : [{ word: display, mode: 'DRAWING', accepted: pdaAccepts(g.studentPda, word) }, ...prev]);
     setSimWord('');
-  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.studentPda, updateProgress, showToast]);
+  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.studentPda, updateProgress, showToast, phaseExtras]);
 
   // ── Simular palavra: abre APSimPanel passo a passo (rodapé) + adiciona à lista ─
   const simulate = useCallback(() => {
@@ -634,9 +699,10 @@ export default function APPart1({ onBack, progress, updateProgress }) {
         onUndo={g.undo}
         onRedo={g.redo}
         profMessage={prof.message}
-        onProfClick={() => setProf(p => p.message
-          ? { ...p, message: '' }
-          : { message: level.hint || 'Lembre: aceita por pilha vazia (esvazie o Z no fim).', mood: 'explicando' })}
+        onProfClick={() => {
+          if (prof.message) { setProf(p => ({ ...p, message: '' })); }
+          else { logTutorialOpen('dica'); setProf({ message: level.hint || 'Lembre: aceita por pilha vazia (esvazie o Z no fim).', mood: 'explicando' }); }
+        }}
         onNodeDrag={handleDeckDrag}
         onNodeDrop={handleDeckDrop}
         onNodeDragCancel={handleDeckCancel}

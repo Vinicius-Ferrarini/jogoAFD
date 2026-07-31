@@ -20,7 +20,7 @@ const cellInput = (bad, ro) => ({
   background: ro ? '#f3f4f6' : '#fff',
 });
 
-export default function Step4_Propagation({ game, marks, lockedCells, setMarks, showProf, onAdvance }) {
+export default function Step4_Propagation({ game, marks, lockedCells, setMarks, showProf, onAttempt, onAdvance }) {
   const { rStates, alphabet, allPairs, validateInspectorTable, validatePairRow } = game;
 
   const [resolved,     setResolved]     = useState(new Set()); // pares validados (verde)
@@ -69,12 +69,14 @@ export default function Step4_Propagation({ game, marks, lockedCells, setMarks, 
     setInspErrors(r.errors);
     setInspValidated(r.ok);
     if (r.ok) setSavedTables(prev => ({ ...prev, [selectedPair]: inspDelta }));
+    onAttempt?.(r.ok ? 'correct' : 'wrong', r.ok ? null : 'tabela_par_incorreta');
     showProf(r.message, r.ok ? 'feliz' : 'serio');
   };
 
   // Decisão de UMA linha (símbolo), validada contra o estado atual do tabuleiro.
   const decideRow = (sym, choice) => {
     const r = validatePairRow(selectedPair, sym, choice, marks, resolved);
+    onAttempt?.(r.ok ? 'correct' : 'wrong', r.ok ? null : 'decisao_linha_incorreta');
     if (!r.ok) {
       setRowFlash(new Set([sym]));
       showProf(r.message, 'serio');

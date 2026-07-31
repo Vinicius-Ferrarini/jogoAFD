@@ -13,10 +13,11 @@ import CanvasArea from './components/CanvasArea';
 import EndScreen from './components/EndScreen';
 import useHistory from './hooks/useHistory';
 import useGuidedLesson from './hooks/useGuidedLesson';
-import useAFDGraph, { lvlAccepts } from './hooks/useAFDGraph';
+import useAFDGraph, { lvlAccepts, validateAFDPure } from './hooks/useAFDGraph';
 import useCanvasState from './hooks/useCanvasState';
 import { UNAVAILABLE_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../levels_data/afd/index.js';
+import { logEvent } from '../../services/telemetry';
 
 // ─── Utilitário: gera um UID curto ───────────────────────────────────────────
 let _uidCounter = 0;
@@ -210,9 +211,60 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     ? { nodeId: lessonSim.frames[lessonSim.idx].nodeId, type: lessonSim.frames[lessonSim.idx].type }
     : simHighlight;
 
+  // ── Telemetria: cronômetro + contadores por fase ───────────────────────────
+  const phaseStartRef = useRef(null);
+  const attemptsRef = useRef(0);               // numero_tentativas da fase atual (reset no loadLevel)
+  const tutorialOpensRef = useRef(0);          // aberturas de ajuda (dica + aula guiada) na fase
+  const errorSinceTutorialRef = useRef(false); // houve erro desde a última abertura de ajuda?
+  const elapsedSeconds = useCallback(() => (
+    phaseStartRef.current == null
+      ? null
+      : Math.round((performance.now() - phaseStartRef.current) / 1000)
+  ), []);
+  // Campos comuns aos eventos fim_fase deste módulo (piloto da telemetria).
+  // `marco` identifica qual das 3 estrelas foi conquistada.
+  // - assistiu_tutorial: a ajuda foi aberta em ALGUM momento da fase.
+  // - acertou_apos_tutorial: o sucesso veio SEM nenhum erro desde a última abertura
+  //   de ajuda (true só se houve ao menos uma abertura E a janela ficou limpa).
+  const phaseExtras = useCallback((marco) => ({
+    modulo: 'afd-p1',
+    nivel_id: currentLevel?.id,
+    tempo_gasto_segundos: elapsedSeconds(),
+    numero_tentativas: attemptsRef.current,
+    dificuldade: LEVEL_DIFFICULTY[currentLevel?.id] ?? null,
+    marco,
+    assistiu_tutorial: tutorialOpensRef.current > 0,
+    acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
+  }), [currentLevel, elapsedSeconds]);
+
+  // Telemetria de "uso de ajuda": abertura da dica do professor OU da aula guiada.
+  // 1ª abertura da fase = tutorial_aberto; demais = tutorial_reaberto. Cada abertura
+  // reinicia a janela "sem erro desde a última ajuda" (usada em acertou_apos_tutorial).
+  const logTutorialOpen = useCallback((origem) => {
+    tutorialOpensRef.current += 1;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
+      modulo: 'afd-p1',
+      nivel_id: currentLevel?.id,
+      origem,
+    });
+  }, [currentLevel]);
+
   // ── Carrega fase ──────────────────────────────────────────────────────────
   const loadLevel = useCallback((level) => {
     _uidCounter = 0;
+    // Telemetria: marca o início da fase, zera os contadores e registra inicio_fase.
+    phaseStartRef.current = performance.now();
+    attemptsRef.current = 0;
+    tutorialOpensRef.current = 0;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: 'inicio_fase',
+      modulo: 'afd-p1',
+      nivel_id: level.id,
+      dificuldade: LEVEL_DIFFICULTY[level.id] ?? null,
+    });
     setCurrentLevel(level);
     setCurrentPage(1);
     setTela('JOGO');
@@ -291,9 +343,21 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       showToast('Você já testou essa palavra!', 'info'); return;
     }
 
+    // Telemetria: registra cada tentativa nova (repetições saem no early-return acima).
+    const resultado = isShortest ? 'shortest' : (isValid ? 'correct' : 'wrong');
+    if (resultado === 'wrong') errorSinceTutorialRef.current = true; // "sem erro desde a ajuda" quebra
+    attemptsRef.current += 1;
+    logEvent({
+      tipo_evento: 'tentativa',
+      modulo: 'afd-p1',
+      nivel_id: currentLevel.id,
+      resultado,
+      numero_tentativas: attemptsRef.current,
+    });
+
     if (isShortest) {
       if (!isDrawingUnlocked) {
-        updateProgress(currentLevel.id, 1);
+        updateProgress(currentLevel.id, 1, phaseExtras('descoberta_palavra'));
         if (currentLevel.impossible || currentLevel.wordOnly) {
           setShowImpossibleScreen(true);
         } else {
@@ -322,7 +386,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       setTestWords(prev => [{ word: wordDisplay, status: 'wrong' }, ...prev]);
     }
     setNewWord('');
-  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress]);
+  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, phaseExtras]);
 
   // Atalhos de teclado: Ctrl+Z, Ctrl+Y, Esc, Delete
   useEffect(() => {
@@ -353,25 +417,42 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
 
   const handleProfessorClick = useCallback(() => {
     if (guidedLessonStep !== null) return;
+    const isOpening = !professorMessage; // vazio → o clique vai ABRIR a dica
     setProfessorMessage(msg =>
       msg
         ? ''
         : (currentLevel?.hint || 'Dica: verifique se todos os estados têm transições para cada letra do alfabeto!')
     );
-  }, [guidedLessonStep, currentLevel]);
+    // Telemetria: loga só na abertura (via helper unificado de "uso de ajuda").
+    if (isOpening) logTutorialOpen('dica');
+  }, [guidedLessonStep, currentLevel, professorMessage, logTutorialOpen]);
 
   const validateAFD = useCallback(() => {
-    if (!validateAFDSilent(true)) return;
-    updateProgress(currentLevel.id, 2);
+    if (!validateAFDSilent(true)) {
+      errorSinceTutorialRef.current = true; // validação falha quebra "sem erro desde a ajuda"
+      // Telemetria: reusa validateAFDPure (gêmea pura, mesma ordem de checagens)
+      // só para extrair o motivo estruturado — validateAFDSilent não é alterada.
+      const { reason } = validateAFDPure({ nodes, transitions, testWords, currentLevel });
+      logEvent({
+        tipo_evento: 'tentativa',
+        modulo: 'afd-p1',
+        nivel_id: currentLevel.id,
+        resultado: 'validacao_falhou',
+        tipo_erro: reason ?? null,
+        numero_tentativas: attemptsRef.current,
+      });
+      return;
+    }
+    updateProgress(currentLevel.id, 2, phaseExtras('validacao'));
     showToast('Autômato Validado! Preencha a Tabela Formal.', 'success');
     setIsSidebarOpen(true);
-  }, [validateAFDSilent, currentLevel, updateProgress, showToast]);
+  }, [validateAFDSilent, currentLevel, updateProgress, showToast, phaseExtras, nodes, transitions, testWords]);
 
   const handleFormalSuccess = useCallback(() => {
-    updateProgress(currentLevel.id, 3);
+    updateProgress(currentLevel.id, 3, phaseExtras('tabela_formal'));
     showToast('Fase Concluída com Perfeição! 3ª Estrela conquistada!', 'success');
     setShowVictoryScreen(true);
-  }, [currentLevel, updateProgress, showToast]);
+  }, [currentLevel, updateProgress, showToast, phaseExtras]);
 
   // ── Simulação no Rodapé ────────────────────────────────────────────────────
   const openSimulation = useCallback(() => {
@@ -460,6 +541,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           userNodesSnapshot.current = JSON.parse(JSON.stringify(nodes));
           userTransitionsSnapshot.current = JSON.parse(JSON.stringify(transitions));
           setGuidedLessonStep(0);
+          logTutorialOpen('aula_guiada'); // mesma métrica de "uso de ajuda" da dica
         }}
         lessonActive={lessonActive}
         onCloseLesson={handleLessonFinish}

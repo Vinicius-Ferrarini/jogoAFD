@@ -1,0 +1,167 @@
+/* ─── FeedbackModal ─── modal interno de satisfação (estilo neobrutalista) ──── */
+.fb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;                 /* acima do FAB (9999) e do banner de consent */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  animation: fb-fade 0.15s ease;
+}
+
+@keyframes fb-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.fb-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box;
+  padding: 26px 24px 22px;
+  background: #ffffff;
+  color: #111827;
+  border: 3px solid #000;
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 #000;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  animation: fb-pop 0.18s ease;
+}
+
+@keyframes fb-pop {
+  from { transform: translateY(8px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.fb-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 900;
+  color: #111827;
+  background: #fff;
+  border: 2.5px solid #000;
+  border-radius: 8px;
+  box-shadow: 2px 2px 0 #000;
+  cursor: pointer;
+  line-height: 1;
+}
+.fb-close:hover { background: #fecaca; }
+.fb-close:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #000; }
+
+.fb-title {
+  margin: 0 26px 4px 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.fb-sub {
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4b5563;
+}
+
+/* Estrelas de nota */
+.fb-stars {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.fb-star {
+  font-size: 38px;
+  line-height: 1;
+  color: #d1d5db;               /* apagada */
+  background: none;
+  border: none;
+  padding: 0 2px;
+  cursor: pointer;
+  transition: transform 0.1s ease, color 0.1s ease;
+}
+.fb-star:hover { transform: scale(1.15); }
+.fb-star.on { color: #f59e0b; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25); }
+.fb-star:focus-visible { outline: 3px solid #c084fc; outline-offset: 2px; border-radius: 6px; }
+
+.fb-comment {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 60px;
+  padding: 9px 11px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  background: #f9fafb;
+  border: 2.5px solid #000;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  outline: none;
+}
+.fb-comment:focus { background: #fff; box-shadow: inset 0 0 0 2px #fde68a; }
+
+.fb-error {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #dc2626;
+}
+
+.fb-submit {
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  color: #111827;
+  background: #fde047;
+  border: 3px solid #000;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #000;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.fb-submit:hover:not(:disabled) {
+  background: #facc15;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 #000;
+}
+.fb-submit:active:not(:disabled) { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #000; }
+.fb-submit:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: 2px 2px 0 #000; }
+
+/* Tela de agradecimento (já respondido) */
+.fb-thanks { text-align: center; padding: 6px 0 2px; }
+.fb-thanks-emoji { font-size: 46px; line-height: 1; margin-bottom: 6px; }
+.fb-thanks .fb-title { margin: 0 0 6px; }
+.fb-thanks .fb-sub { margin-bottom: 18px; }
+
+/* ── Tema escuro ── */
+@media (prefers-color-scheme: dark) {
+  .fb-card { background: #1f2430; color: #f3f4f6; }
+  .fb-title { color: #f9fafb; }
+  .fb-sub { color: #cbd5e1; }
+  .fb-close { background: #2b3242; color: #f3f4f6; }
+  .fb-comment { background: #111827; color: #f3f4f6; border-color: #000; }
+  .fb-comment:focus { background: #0b1120; }
+}
+:root[data-theme="dark"] .fb-card { background: #1f2430; color: #f3f4f6; }
+:root[data-theme="dark"] .fb-title { color: #f9fafb; }
+:root[data-theme="dark"] .fb-sub { color: #cbd5e1; }
+:root[data-theme="dark"] .fb-close { background: #2b3242; color: #f3f4f6; }
+:root[data-theme="dark"] .fb-comment { background: #111827; color: #f3f4f6; }
+:root[data-theme="light"] .fb-card { background: #ffffff; color: #111827; }
+
+@media (max-width: 480px) {
+  .fb-card { padding: 22px 16px 18px; }
+  .fb-star { font-size: 32px; }
+  .fb-title { font-size: 18px; }
+}

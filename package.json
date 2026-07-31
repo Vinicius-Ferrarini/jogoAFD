@@ -13,9 +13,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "validate:levels": "vite-node scripts/validate_levels.js"
+    "validate:levels": "vite-node scripts/validate_levels.js",
+    "cleanup:e2e": "node scripts/cleanup_e2e_telemetry.js"
   },
   "dependencies": {
+    "firebase": "^12.17.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },

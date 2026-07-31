@@ -19,6 +19,7 @@ import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js
 import { MT_LEVELS } from '../../levels_data/mt/index.js';
 import { fuzzTMTransducer, simulateTM, extractTapeOutput, BLANK } from './utils/tmAlgorithms';
 import { DIFF_COLOR } from '../../levels';
+import { logEvent } from '../../services/telemetry';
 
 // Estado inicial vazio do formulário da descrição formal (7-tupla)
 // deltaCells: mapa "estado|símbolo" → "destino, escreve, move" (matriz δ)
@@ -85,6 +86,42 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
 
   const say = useCallback((message, mood = 'serio') => setProf({ message, mood }), []);
 
+  // ── Telemetria (módulo mt-trans) ────────────────────────────────────────────
+  // Mesmo padrão dos demais orquestradores (AFDPart1/AP). A MT Transdutora dá as
+  // 3 estrelas de uma vez ao Validar (fuzzTMTransducer) e só depois pede a
+  // Descrição Formal → 2 marcos: `validacao` (★★★, MT correta) e `tabela_formal`
+  // (7-tupla concluída). Tentativa só no Validar — o teste de palavra é
+  // exploração (aba Linguagem = gabarito estático; aba Desenho = simulador do
+  // grafo do aluno), não resposta avaliada.
+  const phaseStartRef = useRef(null);
+  const attemptsRef = useRef(0);               // numero_tentativas (Validar que falhou) — reset no loadLevel
+  const tutorialOpensRef = useRef(0);          // aberturas de ajuda (dica + aula guiada) na fase
+  const errorSinceTutorialRef = useRef(false); // houve erro desde a última abertura de ajuda?
+  const elapsedSeconds = useCallback(() => (
+    phaseStartRef.current == null ? null
+      : Math.round((performance.now() - phaseStartRef.current) / 1000)
+  ), []);
+  const phaseExtras = useCallback((marco) => ({
+    modulo: 'mt-trans',
+    nivel_id: level?.id,
+    tempo_gasto_segundos: elapsedSeconds(),
+    numero_tentativas: attemptsRef.current,
+    dificuldade: level?.level ?? null,
+    marco,
+    assistiu_tutorial: tutorialOpensRef.current > 0,
+    acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
+  }), [level, elapsedSeconds]);
+  const logTutorialOpen = useCallback((origem) => {
+    tutorialOpensRef.current += 1;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
+      modulo: 'mt-trans',
+      nivel_id: level?.id,
+      origem,
+    });
+  }, [level]);
+
   // ── Modo Aula: iniciar / navegar / sair ─────────────────────────────────────
   const applyStep = useCallback((st) => {
     if (!st) return;
@@ -99,6 +136,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
   const preLessonViewRef = useRef(null);
   const startLesson = useCallback(() => {
     if (!lesson.hasLesson) return;
+    logTutorialOpen('aula_guiada'); // mesma métrica de "uso de ajuda" da dica
     preLessonViewRef.current = {
       scrollLeft: viewportRef.current?.scrollLeft ?? 0,
       scrollTop: viewportRef.current?.scrollTop ?? 0,
@@ -108,7 +146,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
     lesson.goTo(0);
     applyStep(lesson.steps[0]);
-  }, [lesson, applyStep, zoom]);
+  }, [lesson, applyStep, zoom, logTutorialOpen]);
 
   const finishLesson = useCallback(() => {
     lesson.finish();
@@ -189,6 +227,17 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
   const loadLevel = useCallback((lv) => {
     g.reset();
     lesson.reset();
+    // Telemetria: início da fase + reset de contadores.
+    phaseStartRef.current = performance.now();
+    attemptsRef.current = 0;
+    tutorialOpensRef.current = 0;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: 'inicio_fase',
+      modulo: 'mt-trans',
+      nivel_id: lv.id,
+      dificuldade: lv.level ?? null,
+    });
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
     setSimWord(''); setLinguagemTests([]); setDesenhoTests([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
@@ -261,14 +310,32 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
   const validate = useCallback(() => {
     if (!level) return;
 
+    // Telemetria: cada Validar que falha é uma `tentativa` (resultado
+    // validacao_falhou) com o motivo estruturado em `tipo_erro`. O sucesso não
+    // gera tentativa própria — fica registrado no fim_fase (marco validacao).
+    const failAttempt = (tipo_erro) => {
+      errorSinceTutorialRef.current = true;
+      attemptsRef.current += 1;
+      logEvent({
+        tipo_evento: 'tentativa',
+        modulo: 'mt-trans',
+        nivel_id: level.id,
+        resultado: 'validacao_falhou',
+        tipo_erro,
+        numero_tentativas: attemptsRef.current,
+      });
+    };
+
     // ── Validações estruturais (toast do topo, como no AP) ──────────────────
     if (!g.nodes.find(n => n.isInitial)) {
+      failAttempt('no_initial');
       showToast('Defina um estado inicial (▶) antes de validar.', 'error');
       setErrAction('TOGGLE_INITIAL');
       setTimeout(() => setErrAction(null), 3000);
       return;
     }
     if (!g.nodes.some(n => n.isFinal)) {
+      failAttempt('no_final');
       showToast('Defina um estado final (◎) antes de validar.', 'error');
       setErrAction('TOGGLE_FINAL');
       setTimeout(() => setErrAction(null), 3000);
@@ -281,6 +348,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
       const key = `${t.from}|${sym}`;
       const sig = `${t.to}|${t.write}|${t.move}`;
       if (seen.has(key) && seen.get(key) !== sig) {
+        failAttempt('nondeterministic');
         const lbl = g.nodes.find(n => n.id === t.from)?.label ?? t.from;
         showToast(`O estado ${lbl} tem duas regras diferentes para o símbolo "${sym}" — ajuste antes de validar.`, 'error');
         return;
@@ -291,11 +359,12 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     const mtGraph = { states: g.nodes, transitions: g.transitions };
     const res = fuzzTMTransducer(mtGraph, level);
     if (res.ok) {
-      updateProgress?.(`mt-trans-${level.id}`, 3);
+      updateProgress?.(`mt-trans-${level.id}`, 3, phaseExtras('validacao'));
       say('Perfeito! Sua MT está correta! Agora preencha a Descrição Formal à esquerda e clique em Concluir. 📝', 'feliz');
       showToast?.('MT validada! ★★★ — formalize a máquina.', 'success');
       setFormalMode(true); // abre o painel formal (editável); vitória só ao Concluir
     } else {
+      failAttempt(res.reason ?? null);
       const show = res.counterexample === '' ? 'λ' : res.counterexample;
       const msg = res.reason === 'loop'
         ? `Loop detectado para "${show}". Verifique se a MT para em todos os casos.`
@@ -306,13 +375,27 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
       // Maurílio não comenta erros, só sucesso/dicas.
       showToast?.(msg, 'error');
     }
-  }, [level, g, say, updateProgress, showToast]);
+  }, [level, g, say, updateProgress, showToast, phaseExtras]);
 
-  // Conclui a fase após preencher a Descrição Formal → tela de vitória
+  // Conclui a fase após preencher a Descrição Formal → tela de vitória.
+  // marco `tabela_formal`: 7-tupla concluída. As estrelas já vieram no Validar
+  // (★★★), então reenvia stars=3 só para registrar o fim_fase deste marco com o
+  // tempo total (inclui o preenchimento da descrição formal); novo_recorde=false.
   const concludePhase = useCallback(() => {
+    if (level) updateProgress?.(`mt-trans-${level.id}`, 3, phaseExtras('tabela_formal'));
     setFormalMode(false);
     setVictory(true);
-  }, []);
+  }, [level, updateProgress, phaseExtras]);
+
+  // Dica do professor (Maurílio): mesma métrica de "uso de ajuda" da aula guiada.
+  // Loga só na ABERTURA (balão vazio → vai abrir); fechar não conta.
+  const handleProfClick = useCallback(() => {
+    const isOpening = !prof.message;
+    setProf(p => p.message
+      ? { ...p, message: '' }
+      : { message: level?.hint || 'Leia, escreva e mova o cabeçote até chegar ao estado final!', mood: 'explicando' });
+    if (isOpening) logTutorialOpen('dica');
+  }, [prof.message, level, logTutorialOpen]);
 
   const stars = level ? (progress?.[`mt-trans-${level.id}`]?.stars || 0) : 0;
 
@@ -799,9 +882,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
         onRedo={g.redo}
         profMessage={prof.message}
         profMood={prof.mood}
-        onProfClick={() => setProf(p => p.message
-          ? { ...p, message: '' }
-          : { message: level?.hint || 'Leia, escreva e mova o cabeçote até chegar ao estado final!', mood: 'explicando' })}
+        onProfClick={handleProfClick}
         onCloseBalloon={() => setProf(p => ({ ...p, message: '' }))}
         onNodeDrag={handleDeckDrag}
         onNodeDrop={handleDeckDrop}

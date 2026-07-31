@@ -6,7 +6,7 @@ import TriangularTable from './TriangularTable';
 // Componente "burro": estado de eixos é elevado ao MinGame (congelado após o
 // SETUP); a validação estrutural vem de game.validateGrid.
 export default function Step2_TableSetup({
-  game, axisRows, axisCols, setAxisRows, setAxisCols, showProf, onAdvance,
+  game, axisRows, axisCols, setAxisRows, setAxisCols, showProf, onAttempt, onAdvance,
 }) {
   const { rStates, validateGrid } = game;
   const [errorCells, setErrorCells] = useState(new Set()); // "ri,ci"
@@ -31,6 +31,7 @@ export default function Step2_TableSetup({
     setErrorCells(res.errorCells);
     setErrorAxes(res.errorAxes);
     setSizeError(res.sizeError);
+    onAttempt?.(res.ok ? 'correct' : 'wrong', res.ok ? null : 'grade_incorreta');
     showProf(res.message, res.ok ? 'feliz' : 'serio');
     if (res.ok) onAdvance();
   };

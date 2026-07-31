@@ -12,7 +12,7 @@ const inputStyle = (bad, weight = 700) => ({
   color: bad ? '#dc2626' : '#000',
 });
 
-export default function Step1_Preparation({ game, prep, setPrep, showProf, onAdvance }) {
+export default function Step1_Preparation({ game, prep, setPrep, showProf, onAttempt, onAdvance }) {
   const { validateIsDFA, validateIsTotal, checkUnreachable, validateTransitionTable } = game;
   const { rows, cols, cells } = prep;
 
@@ -79,6 +79,7 @@ export default function Step1_Preparation({ game, prep, setPrep, showProf, onAdv
   const handleAdvance = () => {
     const r = validateTransitionTable(prep);
     setErrorCells(r.errorCells); setErrorAxes(r.errorAxes); setSizeError(r.sizeError);
+    onAttempt?.(r.ok ? 'correct' : 'wrong', r.ok ? null : 'delta_incorreta');
     if (r.ok) { showProf(r.message, 'feliz'); onAdvance(); }
     else showProf(r.message, 'serio');
   };

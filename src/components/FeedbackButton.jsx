@@ -1,21 +1,22 @@
 import './FeedbackButton.css';
 
-const FEEDBACK_URL = 'https://forms.gle/TNRFwncLeC39o9WP8';
-const REPO_URL     = 'https://github.com/Vinicius-Ferrarini/jogoAFD';
+const REPO_URL = 'https://github.com/Vinicius-Ferrarini/jogoAFD';
 
-export default function FeedbackButton() {
+// FAB de feedback (Fase 6): agora abre um MODAL INTERNO (via App) em vez de um
+// link externo pro Google Forms. O estado visual "já respondido" vem só da flag
+// local (`responded`) — o FAB nunca consulta o servidor (leitura negada por regra).
+export default function FeedbackButton({ onOpen, responded = false }) {
   return (
-    <a
-      className="feedback-fab"
-      href={FEEDBACK_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      title="Abrir formulário de feedback (abre em nova aba)"
-      aria-label="Dar feedback (abre em nova aba)"
+    <button
+      type="button"
+      className={`feedback-fab${responded ? ' responded' : ''}`}
+      onClick={onOpen}
+      title={responded ? 'Você já enviou seu feedback (clique para ver)' : 'Enviar feedback sobre o TuringLab'}
+      aria-label={responded ? 'Feedback já enviado' : 'Dar feedback'}
     >
-      <span className="feedback-fab-icon" aria-hidden="true">💡</span>
-      <span className="feedback-fab-text">Dar Feedback</span>
-    </a>
+      <span className="feedback-fab-icon" aria-hidden="true">{responded ? '✓' : '💡'}</span>
+      <span className="feedback-fab-text">{responded ? 'Feedback enviado' : 'Dar Feedback'}</span>
+    </button>
   );
 }
 

@@ -22,6 +22,7 @@ import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js
 import { MT_RECON_LEVELS, getShortestWord, getGabaritoGraph } from '../../levels_data/mt-recon/index.js';
 import { fuzzTMRecognizer, simulateTM } from './utils/tmAlgorithms';
 import { DIFF_COLOR } from '../../levels';
+import { logEvent } from '../../services/telemetry';
 
 const EMPTY_FORMAL = { states: '', sigma: '', gamma: '', initial: '', blank: '', final: '', deltaCells: {} };
 
@@ -84,6 +85,41 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
 
   const say = useCallback((message, mood = 'serio') => setProf({ message, mood }), []);
 
+  // ── Telemetria (módulo mt-recon) ────────────────────────────────────────────
+  // Mesmo modelo do AP: 3 marcos com estrelas 1/2/3 — descoberta_palavra (★1, a
+  // menor palavra que destrava o tabuleiro), validacao (★2, fuzzTMRecognizer OK)
+  // e tabela_formal (★3, 7-tupla concluída). Tentativa nos testes de palavra em
+  // modo LANGUAGE (resposta avaliada: gabarito) + no Validar. PULADO: modo
+  // DRAWING (simulador do grafo do aluno = exploração, não avaliada).
+  const phaseStartRef = useRef(null);
+  const attemptsRef = useRef(0);
+  const tutorialOpensRef = useRef(0);
+  const errorSinceTutorialRef = useRef(false);
+  const elapsedSeconds = useCallback(() => (
+    phaseStartRef.current == null ? null
+      : Math.round((performance.now() - phaseStartRef.current) / 1000)
+  ), []);
+  const phaseExtras = useCallback((marco) => ({
+    modulo: 'mt-recon',
+    nivel_id: level?.id,
+    tempo_gasto_segundos: elapsedSeconds(),
+    numero_tentativas: attemptsRef.current,
+    dificuldade: level?.level ?? null,
+    marco,
+    assistiu_tutorial: tutorialOpensRef.current > 0,
+    acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
+  }), [level, elapsedSeconds]);
+  const logTutorialOpen = useCallback((origem) => {
+    tutorialOpensRef.current += 1;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
+      modulo: 'mt-recon',
+      nivel_id: level?.id,
+      origem,
+    });
+  }, [level]);
+
   // ── Modo Aula: iniciar / navegar / sair ─────────────────────────────────────
   const applyStep = useCallback((st) => {
     if (!st) return;
@@ -98,6 +134,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
   const preLessonViewRef = useRef(null);
   const startLesson = useCallback(() => {
     if (!lesson.hasLesson) return;
+    logTutorialOpen('aula_guiada'); // mesma métrica de "uso de ajuda" da dica
     preLessonViewRef.current = {
       scrollLeft: viewportRef.current?.scrollLeft ?? 0,
       scrollTop: viewportRef.current?.scrollTop ?? 0,
@@ -107,7 +144,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
     setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
     lesson.goTo(0);
     applyStep(lesson.steps[0]);
-  }, [lesson, applyStep, zoom]);
+  }, [lesson, applyStep, zoom, logTutorialOpen]);
 
   const finishLesson = useCallback(() => {
     lesson.finish();
@@ -184,6 +221,17 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
   const loadLevel = useCallback((lv) => {
     g.reset();
     lesson.reset();
+    // Telemetria: início da fase + reset de contadores.
+    phaseStartRef.current = performance.now();
+    attemptsRef.current = 0;
+    tutorialOpensRef.current = 0;
+    errorSinceTutorialRef.current = false;
+    logEvent({
+      tipo_evento: 'inicio_fase',
+      modulo: 'mt-recon',
+      nivel_id: lv.id,
+      dificuldade: lv.level ?? null,
+    });
     setLevel(lv); setScreen('GAME'); setMode('IDLE'); setConnectingSource(null);
     setSimWord(''); setTestedWords([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
@@ -246,38 +294,64 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
       if (!isDrawingUnlocked) {
         const shortest = getShortestWord(level);
         const isShortest = accepted && word === shortest;
-        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: isShortest ? 'shortest' : accepted ? 'correct' : 'wrong' }, ...prev]);
+        const resultado = isShortest ? 'shortest' : accepted ? 'correct' : 'wrong';
+        // Telemetria: teste de palavra em LANGUAGE é resposta avaliada (gabarito).
+        attemptsRef.current += 1;
+        if (resultado === 'wrong') errorSinceTutorialRef.current = true;
+        logEvent({ tipo_evento: 'tentativa', modulo: 'mt-recon', nivel_id: level.id, resultado, numero_tentativas: attemptsRef.current });
+        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: resultado }, ...prev]);
         if (isShortest) {
           setIsDrawingUnlocked(true);
-          updateProgress?.(`mt-recon-${level.id}`, 1);
+          updateProgress?.(`mt-recon-${level.id}`, 1, phaseExtras('descoberta_palavra'));
           showToast?.('Sucesso! Tabuleiro liberado.', 'success');
         }
       } else {
-        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: accepted ? 'correct' : 'wrong' }, ...prev]);
+        const resultado = accepted ? 'correct' : 'wrong';
+        attemptsRef.current += 1;
+        if (resultado === 'wrong') errorSinceTutorialRef.current = true;
+        logEvent({ tipo_evento: 'tentativa', modulo: 'mt-recon', nivel_id: level.id, resultado, numero_tentativas: attemptsRef.current });
+        setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: resultado }, ...prev]);
       }
       setSimWord('');
       return;
     }
 
-    // testMode === 'DRAWING': testa contra a MT do ALUNO.
+    // testMode === 'DRAWING': testa contra a MT do ALUNO (exploração — não logada).
     const mtGraph = { states: g.nodes, transitions: g.transitions };
     const { status } = simulateTM(mtGraph, word, 2000, level.startMarker ?? null);
     setTestedWords(prev => prev.some(t => t.word === display && t.mode === 'DRAWING')
       ? prev : [{ word: display, mode: 'DRAWING', accepted: status === 'ACCEPTED' }, ...prev]);
     setSimWord('');
-  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.nodes, g.transitions, updateProgress, showToast]);
+  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.nodes, g.transitions, updateProgress, showToast, phaseExtras]);
 
   // ── Validar (bateria) = ★1 ──────────────────────────────────────────────────
   const validate = useCallback(() => {
     if (!level) return;
 
+    // Telemetria: cada Validar que falha é uma `tentativa` (validacao_falhou) com
+    // o motivo estruturado em `tipo_erro`. Sucesso não gera tentativa (fica no fim_fase).
+    const failAttempt = (tipo_erro) => {
+      errorSinceTutorialRef.current = true;
+      attemptsRef.current += 1;
+      logEvent({
+        tipo_evento: 'tentativa',
+        modulo: 'mt-recon',
+        nivel_id: level.id,
+        resultado: 'validacao_falhou',
+        tipo_erro,
+        numero_tentativas: attemptsRef.current,
+      });
+    };
+
     if (!g.nodes.find(n => n.isInitial)) {
+      failAttempt('no_initial');
       showToast('Defina um estado inicial (▶) antes de validar.', 'error');
       setErrAction('TOGGLE_INITIAL');
       setTimeout(() => setErrAction(null), 3000);
       return;
     }
     if (!g.nodes.some(n => n.isFinal)) {
+      failAttempt('no_final');
       showToast('Defina um estado final (◎) antes de validar.', 'error');
       setErrAction('TOGGLE_FINAL');
       setTimeout(() => setErrAction(null), 3000);
@@ -289,6 +363,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
       const key = `${t.from}|${sym}`;
       const sig = `${t.to}|${t.write}|${t.move}`;
       if (seen.has(key) && seen.get(key) !== sig) {
+        failAttempt('nondeterministic');
         const lbl = g.nodes.find(n => n.id === t.from)?.label ?? t.from;
         showToast(`O estado ${lbl} tem duas regras diferentes para o símbolo "${sym}" — ajuste antes de validar.`, 'error');
         return;
@@ -299,11 +374,12 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
     const mtGraph = { states: g.nodes, transitions: g.transitions };
     const res = fuzzTMRecognizer(mtGraph, level);
     if (res.ok) {
-      updateProgress?.(`mt-recon-${level.id}`, 2);
+      updateProgress?.(`mt-recon-${level.id}`, 2, phaseExtras('validacao'));
       say('Perfeito! Sua MT reconhece a linguagem corretamente! Agora preencha a Descrição Formal. 📝', 'feliz');
       showToast?.('MT validada! ★★ — formalize a máquina.', 'success');
       setFormalMode(true);
     } else {
+      failAttempt(res.reason ?? null);
       const show = res.counterexample === '' ? 'λ' : res.counterexample;
       const msg = res.reason === 'loop'
         ? `Loop detectado para "${show}". Verifique se a MT para em todos os casos.`
@@ -314,13 +390,23 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
       // sucesso/dicas.
       showToast?.(msg, 'error');
     }
-  }, [level, g, say, updateProgress, showToast]);
+  }, [level, g, say, updateProgress, showToast, phaseExtras]);
 
   const concludePhase = useCallback(() => {
     setFormalMode(false);
     setVictory(true);
-    updateProgress?.(`mt-recon-${level.id}`, 3);
-  }, [level, updateProgress]);
+    updateProgress?.(`mt-recon-${level.id}`, 3, phaseExtras('tabela_formal'));
+  }, [level, updateProgress, phaseExtras]);
+
+  // Dica do professor (Maurílio): mesma métrica de "uso de ajuda" da aula guiada.
+  // Loga só na ABERTURA (balão vazio → vai abrir); fechar não conta.
+  const handleProfClick = useCallback(() => {
+    const isOpening = !prof.message;
+    setProf(p => p.message
+      ? { ...p, message: '' }
+      : { message: level?.hint || 'Leia e mova o cabeçote até chegar ao estado final (ou rejeitar)!', mood: 'explicando' });
+    if (isOpening) logTutorialOpen('dica');
+  }, [prof.message, level, logTutorialOpen]);
 
   const stars = level ? (progress?.[`mt-recon-${level.id}`]?.stars || 0) : 0;
 
@@ -714,9 +800,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
         onRedo={g.redo}
         profMessage={prof.message}
         profMood={prof.mood}
-        onProfClick={() => setProf(p => p.message
-          ? { ...p, message: '' }
-          : { message: level?.hint || 'Leia e mova o cabeçote até chegar ao estado final (ou rejeitar)!', mood: 'explicando' })}
+        onProfClick={handleProfClick}
         onCloseBalloon={() => setProf(p => ({ ...p, message: '' }))}
         onNodeDrag={handleDeckDrag}
         onNodeDrop={handleDeckDrop}

@@ -17,7 +17,7 @@ import useAFDGraph from '../hooks/useAFDGraph';
 let _uid = 0;
 const genUid = () => `_md${++_uid}_${Math.random().toString(36).slice(2, 6)}`;
 
-export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, onNext, nextLabel, stars }) {
+export default function MinDrawStep({ game, prep, showProf, onSolved, onAttempt, onBack, onNext, nextLabel, stars }) {
   // ── Estado do grafo (vive aqui p/ quebrar o ciclo useHistory ↔ useAFDGraph) ──
   const [nodes, setNodes]             = useState([]);
   const [transitions, setTransitions] = useState([]);
@@ -109,6 +109,7 @@ export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, on
   const handleValidate = useCallback(() => {
     setErrorNodeIds(null);
     const res = game.validateDrawnMinimized(nodes, transitions);
+    onAttempt?.(res.ok ? 'correct' : 'wrong', res.ok ? null : res.code);
     if (res.ok) {
       setSolved(true);
       onSolved();
@@ -117,7 +118,7 @@ export default function MinDrawStep({ game, prep, showProf, onSolved, onBack, on
       setErrorNodeIds(res.errorNodeIds);
       showProf(res.message, 'serio', 12000);
     }
-  }, [game, nodes, transitions, onSolved, showProf]);
+  }, [game, nodes, transitions, onSolved, showProf, onAttempt]);
 
   // Botão de modo — mesmas cores das cartas do AFD_1; clicar de novo desmarca
   // (volta ao modo IDLE), igual ao deck do AFD_1.
