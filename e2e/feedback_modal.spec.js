@@ -35,6 +35,16 @@ test.describe('FeedbackModal — balão de feedback (Fase 6)', () => {
     await expect(enviar(page)).toBeDisabled();
   });
 
+  test('o FAB da tela inicial (HOME) também abre o modal', async ({ page }) => {
+    // Regressão: o FAB da MainMenu precisa estar ligado ao mesmo modal do App
+    // (antes ele ficava sem onOpen e o clique não fazia nada).
+    await page.goto('/');
+    await expect(fab(page)).toBeVisible();
+    await fab(page).click();
+    await expect(card(page)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Como foi sua experiência/i })).toBeVisible();
+  });
+
   test('escolher uma nota (estrela) habilita o botão Enviar', async ({ page }) => {
     await gotoModules(page);
     await fab(page).click();

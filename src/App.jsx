@@ -115,7 +115,14 @@ export default function App() {
   // ✨ Renderização
   const screenNode = (() => {
     if (screen === 'HOME') {
-      return <MainMenu onStart={goModules} progress={progress} />;
+      return (
+        <MainMenu
+          onStart={goModules}
+          progress={progress}
+          onFeedback={openFeedback}
+          feedbackResponded={feedbackResponded}
+        />
+      );
     }
 
     if (screen === 'MODULES') {

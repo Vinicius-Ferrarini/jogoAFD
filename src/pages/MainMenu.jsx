@@ -64,7 +64,7 @@ const MINIMIZER_MAX_STARS = 42; // 14 exercícios × 3
 const AP_MAX_STARS        = 45; // 15 níveis × 3 (L16 impossível excluído)
 const GRAND_MAX_STARS     = P1P2_MAX_STARS + MINIMIZER_MAX_STARS + AP_MAX_STARS;
 
-export default function MainMenu({ onStart, progress }) {
+export default function MainMenu({ onStart, progress, onFeedback, feedbackResponded }) {
   const { label: lastCommit, isToday: lastCommitIsToday } = useLastCommitDate();
   const p2Progress = (() => {
     try { return JSON.parse(localStorage.getItem('turinglab_progress_p2') || '{}'); }
@@ -145,7 +145,7 @@ export default function MainMenu({ onStart, progress }) {
 
       {/* Botões flutuantes (position:fixed — não afeta o layout) */}
       <RepoButton />
-      <FeedbackButton />
+      <FeedbackButton onOpen={onFeedback} responded={feedbackResponded} />
     </div>
   );
 }
