@@ -138,6 +138,37 @@
 .fb-submit:active:not(:disabled) { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #000; }
 .fb-submit:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: 2px 2px 0 #000; }
 
+/* Botão secundário (ex.: "Fechar" abaixo de "Enviar outra avaliação") */
+.fb-secondary {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: #374151;
+  background: #fff;
+  border: 2.5px solid #000;
+  border-radius: 10px;
+  box-shadow: 2px 2px 0 #000;
+  cursor: pointer;
+}
+.fb-secondary:hover { background: #f3f4f6; }
+.fb-secondary:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #000; }
+
+/* Nota "esta será a avaliação de número N" no topo do formulário */
+.fb-note {
+  margin: -6px 0 14px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #92400e;
+  background: #fef3c7;
+  border: 2px solid #000;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
 /* Tela de agradecimento (já respondido) */
 .fb-thanks { text-align: center; padding: 6px 0 2px; }
 .fb-thanks-emoji { font-size: 46px; line-height: 1; margin-bottom: 6px; }
@@ -152,6 +183,9 @@
   .fb-close { background: #2b3242; color: #f3f4f6; }
   .fb-comment { background: #111827; color: #f3f4f6; border-color: #000; }
   .fb-comment:focus { background: #0b1120; }
+  .fb-secondary { background: #2b3242; color: #e5e7eb; }
+  .fb-secondary:hover { background: #374151; }
+  .fb-note { background: #3a2f12; color: #fde68a; }
 }
 :root[data-theme="dark"] .fb-card { background: #1f2430; color: #f3f4f6; }
 :root[data-theme="dark"] .fb-title { color: #f9fafb; }

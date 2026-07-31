@@ -130,18 +130,26 @@
   `loop | rejected | wrongly-accepted`. PULADO (exploração): modo **DRAWING** (simulador
   do grafo do aluno), como no AP. Tutorial: dica (`handleProfClick`, `isOpening =
   !prof.message`, origem 'dica') + Aula (`startLesson`, 'aula_guiada').
-- **Fase 6 — feedback de satisfação**: `submitFeedback({nota, comentario})` em
-  `telemetry.js` grava com **`setDoc` (sem merge)** em `/sessoes/{uid}/pesquisa_inicial/resposta`
-  (ID fixo) → 2º envio falha sozinho no servidor (regra create-only). Helpers de flag
-  no `telemetry.js`: `hasFeedbackShownOnce`/`markFeedbackShownOnce` (popup 1x) e
-  `hasFeedbackResponded`/`markFeedbackResponded` (check visual do FAB). `FeedbackButton.jsx`
-  virou `<button>` (era `<a href>` p/ Google Forms) que chama `onOpen`; **`RepoButton`
-  intocado**. Modal novo `FeedbackModal.jsx` (+ `.css`): ★1-5 + comentário opcional +
-  Enviar; renderizado no App e **montado só quando aberto** (`{feedbackOpen && <…>}`) →
-  cada abertura nasce zerada, sem efeito de reset (evita `set-state-in-effect`).
-  Depois de respondido, reabrir mostra só um "obrigado" (reenvio negado pela regra —
-  **decisão do usuário**, alternativa "reabrir p/ reenviar" descartada por ser bloqueada
-  no backend). Popup automático em `App.jsx` (`maybeAutoFeedback`): dispara ao **SAIR
+- **Fase 6 — pesquisa de satisfação (MÚLTIPLOS envios)**: `submitFeedback({nota, comentario})`
+  em `telemetry.js` grava com `setDoc` um **doc NOVO e numerado** em
+  `/sessoes/{uid}/pesquisa_inicial/avaliacao_{N}` (N = `getFeedbackCount()+1`, contador local
+  `turinglab_feedback_count`, avançado só após o create dar certo). Cada envio é um create
+  independente → **não sobrescreve os anteriores** e o jogador pode reenviar quantas vezes
+  quiser (avaliação 1, 2, 3, …). Campos: `nota`, `comentario`, `indice`, `timestamp`.
+  **⚠️ REQUER que a regra do Firestore permita create em `pesquisa_inicial/{qualquer doc}`,
+  não só `/resposta`** — se estiver travada no id `resposta`, os `avaliacao_N` são negados
+  (o usuário ajusta no Console; infra fora do meu escopo). Helpers no `telemetry.js`:
+  `hasFeedbackShownOnce`/`markFeedbackShownOnce` (popup 1x), `hasFeedbackResponded`/
+  `markFeedbackResponded` (check do FAB = "já enviou ≥1"), `getFeedbackCount`. `FeedbackButton.jsx`
+  virou `<button>` (era `<a href>` p/ Google Forms) que chama `onOpen`; **`RepoButton` intocado**;
+  o ✓ só indica "já enviou" e clicar sempre reabre o formulário p/ enviar outra. Modal
+  `FeedbackModal.jsx` (+ `.css`): ★1-5 + comentário; **montado só quando aberto** (`{feedbackOpen && <…>}`)
+  → nasce zerado sem efeito de reset. Após enviar, mostra "Avaliação N enviada!" com
+  **"Enviar outra avaliação"** (volta ao formulário, próximo = N+1) + "Fechar". **MUDANÇA vs.
+  versão anterior:** o lock de envio único + tela "obrigado"-só foi REMOVIDO a pedido do
+  usuário (agora reenvia gravando avaliações numeradas separadas; a decisão anterior
+  "só obrigado no reclique" foi revertida). Popup automático em `App.jsx` (`maybeAutoFeedback`):
+  dispara ao **SAIR
   de uma fase** (`screen==='GAME'` → transição), 1x só, e só se `hasConsent()` **E**
   `Object.keys(progress) ≥ 1` (fase concluída). Pontos de disparo: `goHome`, `goModules`
   **e `goSubmodule`**. **Decisões (as 3 primeiras aprovadas pelo usuário):**
@@ -157,8 +165,9 @@
   sem consentir (volta no reload). Roda com `npm run test:e2e` (não entra no
   `npm run test`, que é só vitest). Banner é não-bloqueante → não quebra specs existentes.
 - **Fase 6 — teste E2E**: `e2e/feedback_modal.spec.js` (7 casos, mesmo padrão do consent):
-  FAB abre o modal; estrela habilita Enviar; ✕ fecha; sem consentimento → aviso e não
-  marca respondido; já respondido → FAB "enviado" + reabrir mostra só "obrigado"; popup
+  FAB abre o modal; estrela habilita "Enviar avaliação"; ✕ fecha; sem consentimento → aviso
+  e segue no formulário (não marca respondido); **já enviou antes → FAB "enviado" + reabrir
+  mostra o FORMULÁRIO de novo** (nota "esta será a de número N", pode reenviar); popup
   automático dispara 1x ao sair de uma fase (com consentimento + fase concluída) e NÃO
   dispara sem fase concluída. Foco em UI/UX — o envio real ao Firestore é validado à parte
   no navegador. Suíte e2e completa: **36 testes passando**.
@@ -223,10 +232,14 @@
     acertou_apos_tutorial: boolean
     timestamp: serverTimestamp()
 
-/sessoes/{uid}/pesquisa_inicial/resposta    (Fase 6 — ID FIXO, documento único)
+/sessoes/{uid}/pesquisa_inicial/avaliacao_{N}   (Fase 6 — VÁRIOS envios, 1 doc por avaliação)
     nota: number (1-5)
     comentario: string (opcional)
+    indice: number (1, 2, 3, … — N do doc, via contador local turinglab_feedback_count)
     timestamp: serverTimestamp()
+    // Cada reenvio cria um doc NOVO (avaliacao_1, avaliacao_2, …) — nunca sobrescreve.
+    // Compatível com regra create-only (cada envio é um create). REQUER que a regra
+    // permita create em pesquisa_inicial/{qualquer doc}, não só /resposta.
 ```
 
 ---
@@ -339,6 +352,13 @@ apenas o valor de `modulo`.
 ---
 
 ## FASE 6 — Balão de feedback (satisfação: 1x obrigatória + sempre disponível)
+
+> **⚠️ PARCIALMENTE SUPERADO** — o "documento único / setDoc ID fixo / só uma vez"
+> descrito abaixo foi o plano ORIGINAL. A pedido do usuário, a Fase 6 final permite
+> **MÚLTIPLOS envios** (docs numerados `avaliacao_N`, cada reenvio preservado). A
+> implementação real está descrita em **STATUS ATUAL → "Fase 6 — pesquisa de satisfação
+> (MÚLTIPLOS envios)"** e no esquema `pesquisa_inicial/avaliacao_{N}`. Leia esta seção
+> só como histórico do desenho inicial.
 
 **Objetivo:** reaproveitar `src/components/FeedbackButton.jsx`, trocando "link externo
 pro Google Forms" por "modal interno curto que salva a resposta no Firestore, vinculada

@@ -2,17 +2,18 @@ import './FeedbackButton.css';
 
 const REPO_URL = 'https://github.com/Vinicius-Ferrarini/jogoAFD';
 
-// FAB de feedback (Fase 6): agora abre um MODAL INTERNO (via App) em vez de um
-// link externo pro Google Forms. O estado visual "já respondido" vem só da flag
-// local (`responded`) — o FAB nunca consulta o servidor (leitura negada por regra).
+// FAB de feedback (Fase 6): abre um MODAL INTERNO (via App) em vez de um link
+// externo pro Google Forms. O jogador pode enviar VÁRIAS avaliações; o ✓ só
+// indica que já enviou ao menos uma (flag local — o FAB nunca lê o servidor) e
+// clicar sempre reabre o formulário para enviar outra.
 export default function FeedbackButton({ onOpen, responded = false }) {
   return (
     <button
       type="button"
       className={`feedback-fab${responded ? ' responded' : ''}`}
       onClick={onOpen}
-      title={responded ? 'Você já enviou seu feedback (clique para ver)' : 'Enviar feedback sobre o TuringLab'}
-      aria-label={responded ? 'Feedback já enviado' : 'Dar feedback'}
+      title={responded ? 'Você já enviou — clique para enviar outra avaliação' : 'Enviar sua avaliação do TuringLab'}
+      aria-label={responded ? 'Feedback já enviado (enviar outra avaliação)' : 'Dar feedback'}
     >
       <span className="feedback-fab-icon" aria-hidden="true">{responded ? '✓' : '💡'}</span>
       <span className="feedback-fab-text">{responded ? 'Feedback enviado' : 'Dar Feedback'}</span>

@@ -7,12 +7,16 @@ import { db, ensureSession } from "./firebase";
 
 const CONSENT_KEY = "turinglab_consent_accepted";
 
-// Fase 6 — feedback de satisfação (documento único por sessão).
-// Duas flags PROPOSITALMENTE separadas (ver docs/telemetria_turinglab.md):
+// Fase 6 — pesquisa de satisfação (VÁRIOS envios por sessão, cada um preservado).
+// Cada envio cria um doc NOVO numerado (avaliacao_1, avaliacao_2, …) — nunca
+// sobrescreve o anterior, compatível com as regras create-only.
+// Flags/contador no localStorage (PROPOSITALMENTE separados):
 // - shown_once: o popup automático já apareceu (respondido ou não) → nunca reaparece sozinho.
-// - respondido: o jogador ENVIOU → controla o "check" visual do FAB.
+// - respondido: o jogador ENVIOU ao menos uma vez → controla o "check" visual do FAB.
+// - count: quantas avaliações já foram enviadas (define o próximo índice avaliacao_N).
 const FEEDBACK_SHOWN_KEY = "turinglab_feedback_shown_once";
 const FEEDBACK_DONE_KEY  = "turinglab_feedback_respondido";
+const FEEDBACK_COUNT_KEY = "turinglab_feedback_count";
 
 /** true se o jogador já aceitou a coleta de dados neste navegador. */
 export function hasConsent() {
@@ -66,34 +70,46 @@ export function hasFeedbackShownOnce() {
 export function markFeedbackShownOnce() {
   if (typeof window !== "undefined") localStorage.setItem(FEEDBACK_SHOWN_KEY, "true");
 }
-/** O jogador já ENVIOU o feedback? (controla o check visual do FAB) */
+/** O jogador já ENVIOU o feedback ao menos uma vez? (controla o check visual do FAB) */
 export function hasFeedbackResponded() {
   return typeof window !== "undefined"
     && localStorage.getItem(FEEDBACK_DONE_KEY) === "true";
 }
-/** Marca que o jogador enviou o feedback. */
+/** Marca que o jogador enviou o feedback (ao menos uma vez). */
 export function markFeedbackResponded() {
   if (typeof window !== "undefined") localStorage.setItem(FEEDBACK_DONE_KEY, "true");
 }
+/** Quantas avaliações já foram enviadas neste navegador (0 se nenhuma). */
+export function getFeedbackCount() {
+  if (typeof window === "undefined") return 0;
+  return parseInt(localStorage.getItem(FEEDBACK_COUNT_KEY) || "0", 10) || 0;
+}
 
 /**
- * Grava a resposta de satisfação em /sessoes/{uid}/pesquisa_inicial/resposta
- * (ID FIXO, documento único). `setDoc` SEM merge: como a regra do Firestore
- * permite create mas nega update, uma 2ª gravação falha sozinha no servidor —
- * "só uma vez" garantido também no backend, sem reabrir as regras.
+ * Grava uma avaliação de satisfação como documento NOVO e numerado em
+ * /sessoes/{uid}/pesquisa_inicial/avaliacao_{N} (N = próximo índice pelo contador
+ * local). Cada envio é um CREATE independente (não sobrescreve os anteriores),
+ * compatível com as regras create-only — permite reenviar quantas vezes quiser.
  * Gated por consentimento, igual ao logEvent. Nunca lança pro chamador.
- * @returns {Promise<{ok: boolean, reason?: string}>}
+ * @returns {Promise<{ok: boolean, reason?: string, indice?: number}>}
  */
 export async function submitFeedback({ nota, comentario = "" }) {
   if (!hasConsent()) return { ok: false, reason: "no-consent" };
+  const indice = getFeedbackCount() + 1;
   try {
     const uid = await ensureSession();
-    await setDoc(doc(db, "sessoes", uid, "pesquisa_inicial", "resposta"), {
+    await setDoc(doc(db, "sessoes", uid, "pesquisa_inicial", `avaliacao_${indice}`), {
       nota,
       comentario,
+      indice,
       timestamp: serverTimestamp(),
     });
-    return { ok: true };
+    // Só avança o contador após o CREATE dar certo (evita "pular" um índice em falha).
+    if (typeof window !== "undefined") {
+      localStorage.setItem(FEEDBACK_COUNT_KEY, String(indice));
+    }
+    markFeedbackResponded();
+    return { ok: true, indice };
   } catch (erro) {
     console.warn("[telemetry] falhou ao enviar feedback:", erro);
     return { ok: false, reason: "error" };

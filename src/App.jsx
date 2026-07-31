@@ -179,7 +179,6 @@ export default function App() {
       {!consented && <ConsentGate onAccept={() => setConsented(true)} />}
       {feedbackOpen && (
         <FeedbackModal
-          alreadyResponded={feedbackResponded}
           onClose={() => setFeedbackOpen(false)}
           onSubmitted={() => setFeedbackResponded(true)}
         />

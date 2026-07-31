@@ -9,11 +9,12 @@ import { test, expect } from '@playwright/test';
 const CONSENT_KEY  = 'turinglab_consent_accepted';
 const SHOWN_KEY    = 'turinglab_feedback_shown_once';
 const DONE_KEY     = 'turinglab_feedback_respondido';
+const COUNT_KEY    = 'turinglab_feedback_count';
 const PROGRESS_KEY = 'turinglab_progress';
 
 const card    = (page) => page.locator('.fb-card');
 const fab     = (page) => page.getByRole('button', { name: /Dar Feedback/i });
-const enviar  = (page) => page.getByRole('button', { name: /Enviar feedback/i });
+const enviar  = (page) => page.getByRole('button', { name: /Enviar avaliação/i });
 const ls      = (page, k) => page.evaluate((key) => localStorage.getItem(key), k);
 
 // HOME → tela de módulos (onde o FAB de feedback é renderizado).
@@ -56,24 +57,31 @@ test.describe('FeedbackModal — balão de feedback (Fase 6)', () => {
     await page.locator('.fb-star').nth(4).click(); // 5 estrelas
     await enviar(page).click();
     // submitFeedback é gated por consentimento (igual ao logEvent): retorna cedo,
-    // sem gravar, e o modal mostra o aviso — não vai para o "obrigado".
+    // sem gravar, e o modal mostra o aviso — continua no formulário (não confirma envio).
     await expect(page.locator('.fb-error')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Obrigado/i })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: /enviada/i })).toHaveCount(0);
+    await expect(page.locator('.fb-star')).toHaveCount(5); // segue no formulário
     expect(await ls(page, DONE_KEY)).toBeNull();
   });
 
-  test('já respondido: FAB indica "enviado" e reabrir mostra só o "obrigado"', async ({ page }) => {
+  test('já enviou antes: FAB indica "enviado" e reabrir mostra o formulário (pode enviar de novo)', async ({ page }) => {
     await page.goto('/');
-    await page.evaluate((k) => localStorage.setItem(k, 'true'), DONE_KEY);
+    // Semeia "já respondeu 2 avaliações" antes de o app montar.
+    await page.evaluate(([d, c]) => {
+      localStorage.setItem(d, 'true');
+      localStorage.setItem(c, '2');
+    }, [DONE_KEY, COUNT_KEY]);
     await page.reload();
     await page.getByRole('button', { name: /Começar Aventura/i }).click();
-    // Respondido → aria-label do FAB é "Feedback já enviado" (vira o nome acessível).
+    // Respondido → aria-label do FAB indica "já enviado" (vira o nome acessível).
     const enviado = page.getByRole('button', { name: /Feedback já enviado/i });
     await expect(enviado).toBeVisible();
     await enviado.click();
-    await expect(page.getByRole('heading', { name: /Obrigado/i })).toBeVisible();
-    // Na tela de agradecimento não há formulário de estrelas.
-    await expect(page.locator('.fb-star')).toHaveCount(0);
+    // NÃO trava mais em "obrigado": reabre o formulário para enviar OUTRA avaliação.
+    await expect(page.getByRole('heading', { name: /Como foi sua experiência/i })).toBeVisible();
+    await expect(page.locator('.fb-star')).toHaveCount(5);
+    // A nota indica que a próxima será a de número 3.
+    await expect(page.locator('.fb-note')).toContainText('número 3');
   });
 
   test('popup automático 1x ao SAIR de uma fase (com consentimento + fase concluída)', async ({ page }) => {
