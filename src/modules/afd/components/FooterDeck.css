@@ -111,8 +111,8 @@
 
 .card.selected-card {
   transform: translateY(-20px) rotate(-1deg) scale(1.04);
-  border: 4px solid #facc15;
-  box-shadow: 0 0 0 4px #facc15, 6px 6px 0px #000;
+  border: 4px solid var(--accent-blue);
+  box-shadow: 0 0 0 4px var(--accent-blue), 6px 6px 0px #000;
 }
 
 .card-separator {
