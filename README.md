@@ -46,9 +46,10 @@ O visual segue o estilo neo-brutalismo / gibi (inspirado na Turma da Mônica), c
 
 ```
 TuringLab
-├── AFD Parte 1 — Desenhar o autômato a partir da linguagem
-├── AFD Parte 2 — Identificar a linguagem a partir do grafo
-├── AFD Minimização — reduzir um autômato ao seu equivalente mínimo
+├── Autômatos Finitos (AFD)
+│   ├── Parte 1 — Desenhar o autômato a partir da linguagem
+│   ├── Parte 2 — Identificar a linguagem a partir do grafo
+│   └── Minimização — reduzir um autômato ao seu equivalente mínimo
 ├── Autômatos com Pilha — construção e aceitação por pilha vazia
 └── Máquinas de Turing
     ├── Reconhecedora — aceita ou rejeita a palavra na fita

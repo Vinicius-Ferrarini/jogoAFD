@@ -598,7 +598,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
           connectingSource={connectingSource}
           setConnectingSource={setConnectingSource}
           addNode={g.addNode}
-          moveNode={g.moveNode}
+          moveNodes={g.moveNodes}
           toggleInitial={g.toggleInitial}
           toggleFinal={g.toggleFinal}
           setNodeLabel={g.setNodeLabel}

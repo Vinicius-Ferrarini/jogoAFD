@@ -24,6 +24,35 @@ function pxFromEvent(e, innerRef) {
   };
 }
 
+// Geometria da aresta (path + posição do chip de label) — usada tanto pro
+// render de arestas existentes (edgeRenders) quanto pro editor de uma aresta
+// ainda inexistente (commitEdge), que precisa saber onde abrir o popup antes
+// de qualquer transição ter sido de fato criada.
+function computeEdgeGeometry(src, tgt, bidir) {
+  const sx = src.x, sy = src.y;
+  const tx = tgt.x, ty = tgt.y;
+  const selfLoop = src.id === tgt.id;
+  let pathD, lx, ly;
+  if (selfLoop) {
+    pathD = `M ${sx - 16} ${sy - 29} C ${sx - 58} ${sy - 96} ${sx + 58} ${sy - 96} ${sx + 16} ${sy - 29}`;
+    lx = sx; ly = sy - 92;
+  } else if (bidir) {
+    const dx = tx - sx, dy = ty - sy, dist = Math.hypot(dx, dy) || 1;
+    const nx = -dy / dist, ny = dx / dist, off = 42;
+    const qcx = (sx + tx) / 2 + nx * off, qcy = (sy + ty) / 2 + ny * off;
+    const NR = 32;
+    const tanX = tx - qcx, tanY = ty - qcy, tanDist = Math.hypot(tanX, tanY) || 1;
+    const endX = tx - (tanX / tanDist) * NR, endY = ty - (tanY / tanDist) * NR;
+    pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${endX} ${endY}`;
+    lx = ((sx + tx) / 2 + qcx) / 2 + nx * 12;
+    ly = ((sy + ty) / 2 + qcy) / 2 + ny * 12;
+  } else {
+    pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+    lx = (sx + tx) / 2; ly = (sy + ty) / 2 - 14;
+  }
+  return { pathD, lx, ly, selfLoop };
+}
+
 const NODE_R = 33;
 function clampToViewport(x, y, viewportRef, actualScale) {
   const vp = viewportRef?.current;
@@ -42,7 +71,7 @@ export default function MTCanvas({
   canvasRef, innerCanvasRef, viewportRef, zoom, setZoom,
   nodes, transitions, mode, setMode, beginDrag, discardSnapshot,
   connectingSource, setConnectingSource,
-  addNode, moveNode, toggleInitial, toggleFinal, setNodeLabel, renameNode, deleteNode,
+  addNode, moveNodes, toggleInitial, toggleFinal, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
   draw, lessonActive, activeNodeId,
   selectedNodes = [], setSelectedNodes,
@@ -187,15 +216,22 @@ export default function MTCanvas({
     setSelectedNodes([]);
   }, [isDrawingUnlocked, isDraw, draw, mode, addNode, setSelectionBox, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cria a transição em branco entre srcUid → tgtUid e abre o editor automaticamente.
+  // Abre o editor para uma aresta NOVA (ainda sem transição salva) entre
+  // srcUid → tgtUid. NÃO cria a transição aqui — só ao salvar (onSave do
+  // TMTransitionEditor, que já chama addTriple e mostra o toast de bloqueio
+  // se o símbolo escolhido colidir). Antes, isto tentava addTriple direto com
+  // um rascunho read:'' (branco): se o estado de origem já tivesse QUALQUER
+  // transição lendo branco (comum na MT — fim de palavra, retorno de
+  // cabeçote...), o bloqueio de determinismo disparava ali mesmo e o editor
+  // nunca abria, sem o usuário conseguir escolher outro símbolo.
   const commitEdge = useCallback((srcUid, tgtUid) => {
     const src = nodes.find(n => n.uid === srcUid);
     const tgt = nodes.find(n => n.uid === tgtUid);
     if (!src || !tgt) return;
-    const newTIdx = transitions.length;
-    const ok = addTriple(src.id, tgt.id, { read: '', write: '', move: 'R' });
-    if (ok) setEditing({ type: 'edit', tIdx: newTIdx });
-  }, [nodes, transitions, addTriple]);
+    const bidir = transitions.some(o => o.from === tgt.id && o.to === src.id);
+    const { lx, ly } = computeEdgeGeometry(src, tgt, bidir);
+    setEditing({ type: 'new', from: src.id, to: tgt.id, lx, ly });
+  }, [nodes, transitions]);
 
   const onNodeDown = useCallback((e, node) => {
     if (!isDrawingUnlocked) return;
@@ -203,7 +239,7 @@ export default function MTCanvas({
     e.stopPropagation();
     if (e.button !== 0) return;
     if (mode === 'ERASE')          { deleteNode(node.uid); return; }
-    if (mode === 'TOGGLE_INITIAL') { toggleInitial(node.uid); return; }
+    if (mode === 'TOGGLE_INITIAL') { toggleInitial(node.uid); setMode('IDLE'); return; }
     if (mode === 'TOGGLE_FINAL')   { toggleFinal(node.uid); return; }
     if (mode === 'CONNECTING') {
       prevConnectingSourceRef.current = connectingSource;
@@ -221,10 +257,15 @@ export default function MTCanvas({
       setSelectedNodes(newSel);
       beginDrag();
       const { x, y } = pxFromEvent(e, innerRef);
-      dragRef.current = { uid: node.uid, sx: x, sy: y, ox: node.x, oy: node.y };
+      // Guarda a posição inicial de TODOS os nós selecionados (não só o clicado),
+      // pra mover o grupo inteiro junto — antes só o nó sob o cursor se movia.
+      const origins = nodes
+        .filter(n => newSel.includes(n.uid))
+        .map(n => ({ uid: n.uid, ox: n.x, oy: n.y }));
+      dragRef.current = { sx: x, sy: y, origins };
       e.target.setPointerCapture?.(e.pointerId);
     }
-  }, [isDrawingUnlocked, isDraw, mode, connectingSource, deleteNode, toggleInitial, toggleFinal, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, isDraw, mode, connectingSource, deleteNode, toggleInitial, toggleFinal, setConnectingSource, beginDrag, selectedNodes, setSelectedNodes, nodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onNodeUp = useCallback((e, node) => {
     if (!isDrawingUnlocked || mode !== 'CONNECTING') return;
@@ -278,9 +319,14 @@ export default function MTCanvas({
     if (!d) return;
     const { x, y } = pxFromEvent(e, innerRef);
     const dx = x - d.sx, dy = y - d.sy;
-    const { x: nx, y: ny } = clampToViewport(d.ox + dx, d.oy + dy, viewportRef, actualScale);
-    moveNode(d.uid, nx, ny);
-  }, [isDrawingUnlocked, isDraw, draw, moveNode, selectionBox, setSelectionBox, viewportRef, actualScale]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Um único dispatch pra mover TODOS os nós selecionados — chamar moveNode em
+    // loop perderia as mudanças anteriores (cada chamada fecha sobre o mesmo
+    // `nodes` do render atual, então a última chamada sobrescreve as outras).
+    moveNodes(d.origins.map(o => {
+      const { x: nx, y: ny } = clampToViewport(o.ox + dx, o.oy + dy, viewportRef, actualScale);
+      return { uid: o.uid, x: nx, y: ny };
+    }));
+  }, [isDrawingUnlocked, isDraw, draw, moveNodes, selectionBox, setSelectionBox, viewportRef, actualScale]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onUp = useCallback((e) => {
     if (!isDrawingUnlocked) return;
@@ -320,8 +366,10 @@ export default function MTCanvas({
     }
     if (dragRef.current) {
       const d = dragRef.current;
-      const cur = nodes.find(n => n.uid === d.uid);
-      const moved = cur && (Math.abs(cur.x - d.ox) > 1 || Math.abs(cur.y - d.oy) > 1);
+      const moved = d.origins.some(o => {
+        const cur = nodes.find(n => n.uid === o.uid);
+        return cur && (Math.abs(cur.x - o.ox) > 1 || Math.abs(cur.y - o.oy) > 1);
+      });
       if (!moved) discardSnapshot?.();
     }
     dragRef.current = null;
@@ -340,28 +388,8 @@ export default function MTCanvas({
     const src = nodes.find(n => n.id === g.from);
     const tgt = nodes.find(n => n.id === g.to);
     if (!src || !tgt) return null;
-    const sx = src.x, sy = src.y;
-    const tx = tgt.x, ty = tgt.y;
-    const selfLoop = g.from === g.to;
-    const bidir = !selfLoop && transitions.some(o => o.from === g.to && o.to === g.from);
-    let pathD, lx, ly;
-    if (selfLoop) {
-      pathD = `M ${sx - 16} ${sy - 29} C ${sx - 58} ${sy - 96} ${sx + 58} ${sy - 96} ${sx + 16} ${sy - 29}`;
-      lx = sx; ly = sy - 92;
-    } else if (bidir) {
-      const dx = tx - sx, dy = ty - sy, dist = Math.hypot(dx, dy) || 1;
-      const nx = -dy / dist, ny = dx / dist, off = 42;
-      const qcx = (sx + tx) / 2 + nx * off, qcy = (sy + ty) / 2 + ny * off;
-      const NR = 32;
-      const tanX = tx - qcx, tanY = ty - qcy, tanDist = Math.hypot(tanX, tanY) || 1;
-      const endX = tx - (tanX / tanDist) * NR, endY = ty - (tanY / tanDist) * NR;
-      pathD = `M ${sx} ${sy} Q ${qcx} ${qcy} ${endX} ${endY}`;
-      lx = ((sx + tx) / 2 + qcx) / 2 + nx * 12;
-      ly = ((sy + ty) / 2 + qcy) / 2 + ny * 12;
-    } else {
-      pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
-      lx = (sx + tx) / 2; ly = (sy + ty) / 2 - 14;
-    }
+    const bidir = g.from !== g.to && transitions.some(o => o.from === g.to && o.to === g.from);
+    const { pathD, lx, ly, selfLoop } = computeEdgeGeometry(src, tgt, bidir);
     return { ...g, src, tgt, selfLoop, bidir, pathD, lx, ly };
   }).filter(Boolean);
 

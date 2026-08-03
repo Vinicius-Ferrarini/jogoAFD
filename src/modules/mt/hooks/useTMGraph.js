@@ -50,8 +50,12 @@ export default function useTMGraph({ showToast, selectedNodes = [], setSelectedN
     dispatch({ type: 'COMMIT', next: { nodes: [...nodes, node], transitions } });
   }, [nodes, transitions]);
 
-  const moveNode = useCallback((uid, x, y) => {
-    dispatch({ type: 'SET', next: { nodes: nodes.map(n => n.uid === uid ? { ...n, x, y } : n), transitions } });
+  // arraste (sem histórico): aplica todas as posições (1 nó ou um grupo inteiro
+  // selecionado) em UM só dispatch — chamar isso em loop perderia as mudanças
+  // anteriores, já que cada chamada fecharia sobre o mesmo `nodes` do render atual.
+  const moveNodes = useCallback((updates) => {
+    const byUid = new Map(updates.map(u => [u.uid, u]));
+    dispatch({ type: 'SET', next: { nodes: nodes.map(n => byUid.has(n.uid) ? { ...n, x: byUid.get(n.uid).x, y: byUid.get(n.uid).y } : n), transitions } });
   }, [nodes, transitions]);
 
   const toggleInitial = useCallback((uid) => {
@@ -139,7 +143,7 @@ export default function useTMGraph({ showToast, selectedNodes = [], setSelectedN
   return {
     nodes, transitions, canUndo, canRedo,
     reset, undo, redo, beginDrag,
-    addNode, moveNode, toggleInitial, toggleFinal, setNodeLabel, renameNode, deleteNode,
+    addNode, moveNodes, toggleInitial, toggleFinal, setNodeLabel, renameNode, deleteNode,
     addTriple, editTriple, removeTriple, removeEdge, deleteSelected,
   };
 }

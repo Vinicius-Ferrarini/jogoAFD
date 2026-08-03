@@ -24,6 +24,7 @@ export default function FooterDeck({
   onDeckNodeDrag, onDeckNodeDrop, onDeckNodeDragCancel,
 }) {
   const addNodeDragRef = useRef(null);
+  const justDraggedRef = useRef(false);
 
   // Onboarding de 2 passos: canvas vazio → só addNode livre; 1+ estado → tudo livre
   const isCanvasEmpty = nodes.length === 0;
@@ -96,7 +97,11 @@ export default function FooterDeck({
                   data-icon={iconMap[card.action] || ''}
                   className={`card ${classMap[card.action]} slide-up-fade ${isSelected?'selected-card':''} ${isErr?'error-pulse-severe':''} ${isOnboardLocked?'disabled':''}`}
                   title={isOnboardLocked ? 'Complete o passo atual primeiro' : undefined}
-                  onClick={() => { if (isOnboardLocked) return; if (isSelected) { setInteractionMode('IDLE'); resetMode(); } else { clickMap[card.action](); } }}
+                  onClick={() => {
+                    if (isOnboardLocked) return;
+                    if (justDraggedRef.current) { justDraggedRef.current = false; return; }
+                    if (isSelected) { setInteractionMode('IDLE'); resetMode(); } else { clickMap[card.action](); }
+                  }}
                   onPointerDown={(e) => {
                     if (card.action !== 'addNode') return;
                     addNodeDragRef.current = { startX: e.clientX, startY: e.clientY, dragging: false };
@@ -119,6 +124,7 @@ export default function FooterDeck({
                     addNodeDragRef.current = null;
                     if (wasDragging) {
                       e.preventDefault();
+                      justDraggedRef.current = true;
                       onDeckNodeDrop?.(e.clientX, e.clientY);
                     }
                   }}

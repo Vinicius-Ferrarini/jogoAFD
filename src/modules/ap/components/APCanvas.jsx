@@ -45,7 +45,7 @@ export default function APCanvas({
   canvasRef, innerCanvasRef, viewportRef, zoom, setZoom,
   nodes, transitions, mode, setMode, simHighlight, beginDrag, discardSnapshot,
   connectingSource, setConnectingSource,
-  addNode, moveNode, toggleInitial, setNodeLabel, renameNode, deleteNode,
+  addNode, moveNodes, toggleInitial, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
   draw, lessonActive, highlightEdge, lessonHighlightTIdx = null,
   selectedNodes = [], setSelectedNodes,
@@ -201,7 +201,7 @@ export default function APCanvas({
     e.stopPropagation();
     if (e.button !== 0) return;
     if (mode === 'ERASE')          { deleteNode(node.uid); return; }
-    if (mode === 'TOGGLE_INITIAL') { toggleInitial(node.uid); return; }
+    if (mode === 'TOGGLE_INITIAL') { toggleInitial(node.uid); setMode('IDLE'); return; }
     if (mode === 'CONNECTING') {
       prevConnectingSourceRef.current = connectingSource;
       const drag = { srcUid: node.uid, x1: node.x, y1: node.y, x2: node.x, y2: node.y };
@@ -218,10 +218,15 @@ export default function APCanvas({
       setSelectedNodes(newSel);
       beginDrag();
       const { x, y } = pxFromEvent(e, innerRef);
-      dragRef.current = { uid: node.uid, sx: x, sy: y, ox: node.x, oy: node.y };
+      // Guarda a posição inicial de TODOS os nós selecionados (não só o clicado),
+      // pra mover o grupo inteiro junto — antes só o nó sob o cursor se movia.
+      const origins = nodes
+        .filter(n => newSel.includes(n.uid))
+        .map(n => ({ uid: n.uid, ox: n.x, oy: n.y }));
+      dragRef.current = { sx: x, sy: y, origins };
       e.target.setPointerCapture?.(e.pointerId);
     }
-  }, [isDrawingUnlocked, isDraw, mode, connectingSource, beginDrag, selectedNodes, setSelectedNodes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, isDraw, mode, connectingSource, beginDrag, selectedNodes, setSelectedNodes, nodes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pointer up no nó: trata clique simples (sem arraste) no modo CONNECTING —
   // mesma lógica do handlePointerUpNode do AFD (loop / seta pra outro nó).
@@ -279,9 +284,14 @@ export default function APCanvas({
     if (!d) return;
     const { x, y } = pxFromEvent(e, innerRef);
     const dx = x - d.sx, dy = y - d.sy;
-    const { x: nx, y: ny } = clampToViewport(d.ox + dx, d.oy + dy, viewportRef, actualScale);
-    moveNode(d.uid, nx, ny);
-  }, [isDrawingUnlocked, isDraw, draw, moveNode, selectionBox, setSelectionBox, viewportRef, actualScale]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Um único dispatch pra mover TODOS os nós selecionados — chamar moveNode em
+    // loop perderia as mudanças anteriores (cada chamada fecha sobre o mesmo
+    // `nodes` do render atual, então a última chamada sobrescreve as outras).
+    moveNodes(d.origins.map(o => {
+      const { x: nx, y: ny } = clampToViewport(o.ox + dx, o.oy + dy, viewportRef, actualScale);
+      return { uid: o.uid, x: nx, y: ny };
+    }));
+  }, [isDrawingUnlocked, isDraw, draw, moveNodes, selectionBox, setSelectionBox, viewportRef, actualScale]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onUp = useCallback((e) => {
     if (!isDrawingUnlocked) return;
@@ -326,8 +336,10 @@ export default function APCanvas({
     // nó não se moveu, cancela esse snapshot pra não sujar o "desfazer".
     if (dragRef.current) {
       const d = dragRef.current;
-      const cur = nodes.find(n => n.uid === d.uid);
-      const moved = cur && (Math.abs(cur.x - d.ox) > 1 || Math.abs(cur.y - d.oy) > 1);
+      const moved = d.origins.some(o => {
+        const cur = nodes.find(n => n.uid === o.uid);
+        return cur && (Math.abs(cur.x - o.ox) > 1 || Math.abs(cur.y - o.oy) > 1);
+      });
       if (!moved) discardSnapshot?.();
     }
     dragRef.current = null;

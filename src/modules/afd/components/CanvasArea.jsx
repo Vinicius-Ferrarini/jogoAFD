@@ -240,6 +240,7 @@ export default function CanvasArea({
       const newNodes = nodes.map(n => ({ ...n, isInitial: wasInitial ? false : n.uid === uid }));
       setNodes(newNodes);
       recordHistory(newNodes, transitions);
+      setInteractionMode('IDLE'); // desseleciona a carta após 1 uso (diferente de Final/Seta, que ficam ativas)
       return;
     }
     if (interactionMode === 'TOGGLE_FINAL') {

@@ -577,7 +577,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
           connectingSource={connectingSource}
           setConnectingSource={setConnectingSource}
           addNode={g.addNode}
-          moveNode={g.moveNode}
+          moveNodes={g.moveNodes}
           toggleInitial={g.toggleInitial}
           setNodeLabel={g.setNodeLabel}
           renameNode={g.renameNode}
