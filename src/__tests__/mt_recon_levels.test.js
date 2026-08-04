@@ -6,6 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import { MT_RECON_LEVELS } from '../levels_data/mt-recon/index.js';
 import { simulateTM, fuzzTMRecognizer } from '../modules/mt/utils/tmAlgorithms.js';
+import { INNER_W, INNER_H } from '../modules/afd/hooks/useCanvasState.js';
 
 function lastGraphStep(level) {
   const steps = level.guidedLesson.steps;
@@ -70,11 +71,87 @@ describe('MT Reconhecedora — grafo final da aula ≡ estado final coerente com
     it(`${level.label}: passos com status ACCEPTED/REJECTED batem com simulateTM no grafo daquele passo`, () => {
       const steps = level.guidedLesson.steps.filter(s => s.status && s.stateUpdate);
       expect(steps.length, `${level.label}: aula não tem nenhum passo com veredito ACCEPTED/REJECTED`).toBeGreaterThan(0);
-      for (const [idx, step] of steps.entries()) {
+      for (const step of steps) {
         const graph = { states: step.stateUpdate.nodes, transitions: step.stateUpdate.transitions };
         const { status } = simulateTM(graph, step.simulateWord);
         expect(status, `${level.label} step com status "${step.status}" para "${step.simulateWord}": simulateTM real deu "${status}"`).toBe(step.status);
       }
+    });
+  }
+});
+
+// ─── Layout do grafo (posição dos nós) ────────────────────────────────────────
+// Não trava coordenadas exatas (qualquer ajuste fino de layout legítimo quebraria
+// à toa) — trava as PROPRIEDADES que garantem legibilidade: nós dentro do canvas,
+// sem dois nós exatamente sobrepostos, sem 3+ arestas saindo do mesmo nó em linha
+// reta (o bug reportado: "não dá pra saber se a transição é de q0→q1 ou q2 ou
+// q3" quando as arestas ficam colineares), e densidade compatível com os níveis
+// desenhados à mão (evita regressão a um layout em grade rígida, muito espalhado
+// ou muito espremido).
+function angleBetween(a, b) {
+  return Math.atan2(b.y - a.y, b.x - a.x);
+}
+
+describe('MT Reconhecedora — layout do grafo é legível (regressão do bug de arestas coincidentes)', () => {
+  for (const level of MT_RECON_LEVELS) {
+    const nodes = lastGraphStep(level).stateUpdate.nodes;
+    const transitions = lastGraphStep(level).stateUpdate.transitions;
+    if (nodes.length < 2) continue;
+
+    it(`${level.label}: todos os nós têm coordenadas dentro do canvas (0..${INNER_W}x${INNER_H})`, () => {
+      for (const n of nodes) {
+        expect(n.x, `${level.label} nó ${n.id}: x=${n.x} fora do canvas`).toBeGreaterThanOrEqual(0);
+        expect(n.x, `${level.label} nó ${n.id}: x=${n.x} fora do canvas`).toBeLessThanOrEqual(INNER_W);
+        expect(n.y, `${level.label} nó ${n.id}: y=${n.y} fora do canvas`).toBeGreaterThanOrEqual(0);
+        expect(n.y, `${level.label} nó ${n.id}: y=${n.y} fora do canvas`).toBeLessThanOrEqual(INNER_H);
+      }
+    });
+
+    it(`${level.label}: nenhum par de nós ocupa exatamente a mesma posição`, () => {
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const same = nodes[i].x === nodes[j].x && nodes[i].y === nodes[j].y;
+          expect(same, `${level.label}: ${nodes[i].id} e ${nodes[j].id} sobrepostos em (${nodes[i].x},${nodes[i].y})`).toBe(false);
+        }
+      }
+    });
+
+    it(`${level.label}: nenhum nó tem 2+ arestas de saída colineares (ambíguas visualmente)`, () => {
+      const byId = new Map(nodes.map(n => [n.id, n]));
+      const outEdgesByFrom = new Map();
+      for (const t of transitions) {
+        if (t.from === t.to) continue; // self-loop não tem "direção" a comparar
+        if (!outEdgesByFrom.has(t.from)) outEdgesByFrom.set(t.from, new Set());
+        outEdgesByFrom.get(t.from).add(t.to);
+      }
+      const ANGLE_TOLERANCE = 0.02; // ~1.1°: mesma reta para fins de legibilidade
+      for (const [from, tos] of outEdgesByFrom) {
+        const fromNode = byId.get(from);
+        const targets = [...tos].filter(id => byId.has(id));
+        const angles = targets.map(id => ({ id, angle: angleBetween(fromNode, byId.get(id)) }));
+        for (let i = 0; i < angles.length; i++) {
+          for (let j = i + 1; j < angles.length; j++) {
+            const diff = Math.abs(angles[i].angle - angles[j].angle);
+            const collinear = diff < ANGLE_TOLERANCE || Math.abs(diff - Math.PI) < ANGLE_TOLERANCE || Math.abs(diff - 2 * Math.PI) < ANGLE_TOLERANCE;
+            expect(collinear, `${level.label}: arestas ${from}→${angles[i].id} e ${from}→${angles[j].id} saem coincidentes (mesmo ângulo)`).toBe(false);
+          }
+        }
+      }
+    });
+
+    it(`${level.label}: densidade do layout é compatível com níveis desenhados à mão (não é grade espalhada nem espremida)`, () => {
+      const xs = nodes.map(n => n.x);
+      const ys = nodes.map(n => n.y);
+      const xSpan = Math.max(...xs) - Math.min(...xs);
+      const ySpan = Math.max(...ys) - Math.min(...ys);
+      // Referência: níveis desenhados à mão (ex. L4, 7 estados) giram em torno de
+      // ~160px de x-span por estado. Damos uma folga generosa (3x) pra não travar
+      // em variações legítimas de layout, só pra pegar uma regressão grosseira
+      // (ex.: volta pro layout em grade 6x mais espalhado que gerou o problema).
+      const spanPerState = xSpan / nodes.length;
+      expect(spanPerState, `${level.label}: x-span/estado=${spanPerState.toFixed(0)}px — layout espalhado demais`).toBeLessThan(500);
+      expect(xSpan, `${level.label}: grafo sem nenhuma variação horizontal`).toBeGreaterThan(0);
+      expect(ySpan, `${level.label}: grafo sem nenhuma variação vertical`).toBeGreaterThan(0);
     });
   }
 });
