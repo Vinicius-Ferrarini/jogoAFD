@@ -574,8 +574,8 @@ export default function MTCanvas({
             {edgeRenders.map((er) => (
               <div key={`lbl-${er.from}->${er.to}`}
                 style={{
-                  position: 'absolute', left: er.lx, top: er.ly - 6,
-                  transform: 'translate(-50%, -100%)',
+                  position: 'absolute', left: er.lx, top: er.ly,
+                  transform: 'translate(-50%, -50%)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                   pointerEvents: isDraw ? 'none' : undefined, zIndex: 20,
                 }}>
@@ -588,13 +588,15 @@ export default function MTCanvas({
                       onCancel={() => setEditing(null)}
                     />
                   ) : (
-                    <TMTransitionLabel key={t.tIdx}
-                      transition={t}
-                      eraseMode={eraseMode}
-                      lessonActive={lessonActive}
-                      onRemove={removeTriple}
-                      onEdit={(tIdx) => setEditing({ type: 'edit', tIdx })}
-                    />
+                    <div key={t.tIdx} style={{ position: 'relative' }}>
+                      <TMTransitionLabel
+                        transition={t}
+                        eraseMode={eraseMode}
+                        lessonActive={lessonActive}
+                        onRemove={removeTriple}
+                        onEdit={(tIdx) => setEditing({ type: 'edit', tIdx })}
+                      />
+                    </div>
                   )
                 ))}
                 {editing?.type === 'new' && editing.from === er.from && editing.to === er.to ? (
@@ -604,9 +606,10 @@ export default function MTCanvas({
                   />
                 ) : !eraseMode && !lessonActive ? (
                   <button
-                    style={{ width: 22, height: 22, border: '2.5px solid #16a34a', borderRadius: 6,
+                    style={{ position: 'absolute', top: '50%', left: '100%', transform: 'translate(2px, -50%)',
+                      width: 15, height: 15, border: '1.5px solid #16a34a', borderRadius: 4,
                       background: '#bbf7d0', fontWeight: 900, cursor: 'pointer', color: '#166534',
-                      boxShadow: '2px 2px 0 rgba(22,163,74,.4)', fontSize: 14, lineHeight: 1 }}
+                      boxShadow: '1px 1px 0 rgba(22,163,74,.4)', fontSize: 10, lineHeight: 1, padding: 0 }}
                     onClick={e => { e.stopPropagation(); setEditing({ type: 'new', from: er.from, to: er.to, lx: er.lx, ly: er.ly }); }}>
                     ＋
                   </button>

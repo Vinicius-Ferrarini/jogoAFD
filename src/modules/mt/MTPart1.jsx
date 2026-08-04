@@ -56,6 +56,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
   const innerCanvasRef = useRef(null);
   const viewportRef    = useRef(null);
   const formalRef = useRef(null); // container rolável do painel formal (auto-scroll)
+  const formalFieldRefs = useRef({}); // { [campo]: {current: <input>} } — p/ inserir símbolo no cursor
   const noopRef = useRef(false);
 
   // ── Aula Guiada ──────────────────────────────────────────────────────────────
@@ -451,21 +452,49 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     ...prev, deltaCells: { ...prev.deltaCells, [key]: value },
   }));
 
-  const formalField = (label, k, placeholder) => {
+  // insertSymbol: quando definido, mostra um botão colado ao campo que insere
+  // o símbolo (ex.: □) na posição do cursor — o jogador não precisa saber
+  // digitar o glifo de branco no teclado.
+  const formalField = (label, k, placeholder, insertSymbol) => {
     const filled = !!formalAnswers[k];
+    const inputRef = formalFieldRefs.current[k] ??= { current: null };
+    const handleInsert = () => {
+      const el = inputRef.current;
+      const cur = formalAnswers[k] ?? '';
+      const start = el?.selectionStart ?? cur.length;
+      const end   = el?.selectionEnd   ?? cur.length;
+      const next  = cur.slice(0, start) + insertSymbol + cur.slice(end);
+      setFormalAnswers(prev => ({ ...prev, [k]: next }));
+      requestAnimationFrame(() => {
+        el?.focus();
+        const pos = start + insertSymbol.length;
+        el?.setSelectionRange(pos, pos);
+      });
+    };
     return (
       <div style={{ marginBottom: 8 }}>
         <label style={{ display: 'block', fontFamily: "'Comic Sans MS',cursive", fontSize: 11,
           fontWeight: 900, color: '#065f46', marginBottom: 3 }}>{label}</label>
-        <input type="text" value={formalAnswers[k] ?? ''} placeholder={placeholder}
-          disabled={lesson.active}
-          onChange={e => setFormalAnswers(prev => ({ ...prev, [k]: e.target.value }))}
-          translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
-          style={{ width: '100%', boxSizing: 'border-box', padding: '5px 7px',
-            fontFamily: "'Comic Sans MS',cursive", fontSize: 13, fontWeight: 900,
-            background: filled ? '#f0fdf4' : '#fff',
-            color: filled ? '#111' : '#9ca3af',
-            border: filled ? '2px solid #22c55e' : '2px solid #d1d5db', borderRadius: 6 }} />
+        <div style={{ display: 'flex', gap: 4 }}>
+          <input type="text" value={formalAnswers[k] ?? ''} placeholder={placeholder}
+            disabled={lesson.active}
+            ref={el => { inputRef.current = el; }}
+            onChange={e => setFormalAnswers(prev => ({ ...prev, [k]: e.target.value }))}
+            translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
+            style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', padding: '5px 7px',
+              fontFamily: "'Comic Sans MS',cursive", fontSize: 13, fontWeight: 900,
+              background: filled ? '#f0fdf4' : '#fff',
+              color: filled ? '#111' : '#9ca3af',
+              border: filled ? '2px solid #22c55e' : '2px solid #d1d5db', borderRadius: 6 }} />
+          {insertSymbol && !lesson.active && (
+            <button type="button" onClick={handleInsert} title={`Inserir "${insertSymbol}"`}
+              style={{ flexShrink: 0, width: 30, fontFamily: "'Comic Sans MS',cursive",
+                fontSize: 14, fontWeight: 900, cursor: 'pointer', borderRadius: 6,
+                border: '2px solid #143823', background: '#fde047', color: '#143823' }}>
+              {insertSymbol}
+            </button>
+          )}
+        </div>
       </div>
     );
   };
@@ -518,9 +547,9 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
               </div>
               {formalField('Q (Estados):',          'states',  '{…}')}
               {formalField('Σ (Alfabeto entrada):', 'sigma',   '{…}')}
-              {formalField('Γ (Alfabeto da fita):', 'gamma',   '{…}')}
+              {formalField('Γ (Alfabeto da fita):', 'gamma',   '{…}', '□')}
               {formalField('q₀ (Estado inicial):',  'initial', '…')}
-              {formalField('□ (Símbolo branco):',   'blank',   '…')}
+              {formalField('□ (Símbolo branco):',   'blank',   '…', '□')}
               {formalField('F (Estados finais):',   'final',   '{…}')}
 
               <div style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
