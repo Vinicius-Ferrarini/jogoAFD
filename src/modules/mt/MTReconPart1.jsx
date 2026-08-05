@@ -624,6 +624,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
           draw={draw}
           lessonActive={lesson.active}
           activeNodeId={lesson.cur?.activeNode}
+          activeTransition={lesson.activeTransition}
           connectingSource={connectingSource}
           setConnectingSource={setConnectingSource}
           addNode={g.addNode}
@@ -716,7 +717,13 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
               ))}
             </div>
 
-            <div style={{ padding: '6px 8px 160px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {/* padding-bottom 245px: espaço pro balão do Maurílio (professor-hud
+                do rodapé), que "flutua" por cima do painel — o rodapé de MT é
+                compacto durante a aula (compactWhenLesson no APFooterDeck), então
+                o balão sobe mais alto na tela do que um rodapé de altura cheia
+                exigiria; sem essa folga extra, os botões Ant./Próx. ficavam atrás
+                do balão. */}
+            <div style={{ padding: '6px 8px 245px', display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={() => lessonGo(-1)}
@@ -837,6 +844,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
         tape={lesson.active && lesson.cur?.tape ? lesson.cur.tape : null}
         tapeHead={lesson.cur?.head ?? 0}
         errAction={errAction}
+        compactWhenLesson
       />
 
       {victory && (

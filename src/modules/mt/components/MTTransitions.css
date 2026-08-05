@@ -1,6 +1,14 @@
 /* ═══ MT — Rótulo e Editor de Transição ══════════════════════════════════════ */
 /* Usado por TMTransitionLabel e TMTransitionEditor.                            */
 
+/* Modo Aula: linha da aresta percorrida no passo atual — mesmo amarelo do nó
+   ativo e do chip .active-transition (abaixo), no mesmo padrão de "linha
+   destacada" já usado pelo .lesson-hl do AP (stroke maior + drop-shadow). */
+.transition-line.active-transition-line {
+  stroke: #a16207 !important; stroke-width: 5 !important;
+  filter: drop-shadow(0 0 3px rgba(253, 224, 71, .8));
+}
+
 /* ── Rótulo (chip sobre a aresta) ── */
 .tm-transition-label {
   font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
@@ -32,6 +40,15 @@
   box-shadow: 2px 2px 0 rgba(220, 38, 38, 0.35);
 }
 .tm-transition-label.erasable:hover .tm-tl-chip { background: #fee2e2; }
+
+/* Modo Aula: transição percorrida no passo atual — mesmo amarelo do nó ativo
+   (ver .node ativo em MTCanvas.jsx), pra ficar claro qual caminho a MT tomou. */
+.tm-transition-label.active-transition .tm-tl-chip {
+  background: #fde047;
+  border-color: #a16207;
+  color: #422006;
+  box-shadow: 0 0 0 3px rgba(253, 224, 71, .45), 2px 2px 0 rgba(161, 98, 7, .5);
+}
 
 .tm-tl-sep  { color: #374151; font-weight: 700; }
 .tm-tl-move { color: #7c3aed; font-weight: 900; }

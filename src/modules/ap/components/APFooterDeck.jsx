@@ -24,6 +24,13 @@ export default function APFooterDeck({
   simPanel,
   isDrawingUnlocked = true,
   errAction,
+  // Aula guiada de MT: grafos importados do JFLAP costumam ter muitos estados
+  // e transições, então o canvas precisa de mais espaço vertical. Durante a
+  // aula (lessonActive), este rodapé só mostra texto/fita — sem cartas — então
+  // não precisa da altura cheia de 168px. Só reduz quando o chamador pedir
+  // explicitamente (MT em lessonActive); AP e o rodapé fora da aula continuam
+  // com a altura padrão do CSS (.bottom-hand).
+  compactWhenLesson = false,
 }) {
   const CARDS = showFinalCard
     ? [CARD_INITIAL, CARD_FINAL, ...CARDS_TAIL]
@@ -53,10 +60,19 @@ export default function APFooterDeck({
     return <footer className="bottom-hand" />;
   }
 
+  // Aula guiada de MT (compactWhenLesson): grafos importados do JFLAP costumam
+  // ter muitos estados, então o canvas precisa de mais espaço vertical. O
+  // rodapé só mostra texto/fita durante a aula (sem cartas), então não precisa
+  // da altura cheia de 168px — encolhe, mas o professor-hud (Maurílio+balão)
+  // continua aparecendo: como ele é position:absolute ancorado no bottom do
+  // footer, "flutua" por cima do canvas normalmente, sem exigir a altura
+  // cheia do rodapé por baixo dele.
+  const compact = compactWhenLesson && lessonActive;
+
   return (
-    <footer className="bottom-hand">
+    <footer className="bottom-hand" style={compact ? { height: tape ? 64 : 40, padding: '4px 0 4px 16px' } : undefined}>
       {lessonActive ? (
-        <div className="cards-scroll-wrapper" style={{ alignItems: 'center', padding: '0 16px', minHeight: '85px', maxHeight: '85px', minWidth: 0 }}>
+        <div className="cards-scroll-wrapper" style={{ alignItems: 'center', padding: '0 16px', minHeight: compact ? undefined : '85px', maxHeight: compact ? undefined : '85px', minWidth: 0 }}>
           {tape ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#1a1a2e', borderRadius: 8, padding: '8px 14px', border: '2px solid #143823', width: '100%', overflowX: 'auto' }}>
               <span style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 12, fontWeight: 900,
@@ -64,6 +80,11 @@ export default function APFooterDeck({
                 Fita:
               </span>
               <TuringTape tape={tape} headPosition={tapeHead ?? 0} />
+            </div>
+          ) : compact ? (
+            <div style={{ color: '#888',
+              fontFamily: "'Comic Sans MS', cursive", fontWeight: 700, fontSize: 11 }}>
+              👨‍🏫 Aula em andamento — siga o Maurílio e use "Próximo".
             </div>
           ) : (
             <div style={{ color: '#444',

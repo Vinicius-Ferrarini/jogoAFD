@@ -617,6 +617,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
           draw={draw}
           lessonActive={lesson.active}
           activeNodeId={lesson.cur?.activeNode}
+          activeTransition={lesson.activeTransition}
           connectingSource={connectingSource}
           setConnectingSource={setConnectingSource}
           addNode={g.addNode}
@@ -714,8 +715,11 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
               ))}
             </div>
 
-            {/* Navegação — paddingBottom alto mantém os botões acima do balão do professor */}
-            <div style={{ padding: '6px 8px 160px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {/* Navegação — paddingBottom alto mantém os botões acima do balão do
+                professor. 245px (não 160px): o rodapé de MT é compacto durante
+                a aula (compactWhenLesson no APFooterDeck), então o balão sobe
+                mais alto na tela do que um rodapé de altura cheia exigiria. */}
+            <div style={{ padding: '6px 8px 245px', display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button
                   onClick={() => lessonGo(-1)}
@@ -919,6 +923,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
         tape={lesson.active && lesson.cur?.tape ? lesson.cur.tape : null}
         tapeHead={lesson.cur?.head ?? 0}
         errAction={errAction}
+        compactWhenLesson
       />
 
       {victory && (

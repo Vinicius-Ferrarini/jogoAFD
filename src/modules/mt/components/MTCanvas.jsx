@@ -73,7 +73,7 @@ export default function MTCanvas({
   connectingSource, setConnectingSource,
   addNode, moveNodes, toggleInitial, toggleFinal, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
-  draw, lessonActive, activeNodeId,
+  draw, lessonActive, activeNodeId, activeTransition,
   selectedNodes = [], setSelectedNodes,
   selectionBox, setSelectionBox,
   guidedLessonStep = null,
@@ -179,12 +179,13 @@ export default function MTCanvas({
       // verticalmente; sem isso o grafo fica cortado mesmo no menor zoom.
       const fitZoom = Math.max(8, Math.min(100, Math.round((fitScale / 0.8) * 100)));
       const scale = (fitZoom / 100) * 0.8;
-      // Desce a "câmera" mais uns 20px de tela (não de coordenada do canvas) em
+      // Desce a "câmera" mais uns px de tela (não de coordenada do canvas) em
       // relação ao centro geométrico — abre uma folga extra acima do conteúdo
       // (ex.: chip do self-loop mais próximo da curva) sem alterar a distância
-      // do chip até a própria curva. Mesma folga visual do AP (espaço em
-      // branco acima confirmando que não tem mais nada pra cima).
-      const EXTRA_TOP_GAP = 20;
+      // do chip até a própria curva. Valor maior que o do AP (20px): sem essa
+      // folga, o topo do grafo (ou o chip do 1º estado) ficava colado na barra
+      // do cabeçalho (OBJETIVO/Aula), sem respiro visual nenhum.
+      const EXTRA_TOP_GAP = 44;
       // Reserva de canto: o rótulo fixo "Área de Montagem" (canvas-label) fica
       // ancorado no canto inferior-direito do VIEWPORT (CSS bottom/right), não
       // do canvas escalável. Com o PAD mais generoso acima, o grafo passou a
@@ -201,8 +202,14 @@ export default function MTCanvas({
         const graphBottomOnScreen = maxY * scale - st;
         const overflowRight = graphRightOnScreen - (vp.clientWidth - CORNER_RESERVE_PX);
         const overflowBottom = graphBottomOnScreen - (vp.clientHeight - CORNER_RESERVE_PX);
-        if (overflowRight > 0) sl += overflowRight;
-        if (overflowBottom > 0) st += overflowBottom;
+        // Limita o quanto o corner-reserve pode empurrar: nunca deslocar a
+        // ponto de cortar o lado OPOSTO do bbox (esquerda/topo) — bug real
+        // visto no L07/passo 32, onde abrir espaço pro canto inferior-direito
+        // (q15 perto do rótulo) empurrava scrollTop o bastante pra cortar o
+        // chip do self-loop de q1 lá em cima. Sobra de cada lado (minX*scale-sl
+        // e minY*scale-st) é o quanto ainda dá pra "roubar" com segurança.
+        if (overflowRight > 0) sl += Math.min(overflowRight, Math.max(0, minX * scale - sl));
+        if (overflowBottom > 0) st += Math.min(overflowBottom, Math.max(0, minY * scale - st));
         vp.scrollLeft = sl;
         vp.scrollTop  = st;
       };
@@ -410,13 +417,23 @@ export default function MTCanvas({
     byKey.get(key).triples.push({ read: t.read, write: t.write, move: t.move, tIdx: i });
   });
 
+  // Modo Aula: tIdx da tripla percorrida no passo atual (se houver), pra
+  // destacar tanto a linha da aresta (SVG) quanto o chip específico da regra.
+  const activeTIdx = lessonActive && activeTransition
+    ? transitions.findIndex(t =>
+        t.from === activeTransition.from && t.to === activeTransition.to &&
+        t.read === activeTransition.read && t.write === activeTransition.write &&
+        t.move === activeTransition.move)
+    : -1;
+
   const edgeRenders = groups.map((g) => {
     const src = nodes.find(n => n.id === g.from);
     const tgt = nodes.find(n => n.id === g.to);
     if (!src || !tgt) return null;
     const bidir = g.from !== g.to && transitions.some(o => o.from === g.to && o.to === g.from);
     const { pathD, lx, ly, selfLoop } = computeEdgeGeometry(src, tgt, bidir);
-    return { ...g, src, tgt, selfLoop, bidir, pathD, lx, ly };
+    const isActiveEdge = activeTIdx !== -1 && g.triples.some(t => t.tIdx === activeTIdx);
+    return { ...g, src, tgt, selfLoop, bidir, pathD, lx, ly, isActiveEdge };
   }).filter(Boolean);
 
   const eraseMode = mode === 'ERASE';
@@ -569,11 +586,14 @@ export default function MTCanvas({
                 <marker id="mtah"  markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000" /></marker>
                 <marker id="mtahs" markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#000" /></marker>
                 <marker id="mtah-ghost" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#888"/></marker>
+                {/* Modo Aula: seta amarela p/ a aresta percorrida no passo atual — mesmo tom do nó/chip ativos. */}
+                <marker id="mtah-active"  markerWidth="18" markerHeight="14" refX="48" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#a16207" /></marker>
+                <marker id="mtahs-active" markerWidth="18" markerHeight="14" refX="18" refY="7" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0,18 7,0 14" fill="#a16207" /></marker>
               </defs>
               {edgeRenders.map((er) => (
                 <path key={`${er.from}->${er.to}`} d={er.pathD}
-                  className={`transition-line ${eraseMode ? 'erasable' : ''}`}
-                  markerEnd={`url(#${er.selfLoop || er.bidir ? 'mtahs' : 'mtah'})`}
+                  className={`transition-line ${eraseMode ? 'erasable' : ''} ${er.isActiveEdge ? 'active-transition-line' : ''}`}
+                  markerEnd={`url(#${er.selfLoop || er.bidir ? (er.isActiveEdge ? 'mtahs-active' : 'mtahs') : (er.isActiveEdge ? 'mtah-active' : 'mtah')})`}
                   style={{ pointerEvents: isDraw ? 'none' : 'stroke', cursor: eraseMode ? 'pointer' : 'default' }}
                   onClick={(e) => { if (eraseMode) { e.stopPropagation(); removeEdge(er.from, er.to); } }} />
               ))}
@@ -621,6 +641,7 @@ export default function MTCanvas({
                         lessonActive={lessonActive}
                         onRemove={removeTriple}
                         onEdit={(tIdx) => setEditing({ type: 'edit', tIdx })}
+                        isActive={t.tIdx === activeTIdx}
                       />
                     </div>
                   )
