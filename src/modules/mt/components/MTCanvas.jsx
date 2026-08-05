@@ -161,7 +161,16 @@ export default function MTCanvas({
       const centerY = (minY + maxY) / 2;
       const spanX = maxX - minX;
       const spanY = maxY - minY;
-      const PAD = 0.9;
+      // PAD reduzido de 0.9 pra 0.93 — grafos importados do JFLAP raramente têm
+      // proporção igual à do viewport, então o eixo mais apertado (normalmente
+      // Y, inflado pelos chips de self-loop) já limita bastante o zoom; uma
+      // margem de segurança maior só piorava a sobra visível nas bordas do
+      // eixo que folga (reportado no L07 — grafo pequeno com faixas vazias
+      // nas laterais mesmo sem nada cortado). Não subir mais que isso: a altura
+      // do chip empilhado é uma ESTIMATIVA (CHIP_H aproximado, comentário
+      // acima) — testado em 0.97 e já cortava ~11px da base em telas baixas
+      // (1366×768, viewport ~1246×520).
+      const PAD = 0.93;
       const fitScaleX = spanX > 0 ? (vp.clientWidth  * PAD) / spanX : 0.8;
       const fitScaleY = spanY > 0 ? (vp.clientHeight * PAD) / spanY : 0.8;
       const fitScale = Math.min(0.8, fitScaleX, fitScaleY);
@@ -176,9 +185,26 @@ export default function MTCanvas({
       // do chip até a própria curva. Mesma folga visual do AP (espaço em
       // branco acima confirmando que não tem mais nada pra cima).
       const EXTRA_TOP_GAP = 20;
+      // Reserva de canto: o rótulo fixo "Área de Montagem" (canvas-label) fica
+      // ancorado no canto inferior-direito do VIEWPORT (CSS bottom/right), não
+      // do canvas escalável. Com o PAD mais generoso acima, o grafo passou a
+      // encostar bem nas bordas — se um nó final ficar perto desse canto (ex.:
+      // L07/q15), sobra sobreposto pelo rótulo. Depois de calcular scroll/scale
+      // normalmente, checa se o canto inferior-direito do bbox (em px de tela)
+      // invade a zona do rótulo e, se sim, desloca o scroll só o suficiente pra
+      // abrir espaço — sem mudar o zoom nem a proporção do enquadramento.
+      const CORNER_RESERVE_PX = 56; // ~largura/altura do rótulo + margem de respiro
       const doScroll = () => {
-        vp.scrollLeft = centerX * scale - vp.clientWidth / 2;
-        vp.scrollTop  = centerY * scale - vp.clientHeight / 2 - EXTRA_TOP_GAP;
+        let sl = centerX * scale - vp.clientWidth / 2;
+        let st = centerY * scale - vp.clientHeight / 2 - EXTRA_TOP_GAP;
+        const graphRightOnScreen = maxX * scale - sl;
+        const graphBottomOnScreen = maxY * scale - st;
+        const overflowRight = graphRightOnScreen - (vp.clientWidth - CORNER_RESERVE_PX);
+        const overflowBottom = graphBottomOnScreen - (vp.clientHeight - CORNER_RESERVE_PX);
+        if (overflowRight > 0) sl += overflowRight;
+        if (overflowBottom > 0) st += overflowBottom;
+        vp.scrollLeft = sl;
+        vp.scrollTop  = st;
       };
       if (fitZoom !== zoom) {
         setZoom(fitZoom);
