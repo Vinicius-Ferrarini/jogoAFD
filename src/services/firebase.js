@@ -15,12 +15,26 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+// Sem VITE_FIREBASE_* (ex.: clone local sem .env.local), o app roda em modo
+// degradado: sem login/telemetria em nuvem, mas sem travar a tela do jogo —
+// só quem publica em produção (npm run deploy) precisa dessas chaves.
+const isConfigured = Object.values(firebaseConfig).every(Boolean);
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+let app = null;
+if (isConfigured) {
+  app = initializeApp(firebaseConfig);
+} else if (import.meta.env.DEV) {
+  console.warn(
+    "[firebase] VITE_FIREBASE_* ausentes — rodando sem login/telemetria em nuvem. " +
+    "Veja .env.example para configurar um projeto Firebase próprio (opcional)."
+  );
+}
+
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
 
 export async function ensureSession() {
+  if (!auth) return "local-dev-no-firebase";
   if (!auth.currentUser) {
     const credential = await signInAnonymously(auth);
     return credential.user.uid;

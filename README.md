@@ -83,6 +83,12 @@ npm run dev
 
 Abra **http://localhost:5173** no navegador.
 
+> **Nota:** o jogo roda 100% localmente sem nenhuma configuração extra. As
+> variáveis `VITE_FIREBASE_*` (veja [`.env.example`](.env.example)) são
+> **opcionais** — habilitam apenas login anônimo e telemetria de pesquisa na
+> nuvem. Sem elas, o app funciona normalmente e o progresso é salvo só no
+> `localStorage` do navegador.
+
 ---
 
 ## Contexto Acadêmico
