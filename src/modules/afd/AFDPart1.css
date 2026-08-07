@@ -835,13 +835,19 @@ body { color: var(--text-main); }
 .node-ctx-delete { color: #dc2626; }
 .node-ctx-delete:hover { background: #fecaca; }
 .node-ctx-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 13px; height: 13px;
+  flex-shrink: 0;
   border: 2px solid #000;
   border-radius: 3px;
   background: #fff;
-  flex-shrink: 0;
+  font-size: 8px;
+  line-height: 1;
+  color: transparent;
 }
-.node-ctx-check.on { background: #4ade80; }
+.node-ctx-check.on { background: #4ade80; color: #14532d; }
 /* Emoji nativo é colorido por padrão (lixeira cinza/marrom) — grayscale+contrast
    força ele a ficar preto sólido, igual aos outros ícones do menu. */
 .node-ctx-delete-icon { filter: grayscale(1) contrast(0) brightness(0); }

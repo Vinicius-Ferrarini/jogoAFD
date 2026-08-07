@@ -6,11 +6,11 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
-function MenuItem({ label, checked, onClick }) {
+function MenuItem({ label, symbol, checked, onClick }) {
   return (
     <button className="node-ctx-item" onClick={onClick}>
       <span className={`node-ctx-check${checked ? ' on' : ''}`} />
-      {label}
+      {symbol} {label}
     </button>
   );
 }
@@ -45,10 +45,10 @@ export default function NodeContextMenu({
   return createPortal(
     <div ref={ref} className="node-ctx-menu" style={{ left, top }}
       onContextMenu={(e) => e.preventDefault()}>
-      <MenuItem label="Estado Inicial" checked={isInitial}
+      <MenuItem label="Estado Inicial" symbol="▶" checked={isInitial}
         onClick={() => { onToggleInitial(); onClose(); }} />
       {showFinal && (
-        <MenuItem label="Estado Final" checked={isFinal}
+        <MenuItem label="Estado Final" symbol="◎" checked={isFinal}
           onClick={() => { onToggleFinal(); onClose(); }} />
       )}
       {onDelete && (

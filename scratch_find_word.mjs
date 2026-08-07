@@ -19,7 +19,10 @@ const levelModule = await import(pathToFileURL(resolve(relPath)).href);
 const declaredAlphabet = levelModule.default?.alphabet;
 
 const src = readFileSync(relPath, 'utf8');
-const stepsKeyIdx = src.indexOf('steps:');
+// Alguns arquivos (L5/L8/L9, gerados a partir do XML oficial do JFLAP) usam
+// a chave citada `"steps":` em vez do estilo JS `steps:` dos demais níveis.
+let stepsKeyIdx = src.indexOf('"steps":');
+if (stepsKeyIdx === -1) stepsKeyIdx = src.indexOf('steps:');
 const arrStart = src.indexOf('[', stepsKeyIdx);
 let depth = 0, arrEnd = -1;
 for (let i = arrStart; i < src.length; i++) {
@@ -28,7 +31,10 @@ for (let i = arrStart; i < src.length; i++) {
 }
 const steps = JSON.parse(src.slice(arrStart, arrEnd + 1));
 
-const problemIdx = steps.findIndex(s => s.prof?.message?.includes('cobrir todos os casos'));
+const problemIdx = steps.findIndex(s =>
+  s.prof?.message?.includes('cobrir todos os casos') ||
+  s.prof?.message?.includes('ainda não apareceram nos exemplos')
+);
 const prev = steps[problemIdx - 1];
 const key = t => `${t.from}|${t.to}|${t.read}|${t.write}|${t.move}`;
 const prevSet = new Set(prev.stateUpdate.transitions.map(key));

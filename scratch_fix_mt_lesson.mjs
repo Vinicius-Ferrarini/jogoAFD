@@ -29,7 +29,10 @@ const levelModule = await import(pathToFileURL(resolve(path)).href);
 const startMarker = levelModule.default?.startMarker ?? null;
 
 const src = readFileSync(path, 'utf8');
-const stepsKeyIdx = src.indexOf('steps:');
+// Alguns arquivos (L5/L8/L9, gerados a partir do XML oficial do JFLAP) usam
+// a chave citada `"steps":` em vez do estilo JS `steps:` dos demais níveis.
+let stepsKeyIdx = src.indexOf('"steps":');
+if (stepsKeyIdx === -1) stepsKeyIdx = src.indexOf('steps:');
 const arrStart = src.indexOf('[', stepsKeyIdx);
 let depth = 0, arrEnd = -1;
 for (let i = arrStart; i < src.length; i++) {
@@ -44,8 +47,11 @@ const afterSteps = src.slice(arrEnd + 1);
 
 // Localiza a ÚLTIMA simulação de palavra do storyboard (a que roda logo antes
 // do passo genérico problemático) e o próprio passo problemático.
-const problemIdx = steps.findIndex(s => s.prof?.message?.includes('cobrir todos os casos'));
-if (problemIdx === -1) throw new Error('não achei o passo "cobrir todos os casos" — já corrigido?');
+const problemIdx = steps.findIndex(s =>
+  s.prof?.message?.includes('cobrir todos os casos') ||
+  s.prof?.message?.includes('ainda não apareceram nos exemplos')
+);
+if (problemIdx === -1) throw new Error('não achei o passo genérico problemático — já corrigido?');
 let lastSimStart = -1, lastSimEnd = -1, lastSimWord;
 for (let i = problemIdx - 1; i >= 0; i--) {
   if (steps[i].simulateWord !== undefined) {
@@ -132,7 +138,36 @@ function traceAndBuildSteps(word, knownSet, knownNodeIds, isFirstWord) {
     }
     const sym = tape[head] ?? '□';
     const t = findTransition(state, sym);
-    if (!t) throw new Error(`sem transição de ${state} lendo '${sym}' (palavra "${word}", passo ${guard})`);
+    if (!t) {
+      // Sem transição aplicável a partir do estado ATUAL (já alcançado pelo
+      // passo "Executou" anterior, empurrado no fim do loop passado): a MT
+      // trava aqui → rejeição. Segue o padrão real do storyboard (ex.:
+      // mt-recon/L9 "Executou: ... A máquina PAROU em X — não é estado
+      // final. Palavra REJEITADA.") — funde no ÚLTIMO passo já empurrado,
+      // não cria um passo extra isolado. Só é o resultado esperado quando a
+      // palavra está em rejectedWords — o chamador decide se é erro ou o
+      // caminho didático certo (via ALLOW_MISSING/checagem externa).
+      const last = newSteps[newSteps.length - 1];
+      if (last && last.activeNode === state && last.simulateWord === word) {
+        last.prof.message += ` A máquina PAROU em ${state} — não é estado final. Palavra REJEITADA.`;
+        last.prof.mood = 'triste';
+        last.status = 'REJECTED';
+      } else {
+        newSteps.push({
+          prof: { message: `A máquina PAROU em ${state} — não é estado final. Palavra REJEITADA.`, mood: 'triste' },
+          stateUpdate: {
+            nodes: allNodes.filter(n => knownNodes.has(n.id)),
+            transitions: allTransitions.filter(o => known.has(`${o.from}|${o.to}|${o.read}|${o.write}|${o.move}`)),
+          },
+          simulateWord: word,
+          tape: [...tape],
+          head,
+          activeNode: state,
+          status: 'REJECTED',
+        });
+      }
+      return newSteps;
+    }
     const key = `${t.from}|${t.to}|${t.read}|${t.write}|${t.move}`;
     const isNew = !known.has(key);
     knownNodes.add(t.from);
@@ -190,7 +225,14 @@ for (const s of newSimSteps) for (const t of s.stateUpdate.transitions) coveredK
 const allKeys = allTransitions.map(t => `${t.from}|${t.to}|${t.read}|${t.write}|${t.move}`);
 const missing = allKeys.filter(k => !coveredKeys.has(k));
 console.log('missing after new simulation(s):', missing.length, missing);
-if (missing.length > 0) throw new Error('novas simulações não cobrem todas as transições — abortando (tente outra(s) palavra(s))');
+// ALLOW_MISSING=chave1,chave2 (env var) — só pra transições PROVADAMENTE
+// inalcançáveis (código morto no gabarito, ex.: L24/L08), confirmadas por
+// busca exaustiva antes de usar essa flag. Nunca usar pra "desistir" de achar
+// a palavra certa.
+const allowMissing = new Set((process.env.ALLOW_MISSING ?? '').split(',').filter(Boolean));
+const trulyMissing = missing.filter(k => !allowMissing.has(k));
+if (allowMissing.size > 0) console.log('ignorando (ALLOW_MISSING):', [...allowMissing].filter(k => missing.includes(k)));
+if (trulyMissing.length > 0) throw new Error('novas simulações não cobrem todas as transições — abortando (tente outra(s) palavra(s))');
 
 let rebuilt;
 if (INSERT_MODE) {
