@@ -459,7 +459,7 @@ export default function APCanvas({
             <div style={{ position: 'relative', width: 210, height: 140, marginLeft: -80, alignSelf: 'flex-start', marginTop: -80 }}>
               <img src={imgBalaoFala} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1 }} />
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '14px 14px 34px 14px', boxSizing: 'border-box', color: '#000', fontWeight: 'bold', fontSize: 16, textAlign: 'center', zIndex: 2 }}>
+                padding: '14px 25px 34px 25px', boxSizing: 'border-box', color: '#000', fontWeight: 'bold', fontSize: 16, textAlign: 'center', zIndex: 2 }}>
                 1ª Coisa: Descubra a Menor Palavra!
               </div>
             </div>

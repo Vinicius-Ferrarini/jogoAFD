@@ -14,7 +14,7 @@ const S = {
   bubbleImg: { position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1 },
   bubbleText: {
     position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '22px 26px 58px', boxSizing: 'border-box',
+    padding: '22px 46px 58px', boxSizing: 'border-box',
     color: '#000', fontSize: 13.5, fontWeight: 900, textAlign: 'center', zIndex: 2, lineHeight: 1.55,
   },
   btnRow: { display: 'flex', gap: 14, marginTop: 28 },

@@ -720,7 +720,7 @@ export default function APPart1({ onBack, progress, updateProgress }) {
           nextLevel={nextAp}
           message={`Parabéns! Você dominou ${level.label}: ${level.language}. ⭐⭐⭐`}
           balloon={{ width: 320, height: 220, marginTop: -150 }}
-          textStyle={{ padding: '20px 20px 52px', fontSize: 15 }}
+          textStyle={{ padding: '20px 38px 52px', fontSize: 15 }}
           nextPrefix="Próximo: "
           onMenu={() => { setVictory(false); setScreen('MENU'); }}
           onNext={(lv) => loadLevel(lv)}

@@ -871,7 +871,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
           nextLevel={nextMt}
           message={`Parabéns! Sua MT Reconhecedora está correta! ⭐⭐⭐`}
           balloon={{ width: 320, height: 220, marginTop: -150 }}
-          textStyle={{ padding: '20px 20px 52px', fontSize: 15 }}
+          textStyle={{ padding: '20px 38px 52px', fontSize: 15 }}
           nextPrefix="Próximo: "
           onMenu={() => { setVictory(false); setScreen('MENU'); }}
           onNext={(lv) => loadLevel(lv)}

@@ -532,7 +532,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
                 position: 'absolute', inset: 0,
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                padding: '18px 18px 48px', boxSizing: 'border-box',
+                padding: '18px 36px 48px', boxSizing: 'border-box',
                 color: '#000', textAlign: 'center', zIndex: 2,
               }}>
                 <div style={{ fontWeight: 900, fontSize: 15, lineHeight: 1.4 }}>

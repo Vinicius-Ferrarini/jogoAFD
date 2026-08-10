@@ -743,7 +743,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
             ? (currentLevel?.successMsg || 'Muito bem! Fase concluída.')
             : 'Este exercício é impossível de resolver com AFD! Com AP nós vamos resolvê-lo! 🚫🔄'}
           balloon={{ width: 320, height: 220, marginTop: -150 }}
-          textStyle={{ padding: '20px 20px 52px', fontSize: 15 }}
+          textStyle={{ padding: '20px 38px 52px', fontSize: 15 }}
           nextPrefix="Entendido! Próxima: "
           onMenu={() => { setShowImpossibleScreen(false); setTela('MENU'); }}
           onNext={next => { setShowImpossibleScreen(false); loadLevel(next); }}
@@ -756,7 +756,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
           currentLevelId={currentLevel?.id}
           message={currentLevel?.successMsg || 'Parabéns, você dominou esta linguagem!'}
           balloon={{ width: 300, height: 210, marginTop: -140 }}
-          textStyle={{ padding: '18px 18px 48px', fontSize: 17 }}
+          textStyle={{ padding: '18px 36px 48px', fontSize: 17 }}
           nextPrefix="Próxima: "
           onMenu={() => { setShowVictoryScreen(false); setTela('MENU'); }}
           onNext={next => { setShowVictoryScreen(false); loadLevel(next); }}
