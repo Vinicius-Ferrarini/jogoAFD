@@ -2,6 +2,7 @@
 // comentário lá) — 17 níveis, import estático somava ~11MB de source.
 import { MT_RECON_LEVEL_IDS } from '../mt-ids.js';
 import { simulateTM } from '../../modules/mt/utils/tmAlgorithms.js';
+import { expandGuidedSteps } from '../../modules/mt/utils/expandGuidedSteps.js';
 
 const LOADERS = {
   MT_RECON_L1:  () => import('./L1.js'),
@@ -30,6 +31,16 @@ function withPaddedLabel(level) {
   return num ? { ...level, label: 'L' + num.padStart(2, '0') } : level;
 }
 
+// Níveis com Aula Guiada longa salvam stateUpdate.nodes/transitions em
+// formato incremental (passo idêntico ao anterior vira a string "=" — ver
+// scripts/compress_guided_steps.mjs) pra reduzir o peso do arquivo. Expande
+// aqui, no ÚNICO ponto de carregamento, pra que qualquer consumidor (app real
+// e testes) sempre veja os dados já materializados.
+function withExpandedGuidedLesson(level) {
+  if (!level.guidedLesson?.steps?.length) return level;
+  return { ...level, guidedLesson: { ...level.guidedLesson, steps: expandGuidedSteps(level.guidedLesson.steps) } };
+}
+
 export const MT_RECON_LEVEL_ORDER = MT_RECON_LEVEL_IDS;
 
 const _cache = new Map();
@@ -40,7 +51,7 @@ export async function loadMTReconLevel(id) {
   const loader = LOADERS[id];
   if (!loader) throw new Error(`Nível MT Reconhecedora desconhecido: ${id}`);
   const mod = await loader();
-  const level = withPaddedLabel(mod.default);
+  const level = withExpandedGuidedLesson(withPaddedLabel(mod.default));
   _cache.set(id, level);
   return level;
 }

@@ -9,6 +9,7 @@
 // silencioso de todos em paralelo ao abrir o menu (não bloqueia a tela), e
 // loadMTLevel() nunca reimporta um nível já resolvido.
 import { MT_LEVEL_IDS } from '../mt-ids.js';
+import { expandGuidedSteps } from '../../modules/mt/utils/expandGuidedSteps.js';
 
 const LOADERS = {
   MT_L1:  () => import('./L1.js'),
@@ -40,6 +41,17 @@ function withPaddedLabel(level) {
   return num ? { ...level, label: 'L' + num.padStart(2, '0') } : level;
 }
 
+// Níveis com Aula Guiada longa salvam stateUpdate.nodes/transitions em
+// formato incremental (passo idêntico ao anterior vira a string "=" — ver
+// scripts/compress_guided_steps.mjs) pra reduzir drasticamente o peso do
+// arquivo (L24 caiu de ~15MB pra ~1MB). Expande aqui, no ÚNICO ponto de
+// carregamento, pra que qualquer consumidor (app real e testes, que também
+// usam loadMTLevel) sempre veja os dados já materializados.
+function withExpandedGuidedLesson(level) {
+  if (!level.guidedLesson?.steps?.length) return level;
+  return { ...level, guidedLesson: { ...level.guidedLesson, steps: expandGuidedSteps(level.guidedLesson.steps) } };
+}
+
 export const MT_LEVEL_ORDER = MT_LEVEL_IDS;
 
 const _cache = new Map();
@@ -50,7 +62,7 @@ export async function loadMTLevel(id) {
   const loader = LOADERS[id];
   if (!loader) throw new Error(`Nível MT desconhecido: ${id}`);
   const mod = await loader();
-  const level = withPaddedLabel(mod.default);
+  const level = withExpandedGuidedLesson(withPaddedLabel(mod.default));
   _cache.set(id, level);
   return level;
 }

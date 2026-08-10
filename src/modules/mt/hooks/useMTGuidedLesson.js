@@ -6,6 +6,9 @@ import { useCallback, useMemo, useState } from 'react';
 export default function useMTGuidedLesson(level) {
   const [step, setStep] = useState(null); // null = fora da aula
 
+  // guidedLesson.steps já chega expandido (loadMTLevel/loadMTReconLevel
+  // materializam o formato incremental "=" salvo no arquivo de nível — ver
+  // src/modules/mt/utils/expandGuidedSteps.js).
   const steps  = useMemo(() => level?.guidedLesson?.steps ?? [], [level]);
   const active = step !== null && steps.length > 0;
   const cur    = active ? steps[Math.min(step, steps.length - 1)] : null;
