@@ -36,14 +36,13 @@ export default function TMTransitionEditor({ initial, onSave, onDelete, onCancel
       maxLength={1}
       onChange={e => set(e.target.value)}
       onKeyDown={onKey}
-      onClick={e => e.stopPropagation()}
       autoComplete="off"
       spellCheck={false}
     />
   );
 
   return (
-    <div className="tm-transition-editor" onClick={e => e.stopPropagation()}>
+    <div className="tm-transition-editor" onPointerDown={e => e.stopPropagation()}>
       <div className="tm-te-row">
         <span className="tm-te-lbl">Lê</span>
         {inp(read, setRead, readRef)}
