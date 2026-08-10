@@ -73,26 +73,7 @@ const MT_RECON_L4 = {
         "mood": "explicando"
       },
       "stateUpdate": {
-        "nodes": [
-          {
-            "uid": "q0",
-            "id": "q0",
-            "label": "q0",
-            "x": 3440,
-            "y": 3944,
-            "isInitial": true,
-            "isFinal": false
-          },
-          {
-            "uid": "q1",
-            "id": "q1",
-            "label": "q1",
-            "x": 3699,
-            "y": 3806,
-            "isInitial": false,
-            "isFinal": false
-          }
-        ],
+        "nodes": {"base":"prev","items":[0,{"uid":"q1","id":"q1","label":"q1","x":3699,"y":3806,"isInitial":false,"isFinal":false}]},
         "transitions": [
           {
             "from": "q0",
@@ -144,51 +125,8 @@ const MT_RECON_L4 = {
         "mood": "explicando"
       },
       "stateUpdate": {
-        "nodes": [
-          {
-            "uid": "q0",
-            "id": "q0",
-            "label": "q0",
-            "x": 3440,
-            "y": 3944,
-            "isInitial": true,
-            "isFinal": false
-          },
-          {
-            "uid": "q1",
-            "id": "q1",
-            "label": "q1",
-            "x": 3699,
-            "y": 3806,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q2",
-            "id": "q2",
-            "label": "q2",
-            "x": 3919,
-            "y": 3789,
-            "isInitial": false,
-            "isFinal": false
-          }
-        ],
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          }
-        ]
+        "nodes": {"base":"prev","items":[0,1,{"uid":"q2","id":"q2","label":"q2","x":3919,"y":3789,"isInitial":false,"isFinal":false}]},
+        "transitions": {"base":"prev","items":[0,{"from":"q1","to":"q2","read":"a","write":"A","move":"R"}]}
       },
       "simulateWord": "aab",
       "tape": [
@@ -231,67 +169,8 @@ const MT_RECON_L4 = {
         "mood": "explicando"
       },
       "stateUpdate": {
-        "nodes": [
-          {
-            "uid": "q0",
-            "id": "q0",
-            "label": "q0",
-            "x": 3440,
-            "y": 3944,
-            "isInitial": true,
-            "isFinal": false
-          },
-          {
-            "uid": "q1",
-            "id": "q1",
-            "label": "q1",
-            "x": 3699,
-            "y": 3806,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q2",
-            "id": "q2",
-            "label": "q2",
-            "x": 3919,
-            "y": 3789,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q3",
-            "id": "q3",
-            "label": "q3",
-            "x": 4151,
-            "y": 3960,
-            "isInitial": false,
-            "isFinal": false
-          }
-        ],
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          }
-        ]
+        "nodes": {"base":"prev","items":[0,1,2,{"uid":"q3","id":"q3","label":"q3","x":4151,"y":3960,"isInitial":false,"isFinal":false}]},
+        "transitions": {"base":"prev","items":[0,1,{"from":"q2","to":"q3","read":"b","write":"B","move":"L"}]}
       },
       "simulateWord": "aab",
       "tape": [
@@ -335,36 +214,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,1,2,{"from":"q3","to":"q0","read":"A","write":"A","move":"R"}]}
       },
       "simulateWord": "aab",
       "tape": [
@@ -407,90 +257,8 @@ const MT_RECON_L4 = {
         "mood": "explicando"
       },
       "stateUpdate": {
-        "nodes": [
-          {
-            "uid": "q0",
-            "id": "q0",
-            "label": "q0",
-            "x": 3440,
-            "y": 3944,
-            "isInitial": true,
-            "isFinal": false
-          },
-          {
-            "uid": "q1",
-            "id": "q1",
-            "label": "q1",
-            "x": 3699,
-            "y": 3806,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q2",
-            "id": "q2",
-            "label": "q2",
-            "x": 3919,
-            "y": 3789,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q3",
-            "id": "q3",
-            "label": "q3",
-            "x": 4151,
-            "y": 3960,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q4",
-            "id": "q4",
-            "label": "q4",
-            "x": 3744,
-            "y": 4200,
-            "isInitial": false,
-            "isFinal": false
-          }
-        ],
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          }
-        ]
+        "nodes": {"base":"prev","items":[0,1,2,3,{"uid":"q4","id":"q4","label":"q4","x":3744,"y":4200,"isInitial":false,"isFinal":false}]},
+        "transitions": {"base":"prev","items":[0,1,2,{"from":"q0","to":"q4","read":"B","write":"B","move":"R"},3]}
       },
       "simulateWord": "aab",
       "tape": [
@@ -533,106 +301,8 @@ const MT_RECON_L4 = {
         "mood": "explicando"
       },
       "stateUpdate": {
-        "nodes": [
-          {
-            "uid": "q0",
-            "id": "q0",
-            "label": "q0",
-            "x": 3440,
-            "y": 3944,
-            "isInitial": true,
-            "isFinal": false
-          },
-          {
-            "uid": "q1",
-            "id": "q1",
-            "label": "q1",
-            "x": 3699,
-            "y": 3806,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q2",
-            "id": "q2",
-            "label": "q2",
-            "x": 3919,
-            "y": 3789,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q3",
-            "id": "q3",
-            "label": "q3",
-            "x": 4151,
-            "y": 3960,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q4",
-            "id": "q4",
-            "label": "q4",
-            "x": 3744,
-            "y": 4200,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q5",
-            "id": "q5",
-            "label": "q5",
-            "x": 4032,
-            "y": 4211,
-            "isInitial": false,
-            "isFinal": false
-          }
-        ],
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          }
-        ]
+        "nodes": {"base":"prev","items":[0,1,2,3,4,{"uid":"q5","id":"q5","label":"q5","x":4032,"y":4211,"isInitial":false,"isFinal":false}]},
+        "transitions": {"base":"prev","items":[0,1,2,3,4,{"from":"q4","to":"q5","read":"","write":"","move":"L"}]}
       },
       "simulateWord": "aab",
       "tape": [
@@ -676,57 +346,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,{"from":"q5","to":"q5","read":"B","write":"B","move":"L"},1,2,3,4,5]}
       },
       "simulateWord": "aab",
       "tape": [
@@ -770,64 +390,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "A",
-            "write": "A",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,{"from":"q5","to":"q5","read":"A","write":"A","move":"L"},1,2,3,4,5,6]}
       },
       "simulateWord": "aab",
       "tape": [
@@ -892,136 +455,8 @@ const MT_RECON_L4 = {
         "mood": "explicando"
       },
       "stateUpdate": {
-        "nodes": [
-          {
-            "uid": "q0",
-            "id": "q0",
-            "label": "q0",
-            "x": 3440,
-            "y": 3944,
-            "isInitial": true,
-            "isFinal": false
-          },
-          {
-            "uid": "q1",
-            "id": "q1",
-            "label": "q1",
-            "x": 3699,
-            "y": 3806,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q2",
-            "id": "q2",
-            "label": "q2",
-            "x": 3919,
-            "y": 3789,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q3",
-            "id": "q3",
-            "label": "q3",
-            "x": 4151,
-            "y": 3960,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q4",
-            "id": "q4",
-            "label": "q4",
-            "x": 3744,
-            "y": 4200,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q5",
-            "id": "q5",
-            "label": "q5",
-            "x": 4032,
-            "y": 4211,
-            "isInitial": false,
-            "isFinal": false
-          },
-          {
-            "uid": "q6",
-            "id": "q6",
-            "label": "q6",
-            "x": 4560,
-            "y": 4158,
-            "isInitial": false,
-            "isFinal": true
-          }
-        ],
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "A",
-            "write": "A",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q6",
-            "read": "",
-            "write": "",
-            "move": "R"
-          }
-        ]
+        "nodes": {"base":"prev","items":[0,1,2,3,4,5,{"uid":"q6","id":"q6","label":"q6","x":4560,"y":4158,"isInitial":false,"isFinal":true}]},
+        "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,7,{"from":"q5","to":"q6","read":"","write":"","move":"R"}]}
       },
       "simulateWord": "aab",
       "tape": [
@@ -1141,78 +576,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "A",
-            "write": "A",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "a",
-            "write": "a",
-            "move": "R"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q6",
-            "read": "",
-            "write": "",
-            "move": "R"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,1,2,3,4,{"from":"q2","to":"q2","read":"a","write":"a","move":"R"},5,6,7,8]}
       },
       "simulateWord": "aaaabb",
       "tape": [
@@ -1312,85 +676,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q3",
-            "read": "a",
-            "write": "a",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "A",
-            "write": "A",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "a",
-            "write": "a",
-            "move": "R"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q6",
-            "read": "",
-            "write": "",
-            "move": "R"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,{"from":"q3","to":"q3","read":"a","write":"a","move":"L"},1,2,3,4,5,6,7,8,9]}
       },
       "simulateWord": "aaaabb",
       "tape": [
@@ -1540,92 +826,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q3",
-            "read": "a",
-            "write": "a",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "A",
-            "write": "A",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "a",
-            "write": "a",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q6",
-            "read": "",
-            "write": "",
-            "move": "R"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,{"from":"q2","to":"q2","read":"B","write":"B","move":"R"},7,8,9,10]}
       },
       "simulateWord": "aaaabb",
       "tape": [
@@ -1700,99 +901,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q3",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q3",
-            "to": "q3",
-            "read": "a",
-            "write": "a",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "A",
-            "write": "A",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "a",
-            "write": "a",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q6",
-            "read": "",
-            "write": "",
-            "move": "R"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,{"from":"q3","to":"q3","read":"B","write":"B","move":"L"},1,2,3,4,5,6,7,8,9,10,11]}
       },
       "simulateWord": "aaaabb",
       "tape": [
@@ -1892,106 +1001,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q3",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q3",
-            "to": "q3",
-            "read": "a",
-            "write": "a",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "A",
-            "write": "A",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "a",
-            "write": "a",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q6",
-            "read": "",
-            "write": "",
-            "move": "R"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,7,8,{"from":"q4","to":"q4","read":"B","write":"B","move":"R"},9,10,11,12]}
       },
       "simulateWord": "aaaabb",
       "tape": [
@@ -2261,113 +1271,7 @@ const MT_RECON_L4 = {
       },
       "stateUpdate": {
         "nodes": "=",
-        "transitions": [
-          {
-            "from": "q0",
-            "to": "q1",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q0",
-            "to": "q6",
-            "read": "",
-            "write": "",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q3",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q3",
-            "to": "q3",
-            "read": "a",
-            "write": "a",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "A",
-            "write": "A",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q5",
-            "read": "B",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q1",
-            "to": "q2",
-            "read": "a",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q3",
-            "read": "b",
-            "write": "B",
-            "move": "L"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "a",
-            "write": "a",
-            "move": "R"
-          },
-          {
-            "from": "q2",
-            "to": "q2",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q0",
-            "to": "q4",
-            "read": "B",
-            "write": "B",
-            "move": "R"
-          },
-          {
-            "from": "q3",
-            "to": "q0",
-            "read": "A",
-            "write": "A",
-            "move": "R"
-          },
-          {
-            "from": "q4",
-            "to": "q5",
-            "read": "",
-            "write": "",
-            "move": "L"
-          },
-          {
-            "from": "q5",
-            "to": "q6",
-            "read": "",
-            "write": "",
-            "move": "R"
-          }
-        ]
+        "transitions": {"base":"prev","items":[0,{"from":"q0","to":"q6","read":"","write":"","move":"R"},1,2,3,4,5,6,7,8,9,10,11,12,13]}
       },
       "simulateWord": "",
       "tape": [
