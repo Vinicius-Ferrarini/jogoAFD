@@ -12,6 +12,75 @@ function lastGraphStep(level) {
   return introIdx > 0 ? steps[introIdx - 1] : steps[steps.length - 1];
 }
 
+// ─── Toda transição do grafo final aparece em alguma simulação real ─────────
+// Regressão do padrão "Para cobrir todos os casos da linguagem, completamos a
+// máquina com as regras restantes" (e variantes) — transições reveladas em
+// bloco no storyboard sem NUNCA serem demonstradas por uma palavra simulada.
+// Roda todas as simulateWord distintas do storyboard contra o grafo FINAL
+// (não o parcial de cada passo) e verifica que a união cobre 100% das
+// transições — mesma lógica usada manualmente para corrigir os níveis.
+const transKey = (t) => `${t.from}|${t.to}|${t.read}|${t.write}|${t.move}`;
+
+function transitionsCoveredBySimulations(level) {
+  const steps = level.guidedLesson.steps;
+  const finalGraph = lastGraphStep(level).stateUpdate;
+  const trans = finalGraph.transitions;
+  const initId = finalGraph.nodes.find(n => n.isInitial)?.id;
+  const finalId = finalGraph.nodes.find(n => n.isFinal)?.id;
+  const startMarker = level.startMarker ?? null;
+  function findTransition(state, sym) {
+    return trans.find(t => t.from === state && (t.read === sym || (t.read === '' && sym === '□')));
+  }
+  const words = new Set(steps.filter(s => s.simulateWord !== undefined).map(s => s.simulateWord));
+  const covered = new Set();
+  for (const word of words) {
+    let tape = ['□', '□', ...(startMarker != null ? [startMarker] : []), ...word.split(''), '□', '□'];
+    let head = 2, state = initId;
+    for (let i = 0; i < 3000; i++) {
+      if (state === finalId) break;
+      const sym = tape[head] ?? '□';
+      const t = findTransition(state, sym);
+      if (!t) break; // rejeição por travamento — caminho didático válido
+      covered.add(transKey(t));
+      if (t.write !== '') tape[head] = t.write;
+      if (t.move === 'R') head++; else if (t.move === 'L') head--;
+      state = t.to;
+      if (head < 0) { tape.unshift('□'); head = 0; }
+      if (head >= tape.length) tape.push('□');
+    }
+  }
+  return covered;
+}
+
+// Transições comprovadamente inalcançáveis por qualquer palavra da linguagem
+// (resíduo morto no gabarito, não falha de busca — confirmado por busca
+// exaustiva antes de entrar aqui). Chave: `${label}|${from}|${to}|${read}|${write}|${move}`.
+const KNOWN_DEAD_TRANSITIONS = new Set([
+  'L24|q17|q17|1|1|L',
+  'L24|q6|q6|+|+|L',
+]);
+
+// Pendências REAIS conhecidas (não são código morto — a transição É
+// alcançável, só falta a aula demonstrá-la) que ainda não foram corrigidas.
+// Diferente de KNOWN_DEAD_TRANSITIONS: aqui a correção é "adicionar uma
+// simulação que passe por essa transição", não "aceitar que é inalcançável".
+// Remover cada entrada da lista assim que o nível correspondente for corrigido.
+const KNOWN_PENDING_UNDEMONSTRATED = new Set([
+  // L01: aceita λ (n=0 em {aⁿbⁿ/n≥0}) via q0->q5, mas '' nunca é simulada na
+  // aula (só está em testWords). Autômato do exercício mostrado ao usuário —
+  // aguardando ele revisitar esse nível antes de mexer no storyboard.
+  'L01|q0|q5|□|□|R',
+  // L10 (DESAFIO): storyboard fora do padrão dos demais níveis — só 5 passos
+  // no total, 76 transições despejadas de uma vez no passo 1 sem NENHUM
+  // passo-a-passo "Nova regra"/"Executou". Precisa reescrever a aula inteira
+  // nesse padrão antes de conseguir demonstrar as transições por simulação
+  // (não é um fix pontual como os outros níveis).
+  'L10|q8|q8|A|A|R', 'L10|q8|q8|B|B|R',
+  'L10|q9|q9|S|S|R', 'L10|q9|q9|A|A|R', 'L10|q9|q9|B|B|R', 'L10|q9|q9|1|1|R',
+  'L10|q13|q13|S|S|L', 'L10|q13|q13|1|1|L',
+  'L10|q15|q15|B|B|L',
+]);
+
 describe('MT Transdutora — sanidade básica de cada nível', () => {
   for (const level of MT_LEVELS) {
     it(`${level.label}: tem estado inicial, ao menos um final, e alfabeto`, () => {
@@ -91,6 +160,31 @@ describe('MT Transdutora — passos com status ACCEPTED/REJECTED batem com simul
         const { status } = simulateTM(graph, step.simulateWord, 2000, level.startMarker ?? null);
         expect(status, `${level.label} step com status "${step.status}" para "${step.simulateWord}": simulateTM real deu "${status}"`).toBe(step.status);
       }
+    });
+  }
+});
+
+// ─── Toda transição é demonstrada por alguma simulação (regressão) ──────────
+describe('MT Transdutora — toda transição do grafo final aparece em alguma simulação real', () => {
+  for (const level of MT_LEVELS) {
+    it(`${level.label}: nenhuma transição fica "só revelada", todas aparecem numa palavra simulada`, () => {
+      const finalGraph = lastGraphStep(level).stateUpdate;
+      const covered = transitionsCoveredBySimulations(level);
+      const undemonstrated = finalGraph.transitions.filter(t => {
+        if (covered.has(transKey(t))) return false;
+        const key = `${level.label}|${transKey(t)}`;
+        return !KNOWN_DEAD_TRANSITIONS.has(key) && !KNOWN_PENDING_UNDEMONSTRATED.has(key);
+      });
+      expect(
+        undemonstrated,
+        undemonstrated.length
+          ? `${level.label}: ${undemonstrated.length} transição(ões) nunca aparecem numa simulação — ` +
+            undemonstrated.map(t => `${t.from}->${t.to} (${t.read || '□'};${t.write || '□'},${t.move})`).join(', ') +
+            `. Se forem estruturalmente inalcançáveis (confirmar por busca exaustiva), adicione a chave ` +
+            `"${level.label}|from|to|read|write|move" em KNOWN_DEAD_TRANSITIONS. Se forem alcançáveis mas ` +
+            `ainda não corrigidas, adicione em KNOWN_PENDING_UNDEMONSTRATED — não silencie sem categorizar.`
+          : undefined
+      ).toHaveLength(0);
     });
   }
 });

@@ -14,6 +14,54 @@ function lastGraphStep(level) {
   return introIdx > 0 ? steps[introIdx - 1] : steps[steps.length - 1];
 }
 
+// ─── Toda transição do grafo final aparece em alguma simulação real ─────────
+// Regressão do padrão "Para cobrir todos os casos da linguagem, completamos a
+// máquina com as regras restantes" (e variantes) — transições reveladas em
+// bloco no storyboard sem NUNCA serem demonstradas por uma palavra simulada.
+// Roda todas as simulateWord distintas do storyboard contra o grafo FINAL
+// (não o parcial de cada passo) e verifica que a união cobre 100% das
+// transições — mesma lógica usada manualmente para corrigir os níveis.
+const transKey = (t) => `${t.from}|${t.to}|${t.read}|${t.write}|${t.move}`;
+
+function transitionsCoveredBySimulations(level) {
+  const steps = level.guidedLesson.steps;
+  const finalGraph = lastGraphStep(level).stateUpdate;
+  const trans = finalGraph.transitions;
+  const initId = finalGraph.nodes.find(n => n.isInitial)?.id;
+  const finalId = finalGraph.nodes.find(n => n.isFinal)?.id;
+  function findTransition(state, sym) {
+    return trans.find(t => t.from === state && (t.read === sym || (t.read === '' && sym === '□')));
+  }
+  const words = new Set(steps.filter(s => s.simulateWord !== undefined).map(s => s.simulateWord));
+  const covered = new Set();
+  for (const word of words) {
+    let tape = ['□', '□', ...word.split(''), '□', '□'];
+    let head = 2, state = initId;
+    for (let i = 0; i < 3000; i++) {
+      if (state === finalId) break;
+      const sym = tape[head] ?? '□';
+      const t = findTransition(state, sym);
+      if (!t) break; // rejeição por travamento — caminho didático válido
+      covered.add(transKey(t));
+      if (t.write !== '') tape[head] = t.write;
+      if (t.move === 'R') head++; else if (t.move === 'L') head--;
+      state = t.to;
+      if (head < 0) { tape.unshift('□'); head = 0; }
+      if (head >= tape.length) tape.push('□');
+    }
+  }
+  return covered;
+}
+
+// Transições comprovadamente inalcançáveis por qualquer palavra da linguagem
+// (resíduo morto no gabarito, não falha de busca — confirmado por busca
+// exaustiva antes de entrar aqui). Chave: `${label}|${from}|${to}|${read}|${write}|${move}`.
+const KNOWN_DEAD_TRANSITIONS = new Set([
+  'L08|q4|q4|C|C|L',
+  'L09|q1|q9|B|B|L',
+  'L09|q8|q10|A|A|L',
+]);
+
 describe('MT Reconhecedora — sanidade básica de cada nível', () => {
   for (const level of MT_RECON_LEVELS) {
     it(`${level.label}: tem estado inicial, ao menos um final, e alfabeto`, () => {
@@ -152,6 +200,29 @@ describe('MT Reconhecedora — layout do grafo é legível (regressão do bug de
       expect(spanPerState, `${level.label}: x-span/estado=${spanPerState.toFixed(0)}px — layout espalhado demais`).toBeLessThan(500);
       expect(xSpan, `${level.label}: grafo sem nenhuma variação horizontal`).toBeGreaterThan(0);
       expect(ySpan, `${level.label}: grafo sem nenhuma variação vertical`).toBeGreaterThan(0);
+    });
+  }
+});
+
+// ─── Toda transição é demonstrada por alguma simulação (regressão) ──────────
+describe('MT Reconhecedora — toda transição do grafo final aparece em alguma simulação real', () => {
+  for (const level of MT_RECON_LEVELS) {
+    it(`${level.label}: nenhuma transição fica "só revelada", todas aparecem numa palavra simulada`, () => {
+      const finalGraph = lastGraphStep(level).stateUpdate;
+      const covered = transitionsCoveredBySimulations(level);
+      const undemonstrated = finalGraph.transitions.filter(t => {
+        if (covered.has(transKey(t))) return false;
+        return !KNOWN_DEAD_TRANSITIONS.has(`${level.label}|${transKey(t)}`);
+      });
+      expect(
+        undemonstrated,
+        undemonstrated.length
+          ? `${level.label}: ${undemonstrated.length} transição(ões) nunca aparecem numa simulação — ` +
+            undemonstrated.map(t => `${t.from}->${t.to} (${t.read || '□'};${t.write || '□'},${t.move})`).join(', ') +
+            `. Se forem estruturalmente inalcançáveis (confirmar por busca exaustiva), adicione a chave ` +
+            `"${level.label}|from|to|read|write|move" em KNOWN_DEAD_TRANSITIONS — não silencie sem confirmar.`
+          : undefined
+      ).toHaveLength(0);
     });
   }
 });
