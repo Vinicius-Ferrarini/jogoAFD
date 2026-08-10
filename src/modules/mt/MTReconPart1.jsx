@@ -38,16 +38,15 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
 
   const [screen, setScreen] = useState('MENU');
   const [level,  setLevel]  = useState(null);
-  // Prefetch silencioso — mesmo padrão de MTPart1.jsx (ver comentário lá).
+  // Prefetch em paralelo, só popula quando TODOS resolverem — mesmo padrão de
+  // MTPart1.jsx (ver comentário lá; evita a grade do menu "piscando" botão a
+  // botão conforme cada import termina).
   const [mtReconLevels, setMtReconLevels] = useState([]);
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      for (const id of MT_RECON_LEVEL_ORDER) {
-        const lv = await loadMTReconLevel(id);
-        if (!cancelled) setMtReconLevels(prev => [...prev, lv]);
-      }
-    })();
+    Promise.all(MT_RECON_LEVEL_ORDER.map(loadMTReconLevel)).then(levels => {
+      if (!cancelled) setMtReconLevels(levels);
+    });
     return () => { cancelled = true; };
   }, []);
   const [mode,   setMode]   = useState('IDLE');
@@ -447,19 +446,20 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
         <div style={{ marginBottom: 18, fontWeight: 'bold', fontSize: 16 }}>
           Progresso: {maxStars > 0 ? Math.round((totalStars / maxStars) * 100) : 0}% ({totalStars}/{maxStars} ★)
         </div>
-        <div className="levels-grid">
-          {mtReconLevels.map(l => (
-            <button key={l.id} className="menu-btn primary" onClick={() => loadLevel(l)}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                background: DIFF_COLOR[l.level] }}>
-              <span>{l.label}</span>
-              <SvgStars count={progress?.[`mt-recon-${l.id}`]?.stars || 0} size={14} max={3} />
-            </button>
-          ))}
-          {mtReconLevels.length < MT_RECON_LEVEL_ORDER.length && (
-            <span style={{ fontWeight: 900, color: '#888', alignSelf: 'center', padding: 8 }}>Carregando…</span>
-          )}
-        </div>
+        {mtReconLevels.length === 0 ? (
+          <div style={{ fontWeight: 900, color: '#888', padding: 24, textAlign: 'center' }}>Carregando níveis…</div>
+        ) : (
+          <div className="levels-grid">
+            {mtReconLevels.map(l => (
+              <button key={l.id} className="menu-btn primary" onClick={() => loadLevel(l)}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  background: DIFF_COLOR[l.level] }}>
+                <span>{l.label}</span>
+                <SvgStars count={progress?.[`mt-recon-${l.id}`]?.stars || 0} size={14} max={3} />
+              </button>
+            ))}
+          </div>
+        )}
         <DifficultyLegend keys={['easy', 'medium', 'hard']} />
       </div>
     );
