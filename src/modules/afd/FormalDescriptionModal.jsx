@@ -1,6 +1,7 @@
 // FormalDescriptionModal.jsx — v5.0 (+ Modo Aula demo com auto-scroll)
 import { useState, useEffect, useRef } from 'react';
 import './FormalDescriptionModal.css';
+import { onBracketKeyDown } from './utils/bracketAutoClose';
 
 // ─── Funções puras exportadas (testáveis sem React) ───────────────────────────
 
@@ -418,6 +419,7 @@ export default function FormalDescriptionModal({
             placeholder="ex: q0  ou  {q0, q1}"
             value={inputQ}
             onChange={e => { setInputQ(e.target.value); clearFieldError('Q'); }}
+            onKeyDown={e => onBracketKeyDown(e, setInputQ)}
             readOnly={areElementsValid}
             translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
           />
@@ -431,6 +433,7 @@ export default function FormalDescriptionModal({
             placeholder="ex: a  ou  {a, b}"
             value={inputSigma}
             onChange={e => { setInputSigma(e.target.value); clearFieldError('Sigma'); }}
+            onKeyDown={e => onBracketKeyDown(e, setInputSigma)}
             readOnly={areElementsValid}
             translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
           />
@@ -457,6 +460,7 @@ export default function FormalDescriptionModal({
             placeholder="ex: q1  ou  {q1, q2}"
             value={inputFinal}
             onChange={e => { setInputFinal(e.target.value); clearFieldError('final'); }}
+            onKeyDown={e => onBracketKeyDown(e, setInputFinal)}
             readOnly={areElementsValid}
             translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
           />

@@ -268,6 +268,86 @@
   font-weight: 900;
 }
 
+/* ── Tabela δ da MT (MTPart1.jsx / MTReconPart1.jsx) ──────────────────────
+   Compacta (fonte/padding menores que a .transition-table do AFD/AP) para
+   caber nos 300px do painel formal sem precisar de scroll horizontal nos
+   casos comuns (até ~11 colunas); níveis-outlier com dezenas de símbolos na
+   fita (ex: L11, alfabeto quase-ASCII completo) continuam usando o
+   overflow-x:auto do wrapper como rede de segurança. */
+.mt-formal-delta-hint {
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1.5px dashed #6ee7b7;
+  border-radius: 6px;
+  padding: 5px 7px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.mt-formal-delta-hint code {
+  background: #d1fae5;
+  border-radius: 3px;
+  padding: 0 3px;
+  font-weight: 900;
+}
+
+.mt-formal-delta-table {
+  border-collapse: collapse;
+  font-size: 10px;
+  table-layout: fixed;
+}
+.mt-formal-delta-corner,
+.mt-formal-delta-colhead {
+  border: 1.5px solid #143823;
+  padding: 2px 3px;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-size: 10px;
+}
+.mt-formal-delta-corner {
+  background: #143823;
+  color: #fde047;
+}
+.mt-formal-delta-colhead {
+  background: #d1fae5;
+  color: #065f46;
+  width: 44px;
+}
+.mt-formal-delta-rowhead {
+  border: 1.5px solid #143823;
+  padding: 2px 3px;
+  text-align: center;
+  background: #d1fae5;
+  color: #065f46;
+  font-weight: 900;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-size: 10px;
+}
+.mt-formal-delta-cell {
+  border: 1.5px solid #9ca3af;
+  padding: 0;
+}
+.mt-formal-delta-cell.cell-error {
+  border-color: #ef4444;
+}
+.mt-formal-delta-input {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 0;
+  outline: none;
+}
+.mt-formal-delta-cell.cell-error .mt-formal-delta-input {
+  color: #ef4444;
+  font-weight: 900;
+}
+
 /* ── Modo Aula (demo): reveal progressivo da descrição formal ── */
 .ap-demo-group input { background: #f0fdf4 !important; font-weight: 700; }
 .ap-demo-dim input   { opacity: .35; background: #f3f4f6 !important; }

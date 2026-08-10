@@ -7,6 +7,7 @@
 // Estrelas: validar elementos = ★2; validar transições = ★3.
 import { useState, useRef, useEffect } from 'react';
 import '../../afd/FormalDescriptionModal.css';
+import { onBracketKeyDown } from '../../afd/utils/bracketAutoClose';
 
 const LAMBDA = 'λ';
 const showF = (v) => (v === '' || v == null ? LAMBDA : v);
@@ -127,11 +128,15 @@ export default function APFormalDescription({
     onClose?.();
   };
 
-  const field = (key, label, value, setter, placeholder) => (
+  // multi=true: campo aceita { } (conjunto com vários elementos) — só esses
+  // recebem o auto-fechamento de chaves; campos "single" (initial/bottom)
+  // nunca usam chaves, então não faz sentido auto-fechar ali.
+  const field = (key, label, value, setter, placeholder, multi = false) => (
     <div className={`form-group${fieldErrors[key] ? ' field-error' : ''}`}>
       <label>{label}</label>
       <input type="text" placeholder={placeholder} value={value} readOnly={elementsValid}
         onChange={e => { setter(e.target.value); clearField(key); }}
+        onKeyDown={multi ? (e => onBracketKeyDown(e, setter)) : undefined}
         translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />
       {fieldErrors[key] && <span className="field-error-msg">✕ {fieldErrors[key]}</span>}
     </div>
@@ -200,9 +205,9 @@ export default function APFormalDescription({
         Aceita por <b>pilha vazia</b> — sem estado final (F).
       </p>
 
-      {field('E', 'E (Estados):', inE, setInE, 'ex: {q0, q1}')}
-      {field('Sigma', 'Σ (Alfabeto de entrada):', inSigma, setInSigma, 'ex: {a, b}')}
-      {field('Gamma', 'Γ (Alfabeto da pilha):', inGamma, setInGamma, 'ex: {A, Z}')}
+      {field('E', 'E (Estados):', inE, setInE, 'ex: {q0, q1}', true)}
+      {field('Sigma', 'Σ (Alfabeto de entrada):', inSigma, setInSigma, 'ex: {a, b}', true)}
+      {field('Gamma', 'Γ (Alfabeto da pilha):', inGamma, setInGamma, 'ex: {A, Z}', true)}
       {field('initial', 'i (Estado inicial):', inInitial, setInInitial, 'ex: q0')}
       {field('bottom', 'B (Fundo da pilha):', inBottom, setInBottom, 'ex: Z')}
 

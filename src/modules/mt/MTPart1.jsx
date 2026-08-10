@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import '../afd/AFDPart1.css';
 import '../afd/components/TestPanel.css';
+import '../afd/FormalDescriptionModal.css';
 import '../ap/APPart1.css';
 import { SvgStars, DifficultyLegend } from '../afd/SvgStar';
 import EndScreen from '../afd/components/EndScreen';
@@ -18,6 +19,8 @@ import useAPDrawing from '../ap/hooks/useAPDrawing';
 import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js';
 import { MT_LEVEL_ORDER, loadMTLevel } from '../../levels_data/mt/index.js';
 import { fuzzTMTransducer, simulateTM, extractTapeOutput, BLANK } from './utils/tmAlgorithms';
+import { validateMTFormalFields, validateMTFormalTransitions } from './utils/mtFormalValidation';
+import { onBracketKeyDown } from '../afd/utils/bracketAutoClose';
 import { DIFF_COLOR } from '../../levels';
 import { logEvent } from '../../services/telemetry';
 
@@ -66,6 +69,9 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
   const [selectionBox, setSelectionBox]     = useState(null);
   const [formalAnswers, setFormalAnswers]   = useState(EMPTY_FORMAL);
   const [formalMode, setFormalMode]         = useState(false); // jogo: MT válida → preencher descrição formal
+  const [formalElementsValid, setFormalElementsValid] = useState(false); // campos (Q,Σ,Γ,q₀,□,F) já validados
+  const [fieldErrors, setFieldErrors] = useState({}); // erros por campo — igual AFD/AP (borda vermelha)
+  const [cellErrors,  setCellErrors]  = useState({}); // erros por célula da tabela δ — 'q0|a': true
   const [inputError, setInputError]           = useState(null); // erro inline no campo de teste de palavra
   const canvasRef      = useRef(null);
   const innerCanvasRef = useRef(null);
@@ -160,6 +166,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     };
     setMode('IDLE'); setConnectingSource(null);
     setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
+    setFormalElementsValid(false); setFieldErrors({}); setCellErrors({});
     lesson.goTo(0);
     applyStep(lesson.steps[0]);
   }, [lesson, applyStep, zoom, logTutorialOpen]);
@@ -263,6 +270,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     setSimWord(''); setLinguagemTests([]); setDesenhoTests([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
     setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
+    setFormalElementsValid(false); setFieldErrors({}); setCellErrors({});
     draw.resetDrawings();
     resetZoom();
     say(`Monte a MT Transdutora que ${lv.description.toLowerCase()} e clique em Validar!`, 'explicando');
@@ -380,10 +388,12 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     const mtGraph = { states: g.nodes, transitions: g.transitions };
     const res = fuzzTMTransducer(mtGraph, level);
     if (res.ok) {
-      updateProgress?.(`mt-trans-${level.id}`, 3, phaseExtras('validacao'));
-      say('Perfeito! Sua MT está correta! Agora preencha a Descrição Formal à esquerda e clique em Concluir. 📝', 'feliz');
-      showToast?.('MT validada! ★★★ — formalize a máquina.', 'success');
-      setFormalMode(true); // abre o painel formal (editável); vitória só ao Concluir
+      // ★★ aqui (grafo correto) — a 3ª só vem ao validar a Descrição Formal
+      // (igual AFD/AP: a última estrela nunca é dada antes da tupla+δ certas).
+      updateProgress?.(`mt-trans-${level.id}`, 2, phaseExtras('validacao'));
+      say('Perfeito! Sua MT está correta! Agora preencha a Descrição Formal à esquerda e valide. 📝', 'feliz');
+      showToast?.('MT validada! ★★ — formalize a máquina para a 3ª estrela.', 'success');
+      setFormalMode(true); // abre o painel formal (editável); vitória só ao validar a formal
     } else {
       failAttempt(res.reason ?? null);
       const show = res.counterexample === '' ? 'λ' : res.counterexample;
@@ -398,15 +408,55 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     }
   }, [level, g, say, updateProgress, showToast, phaseExtras]);
 
-  // Conclui a fase após preencher a Descrição Formal → tela de vitória.
-  // marco `tabela_formal`: 7-tupla concluída. As estrelas já vieram no Validar
-  // (★★★), então reenvia stars=3 só para registrar o fim_fase deste marco com o
-  // tempo total (inclui o preenchimento da descrição formal); novo_recorde=false.
-  const concludePhase = useCallback(() => {
-    if (level) updateProgress?.(`mt-trans-${level.id}`, 3, phaseExtras('tabela_formal'));
+  // Valida a Descrição Formal preenchida — mesmo padrão de 2 etapas do
+  // AFD/AP: 1ª chamada valida os 6 campos da tupla (Q,Σ,Γ,q₀,□,F) contra o
+  // grafo desenhado; passando, libera a tabela δ para edição. 2ª chamada
+  // (botão muda de rótulo) valida a tabela δ célula a célula; só então dá a
+  // 3ª estrela e mostra a tela de vitória. Erro fica só no toast + bordas
+  // vermelhas nos campos/células — Maurílio não comenta erro (mesmo padrão
+  // já usado no "Validar MT" acima, comentário nas linhas 402-403).
+  const validateFormal = useCallback(() => {
+    if (!level) return;
+    const sigmaCols = level.alphabet ?? [];
+    const formalCols = [...sigmaCols, ...((level.tapeAlphabet ?? []).filter(s => !sigmaCols.includes(s)))];
+    const formalStateRows = g.nodes.map(n => n.id);
+
+    if (!formalElementsValid) {
+      const res = validateMTFormalFields({
+        formalAnswers, nodes: g.nodes, alphabet: level.alphabet, transitions: g.transitions,
+      });
+      if (!res.ok) {
+        setFieldErrors(res.fieldErrors);
+        const errCount = Object.values(res.fieldErrors).filter(Boolean).length;
+        showToast?.(
+          res.reason === 'brace_format'
+            ? 'Confira o uso das chaves { } nos campos.'
+            : `${errCount} campo(s) com erro — verifique os campos em vermelho.`,
+          'error'
+        );
+        return;
+      }
+      setFieldErrors({});
+      setFormalElementsValid(true);
+      return;
+    }
+
+    const res = validateMTFormalTransitions({
+      stateRows: formalStateRows, symbolCols: formalCols,
+      deltaCells: formalAnswers.deltaCells, nodes: g.nodes, transitions: g.transitions,
+    });
+    if (!res.ok) {
+      setCellErrors(res.cellErrors);
+      const errCount = Object.keys(res.cellErrors).length;
+      const suffix = errCount > 1 ? ` (+${errCount - 1} outra${errCount > 2 ? 's' : ''} em vermelho)` : '';
+      showToast?.(`${res.firstError.message}${suffix}`, 'error');
+      return;
+    }
+    setCellErrors({});
+    updateProgress?.(`mt-trans-${level.id}`, 3, phaseExtras('tabela_formal'));
     setFormalMode(false);
     setVictory(true);
-  }, [level, updateProgress, phaseExtras]);
+  }, [level, g, formalAnswers, formalElementsValid, updateProgress, showToast, phaseExtras]);
 
   // Dica do professor (Maurílio): mesma métrica de "uso de ajuda" da aula guiada.
   // Loga só na ABERTURA (balão vazio → vai abrir); fechar não conta.
@@ -479,8 +529,14 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
   // insertSymbol: quando definido, mostra um botão colado ao campo que insere
   // o símbolo (ex.: □) na posição do cursor — o jogador não precisa saber
   // digitar o glifo de branco no teclado.
+  // Campo fica travado (readOnly) depois que os elementos são validados —
+  // mesmo padrão do AFD/AP: só a tabela δ continua editável na 2ª etapa.
+  // Campos com múltiplos elementos possíveis (states/sigma/gamma/final) aceitam
+  // "{ }"; initial/blank são sempre 1 elemento só e nunca usam chaves.
+  const MULTI_FIELDS = ['states', 'sigma', 'gamma', 'final'];
   const formalField = (label, k, placeholder, insertSymbol) => {
     const filled = !!formalAnswers[k];
+    const error = fieldErrors[k];
     const inputRef = formalFieldRefs.current[k] ??= { current: null };
     const handleInsert = () => {
       const el = inputRef.current;
@@ -502,15 +558,23 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
         <div style={{ display: 'flex', gap: 4 }}>
           <input type="text" value={formalAnswers[k] ?? ''} placeholder={placeholder}
             disabled={lesson.active}
+            readOnly={formalElementsValid}
             ref={el => { inputRef.current = el; }}
-            onChange={e => setFormalAnswers(prev => ({ ...prev, [k]: e.target.value }))}
+            onChange={e => {
+              setFormalAnswers(prev => ({ ...prev, [k]: e.target.value }));
+              if (error) setFieldErrors(prev => ({ ...prev, [k]: null }));
+            }}
+            onKeyDown={MULTI_FIELDS.includes(k)
+              ? (e => onBracketKeyDown(e, v => setFormalAnswers(prev => ({ ...prev, [k]: v }))))
+              : undefined}
             translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
             style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', padding: '5px 7px',
               fontFamily: "'Comic Sans MS',cursive", fontSize: 13, fontWeight: 900,
-              background: filled ? '#f0fdf4' : '#fff',
-              color: filled ? '#111' : '#9ca3af',
-              border: filled ? '2px solid #22c55e' : '2px solid #d1d5db', borderRadius: 6 }} />
-          {insertSymbol && !lesson.active && (
+              background: error ? '#fef2f2' : filled ? '#f0fdf4' : '#fff',
+              color: error ? '#111' : filled ? '#111' : '#9ca3af',
+              border: error ? '2px solid #ef4444' : filled ? '2px solid #22c55e' : '2px solid #d1d5db',
+              boxShadow: error ? '2px 2px 0 #ef4444' : 'none', borderRadius: 6 }} />
+          {insertSymbol && !lesson.active && !formalElementsValid && (
             <button type="button" onClick={handleInsert} title={`Inserir "${insertSymbol}"`}
               style={{ flexShrink: 0, width: 30, fontFamily: "'Comic Sans MS',cursive",
                 fontSize: 14, fontWeight: 900, cursor: 'pointer', borderRadius: 6,
@@ -519,6 +583,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
             </button>
           )}
         </div>
+        {error && <span className="field-error-msg">✕ {error}</span>}
       </div>
     );
   };
@@ -576,52 +641,55 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
               {formalField('□ (Símbolo branco):',   'blank',   '…', '□')}
               {formalField('F (Estados finais):',   'final',   '{…}')}
 
-              <div style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
-                color: '#065f46', margin: '10px 0 4px' }}>
-                Função de transição δ: <span style={{ color: '#9ca3af', fontSize: 9 }}>(destino, escreve, move)</span>
-              </div>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ borderCollapse: 'collapse', fontSize: 11 }}>
-                  <thead>
-                    <tr>
-                      <th style={{ border: '1.5px solid #143823', padding: '3px 5px',
-                        background: '#143823', color: '#fde047',
-                        fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>δ</th>
-                      {formalCols.map(sym => (
-                        <th key={sym} style={{ border: '1.5px solid #143823', padding: '3px 5px',
-                          background: '#d1fae5', color: '#065f46',
-                          fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{sym === '' ? '□' : sym}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formalStateRows.map(stId => (
-                      <tr key={stId}>
-                        <td style={{ border: '1.5px solid #143823', padding: '2px 5px', textAlign: 'center',
-                          background: '#d1fae5', color: '#065f46', fontWeight: 900,
-                          fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{stId}</td>
-                        {formalCols.map(sym => {
-                          const key = `${stId}|${sym}`;
-                          const val = formalAnswers.deltaCells?.[key] ?? '';
-                          return (
-                            <td key={sym} style={{ border: '1.5px solid #9ca3af', padding: 1,
-                              background: val ? '#f0fdf4' : '#fff' }}>
-                              <input type="text" value={val} disabled={lesson.active} placeholder="—"
-                                onChange={e => setDeltaCell(key, e.target.value)}
-                                translate="no" spellCheck={false}
-                                style={{ width: 60, boxSizing: 'border-box', textAlign: 'center',
-                                  border: 'none', background: 'transparent',
-                                  color: val ? '#111' : '#cbd5e1',
-                                  fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
-                                  padding: '3px 0' }} />
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {(formalElementsValid || lesson.active) && (
+                <>
+                  <div style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
+                    color: '#065f46', margin: '10px 0 4px' }}>
+                    Função de transição δ:
+                  </div>
+                  <div className="mt-formal-delta-hint">
+                    ✏️ Preencha cada célula como <b>"destino, escreve, move"</b><br />
+                    ex: <code>q1, a, R</code> — direção só pode ser <b>L</b> ou <b>R</b>.
+                  </div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="mt-formal-delta-table">
+                      <thead>
+                        <tr>
+                          <th className="mt-formal-delta-corner">δ</th>
+                          {formalCols.map(sym => (
+                            <th key={sym} className="mt-formal-delta-colhead">{sym === '' ? '□' : sym}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {formalStateRows.map(stId => (
+                          <tr key={stId}>
+                            <td className="mt-formal-delta-rowhead">{stId}</td>
+                            {formalCols.map(sym => {
+                              const key = `${stId}|${sym}`;
+                              const val = formalAnswers.deltaCells?.[key] ?? '';
+                              const err = cellErrors[key];
+                              return (
+                                <td key={sym} className={`mt-formal-delta-cell${err ? ' cell-error' : ''}`}
+                                  style={{ background: err ? undefined : (val ? '#f0fdf4' : '#fff') }}>
+                                  <input type="text" value={val} disabled={lesson.active} placeholder="—"
+                                    onChange={e => {
+                                      setDeltaCell(key, e.target.value);
+                                      if (err) setCellErrors(prev => { const n = { ...prev }; delete n[key]; return n; });
+                                    }}
+                                    translate="no" spellCheck={false}
+                                    className="mt-formal-delta-input"
+                                    style={{ color: err ? undefined : (val ? '#111' : '#cbd5e1') }} />
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
             </div>
           </aside>
         )}
@@ -919,8 +987,8 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
               </>
             )}
 
-            <button className="validate-btn slide-up-fade" onClick={formalMode ? concludePhase : validate}>
-              {formalMode ? '🏁 Concluir Fase' : '✓ Validar MT'}
+            <button className="validate-btn slide-up-fade" onClick={formalMode ? validateFormal : validate}>
+              {formalMode ? (formalElementsValid ? '✓ Validar Transições' : '✓ Validar Elementos') : '✓ Validar MT'}
             </button>
           </aside>
         )}
