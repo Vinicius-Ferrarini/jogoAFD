@@ -1,21 +1,27 @@
-import MT_RECON_L1  from './L1.js';
-import MT_RECON_L2  from './L2.js';
-import MT_RECON_L3  from './L3.js';
-import MT_RECON_L4  from './L4.js';
-import MT_RECON_L5  from './L5.js';
-import MT_RECON_L6  from './L6.js';
-import MT_RECON_L7  from './L7.js';
-import MT_RECON_L8  from './L8.js';
-import MT_RECON_L9  from './L9.js';
-import MT_RECON_L10 from './L10.js';
-import MT_RECON_L11 from './L11.js';
-import MT_RECON_L12 from './L12.js';
-import MT_RECON_L13 from './L13.js';
-import MT_RECON_L14 from './L14.js';
-import MT_RECON_L15 from './L15.js';
-import MT_RECON_L16 from './L16.js';
-import MT_RECON_L17 from './L17.js';
+// Mesma estratégia de lazy-load por nível de levels_data/mt/index.js (ver
+// comentário lá) — 17 níveis, import estático somava ~11MB de source.
+import { MT_RECON_LEVEL_IDS } from '../mt-ids.js';
 import { simulateTM } from '../../modules/mt/utils/tmAlgorithms.js';
+
+const LOADERS = {
+  MT_RECON_L1:  () => import('./L1.js'),
+  MT_RECON_L2:  () => import('./L2.js'),
+  MT_RECON_L3:  () => import('./L3.js'),
+  MT_RECON_L4:  () => import('./L4.js'),
+  MT_RECON_L5:  () => import('./L5.js'),
+  MT_RECON_L6:  () => import('./L6.js'),
+  MT_RECON_L7:  () => import('./L7.js'),
+  MT_RECON_L8:  () => import('./L8.js'),
+  MT_RECON_L9:  () => import('./L9.js'),
+  MT_RECON_L10: () => import('./L10.js'),
+  MT_RECON_L11: () => import('./L11.js'),
+  MT_RECON_L12: () => import('./L12.js'),
+  MT_RECON_L13: () => import('./L13.js'),
+  MT_RECON_L14: () => import('./L14.js'),
+  MT_RECON_L15: () => import('./L15.js'),
+  MT_RECON_L16: () => import('./L16.js'),
+  MT_RECON_L17: () => import('./L17.js'),
+};
 
 // Rótulo exibido com zero à esquerda (L01…L17), igual ao AFD e ao AP —
 // derivado do id (MT_RECON_L{n}) em vez do label hardcoded de cada arquivo.
@@ -24,27 +30,30 @@ function withPaddedLabel(level) {
   return num ? { ...level, label: 'L' + num.padStart(2, '0') } : level;
 }
 
-export const MT_RECON_LEVELS = [
-  MT_RECON_L1,
-  MT_RECON_L2,
-  MT_RECON_L3,
-  MT_RECON_L4,
-  MT_RECON_L5,
-  MT_RECON_L6,
-  MT_RECON_L7,
-  MT_RECON_L8,
-  MT_RECON_L9,
-  MT_RECON_L10,
-  MT_RECON_L11,
-  MT_RECON_L12,
-  MT_RECON_L13,
-  MT_RECON_L14,
-  MT_RECON_L15,
-  MT_RECON_L16,
-  MT_RECON_L17,
-].map(withPaddedLabel);
+export const MT_RECON_LEVEL_ORDER = MT_RECON_LEVEL_IDS;
 
-export const getLevel = (id) => MT_RECON_LEVELS.find((l) => l.id === id || l.label === id);
+const _cache = new Map();
+
+/** Carrega (ou retorna do cache) o nível pelo id (ex.: "MT_RECON_L8"). */
+export async function loadMTReconLevel(id) {
+  if (_cache.has(id)) return _cache.get(id);
+  const loader = LOADERS[id];
+  if (!loader) throw new Error(`Nível MT Reconhecedora desconhecido: ${id}`);
+  const mod = await loader();
+  const level = withPaddedLabel(mod.default);
+  _cache.set(id, level);
+  return level;
+}
+
+/** Nível já resolvido (import concluído), ou undefined se ainda não. Síncrono. */
+export function getCachedMTReconLevel(id) {
+  return _cache.get(id);
+}
+
+/** Dispara o import de todos os níveis em paralelo (prefetch silencioso do menu). */
+export function prefetchAllMTReconLevels() {
+  return Promise.all(MT_RECON_LEVEL_ORDER.map(loadMTReconLevel));
+}
 
 // ── Grafo do gabarito (último passo GRAPH da aula guiada) ────────────────────
 // Mesmo padrão usado nos testes: reconstrói {states, transitions} a partir do

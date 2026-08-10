@@ -2,9 +2,19 @@
 // Espelha mt_recon_levels.test.js: bateria de testWords bate com o gabarito
 // real (aceita E produz a saída esperada por level.validate), e cada passo da
 // aula guiada é consistente (sem transição órfã / sem LOOP).
+// Níveis carregam via loadMTLevel (import() dinâmico, mesma via do app real —
+// ver comentário em levels_data/mt/index.js). Top-level await resolve todos
+// UMA VEZ antes da coleta dos describe/it (em vez de um import() por it(),
+// que reimporta/retransforma o módulo a cada teste). Sequencial (não
+// Promise.all) — os maiores arquivos (L20-L24, 5-15MB de source) disparados
+// em paralelo sob a suíte completa (10 arquivos rodando junto) estouravam o
+// timeout interno de RPC do worker do Vitest com o servidor de transform.
 import { describe, it, expect } from 'vitest';
-import { MT_LEVELS } from '../levels_data/mt/index.js';
+import { MT_LEVEL_ORDER, loadMTLevel } from '../levels_data/mt/index.js';
 import { simulateTM, fuzzTMTransducer, extractTapeOutput } from '../modules/mt/utils/tmAlgorithms.js';
+
+const MT_LEVELS = [];
+for (const id of MT_LEVEL_ORDER) MT_LEVELS.push(await loadMTLevel(id));
 
 function lastGraphStep(level) {
   const steps = level.guidedLesson.steps;

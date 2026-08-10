@@ -19,7 +19,7 @@ import useTMGraph from './hooks/useTMGraph';
 import useMTGuidedLesson from './hooks/useMTGuidedLesson';
 import useAPDrawing from '../ap/hooks/useAPDrawing';
 import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js';
-import { MT_RECON_LEVELS, getShortestWord, getGabaritoGraph } from '../../levels_data/mt-recon/index.js';
+import { MT_RECON_LEVEL_ORDER, loadMTReconLevel, getShortestWord, getGabaritoGraph } from '../../levels_data/mt-recon/index.js';
 import { fuzzTMRecognizer, simulateTM } from './utils/tmAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 import { logEvent } from '../../services/telemetry';
@@ -38,6 +38,18 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
 
   const [screen, setScreen] = useState('MENU');
   const [level,  setLevel]  = useState(null);
+  // Prefetch silencioso — mesmo padrão de MTPart1.jsx (ver comentário lá).
+  const [mtReconLevels, setMtReconLevels] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      for (const id of MT_RECON_LEVEL_ORDER) {
+        const lv = await loadMTReconLevel(id);
+        if (!cancelled) setMtReconLevels(prev => [...prev, lv]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
   const [mode,   setMode]   = useState('IDLE');
   const [connectingSource, setConnectingSource] = useState(null);
   const [errAction, setErrAction] = useState(null);
@@ -219,7 +231,10 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
   }, [gUndo, gRedo, gDeleteSelected, drawUndo, drawingStack, lesson.active, finishLesson]);
 
   // ── Carregar nível ──────────────────────────────────────────────────────────
-  const loadLevel = useCallback((lv) => {
+  // Aceita objeto já resolvido (caminho normal) ou id cru — ver mesmo padrão
+  // em MTPart1.jsx.
+  const loadLevel = useCallback(async (lvOrId) => {
+    const lv = typeof lvOrId === 'string' ? await loadMTReconLevel(lvOrId) : lvOrId;
     g.reset();
     lesson.reset();
     // Telemetria: início da fase + reset de contadores.
@@ -244,10 +259,10 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
   }, [g, lesson, draw, say, resetZoom]);
 
   const goLevel = useCallback((dir) => {
-    const idx = MT_RECON_LEVELS.findIndex(l => l.id === level?.id);
-    const next = MT_RECON_LEVELS[idx + dir];
+    const idx = mtReconLevels.findIndex(l => l.id === level?.id);
+    const next = mtReconLevels[idx + dir];
     if (next) loadLevel(next);
-  }, [level, loadLevel]);
+  }, [level, loadLevel, mtReconLevels]);
 
   const pickMode = (m) => { setMode(m); setConnectingSource(null); };
 
@@ -413,8 +428,8 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
 
   // ── Menu ─────────────────────────────────────────────────────────────────────
   if (screen === 'MENU') {
-    const maxStars   = MT_RECON_LEVELS.length * 3;
-    const totalStars = MT_RECON_LEVELS.reduce((s, l) => s + (progress?.[`mt-recon-${l.id}`]?.stars || 0), 0);
+    const maxStars   = MT_RECON_LEVEL_ORDER.length * 3;
+    const totalStars = mtReconLevels.reduce((s, l) => s + (progress?.[`mt-recon-${l.id}`]?.stars || 0), 0);
     return (
       <div className="menu-screen menu-screen-fases min-screen" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14, width: '100%' }}>
@@ -433,7 +448,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
           Progresso: {maxStars > 0 ? Math.round((totalStars / maxStars) * 100) : 0}% ({totalStars}/{maxStars} ★)
         </div>
         <div className="levels-grid">
-          {MT_RECON_LEVELS.map(l => (
+          {mtReconLevels.map(l => (
             <button key={l.id} className="menu-btn primary" onClick={() => loadLevel(l)}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                 background: DIFF_COLOR[l.level] }}>
@@ -441,6 +456,9 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
               <SvgStars count={progress?.[`mt-recon-${l.id}`]?.stars || 0} size={14} max={3} />
             </button>
           ))}
+          {mtReconLevels.length < MT_RECON_LEVEL_ORDER.length && (
+            <span style={{ fontWeight: 900, color: '#888', alignSelf: 'center', padding: 8 }}>Carregando…</span>
+          )}
         </div>
         <DifficultyLegend keys={['easy', 'medium', 'hard']} />
       </div>
@@ -448,8 +466,8 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
   }
 
   // ── Tela do jogo ─────────────────────────────────────────────────────────────
-  const mtIdx  = MT_RECON_LEVELS.findIndex(l => l.id === level.id);
-  const nextMt = mtIdx >= 0 && mtIdx < MT_RECON_LEVELS.length - 1 ? MT_RECON_LEVELS[mtIdx + 1] : null;
+  const mtIdx  = mtReconLevels.findIndex(l => l.id === level.id);
+  const nextMt = mtIdx >= 0 && mtIdx < mtReconLevels.length - 1 ? mtReconLevels[mtIdx + 1] : null;
   const isFormal   = lesson.phase === 'FORMAL';
   const formalOpen = isFormal || formalMode;
 
@@ -524,7 +542,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
         stars={stars}
         starsMax={3}
         isFirst={mtIdx === 0}
-        isLast={mtIdx === MT_RECON_LEVELS.length - 1}
+        isLast={mtIdx === mtReconLevels.length - 1}
         toggleSidebar={() => setFormalMode(o => !o)}
         onBack={() => { lesson.finish(); setScreen('MENU'); }}
         onPrevLevel={() => goLevel(-1)}

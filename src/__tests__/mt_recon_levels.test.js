@@ -3,10 +3,20 @@
 // aceitas/rejeitadas bate com o gabarito real, e o grafo final da aula guiada
 // (fase GRAPH) reproduz a mesma bateria — provando que buildRecon/gerador de
 // aula não diverge do gabarito importado do JFLAP.
+// Níveis carregam via loadMTReconLevel (import() dinâmico, mesma via do app
+// real — ver comentário em levels_data/mt-recon/index.js). Usa top-level
+// await pra resolver todos ANTES da fase de coleta dos describe/it — a seção
+// de layout decide QUAIS it() registrar (`if (nodes.length < 2) continue`)
+// com base no grafo, então precisa do dado síncrono nesse ponto. Sequencial
+// (não Promise.all) — ver mt_trans_levels.test.js: disparar todos os imports
+// em paralelo sob a suíte completa estourava o timeout de RPC do worker.
 import { describe, it, expect } from 'vitest';
-import { MT_RECON_LEVELS } from '../levels_data/mt-recon/index.js';
+import { MT_RECON_LEVEL_ORDER, loadMTReconLevel } from '../levels_data/mt-recon/index.js';
 import { simulateTM, fuzzTMRecognizer } from '../modules/mt/utils/tmAlgorithms.js';
 import { INNER_W, INNER_H } from '../modules/afd/hooks/useCanvasState.js';
+
+const MT_RECON_LEVELS = [];
+for (const id of MT_RECON_LEVEL_ORDER) MT_RECON_LEVELS.push(await loadMTReconLevel(id));
 
 function lastGraphStep(level) {
   const steps = level.guidedLesson.steps;

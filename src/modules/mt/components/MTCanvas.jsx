@@ -4,7 +4,7 @@
 //   - Transições: { read, write, move } em vez de { read, pop, push }
 //   - TMTransitionLabel (chip) + TMTransitionEditor (popup) substituem APTransitionLabel
 //   - Modo TOGGLE_FINAL para marcar estados aceitores (MT tem final, diferente do AP)
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import TMTransitionLabel from './TMTransitionLabel';
 import TMTransitionEditor from './TMTransitionEditor';
 import StrokeEl from '../../afd/components/StrokeEl';
@@ -408,33 +408,43 @@ export default function MTCanvas({
     dragRef.current = null;
   }, [isDrawingUnlocked, isDraw, draw, selectionBox, nodes, selectedNodes, setSelectedNodes, setSelectionBox, commitEdge, setConnectingSource, discardSnapshot]);
 
-  // ── Agrupa transições por aresta ──────────────────────────────────────────────
-  const groups = [];
-  const byKey = new Map();
-  transitions.forEach((t, i) => {
-    const key = `${t.from}->${t.to}`;
-    if (!byKey.has(key)) { const g = { from: t.from, to: t.to, triples: [] }; byKey.set(key, g); groups.push(g); }
-    byKey.get(key).triples.push({ read: t.read, write: t.write, move: t.move, tIdx: i });
-  });
-
   // Modo Aula: tIdx da tripla percorrida no passo atual (se houver), pra
   // destacar tanto a linha da aresta (SVG) quanto o chip específico da regra.
-  const activeTIdx = lessonActive && activeTransition
-    ? transitions.findIndex(t =>
-        t.from === activeTransition.from && t.to === activeTransition.to &&
-        t.read === activeTransition.read && t.write === activeTransition.write &&
-        t.move === activeTransition.move)
-    : -1;
+  const activeTIdx = useMemo(() => (
+    lessonActive && activeTransition
+      ? transitions.findIndex(t =>
+          t.from === activeTransition.from && t.to === activeTransition.to &&
+          t.read === activeTransition.read && t.write === activeTransition.write &&
+          t.move === activeTransition.move)
+      : -1
+  ), [lessonActive, activeTransition, transitions]);
 
-  const edgeRenders = groups.map((g) => {
-    const src = nodes.find(n => n.id === g.from);
-    const tgt = nodes.find(n => n.id === g.to);
-    if (!src || !tgt) return null;
-    const bidir = g.from !== g.to && transitions.some(o => o.from === g.to && o.to === g.from);
-    const { pathD, lx, ly, selfLoop } = computeEdgeGeometry(src, tgt, bidir);
-    const isActiveEdge = activeTIdx !== -1 && g.triples.some(t => t.tIdx === activeTIdx);
-    return { ...g, src, tgt, selfLoop, bidir, pathD, lx, ly, isActiveEdge };
-  }).filter(Boolean);
+  // ── Agrupa transições por aresta + geometria ────────────────────────────────
+  // Memoizado: recalcular groups/edgeRenders (find() por aresta + trig de
+  // computeEdgeGeometry) rodava incondicionalmente no body a cada render do
+  // MTCanvas — incluindo renders disparados por coisas sem nenhuma relação com
+  // o grafo (digitar num campo, mover o mouse durante um traço). Com N nós/M
+  // transições isso é O(N·M) repetido à toa; useMemo só recalcula quando
+  // nodes/transitions/activeTIdx realmente mudam.
+  const edgeRenders = useMemo(() => {
+    const groups = [];
+    const byKey = new Map();
+    transitions.forEach((t, i) => {
+      const key = `${t.from}->${t.to}`;
+      if (!byKey.has(key)) { const g = { from: t.from, to: t.to, triples: [] }; byKey.set(key, g); groups.push(g); }
+      byKey.get(key).triples.push({ read: t.read, write: t.write, move: t.move, tIdx: i });
+    });
+
+    return groups.map((g) => {
+      const src = nodes.find(n => n.id === g.from);
+      const tgt = nodes.find(n => n.id === g.to);
+      if (!src || !tgt) return null;
+      const bidir = g.from !== g.to && transitions.some(o => o.from === g.to && o.to === g.from);
+      const { pathD, lx, ly, selfLoop } = computeEdgeGeometry(src, tgt, bidir);
+      const isActiveEdge = activeTIdx !== -1 && g.triples.some(t => t.tIdx === activeTIdx);
+      return { ...g, src, tgt, selfLoop, bidir, pathD, lx, ly, isActiveEdge };
+    }).filter(Boolean);
+  }, [nodes, transitions, activeTIdx]);
 
   const eraseMode = mode === 'ERASE';
 
