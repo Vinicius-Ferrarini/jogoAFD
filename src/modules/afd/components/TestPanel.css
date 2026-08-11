@@ -20,6 +20,9 @@
 
 .word-input {
   flex: 1;
+  min-width: 0; /* sem isso, o <input> não encolhe abaixo do seu mínimo
+    intrínseco (~170-200px do browser) mesmo com flex:1 — com 2 botões ao
+    lado (+ e 🧹) isso empurrava o 2º botão pra fora do painel. */
   background: #fff;
   border: 3px solid #000;
   color: #000;
@@ -46,6 +49,17 @@
   flex-shrink: 0;
 }
 .add-test-btn:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px #000; }
+
+/* Botão "limpar histórico" (🧹) — mais estreito que o "+" (padding lateral
+   menor) pra caber ao lado dele sem estourar a largura fixa do .test-panel
+   (270px): input flex:1 + 2 botões flex-shrink:0 exigia mais espaço do que
+   o padding padrão de .add-test-btn deixava disponível. */
+.clear-test-btn {
+  padding: 4px 6px;
+  font-size: 14px;
+  background: #fca5a5;
+}
+.clear-test-btn:disabled { cursor: not-allowed; }
 
 /* Lista de palavras */
 .words-list {

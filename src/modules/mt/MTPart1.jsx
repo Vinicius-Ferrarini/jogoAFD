@@ -321,7 +321,8 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
       // Gabarito estático do nível: saída = level.validate(word). null/undefined → REJEITADA
       const expected = level.validate?.(word);
       const status = expected != null ? 'ACCEPTED' : 'REJECTED';
-      setLinguagemTests(prev => [...prev, { word, status, output: expected ?? '' }]);
+      // Insere no TOPO — o mais recente fica visível sem precisar rolar a lista.
+      setLinguagemTests(prev => [{ word, status, output: expected ?? '' }, ...prev]);
     } else {
       // Simulação contra o grafo atual do aluno
       const mtGraph = { states: g.nodes, transitions: g.transitions };
@@ -330,7 +331,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
       if (status === 'ACCEPTED') {
         output = extractTapeOutput(tape, level.startMarker ?? level.outputMarker ?? null) || BLANK;
       }
-      setDesenhoTests(prev => [...prev, { word, status, output }]);
+      setDesenhoTests(prev => [{ word, status, output }, ...prev]);
     }
     setSimWord('');
   }, [level, simWord, activeTab, g.nodes, g.transitions]);
@@ -878,6 +879,10 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                     translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
                     style={inputError ? { border: '2px solid #dc2626' } : {}} />
                   <button className="add-test-btn" onClick={testWord}>+</button>
+                  <button className="add-test-btn clear-test-btn" title="Limpar palavra e histórico"
+                    disabled={linguagemTests.length === 0 && simWord === ''}
+                    onClick={() => { setLinguagemTests([]); setSimWord(''); setInputError(null); }}
+                    style={{ opacity: linguagemTests.length === 0 && simWord === '' ? 0.5 : 1 }}>🧹</button>
                 </div>
                 {inputError && (
                   <div style={{ padding: '3px 10px 4px', fontFamily: "'Comic Sans MS',cursive",
@@ -939,6 +944,10 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                     translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
                     style={inputError ? { border: '2px solid #dc2626' } : {}} />
                   <button className="add-test-btn" onClick={testWord}>+</button>
+                  <button className="add-test-btn clear-test-btn" title="Limpar palavra e histórico"
+                    disabled={desenhoTests.length === 0 && simWord === ''}
+                    onClick={() => { setDesenhoTests([]); setSimWord(''); setInputError(null); }}
+                    style={{ opacity: desenhoTests.length === 0 && simWord === '' ? 0.5 : 1 }}>🧹</button>
                 </div>
                 {inputError && (
                   <div style={{ padding: '3px 10px 4px', fontFamily: "'Comic Sans MS',cursive",

@@ -4,7 +4,7 @@ import './TestPanel.css';
 // simulação e botão de validação. CSS: .test-panel / .word-* em AFDPart1.css.
 export default function TestPanel({
   currentLevel, newWord, setNewWord, handleTestWord,
-  isDrawingUnlocked, openSimulation, testWords, validateAFD,
+  isDrawingUnlocked, openSimulation, testWords, validateAFD, clearTests,
 }) {
   return (
     <aside className="test-panel">
@@ -24,6 +24,10 @@ export default function TestPanel({
           autoCapitalize="off"
         />
         <button className="add-test-btn" onClick={handleTestWord}>+</button>
+        <button className="add-test-btn clear-test-btn" title="Limpar palavra e histórico"
+          disabled={testWords.length === 0 && newWord === ''}
+          onClick={clearTests}
+          style={{ opacity: testWords.length === 0 && newWord === '' ? 0.5 : 1 }}>🧹</button>
       </div>
 
       {isDrawingUnlocked && (

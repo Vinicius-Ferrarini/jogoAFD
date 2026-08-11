@@ -388,6 +388,11 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     setNewWord('');
   }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, phaseExtras]);
 
+  const clearTests = useCallback(() => {
+    setTestWords([]);
+    setNewWord('');
+  }, []);
+
   // Atalhos de teclado: Ctrl+Z, Ctrl+Y, Esc, Delete
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -691,6 +696,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
             openSimulation={openSimulation}
             testWords={testWords}
             validateAFD={validateAFD}
+            clearTests={clearTests}
           />
         )}
       </div>

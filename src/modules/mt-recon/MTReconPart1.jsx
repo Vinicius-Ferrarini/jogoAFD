@@ -314,7 +314,13 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
       const graph = getGabaritoGraph(level);
       const { status } = simulateTM(graph, word, 2000, level.startMarker ?? null);
       const accepted = status === 'ACCEPTED';
-      if (!isDrawingUnlocked) {
+      // Mostra "★ MENOR" sempre que a lista de testes em LANGUAGE estiver
+      // vazia (não só antes do 1º destravamento) — o botão 🧹 de limpar
+      // esvazia testedWords sem mexer em isDrawingUnlocked (destravar o
+      // tabuleiro é permanente, mas "já vi a menor palavra" pode ser
+      // reexibido se o jogador limpou o histórico e testou de novo).
+      const languageListEmpty = !testedWords.some(t => t.mode === 'LANGUAGE');
+      if (!isDrawingUnlocked || languageListEmpty) {
         const shortest = getShortestWord(level);
         const isShortest = accepted && word === shortest;
         const resultado = isShortest ? 'shortest' : accepted ? 'correct' : 'wrong';
@@ -323,7 +329,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
         if (resultado === 'wrong') errorSinceTutorialRef.current = true;
         logEvent({ tipo_evento: 'tentativa', modulo: 'mt-recon', nivel_id: level.id, resultado, numero_tentativas: attemptsRef.current });
         setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: resultado }, ...prev]);
-        if (isShortest) {
+        if (isShortest && !isDrawingUnlocked) {
           setIsDrawingUnlocked(true);
           updateProgress?.(`mt-recon-${level.id}`, 1, phaseExtras('descoberta_palavra'));
           showToast?.('Sucesso! Tabuleiro liberado.', 'success');
@@ -867,6 +873,10 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
               translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
               style={inputError ? { border: '2px solid #dc2626' } : {}} />
             <button className="add-test-btn" onClick={testWord}>+</button>
+            <button className="add-test-btn clear-test-btn" title="Limpar palavra e histórico"
+              disabled={testedWords.length === 0 && simWord === ''}
+              onClick={() => { setTestedWords([]); setSimWord(''); setInputError(null); }}
+              style={{ opacity: testedWords.length === 0 && simWord === '' ? 0.5 : 1 }}>🧹</button>
           </div>
           {inputError && (
             <div style={{ padding: '3px 10px 4px', fontFamily: "'Comic Sans MS',cursive",
