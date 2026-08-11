@@ -20,7 +20,7 @@ const AFDPart2    = lazy(() => import('./modules/afd/AFDPart2'));
 const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
 const APPart1     = lazy(() => import('./modules/ap/APPart1'));
 const MTPart1     = lazy(() => import('./modules/mt/MTPart1'));
-const MTReconPart1 = lazy(() => import('./modules/mt/MTReconPart1'));
+const MTReconPart1 = lazy(() => import('./modules/mt-recon/MTReconPart1'));
 
 // Módulos com uma ÚNICA atividade pulam a tela de submódulos e vão direto ao jogo
 // (ex.: AP só tem "Autômato com Pilha" — não faz sentido escolher pilha 2x).

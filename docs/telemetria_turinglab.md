@@ -343,7 +343,7 @@ Aplicar o padrão validado em `AFDPart1.jsx` (Fases 1, 2 e 4) nos módulos resta
 - **5b.** `src/modules/afd/AFDMinimizer.jsx`
 - **5c.** `src/modules/ap/APPart1.jsx`
 - **5d.** `src/modules/mt/MTPart1.jsx`
-- **5e.** `src/modules/mt/MTReconPart1.jsx`
+- **5e.** `src/modules/mt-recon/MTReconPart1.jsx`
 
 Ler o código de cada módulo antes de instrumentar — não assumir que a estrutura de
 `AFDPart1.jsx` se copia 1:1. Manter os mesmos nomes de campos do esquema, trocando
