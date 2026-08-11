@@ -10,6 +10,10 @@
 //     onde cada item é o ÍNDICE do elemento correspondente no array anterior
 //     (número) ou o valor literal de um elemento novo (objeto) — preserva a
 //     ORDEM exata do array atual, não é um merge por conjunto.
+// Além disso, o campo `tape` (irmão de stateUpdate, não filho) segue regra
+// própria: "=" se idêntico ao passo anterior; { d: [indice, valor] } se só
+// 1 célula mudou (mesmo comprimento) — cobre cabeçote andando/escrevendo,
+// que no L11 sozinho era 61% do arquivo. Fallback: array literal completo.
 // Runtime expande de volta via src/modules/mt/utils/expandGuidedSteps.js.
 //
 // Uso: node scripts/compress_guided_steps.mjs [--dry-run] [caminho-de-um-arquivo]
@@ -108,56 +112,110 @@ function buildRefItems(prev, curr) {
   return usedPrev.every(Boolean) ? items : null;
 }
 
+// Tenta expressar `curr` como diff de 1 célula sobre `prev` (mesmo
+// comprimento, no máximo 1 posição diferente). Retorna [indice, valor] ou
+// null se não se aplica (comprimento mudou ou >1 diferença — cai pro array
+// literal completo).
+function buildSingleCellDiff(prev, curr) {
+  if (prev.length !== curr.length) return null;
+  let diffIdx = -1;
+  for (let i = 0; i < curr.length; i++) {
+    if (curr[i] !== prev[i]) {
+      if (diffIdx !== -1) return null; // mais de 1 diferença
+      diffIdx = i;
+    }
+  }
+  return diffIdx === -1 ? null : [diffIdx, curr[diffIdx]];
+}
+
 // Localiza, em ordem, cada `"nodes": [...]` / `"transitions": [...]` do
 // texto-fonte (mesma ordem em que aparecem nos objetos JS reais — stateUpdate
 // é sempre { nodes, transitions }) e monta a lista de substituições: regra 1
 // (idêntico → "=") tem prioridade; regra 2 (referências ao anterior) é o
-// fallback antes de desistir e manter o array literal.
+// fallback antes de desistir e manter o array literal. `tape` é irmão de
+// stateUpdate (não filho) e pode não existir em todo passo — localizado
+// separadamente, procurando só entre o fim do passo anterior e o início do
+// stateUpdate do passo atual (ordem real no objeto: prof, stateUpdate, tape,
+// ... — mas a ordem de chaves em JS não é garantida por spec então a busca é
+// feita a partir de searchFrom global, igual aos outros campos).
 function buildReplacements(src, steps) {
   const fields = ['nodes', 'transitions'];
   const replacements = [];
   const prev = { nodes: undefined, transitions: undefined };
+  let prevTape;
   let searchFrom = 0;
   let identicalCount = 0;
   let refCount = 0;
+  let tapeIdenticalCount = 0;
+  let tapeDiffCount = 0;
 
   for (let i = 0; i < steps.length; i++) {
-    const su = steps[i]?.stateUpdate;
-    if (!su) continue;
-    for (const field of fields) {
-      const loc = locateFieldValue(src, field, searchFrom);
-      // Só localizável se o passo salva o campo em algum dos formatos
-      // conhecidos ([...], "=", {base:"prev",...}) — nem todo arquivo usa
-      // JSON literal: alguns níveis (L1/L2/L10) já são compactos por
-      // natureza, com stateUpdate referenciando variáveis JS compartilhadas
-      // (ex.: `nodes: N_01`) em vez de repetir o JSON. Nesses casos não há
-      // nada a comprimir por texto — pula o arquivo inteiro.
-      if (loc === null) return { replacements: [], identicalCount: 0, refCount: 0, notLiteralFormat: true };
-      searchFrom = loc.end;
+    const step = steps[i];
+    const su = step?.stateUpdate;
+    if (su) {
+      for (const field of fields) {
+        const loc = locateFieldValue(src, field, searchFrom);
+        // Só localizável se o passo salva o campo em algum dos formatos
+        // conhecidos ([...], "=", {base:"prev",...}) — nem todo arquivo usa
+        // JSON literal: alguns níveis (L1/L2/L10) já são compactos por
+        // natureza, com stateUpdate referenciando variáveis JS compartilhadas
+        // (ex.: `nodes: N_01`) em vez de repetir o JSON. Nesses casos não há
+        // nada a comprimir por texto — pula o arquivo inteiro.
+        if (loc === null) return { replacements: [], identicalCount: 0, refCount: 0, notLiteralFormat: true };
+        searchFrom = loc.end;
 
-      const curr = su[field] ?? []; // já expandido (dado real, não o texto bruto)
-      const currJSON = stableStringify(curr);
-      const alreadyIdentical = src.slice(loc.start, loc.end) === '"="';
-      const alreadyRef = src[loc.start] === '{';
+        const curr = su[field] ?? []; // já expandido (dado real, não o texto bruto)
+        const currJSON = stableStringify(curr);
+        const alreadyIdentical = src.slice(loc.start, loc.end) === '"="';
+        const alreadyRef = src[loc.start] === '{';
 
-      if (prev[field] !== undefined && stableStringify(prev[field]) === currJSON) {
-        if (!alreadyIdentical) replacements.push({ start: loc.start, end: loc.end, replacement: '"="' });
-        identicalCount++;
-      } else if (prev[field] !== undefined && prev[field].length > 0) {
-        const items = buildRefItems(prev[field], curr);
-        if (items !== null) {
-          const itemsSrc = items.map(it => typeof it === 'number' ? it : stableStringify(it)).join(',');
-          const replacement = `{"base":"prev","items":[${itemsSrc}]}`;
-          if (!alreadyRef || src.slice(loc.start, loc.end) !== replacement) {
-            replacements.push({ start: loc.start, end: loc.end, replacement });
+        if (prev[field] !== undefined && stableStringify(prev[field]) === currJSON) {
+          if (!alreadyIdentical) replacements.push({ start: loc.start, end: loc.end, replacement: '"="' });
+          identicalCount++;
+        } else if (prev[field] !== undefined && prev[field].length > 0) {
+          const items = buildRefItems(prev[field], curr);
+          if (items !== null) {
+            const itemsSrc = items.map(it => typeof it === 'number' ? it : stableStringify(it)).join(',');
+            const replacement = `{"base":"prev","items":[${itemsSrc}]}`;
+            if (!alreadyRef || src.slice(loc.start, loc.end) !== replacement) {
+              replacements.push({ start: loc.start, end: loc.end, replacement });
+            }
+            refCount++;
           }
-          refCount++;
         }
+        prev[field] = curr;
       }
-      prev[field] = curr;
+    }
+    // `tape` vem DEPOIS de stateUpdate na ordem real do objeto (prof,
+    // stateUpdate, simulateWord, tape, ...) — processado depois de nodes/
+    // transitions pra que searchFrom já tenha avançado além de stateUpdate.
+    if (Object.prototype.hasOwnProperty.call(step ?? {}, 'tape')) {
+      const loc = locateFieldValue(src, 'tape', searchFrom);
+      if (loc !== null) {
+        searchFrom = loc.end;
+        const curr = step.tape ?? [];
+        const currJSON = stableStringify(curr);
+        const alreadyIdentical = src.slice(loc.start, loc.end) === '"="';
+        const alreadyDiff = src[loc.start] === '{';
+
+        if (prevTape !== undefined && stableStringify(prevTape) === currJSON) {
+          if (!alreadyIdentical) replacements.push({ start: loc.start, end: loc.end, replacement: '"="' });
+          tapeIdenticalCount++;
+        } else if (prevTape !== undefined) {
+          const diff = buildSingleCellDiff(prevTape, curr);
+          if (diff !== null) {
+            const replacement = `{"d":[${diff[0]},${stableStringify(diff[1])}]}`;
+            if (!alreadyDiff || src.slice(loc.start, loc.end) !== replacement) {
+              replacements.push({ start: loc.start, end: loc.end, replacement });
+            }
+            tapeDiffCount++;
+          }
+        }
+        prevTape = curr;
+      }
     }
   }
-  return { replacements, identicalCount, refCount };
+  return { replacements, identicalCount, refCount, tapeIdenticalCount, tapeDiffCount };
 }
 
 function applyReplacements(src, replacements) {
@@ -183,9 +241,9 @@ for (const file of targets) {
   // continua batendo porque itera na mesma ordem de passos/campos do arquivo.
   const originalSteps = expandGuidedSteps(rawSteps);
 
-  let replacements, identicalCount, refCount, notLiteralFormat;
+  let replacements, identicalCount, refCount, tapeIdenticalCount, tapeDiffCount, notLiteralFormat;
   try {
-    ({ replacements, identicalCount, refCount, notLiteralFormat } = buildReplacements(src, originalSteps));
+    ({ replacements, identicalCount, refCount, tapeIdenticalCount, tapeDiffCount, notLiteralFormat } = buildReplacements(src, originalSteps));
   } catch (err) {
     console.error(`✗ ${path.relative(root, file)}: ERRO ao localizar campos — ${err.message}`);
     process.exitCode = 1;
@@ -194,7 +252,8 @@ for (const file of targets) {
   if (notLiteralFormat || replacements.length === 0) continue; // nada a comprimir (já compacto ou sem passos idênticos/subconjunto)
 
   const newSrc = applyReplacements(src, replacements);
-  const summary = `${identicalCount} idêntico(s) + ${refCount} por referência`;
+  const summary = `${identicalCount} idêntico(s) + ${refCount} por referência`
+    + `, tape: ${tapeIdenticalCount} idêntico(s) + ${tapeDiffCount} diff-1-célula`;
 
   if (dryRun) {
     console.log(`(dry-run) ${path.relative(root, file)}: ${summary}, ${(src.length/1024).toFixed(0)}KB → ${(newSrc.length/1024).toFixed(0)}KB`);

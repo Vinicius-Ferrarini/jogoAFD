@@ -86,16 +86,7 @@ const MT_RECON_L15 = {
           ]
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "a",
-          "a",
-          "a",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 2,
         "activeNode": "q1"
       },
@@ -109,16 +100,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "a",
-          "a",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[2,"A"]},
         "head": 3,
         "activeNode": "q2"
       },
@@ -132,16 +114,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[{"from":"q2","to":"q3","read":"a","write":"A","move":"R"},0]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "a",
-          "a",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 3,
         "activeNode": "q2"
       },
@@ -155,16 +128,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "a",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[3,"A"]},
         "head": 4,
         "activeNode": "q3"
       },
@@ -178,16 +142,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,{"from":"q3","to":"q4","read":"a","write":"A","move":"R"}]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "a",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 4,
         "activeNode": "q3"
       },
@@ -201,16 +156,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[4,"A"]},
         "head": 5,
         "activeNode": "q4"
       },
@@ -224,16 +170,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[{"from":"q4","to":"q5","read":"b","write":"B","move":"L"},0,1,2]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q4"
       },
@@ -247,16 +184,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[5,"B"]},
         "head": 4,
         "activeNode": "q5"
       },
@@ -270,16 +198,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,{"from":"q5","to":"q1","read":"A","write":"A","move":"R"}]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 4,
         "activeNode": "q5"
       },
@@ -293,16 +212,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q1"
       },
@@ -316,16 +226,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,{"from":"q1","to":"q6","read":"B","write":"B","move":"R"},4]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q1"
       },
@@ -339,16 +240,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 6,
         "activeNode": "q6"
       },
@@ -362,16 +254,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[{"from":"q6","to":"q7","read":"","write":"","move":"L"},0,1,2,3,4,5]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 6,
         "activeNode": "q6"
       },
@@ -385,16 +268,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q7"
       },
@@ -408,16 +282,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,{"from":"q7","to":"q7","read":"B","write":"B","move":"L"},3,4,5,6]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q7"
       },
@@ -431,16 +296,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 4,
         "activeNode": "q7"
       },
@@ -454,16 +310,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,{"from":"q7","to":"q8","read":"A","write":"A","move":"L"},2,3,4,5,6,7]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 4,
         "activeNode": "q7"
       },
@@ -477,16 +324,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 3,
         "activeNode": "q8"
       },
@@ -500,16 +338,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,4,{"from":"q8","to":"q8","read":"A","write":"A","move":"L"},5,6,7,8]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 3,
         "activeNode": "q8"
       },
@@ -523,16 +352,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 2,
         "activeNode": "q8"
       },
@@ -546,16 +366,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 1,
         "activeNode": "q8"
       },
@@ -569,16 +380,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,7,8,{"from":"q8","to":"q9","read":"","write":"","move":"R"},9]}
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 1,
         "activeNode": "q8"
       },
@@ -592,16 +394,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaab",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 2,
         "activeNode": "q9",
         "status": "ACCEPTED"
@@ -643,20 +436,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "a",
-          "a",
-          "a",
-          "a",
-          "a",
-          "b",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[2,"A"]},
         "head": 3,
         "activeNode": "q2"
       },
@@ -670,20 +450,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "a",
-          "b",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[3,"A"]},
         "head": 4,
         "activeNode": "q3"
       },
@@ -697,20 +464,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "b",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[4,"A"]},
         "head": 5,
         "activeNode": "q4"
       },
@@ -724,20 +478,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,{"from":"q4","to":"q4","read":"a","write":"a","move":"R"},7,8,9,10]}
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "b",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q4"
       },
@@ -751,20 +492,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "b",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 6,
         "activeNode": "q4"
       },
@@ -778,20 +506,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "b",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 7,
         "activeNode": "q4"
       },
@@ -805,20 +520,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "b",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 8,
         "activeNode": "q4"
       },
@@ -832,20 +534,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[8,"B"]},
         "head": 7,
         "activeNode": "q5"
       },
@@ -859,20 +548,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,{"from":"q5","to":"q5","read":"a","write":"a","move":"L"},4,5,6,7,8,9,10,11]}
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 7,
         "activeNode": "q5"
       },
@@ -886,20 +562,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 6,
         "activeNode": "q5"
       },
@@ -913,20 +576,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q5"
       },
@@ -940,20 +590,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 4,
         "activeNode": "q5"
       },
@@ -967,20 +604,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "a",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q1"
       },
@@ -994,20 +618,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "a",
-          "a",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[5,"A"]},
         "head": 6,
         "activeNode": "q2"
       },
@@ -1021,20 +632,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "a",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[6,"A"]},
         "head": 7,
         "activeNode": "q3"
       },
@@ -1048,20 +646,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[7,"A"]},
         "head": 8,
         "activeNode": "q4"
       },
@@ -1075,20 +660,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,7,8,{"from":"q4","to":"q4","read":"B","write":"B","move":"R"},9,10,11,12]}
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 8,
         "activeNode": "q4"
       },
@@ -1102,20 +674,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "b",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 9,
         "activeNode": "q4"
       },
@@ -1129,20 +688,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": {"d":[9,"B"]},
         "head": 8,
         "activeNode": "q5"
       },
@@ -1156,20 +702,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,{"from":"q5","to":"q5","read":"B","write":"B","move":"L"},4,5,6,7,8,9,10,11,12,13]}
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 8,
         "activeNode": "q5"
       },
@@ -1183,20 +716,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 7,
         "activeNode": "q5"
       },
@@ -1210,20 +730,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 8,
         "activeNode": "q1"
       },
@@ -1237,20 +744,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 9,
         "activeNode": "q6"
       },
@@ -1264,20 +758,7 @@ const MT_RECON_L15 = {
           "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,7,8,9,10,{"from":"q6","to":"q6","read":"B","write":"B","move":"R"},11,12,13,14]}
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 9,
         "activeNode": "q6"
       },
@@ -1291,20 +772,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 10,
         "activeNode": "q6"
       },
@@ -1318,20 +786,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 9,
         "activeNode": "q7"
       },
@@ -1345,20 +800,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 8,
         "activeNode": "q7"
       },
@@ -1372,20 +814,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 7,
         "activeNode": "q7"
       },
@@ -1399,20 +828,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 6,
         "activeNode": "q8"
       },
@@ -1426,20 +842,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 5,
         "activeNode": "q8"
       },
@@ -1453,20 +856,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 4,
         "activeNode": "q8"
       },
@@ -1480,20 +870,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 3,
         "activeNode": "q8"
       },
@@ -1507,20 +884,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 2,
         "activeNode": "q8"
       },
@@ -1534,20 +898,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 1,
         "activeNode": "q8"
       },
@@ -1561,20 +912,7 @@ const MT_RECON_L15 = {
           "transitions": "="
         },
         "simulateWord": "aaaaaabb",
-        "tape": [
-          "□",
-          "□",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "A",
-          "B",
-          "B",
-          "□",
-          "□"
-        ],
+        "tape": "=",
         "head": 2,
         "activeNode": "q9",
         "status": "ACCEPTED"

@@ -20,9 +20,24 @@ function isRefPlan(value) {
   return value && typeof value === 'object' && value.base === 'prev' && Array.isArray(value.items);
 }
 
+// 3ª regra (campo `tape`, irmão de `stateUpdate`): a fita inteira era salva
+// a cada passo mesmo movendo só o cabeçote ou escrevendo 1 símbolo — no L11
+// isso sozinho era 61% do arquivo (240/307 passos idênticos ao anterior,
+// mais 65/307 com só 1 célula diferente). `{ d: [indice, valor] }` reaplica
+// o valor na posição `indice` sobre a fita anterior; "=" cobre o idêntico;
+// array literal continua sendo o fallback (mudança de tamanho ou >1 célula).
+function isSingleCellDiff(value) {
+  return value && typeof value === 'object' && Array.isArray(value.d) && value.d.length === 2;
+}
+
 function expandField(raw, prev) {
   if (raw === '=') return prev;
   if (isRefPlan(raw)) return raw.items.map(it => (typeof it === 'number' ? prev[it] : it));
+  if (isSingleCellDiff(raw)) {
+    const next = prev.slice();
+    next[raw.d[0]] = raw.d[1];
+    return next;
+  }
   return raw;
 }
 
@@ -30,13 +45,17 @@ export function expandGuidedSteps(steps) {
   if (!steps || steps.length === 0) return steps ?? [];
   let prevNodes = [];
   let prevTransitions = [];
+  let prevTape = [];
   return steps.map(step => {
     const su = step.stateUpdate;
-    if (!su) return step;
+    const hasTape = Object.prototype.hasOwnProperty.call(step, 'tape');
+    const tape = hasTape ? expandField(step.tape, prevTape) : step.tape;
+    if (hasTape) prevTape = tape;
+    if (!su) return hasTape ? { ...step, tape } : step;
     const nodes       = expandField(su.nodes, prevNodes);
     const transitions = expandField(su.transitions, prevTransitions);
     prevNodes = nodes;
     prevTransitions = transitions;
-    return { ...step, stateUpdate: { nodes, transitions } };
+    return { ...step, stateUpdate: { nodes, transitions }, ...(hasTape ? { tape } : {}) };
   });
 }
