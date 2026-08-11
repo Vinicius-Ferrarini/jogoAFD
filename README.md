@@ -12,9 +12,9 @@
 
 <div align="center">
 
-https://github.com/Vinicius-Ferrarini/jogoAFD/releases/download/v1.0-demo/demonstracao.mp4
+https://github.com/user-attachments/assets/27b2bd60-45b8-4abb-b22f-09aefeb0a692
 
-*Se o vídeo não carregar diretamente aqui, [baixe ou assista no link da release](https://github.com/Vinicius-Ferrarini/jogoAFD/releases/tag/v1.0-demo).*
+*Se o vídeo não carregar diretamente aqui, [assista no link da release](https://github.com/Vinicius-Ferrarini/jogoAFD/releases/tag/v1.0-demo).*
 
 </div>
 
