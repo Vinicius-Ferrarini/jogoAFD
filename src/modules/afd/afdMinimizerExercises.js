@@ -274,4 +274,24 @@ export const EXERCISES = [
       ],
     },
   },
+  {
+    id: 15, level: 'prova', title: 'Exercício de prova', /* implementar/prova/L04_antes.xml — conferido: computeMinimized() sobre este AFD reproduz exatamente o gabarito do professor em L04_depois.xml (q2≡q3, demais estados distintos). */
+    desc: 'AFD com 6 estados e alfabeto {a,b}. Estados finais: q4 e q5. Encontre o AFD mínimo.',
+    hint: 'Compare q2 e q3: em \'a\' ambos vão a um final (q5 e q4, respectivamente) e em \'b\' ambos vão a q4. Terão o mesmo comportamento daqui em diante?',
+    explanation: 'q2≡q3 (ambos levam a finais em \'a\' e a q4 em \'b\' — mesmo destino de classe). Os demais estados (q0, q1, q4, q5) são todos distinguíveis entre si. O AFD mínimo tem 5 estados: {q0}, {q1}, {q2q3}, {q4} e {q5}.',
+    initial: {
+      states: ['q0','q1','q2','q3','q4','q5'],
+      alphabet: ['a','b'],
+      initialState: 'q0',
+      finalStates: ['q4','q5'],
+      transitions: [
+        {from:'q0',symbol:'a',to:'q1'},{from:'q0',symbol:'b',to:'q0'},
+        {from:'q1',symbol:'a',to:'q2'},{from:'q1',symbol:'b',to:'q3'},
+        {from:'q2',symbol:'a',to:'q5'},{from:'q2',symbol:'b',to:'q4'},
+        {from:'q3',symbol:'a',to:'q5'},{from:'q3',symbol:'b',to:'q4'},
+        {from:'q4',symbol:'a',to:'q3'},{from:'q4',symbol:'b',to:'q4'},
+        {from:'q5',symbol:'a',to:'q4'},{from:'q5',symbol:'b',to:'q2'},
+      ],
+    },
+  },
 ];

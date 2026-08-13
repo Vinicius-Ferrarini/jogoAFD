@@ -31,7 +31,7 @@ const navBtnStyle = {
 };
 const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none' };
 
-export default function MinGame({ exercise, exNumber, progress, onBack, onNext, onPrev, nextLabel, updateProgress }) {
+export default function MinGame({ exercise, exLabel, progress, onBack, onNext, onPrev, nextLabel, updateProgress }) {
   // ── Banner / Professor ──
   const [banner,   setBanner]   = useState(null);
   const [profMsg,  setProfMsg]  = useState('');
@@ -215,13 +215,13 @@ export default function MinGame({ exercise, exNumber, progress, onBack, onNext, 
         </div>
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
           <span className="mission-label">Minimização</span>
-          {exNumber != null && (
+          {exLabel != null && (
             <>
               <button style={onPrev ? navBtnStyle : navBtnDisabledStyle}
                 disabled={!onPrev} onClick={onPrev} title="Exercício anterior">◀</button>
               <span style={{ fontWeight: 900, fontSize: 12, background: '#fde047',
                 border: '2px solid #000', borderRadius: 6, padding: '1px 8px' }}>
-                Ex. {exNumber}
+                {exLabel}
               </span>
               <button style={onNext ? navBtnStyle : navBtnDisabledStyle}
                 disabled={!onNext} onClick={onNext} title="Próximo exercício">▶</button>

@@ -8,8 +8,13 @@ import MinGame from './MinGame';
 import { EXERCISES } from './afdMinimizerExercises';
 
 // ─── Level List ───────────────────────────────────────────────────────────────
-const LEVEL_ORDER     = { easy: 0, medium: 1, hard: 2 };
+const LEVEL_ORDER     = { easy: 0, medium: 1, hard: 2, prova: 3 };
 const SORTED_EXERCISES = [...EXERCISES].sort((a, b) => LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level]);
+
+// Rótulo "L{id com 2 dígitos}" — mesmo padrão de AFD/AP/MT — derivado do id do
+// exercício, não da posição no array ordenado (a ordem visual, agrupada por
+// dificuldade, continua igual; só o texto do rótulo passa a ser estável por id).
+const exLabel = (ex) => `L${String(ex.id).padStart(2, '0')}`;
 
 function LevelList({ progress, onSelect, onBack }) {
   const maxStars   = EXERCISES.length * 3;
@@ -32,14 +37,14 @@ function LevelList({ progress, onSelect, onBack }) {
         Progresso: {maxStars > 0 ? Math.round((totalStars/maxStars)*100) : 0}% ({totalStars}/{maxStars} ★)
       </div>
       <div className="levels-grid">
-        {SORTED_EXERCISES.map((ex, i) => {
+        {SORTED_EXERCISES.map((ex) => {
           const stars = progress[`afd-min-${ex.id}`]?.stars || 0;
           return (
             <button key={ex.id} className="menu-btn primary"
               onClick={() => onSelect(ex)}
               style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:8,
                 background: DIFF_COLOR[ex.level] }}>
-              <span>Ex. {i + 1}</span>
+              <span>{exLabel(ex)}</span>
               <span style={{ display:'flex', gap:2 }}>
                 {[1,2,3].map(n => <SvgStar key={n} filled={n <= stars} />)}
               </span>
@@ -47,7 +52,7 @@ function LevelList({ progress, onSelect, onBack }) {
           );
         })}
       </div>
-      <DifficultyLegend />
+      <DifficultyLegend keys={['easy', 'medium', 'hard', 'prova']} />
     </div>
   );
 }
@@ -63,12 +68,12 @@ export default function AFDMinimizer({ onBack, progress, updateProgress, showToa
     return (
       <MinGame
         exercise={selected}
-        exNumber={idx + 1}
+        exLabel={exLabel(selected)}
         progress={progress}
         onBack={() => setSelected(null)}
         onPrev={prev ? () => setSelected(prev) : null}
         onNext={next ? () => setSelected(next) : null}
-        nextLabel={next ? `Ex. ${idx + 2}` : null}
+        nextLabel={next ? exLabel(next) : null}
         updateProgress={updateProgress}
         showToast={showToast}
       />
