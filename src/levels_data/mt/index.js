@@ -32,6 +32,7 @@ const LOADERS = {
   MT_L22: () => import('./L22.js'),
   MT_L23: () => import('./L23.js'),
   MT_L24: () => import('./L24.js'),
+  MT_L25: () => import('./L25.js'),
 };
 
 // Rótulo exibido com zero à esquerda (L01…L24), igual ao AFD e ao AP —

@@ -10,9 +10,9 @@
 // dentro do próprio chunk lazy do módulo.
 
 // Mesmos números de nível usados em levels_data/mt-recon/index.js.
-const MT_RECON_LEVEL_NUMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+const MT_RECON_LEVEL_NUMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 export const MT_RECON_LEVEL_IDS = MT_RECON_LEVEL_NUMS.map((n) => `MT_RECON_L${n}`);
 
 // Mesmos números de nível usados em levels_data/mt/index.js.
-const MT_LEVEL_NUMS = [1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24];
+const MT_LEVEL_NUMS = [1, 2, 3, 4, 6, 7, 9, 10, 11, 12, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25];
 export const MT_LEVEL_IDS = MT_LEVEL_NUMS.map((n) => `MT_L${n}`);

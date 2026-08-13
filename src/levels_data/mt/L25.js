@@ -1,0 +1,1502 @@
+// ── MT Transdutora L25 (exercício de prova): binário +2 ─────────────────────
+// Gabarito importado de implementar/prova/L08.xml (exercício 8 da prova —
+// PROVA.pdf) — entrada é um número binário qualquer, saída é o mesmo número
+// incrementado em DUAS unidades (ex.: 101→111, 1010→1100). Verificado por
+// fuzz contra parseInt(w,2)+2 antes da conversão.
+
+const MT_L25 = {
+  id:          'MT_L25',
+  label:       'L25',
+  type:        'transducer',
+  level:       'prova',
+  alphabet:    ["0","1"],
+  tapeAlphabet: ["0","1","□"],
+  description: "Tem como entrada um número binário qualquer e gera como saída o número binário incrementado em duas unidades – Binário +2.",
+  hint:        "Vá até o fim do número, ande 1 posição de volta (pulando o último dígito) e aplique o incremento com carry a partir dali — como o incremento normal +1 nunca toca o último bit, o resultado final é +2.",
+  validate:    (w) => (parseInt(w === '' ? '0' : w, 2) + 2).toString(2),
+  testWords:   ["101","1010","0","1","11","1111","1000"],
+  skipEmptyWord: true,
+  formalDescription: {
+      "sigma": "{0,1}",
+      "gamma": "{0,1,□}",
+      "states": "{q0,q1,q2,q3,q4}",
+      "initial": "q0",
+      "final": "{q4}",
+      "blank": "□"
+  },
+
+  guidedLesson: {
+    steps: [
+          {
+                "prof": {
+                      "message": "Bem-vindo! Vamos construir a MT Transdutora que recebe um número binário e gera como saída o número incrementado em DUAS unidades.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": [],
+                      "transitions": []
+                }
+          },
+          {
+                "prof": {
+                      "message": "Vamos testar a palavra \"101\". Começamos no estado inicial q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": [
+                            {
+                                  "uid": "q0",
+                                  "id": "q0",
+                                  "label": "q0",
+                                  "x": 3544,
+                                  "y": 4000,
+                                  "isInitial": true,
+                                  "isFinal": false
+                            }
+                      ],
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": [
+                      "□",
+                      "□",
+                      "1",
+                      "0",
+                      "1",
+                      "□",
+                      "□"
+                ],
+                "head": 2,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q0, ao ler '1', vamos para q0, escrevemos '1' e movemos à DIREITA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": [
+                            {
+                                  "from": "q0",
+                                  "to": "q0",
+                                  "read": "1",
+                                  "write": "1",
+                                  "move": "R"
+                            }
+                      ]
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q0, ao ler '0', vamos para q0, escrevemos '0' e movemos à DIREITA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": {"base":"prev","items":[0,{"from":"q0","to":"q0","read":"0","write":"0","move":"R"}]}
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q0, ao ler □ (branco), vamos para q1, escrevemos □ (branco) e movemos à ESQUERDA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": {"base":"prev","items":[0,{"uid":"q1","id":"q1","label":"q1","x":3792,"y":4004,"isInitial":false,"isFinal":false}]},
+                      "transitions": {"base":"prev","items":[0,1,{"from":"q0","to":"q1","read":"","write":"","move":"L"}]}
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q1.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q1, ao ler '1', vamos para q2, escrevemos '1' e movemos à ESQUERDA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": {"base":"prev","items":[0,1,{"uid":"q2","id":"q2","label":"q2","x":4017,"y":3996,"isInitial":false,"isFinal":false}]},
+                      "transitions": {"base":"prev","items":[0,1,2,{"from":"q1","to":"q2","read":"1","write":"1","move":"L"}]}
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q2, ao ler '0', vamos para q3, escrevemos '1' e movemos à ESQUERDA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": {"base":"prev","items":[0,1,2,{"uid":"q3","id":"q3","label":"q3","x":4231,"y":3998,"isInitial":false,"isFinal":false}]},
+                      "transitions": {"base":"prev","items":[0,1,2,3,{"from":"q2","to":"q3","read":"0","write":"1","move":"L"}]}
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": {"d":[3,"1"]},
+                "head": 2,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q3, ao ler '1', vamos para q3, escrevemos '1' e movemos à ESQUERDA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": {"base":"prev","items":[0,1,2,3,4,{"from":"q3","to":"q3","read":"1","write":"1","move":"L"}]}
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q3, ao ler □ (branco), vamos para q4, escrevemos □ (branco) e movemos à DIREITA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": {"base":"prev","items":[0,1,2,3,{"uid":"q4","id":"q4","label":"q4","x":4456,"y":3996,"isInitial":false,"isFinal":true}]},
+                      "transitions": {"base":"prev","items":[0,1,2,3,4,5,{"from":"q3","to":"q4","read":"","write":"","move":"R"}]}
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q4.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q4"
+          },
+          {
+                "prof": {
+                      "message": "Chegamos em q4 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "101",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q4",
+                "status": "ACCEPTED"
+          },
+          {
+                "prof": {
+                      "message": "Vamos testar a palavra \"1010\". Começamos no estado inicial q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": [
+                      "□",
+                      "□",
+                      "1",
+                      "0",
+                      "1",
+                      "0",
+                      "□",
+                      "□"
+                ],
+                "head": 2,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 6,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q1.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q1, ao ler '0', vamos para q2, escrevemos '0' e movemos à ESQUERDA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,{"from":"q1","to":"q2","read":"0","write":"0","move":"L"}]}
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q2, ao ler '1', vamos para q2, escrevemos '0' e movemos à ESQUERDA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,7,{"from":"q2","to":"q2","read":"1","write":"0","move":"L"}]}
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": {"d":[4,"0"]},
+                "head": 3,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": {"d":[3,"1"]},
+                "head": 2,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q4.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q4"
+          },
+          {
+                "prof": {
+                      "message": "Chegamos em q4 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1010",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q4",
+                "status": "ACCEPTED"
+          },
+          {
+                "prof": {
+                      "message": "Vamos testar a palavra \"111\". Começamos no estado inicial q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": [
+                      "□",
+                      "□",
+                      "1",
+                      "1",
+                      "1",
+                      "□",
+                      "□"
+                ],
+                "head": 2,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q1.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": {"d":[3,"0"]},
+                "head": 2,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": {"d":[2,"0"]},
+                "head": 1,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q2, ao ler □ (branco), vamos para q3, escrevemos '1' e movemos à ESQUERDA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,7,8,{"from":"q2","to":"q3","read":"","write":"1","move":"L"}]}
+                },
+                "simulateWord": "111",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": {"d":[1,"1"]},
+                "head": 0,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q4.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q4"
+          },
+          {
+                "prof": {
+                      "message": "Chegamos em q4 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "111",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q4",
+                "status": "ACCEPTED"
+          },
+          {
+                "prof": {
+                      "message": "Vamos testar a palavra \"0\". Começamos no estado inicial q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "0",
+                "tape": [
+                      "□",
+                      "□",
+                      "0",
+                      "□",
+                      "□"
+                ],
+                "head": 2,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "0",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q1.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "0",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "0",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "0",
+                "tape": {"d":[1,"1"]},
+                "head": 0,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q4.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "0",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q4"
+          },
+          {
+                "prof": {
+                      "message": "Chegamos em q4 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "0",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q4",
+                "status": "ACCEPTED"
+          },
+          {
+                "prof": {
+                      "message": "Vamos testar a palavra \"11\". Começamos no estado inicial q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": [
+                      "□",
+                      "□",
+                      "1",
+                      "1",
+                      "□",
+                      "□"
+                ],
+                "head": 2,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q1.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": {"d":[2,"0"]},
+                "head": 1,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": {"d":[1,"1"]},
+                "head": 0,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q4.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q4"
+          },
+          {
+                "prof": {
+                      "message": "Chegamos em q4 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "11",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q4",
+                "status": "ACCEPTED"
+          },
+          {
+                "prof": {
+                      "message": "Vamos testar a palavra \"1111\". Começamos no estado inicial q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": [
+                      "□",
+                      "□",
+                      "1",
+                      "1",
+                      "1",
+                      "1",
+                      "□",
+                      "□"
+                ],
+                "head": 2,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": "=",
+                "head": 6,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q1.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": {"d":[4,"0"]},
+                "head": 3,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": {"d":[3,"0"]},
+                "head": 2,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": {"d":[2,"0"]},
+                "head": 1,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": {"d":[1,"1"]},
+                "head": 0,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q4.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q4"
+          },
+          {
+                "prof": {
+                      "message": "Chegamos em q4 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1111",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q4",
+                "status": "ACCEPTED"
+          },
+          {
+                "prof": {
+                      "message": "Vamos testar a palavra \"1000\". Começamos no estado inicial q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": [
+                      "□",
+                      "□",
+                      "1",
+                      "0",
+                      "0",
+                      "0",
+                      "□",
+                      "□"
+                ],
+                "head": 2,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q0.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 6,
+                "activeNode": "q0"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q1.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 5,
+                "activeNode": "q1"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q2.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 4,
+                "activeNode": "q2"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": {"d":[4,"1"]},
+                "head": 3,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Nova regra: em q3, ao ler '0', vamos para q3, escrevemos '0' e movemos à ESQUERDA.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": {"base":"prev","items":[0,1,2,3,4,5,6,7,8,9,{"from":"q3","to":"q3","read":"0","write":"0","move":"L"}]}
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 3,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '0', escreveu '0' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu '1', escreveu '1' e moveu. Agora em q3.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 1,
+                "activeNode": "q3"
+          },
+          {
+                "prof": {
+                      "message": "Executou: leu □, escreveu □ e moveu. Agora em q4.",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q4"
+          },
+          {
+                "prof": {
+                      "message": "Chegamos em q4 (estado final) e não há mais nada a ler. Palavra ACEITA! ✓",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "simulateWord": "1000",
+                "tape": "=",
+                "head": 2,
+                "activeNode": "q4",
+                "status": "ACCEPTED"
+          },
+          {
+                "prof": {
+                      "message": "Grafo finalizado! 🎉 Agora vamos formalizar matematicamente a nossa Máquina de Turing.",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "formalIntro": true
+          },
+          {
+                "prof": {
+                      "message": "Q é o conjunto de ESTADOS: {q0,q1,q2,q3,q4}",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "phase": "FORMAL",
+                "formalFill": {
+                      "states": "{q0,q1,q2,q3,q4}"
+                }
+          },
+          {
+                "prof": {
+                      "message": "Σ é o alfabeto de ENTRADA: {0,1}",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "phase": "FORMAL",
+                "formalFill": {
+                      "sigma": "{0,1}"
+                }
+          },
+          {
+                "prof": {
+                      "message": "Γ é o alfabeto da FITA: {0,1,□}",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "phase": "FORMAL",
+                "formalFill": {
+                      "gamma": "{0,1,□}"
+                }
+          },
+          {
+                "prof": {
+                      "message": "q0 é o estado INICIAL: q0",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "phase": "FORMAL",
+                "formalFill": {
+                      "initial": "q0"
+                }
+          },
+          {
+                "prof": {
+                      "message": "O símbolo BRANCO: □",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "phase": "FORMAL",
+                "formalFill": {
+                      "blank": "□"
+                }
+          },
+          {
+                "prof": {
+                      "message": "F é o conjunto de estados de ACEITAÇÃO: {q4}",
+                      "mood": "explicando"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "phase": "FORMAL",
+                "formalFill": {
+                      "final": "{q4}"
+                }
+          },
+          {
+                "prof": {
+                      "message": "Por fim, a função δ completa — Máquina formalizada! ✓",
+                      "mood": "feliz"
+                },
+                "stateUpdate": {
+                      "nodes": "=",
+                      "transitions": "="
+                },
+                "phase": "FORMAL",
+                "formalFill": {
+                      "delta": [
+                            {
+                                  "from": "q0",
+                                  "to": "q0",
+                                  "read": "1",
+                                  "write": "1",
+                                  "move": "R"
+                            },
+                            {
+                                  "from": "q0",
+                                  "to": "q0",
+                                  "read": "0",
+                                  "write": "0",
+                                  "move": "R"
+                            },
+                            {
+                                  "from": "q0",
+                                  "to": "q1",
+                                  "read": "",
+                                  "write": "",
+                                  "move": "L"
+                            },
+                            {
+                                  "from": "q1",
+                                  "to": "q2",
+                                  "read": "1",
+                                  "write": "1",
+                                  "move": "L"
+                            },
+                            {
+                                  "from": "q2",
+                                  "to": "q3",
+                                  "read": "0",
+                                  "write": "1",
+                                  "move": "L"
+                            },
+                            {
+                                  "from": "q3",
+                                  "to": "q3",
+                                  "read": "1",
+                                  "write": "1",
+                                  "move": "L"
+                            },
+                            {
+                                  "from": "q3",
+                                  "to": "q4",
+                                  "read": "",
+                                  "write": "",
+                                  "move": "R"
+                            },
+                            {
+                                  "from": "q1",
+                                  "to": "q2",
+                                  "read": "0",
+                                  "write": "0",
+                                  "move": "L"
+                            },
+                            {
+                                  "from": "q2",
+                                  "to": "q2",
+                                  "read": "1",
+                                  "write": "0",
+                                  "move": "L"
+                            },
+                            {
+                                  "from": "q2",
+                                  "to": "q3",
+                                  "read": "",
+                                  "write": "1",
+                                  "move": "L"
+                            },
+                            {
+                                  "from": "q3",
+                                  "to": "q3",
+                                  "read": "0",
+                                  "write": "0",
+                                  "move": "L"
+                            }
+                      ]
+                }
+          }
+    ],
+  },
+};
+
+export default MT_L25;

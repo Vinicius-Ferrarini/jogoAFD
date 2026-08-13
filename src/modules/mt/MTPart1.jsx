@@ -506,7 +506,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
             ))}
           </div>
         )}
-        <DifficultyLegend keys={['easy', 'medium', 'hard']} />
+        <DifficultyLegend keys={['easy', 'medium', 'hard', 'prova']} />
       </div>
     );
   }
