@@ -1,3 +1,5 @@
+> **[ARQUIVADO]** Planejamento pré-implementação. Ver docs/adr/ para o resumo executivo das decisões que sobreviveram — este arquivo é referência histórica, não roadmap ativo.
+
 # Plano: 4 novos exercícios AP (L17-L20) + Reforma visual/mecânica do módulo AP
 
 > ✅ **PLANO CONCLUÍDO** — todas as 9 tarefas implementadas, testadas e
