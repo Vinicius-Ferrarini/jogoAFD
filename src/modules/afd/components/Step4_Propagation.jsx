@@ -14,7 +14,7 @@ import TriangularTable from './TriangularTable';
 const cellInput = (bad, ro) => ({
   width: 56, textAlign: 'center', borderRadius: 4, padding: '2px',
   border: `1px solid ${bad ? '#dc2626' : '#ccc'}`,
-  fontFamily: "'Comic Sans MS','Comic Neue',cursive,sans-serif",
+  fontFamily: 'var(--font-comic)',
   fontWeight: 700, fontSize: 11, outline: 'none',
   color: bad ? '#dc2626' : '#000',
   background: ro ? '#f3f4f6' : '#fff',

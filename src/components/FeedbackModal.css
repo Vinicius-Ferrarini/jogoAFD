@@ -24,7 +24,7 @@
   border: 3px solid #000;
   border-radius: 16px;
   box-shadow: 6px 6px 0 #000;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   animation: fb-pop 0.18s ease;
 }
 

@@ -34,7 +34,7 @@
 }
 
 .p2-node-label {
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-weight: 900;
   fill: #000;
   pointer-events: none;
@@ -42,7 +42,7 @@
 }
 
 .p2-edge-label {
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 12px;
   font-weight: 900;
   fill: #1e3a8a;
@@ -116,7 +116,7 @@
   border: 3px solid #000;
   border-radius: 8px;
   padding: 5px 12px;
-  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-family: 'Caveat', var(--font-comic);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -161,7 +161,7 @@
 }
 
 .p2-bb-group-label {
-  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-family: 'Caveat', var(--font-comic);
   font-size: 10px;
   font-weight: 700;
   color: rgba(212, 245, 226, 0.55);
@@ -177,7 +177,7 @@
   border: 1.5px solid rgba(255, 255, 255, 0.2);
   border-radius: 5px;
   padding: 2px 7px;
-  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-family: 'Caveat', var(--font-comic);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -202,7 +202,7 @@
 }
 
 .p2-bb-title {
-  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-family: 'Caveat', var(--font-comic);
   font-size: 14px;
   font-weight: 700;
   color: #d4f5e2;
@@ -217,7 +217,7 @@
 .p2-bb-section:first-child { margin-top: 0; }
 
 .p2-bb-section-label {
-  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-family: 'Caveat', var(--font-comic);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -282,7 +282,7 @@
 }
 
 .p2-bb-row > span.p2-chalk-dim {
-  font-family: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  font-family: 'Caveat', var(--font-comic);
   font-size: 13px;
   font-weight: 400;
   flex: 1;
@@ -352,7 +352,7 @@
   box-sizing: border-box;
   line-height: 1.4;
   overflow-y: auto;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
 }
 
 /* ── Input states ── */

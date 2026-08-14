@@ -3,7 +3,7 @@ const S = {
     position: 'absolute', top: 0, left: 0, right: 0, zIndex: 200,
     background: '#fde047', borderBottom: '3px solid #000',
     padding: '7px 20px', display: 'flex', alignItems: 'center', gap: 12,
-    fontFamily: "'Comic Sans MS', 'Comic Neue', cursive, sans-serif",
+    fontFamily: 'var(--font-comic)',
     fontWeight: 900, fontSize: 15, userSelect: 'none',
     boxShadow: '0 3px 0 #000',
   },

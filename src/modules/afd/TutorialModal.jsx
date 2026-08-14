@@ -6,7 +6,7 @@ const S = {
   overlay: {
     position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 10000,
     display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column',
-    fontFamily: "'Comic Sans MS', 'Comic Neue', cursive, sans-serif",
+    fontFamily: 'var(--font-comic)',
   },
   row: { display: 'flex', alignItems: 'flex-start', justifyContent: 'center' },
   prof: { height: 290, zIndex: 2, marginRight: -58, flexShrink: 0 },

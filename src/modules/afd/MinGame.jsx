@@ -27,7 +27,7 @@ const navBtnStyle = {
   padding: '2px 8px', fontSize: 13, fontWeight: 900,
   background: '#fff', color: '#000', border: '2px solid #000', borderRadius: 6,
   cursor: 'pointer', boxShadow: '2px 2px 0 #000',
-  fontFamily: "'Comic Sans MS', cursive", lineHeight: 1.2,
+  fontFamily: 'var(--font-comic)', lineHeight: 1.2,
 };
 const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none' };
 
@@ -357,7 +357,7 @@ export default function MinGame({ exercise, exLabel, progress, onBack, onNext, o
         display: 'flex', alignItems: 'center', gap: 6,
         padding: '6px 10px', border: '2px dashed #a78bfa', borderRadius: 8,
         background: '#f5f3ff', boxShadow: '3px 3px 0 #000',
-        fontFamily: "'Comic Sans MS','Comic Neue',cursive,sans-serif" }}>
+        fontFamily: 'var(--font-comic)' }}>
         <span style={{ fontSize: 10, fontWeight: 900, color: '#7c3aed' }}>🔧 teste</span>
         <button onClick={() => devJump(-1)} disabled={STEP_ORDER.indexOf(step) === 0}
           title="Passo anterior (sem validar)"

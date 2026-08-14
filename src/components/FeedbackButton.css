@@ -12,7 +12,7 @@
 
   background: #ffffff;           /* secundário/outline: fundo claro + borda preta */
   color: #000000;                /* cor explícita (não herda branco no modo escuro) */
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-weight: 800;
   font-size: 15px;
   line-height: 1;
@@ -65,7 +65,7 @@
 
   background: #24292e;
   color: #ffffff;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-weight: 800;
   font-size: 15px;
   line-height: 1;

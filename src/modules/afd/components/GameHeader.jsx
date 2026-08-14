@@ -13,7 +13,7 @@ const navBtnStyle = {
   padding: '2px 8px', fontSize: 13, fontWeight: 900,
   background: '#fff', color: '#000', border: '2px solid #000', borderRadius: 6,
   cursor: 'pointer', boxShadow: '2px 2px 0 #000',
-  fontFamily: "'Comic Sans MS', cursive",
+  fontFamily: 'var(--font-comic)',
   lineHeight: 1.2,
 };
 const navBtnDisabledStyle = {

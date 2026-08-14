@@ -58,7 +58,7 @@ export default function CheatsheetPanel() {
               return [
                 <span key={`lbl-${section.label}`}
                   className={`p2-chalk-${section.color} p2-chalk-dim`}
-                  style={{ textAlign: 'left', fontFamily: 'Caveat,"Comic Sans MS",cursive', fontSize: 13, fontWeight: 700 }}>
+                  style={{ textAlign: 'left', fontFamily: 'Caveat, var(--font-comic)', fontSize: 13, fontWeight: 700 }}>
                   {labelText}:
                 </span>,
                 <div key={`val-${section.label}`} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

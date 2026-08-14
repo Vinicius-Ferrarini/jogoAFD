@@ -32,7 +32,7 @@ export default function TriangularTable({
   if (editableAxes) {
     const axisInputStyle = (bad) => ({
       width: 30, textAlign: 'center', border: 'none', background: 'transparent',
-      fontFamily: "'Comic Sans MS','Comic Neue',cursive,sans-serif",
+      fontFamily: 'var(--font-comic)',
       fontWeight: 900, fontSize: 11, outline: 'none',
       color: bad ? '#dc2626' : '#000',
     });

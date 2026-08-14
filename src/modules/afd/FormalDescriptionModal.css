@@ -44,7 +44,7 @@
   border: 3px solid #000;
   background: #fff;
   color: #000;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 14px;
   font-weight: bold;
   outline: none;
@@ -70,7 +70,7 @@
   color: #000;
   border: 3px solid #000;
   border-radius: 8px;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-weight: 900;
   font-size: 14px;
   cursor: pointer;
@@ -159,7 +159,7 @@
   border: none;
   color: #000;
   text-align: center;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 14px;
   font-weight: bold;
   outline: none;
@@ -177,7 +177,7 @@
   color: #000;
   border: 3px solid #000;
   border-radius: 8px;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-weight: 900;
   font-size: 13px;
   margin-top: 12px;
@@ -216,7 +216,7 @@
   border: 3px solid #ef4444;
   border-radius: 8px;
   padding: 8px 12px;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 12px;
   font-weight: 900;
   color: #000;
@@ -275,7 +275,7 @@
    fita (ex: L11, alfabeto quase-ASCII completo) continuam usando o
    overflow-x:auto do wrapper como rede de segurança. */
 .mt-formal-delta-hint {
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 10px;
   font-weight: 700;
   color: #065f46;
@@ -302,7 +302,7 @@
 .mt-formal-delta-colhead {
   border: 1.5px solid #143823;
   padding: 2px 3px;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 10px;
 }
 .mt-formal-delta-corner {
@@ -321,7 +321,7 @@
   background: #d1fae5;
   color: #065f46;
   font-weight: 900;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 10px;
 }
 .mt-formal-delta-cell {
@@ -337,7 +337,7 @@
   text-align: center;
   border: none;
   background: transparent;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 10px;
   font-weight: 900;
   padding: 2px 0;

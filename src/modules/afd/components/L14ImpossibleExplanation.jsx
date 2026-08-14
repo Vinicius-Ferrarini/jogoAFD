@@ -15,7 +15,7 @@ const S = {
   overlay: {
     position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 10000,
     display: 'flex', justifyContent: 'center', alignItems: 'center',
-    fontFamily: "'Comic Sans MS', 'Comic Neue', cursive, sans-serif",
+    fontFamily: 'var(--font-comic)',
     padding: 20,
   },
   card: {

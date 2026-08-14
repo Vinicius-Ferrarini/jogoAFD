@@ -109,7 +109,7 @@ export default function BlackboardPanel({
           </ul>
         )}
         {phase === 'FORMAL' && (
-          <p style={{ color: '#9ca3af', fontSize: 11, marginTop: 8, fontFamily: "'Comic Sans MS', cursive" }}>
+          <p style={{ color: '#9ca3af', fontSize: 11, marginTop: 8, fontFamily: 'var(--font-comic)' }}>
             👈 Veja o painel à esquerda revelar a tupla M = (Q, Σ, δ, q₀, F) passo a passo.
           </p>
         )}

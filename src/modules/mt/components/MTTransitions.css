@@ -11,7 +11,7 @@
 
 /* ── Rótulo (chip sobre a aresta) ── */
 .tm-transition-label {
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   cursor: pointer;
 }
 
@@ -64,7 +64,7 @@
   border-radius: 10px;
   padding: 9px 11px;
   box-shadow: 3px 3px 0 rgba(124, 58, 237, 0.4);
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   min-width: 168px;
   z-index: 30;
 }

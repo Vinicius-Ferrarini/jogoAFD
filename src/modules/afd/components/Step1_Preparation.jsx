@@ -7,7 +7,7 @@ import { useState } from 'react';
 // vem do hook (validadores puros). Depois verifica os 3 requisitos.
 const inputStyle = (bad, weight = 700) => ({
   width: 38, textAlign: 'center', border: 'none', background: 'transparent',
-  fontFamily: "'Comic Sans MS','Comic Neue',cursive,sans-serif",
+  fontFamily: 'var(--font-comic)',
   fontWeight: weight, fontSize: 11, outline: 'none',
   color: bad ? '#dc2626' : '#000',
 });

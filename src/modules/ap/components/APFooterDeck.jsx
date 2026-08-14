@@ -75,7 +75,7 @@ export default function APFooterDeck({
         <div className="cards-scroll-wrapper" style={{ alignItems: 'center', padding: '0 16px', minHeight: compact ? undefined : '85px', maxHeight: compact ? undefined : '85px', minWidth: 0 }}>
           {tape ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#1a1a2e', borderRadius: 8, padding: '8px 14px', border: '2px solid #143823', width: '100%', overflowX: 'auto' }}>
-              <span style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 12, fontWeight: 900,
+              <span style={{ fontFamily: 'var(--font-comic)', fontSize: 12, fontWeight: 900,
                 whiteSpace: 'nowrap', color: '#fbbf24', flexShrink: 0 }}>
                 Fita:
               </span>
@@ -83,12 +83,12 @@ export default function APFooterDeck({
             </div>
           ) : compact ? (
             <div style={{ color: '#888',
-              fontFamily: "'Comic Sans MS', cursive", fontWeight: 700, fontSize: 11 }}>
+              fontFamily: 'var(--font-comic)', fontWeight: 700, fontSize: 11 }}>
               👨‍🏫 Aula em andamento — siga o Maurílio e use "Próximo".
             </div>
           ) : (
             <div style={{ color: '#444',
-              fontFamily: "'Comic Sans MS', cursive", fontWeight: 900, fontSize: 13 }}>
+              fontFamily: 'var(--font-comic)', fontWeight: 900, fontSize: 13 }}>
               👨‍🏫 Aula em andamento — siga o Maurílio e use "Próximo".
             </div>
           )}

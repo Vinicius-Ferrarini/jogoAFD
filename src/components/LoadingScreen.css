@@ -45,7 +45,7 @@
 
 .loading-text {
   margin: 0;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-weight: 900;
   font-size: 18px;
   color: #000;

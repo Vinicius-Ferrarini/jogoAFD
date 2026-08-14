@@ -2,8 +2,43 @@
    App.css — TuringLab v3.0  |  Estilo Gibi / Neo-Brutalismo
    ═══════════════════════════════════════════════════════ */
 
+/* --- FONTE "GIBI" (self-hosted) ---
+   Comic Sans MS só existe no Windows; sem @font-face, Linux/mobile
+   caem no fallback genérico `cursive` (fonte de caligrafia, fora do
+   estilo). Comic Neue é a alternativa open-source (OFL) visualmente
+   equivalente, self-hosted aqui para funcionar em qualquer SO. */
+@font-face {
+  font-family: 'Comic Neue';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/comic-neue-300.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Comic Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/comic-neue-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Comic Neue';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/comic-neue-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Comic Neue';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/comic-neue-400-italic.woff2') format('woff2');
+}
+
 /* --- VARIÁVEIS DO TEMA --- */
 :root {
+  --font-comic:           'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
   --bg-dark:              #fff9c4;
   --panel-bg:             #ffffff;
   --card-bg:              #ffffff;
@@ -29,7 +64,7 @@
 /* --- RESET BÁSICO --- */
 *,
 *::before,
-*::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif; }
+*::after { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-comic); }
 
 html, body, #root {
   width: 100vw;
@@ -139,7 +174,7 @@ body { color: var(--text-main); }
   background: var(--module-afd-primary);
   border: 3px solid #000;
   border-radius: 8px;
-  font-family: 'Comic Sans MS', cursive;
+  font-family: var(--font-comic);
   font-weight: 900;
   font-size: 13px;
   cursor: pointer;
@@ -256,7 +291,7 @@ body { color: var(--text-main); }
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  font-family: 'Comic Sans MS', cursive;
+  font-family: var(--font-comic);
 }
 
 .module-btn-large:hover {
@@ -320,7 +355,7 @@ body { color: var(--text-main); }
   box-shadow: 6px 6px 0 #000;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'Comic Sans MS', cursive;
+  font-family: var(--font-comic);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1154,7 +1189,7 @@ body { color: var(--text-main); }
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   transition: transform 0.13s, box-shadow 0.13s;
   position: relative;
   overflow: hidden;
@@ -1225,7 +1260,7 @@ body { color: var(--text-main); }
   box-shadow: 3px 3px 0 #000;
   margin-top: 4px;
   transition: transform 0.1s, box-shadow 0.1s;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
 }
 
 .module-card-neo:hover:not(:disabled) .module-card-cta {
@@ -1256,7 +1291,7 @@ body { color: var(--text-main); }
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   transition: transform 0.13s, box-shadow 0.13s;
   position: relative;
   overflow: hidden;

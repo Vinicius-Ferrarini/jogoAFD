@@ -12,7 +12,7 @@
   padding: 30px 60px;
   overflow-y: auto;
   background: linear-gradient(135deg, #fff9c4 0%, #fef3c7 50%, #fde68a 100%);
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   box-sizing: border-box;
 }
 
@@ -218,7 +218,7 @@ svg circle.progress-fill {
   background: #4ade80;
   border: 4px solid #000;
   border-radius: 12px;
-  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+  font-family: var(--font-comic);
   font-size: 20px;
   font-weight: 900;
   color: #000;

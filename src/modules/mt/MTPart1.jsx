@@ -554,7 +554,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     };
     return (
       <div style={{ marginBottom: 8 }}>
-        <label style={{ display: 'block', fontFamily: "'Comic Sans MS',cursive", fontSize: 11,
+        <label style={{ display: 'block', fontFamily: 'var(--font-comic)', fontSize: 11,
           fontWeight: 900, color: '#065f46', marginBottom: 3 }}>{label}</label>
         <div style={{ display: 'flex', gap: 4 }}>
           <input type="text" value={formalAnswers[k] ?? ''} placeholder={placeholder}
@@ -570,14 +570,14 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
               : undefined}
             translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"
             style={{ flex: 1, minWidth: 0, boxSizing: 'border-box', padding: '5px 7px',
-              fontFamily: "'Comic Sans MS',cursive", fontSize: 13, fontWeight: 900,
+              fontFamily: 'var(--font-comic)', fontSize: 13, fontWeight: 900,
               background: error ? '#fef2f2' : filled ? '#f0fdf4' : '#fff',
               color: error ? '#111' : filled ? '#111' : '#9ca3af',
               border: error ? '2px solid #ef4444' : filled ? '2px solid #22c55e' : '2px solid #d1d5db',
               boxShadow: error ? '2px 2px 0 #ef4444' : 'none', borderRadius: 6 }} />
           {insertSymbol && !lesson.active && !formalElementsValid && (
             <button type="button" onClick={handleInsert} title={`Inserir "${insertSymbol}"`}
-              style={{ flexShrink: 0, width: 30, fontFamily: "'Comic Sans MS',cursive",
+              style={{ flexShrink: 0, width: 30, fontFamily: 'var(--font-comic)',
                 fontSize: 14, fontWeight: 900, cursor: 'pointer', borderRadius: 6,
                 border: '2px solid #143823', background: '#fde047', color: '#143823' }}>
               {insertSymbol}
@@ -625,13 +625,13 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
             overflowY: 'auto', background: '#fff',
           }}>
             <div style={{ padding: '8px 10px', background: '#143823',
-              fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
+              fontFamily: 'var(--font-comic)', fontSize: 11, fontWeight: 900,
               color: '#fbbf24', letterSpacing: 0.5 }}>
               📝 DESCRIÇÃO FORMAL {formalMode && '— preencha e conclua'}
             </div>
 
             <div style={{ padding: '10px' }}>
-              <div style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 13, fontWeight: 900,
+              <div style={{ fontFamily: 'var(--font-comic)', fontSize: 13, fontWeight: 900,
                 color: '#065f46', marginBottom: 8 }}>
                 M = (Q, Σ, Γ, δ, q₀, □, F)
               </div>
@@ -644,7 +644,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
 
               {(formalElementsValid || lesson.active) && (
                 <>
-                  <div style={{ fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
+                  <div style={{ fontFamily: 'var(--font-comic)', fontSize: 11, fontWeight: 900,
                     color: '#065f46', margin: '10px 0 4px' }}>
                     Função de transição δ:
                   </div>
@@ -740,7 +740,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
             {/* Cabeçalho verde-escuro */}
             <div style={{
               padding: '8px 10px', background: '#143823',
-              fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900,
+              fontFamily: 'var(--font-comic)', fontSize: 11, fontWeight: 900,
               color: '#fbbf24', letterSpacing: 0.5,
             }}>
               👨‍🏫 MODO AULA — {isFormal ? 'DESCRIÇÃO FORMAL' : 'MONTANDO O GRAFO'}
@@ -750,7 +750,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
             {lesson.cur?.formalIntro && (
               <div style={{ padding: '20px 12px', textAlign: 'center' }}>
                 <button onClick={() => lessonGo(1)}
-                  style={{ width: '100%', padding: '14px 10px', fontFamily: "'Comic Sans MS',cursive",
+                  style={{ width: '100%', padding: '14px 10px', fontFamily: 'var(--font-comic)',
                     fontWeight: 900, fontSize: 15, color: '#143823', background: '#fde047',
                     border: '3px solid #a16207', borderRadius: 12, cursor: 'pointer',
                     boxShadow: '3px 3px 0 #000' }}>
@@ -764,7 +764,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
               <div style={{
                 padding: '10px 12px', margin: '8px 8px 0',
                 background: '#143823', borderRadius: 6, border: '1.5px solid #2f5d40',
-                fontFamily: "'Comic Sans MS',cursive", fontSize: 12, fontWeight: 900, color: '#d1d5db',
+                fontFamily: 'var(--font-comic)', fontSize: 12, fontWeight: 900, color: '#d1d5db',
               }}>
                 👈 Veja o painel à esquerda revelando a tupla<br />
                 <b style={{ color: '#fde047' }}>M = (Q, Σ, Γ, δ, q₀, □, F)</b> passo a passo.
@@ -777,7 +777,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                 padding: '6px 10px', margin: '8px 8px 0',
                 background: '#143823', borderRadius: 6, border: '1.5px solid #2f5d40',
                 borderBottom: '2px dashed #4b6a55',
-                fontFamily: "'Comic Sans MS',cursive", fontSize: 11, fontWeight: 900, color: '#d1d5db',
+                fontFamily: 'var(--font-comic)', fontSize: 11, fontWeight: 900, color: '#d1d5db',
               }}>
                 Simulando: "<b style={{ color: '#fbbf24' }}>{lesson.cur.simulateWord || 'λ'}</b>"
                 {lesson.cur?.status && (
@@ -792,7 +792,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
 
             {/* Contador de passos */}
             <div style={{ textAlign: 'center', fontSize: 13, color: '#9ca3af',
-              fontFamily: "'Comic Sans MS',cursive", marginBottom: 8 }}>
+              fontFamily: 'var(--font-comic)', marginBottom: 8 }}>
               Passo {(lesson.step ?? 0) + 1} / {lesson.steps.length}
             </div>
 
@@ -817,7 +817,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                 <button
                   onClick={() => lessonGo(-1)}
                   disabled={(lesson.step ?? 0) === 0}
-                  style={{ flex: 1, padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
+                  style={{ flex: 1, padding: '6px 0', fontFamily: 'var(--font-comic)', fontWeight: 900,
                     fontSize: 13, border: '2.5px solid #555', borderRadius: 8,
                     cursor: (lesson.step ?? 0) === 0 ? 'not-allowed' : 'pointer',
                     background: '#3a3a3a', color: '#e5e7eb', boxShadow: '2px 2px 0 #000',
@@ -827,7 +827,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                 <button
                   onClick={() => lessonGo(1)}
                   disabled={(lesson.step ?? 0) >= lesson.steps.length - 1}
-                  style={{ flex: 1, padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
+                  style={{ flex: 1, padding: '6px 0', fontFamily: 'var(--font-comic)', fontWeight: 900,
                     fontSize: 13, border: '2.5px solid #166534', borderRadius: 8,
                     cursor: (lesson.step ?? 0) >= lesson.steps.length - 1 ? 'not-allowed' : 'pointer',
                     background: '#14532d', color: '#bbf7d0', boxShadow: '2px 2px 0 #000',
@@ -837,7 +837,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
               </div>
               <button
                 onClick={finishLesson}
-                style={{ padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
+                style={{ padding: '6px 0', fontFamily: 'var(--font-comic)', fontWeight: 900,
                   fontSize: 12, border: '2.5px solid #7f1d1d', borderRadius: 8, cursor: 'pointer',
                   background: '#450a0a', color: '#fca5a5', boxShadow: '2px 2px 0 #7f1d1d' }}>
                 ✕ Sair da Aula
@@ -852,7 +852,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                 const on = activeTab === tab;
                 return (
                   <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                    flex: 1, padding: '6px 0', fontFamily: "'Comic Sans MS',cursive", fontWeight: 900,
+                    flex: 1, padding: '6px 0', fontFamily: 'var(--font-comic)', fontWeight: 900,
                     fontSize: 12, cursor: 'pointer', borderRadius: '8px 8px 0 0',
                     border: `2px solid ${color}`,
                     background: on ? '#2563eb' : '#fff',
@@ -867,7 +867,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
             {/* Aba Linguagem: laboratório do GABARITO estático (histórico isolado) */}
             {activeTab === 'linguagem' && (
               <>
-                <div style={{ padding: '6px 10px 0', fontFamily: "'Comic Sans MS',cursive",
+                <div style={{ padding: '6px 10px 0', fontFamily: 'var(--font-comic)',
                   fontSize: 11, fontWeight: 900, color: '#2563eb' }}>
                   📋 Objetivo: Entrada ({(level.alphabet ?? []).join(',')}) → Saída esperada
                 </div>
@@ -885,7 +885,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                     style={{ opacity: linguagemTests.length === 0 && simWord === '' ? 0.5 : 1 }}>🧹</button>
                 </div>
                 {inputError && (
-                  <div style={{ padding: '3px 10px 4px', fontFamily: "'Comic Sans MS',cursive",
+                  <div style={{ padding: '3px 10px 4px', fontFamily: 'var(--font-comic)',
                     fontSize: 11, fontWeight: 900, color: '#dc2626' }}>
                     ⛔ {inputError}
                   </div>
@@ -898,7 +898,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                         {['Entrada', 'Saída esperada'].map(h => (
                           <th key={h} style={{ border: '1.5px solid #2563eb', padding: '3px 4px',
                             background: '#dbeafe', color: '#1e3a8a',
-                            fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{h}</th>
+                            fontFamily: 'var(--font-comic)', fontSize: 11 }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -906,21 +906,21 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                       {linguagemTests.map((t, i) => (
                         <tr key={`l${i}`} style={{ background: i % 2 === 0 ? '#f0f9ff' : '#fff' }}>
                           <td style={{ border: '1.5px solid #bfdbfe', padding: '3px 6px', textAlign: 'center',
-                            fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, color: '#111' }}>
+                            fontFamily: 'var(--font-comic)', fontWeight: 900, color: '#111' }}>
                             {t.word === '' ? 'λ' : t.word}
                           </td>
                           <td style={{ border: '1.5px solid #bfdbfe', padding: '3px 6px', textAlign: 'center' }}>
                             {t.status === 'ACCEPTED'
-                              ? <b style={{ color: '#1d4ed8', fontFamily: "'Comic Sans MS',cursive" }}>{t.output === '' ? 'λ' : t.output}</b>
+                              ? <b style={{ color: '#1d4ed8', fontFamily: 'var(--font-comic)' }}>{t.output === '' ? 'λ' : t.output}</b>
                               : <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: 4,
                                   background: '#dc2626', color: '#fff', fontSize: 10, fontWeight: 900,
-                                  fontFamily: "'Comic Sans MS',cursive" }}>REJEITADA</span>}
+                                  fontFamily: 'var(--font-comic)' }}>REJEITADA</span>}
                           </td>
                         </tr>
                       ))}
                       {linguagemTests.length === 0 && (
                         <tr><td colSpan={2} style={{ border: '1.5px solid #bfdbfe', padding: 8,
-                          textAlign: 'center', color: '#9ca3af', fontFamily: "'Comic Sans MS',cursive",
+                          textAlign: 'center', color: '#9ca3af', fontFamily: 'var(--font-comic)',
                           fontSize: 11 }}>Nenhum teste ainda</td></tr>
                       )}
                     </tbody>
@@ -932,7 +932,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
             {/* Aba Desenho: laboratório do SIMULADOR (histórico isolado, grafo atual) */}
             {activeTab === 'desenho' && (
               <>
-                <div style={{ padding: '6px 10px 0', fontFamily: "'Comic Sans MS',cursive",
+                <div style={{ padding: '6px 10px 0', fontFamily: 'var(--font-comic)',
                   fontSize: 11, fontWeight: 900, color: '#16a34a' }}>
                   ✏ Saída da SUA máquina (testada no grafo atual)
                 </div>
@@ -950,7 +950,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                     style={{ opacity: desenhoTests.length === 0 && simWord === '' ? 0.5 : 1 }}>🧹</button>
                 </div>
                 {inputError && (
-                  <div style={{ padding: '3px 10px 4px', fontFamily: "'Comic Sans MS',cursive",
+                  <div style={{ padding: '3px 10px 4px', fontFamily: 'var(--font-comic)',
                     fontSize: 11, fontWeight: 900, color: '#dc2626' }}>
                     ⛔ {inputError}
                   </div>
@@ -963,7 +963,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                         {['Entrada', 'Saída gerada'].map(h => (
                           <th key={h} style={{ border: '1.5px solid #16a34a', padding: '3px 4px',
                             background: '#dcfce7', color: '#14532d',
-                            fontFamily: "'Comic Sans MS',cursive", fontSize: 11 }}>{h}</th>
+                            fontFamily: 'var(--font-comic)', fontSize: 11 }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -971,15 +971,15 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                       {desenhoTests.map((t, i) => (
                         <tr key={`d${i}`} style={{ background: i % 2 === 0 ? '#f0fdf4' : '#fff' }}>
                           <td style={{ border: '1.5px solid #bbf7d0', padding: '3px 6px', textAlign: 'center',
-                            fontFamily: "'Comic Sans MS',cursive", fontWeight: 900, color: '#111' }}>
+                            fontFamily: 'var(--font-comic)', fontWeight: 900, color: '#111' }}>
                             {t.word === '' ? 'λ' : t.word}
                           </td>
                           <td style={{ border: '1.5px solid #bbf7d0', padding: '3px 6px', textAlign: 'center' }}>
                             {t.status === 'ACCEPTED'
-                              ? <b style={{ color: '#15803d', fontFamily: "'Comic Sans MS',cursive" }}>{t.output}</b>
+                              ? <b style={{ color: '#15803d', fontFamily: 'var(--font-comic)' }}>{t.output}</b>
                               : <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: 4,
                                   background: '#dc2626', color: '#fff', fontSize: 10, fontWeight: 900,
-                                  fontFamily: "'Comic Sans MS',cursive" }}>
+                                  fontFamily: 'var(--font-comic)' }}>
                                   {t.status === 'LOOP' ? 'ERRO' : 'REJEITADA'}
                                 </span>}
                           </td>
@@ -987,7 +987,7 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
                       ))}
                       {desenhoTests.length === 0 && (
                         <tr><td colSpan={2} style={{ border: '1.5px solid #bbf7d0', padding: 8,
-                          textAlign: 'center', color: '#9ca3af', fontFamily: "'Comic Sans MS',cursive",
+                          textAlign: 'center', color: '#9ca3af', fontFamily: 'var(--font-comic)',
                           fontSize: 11 }}>Nenhum teste ainda</td></tr>
                       )}
                     </tbody>

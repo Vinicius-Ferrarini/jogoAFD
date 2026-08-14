@@ -37,7 +37,7 @@ export default function APBlackboardPanel({
         </ul>
 
         {phase === 'FORMAL' && (
-          <p style={{ color: '#9ca3af', fontSize: 11, marginTop: 8, fontFamily: "'Comic Sans MS', cursive" }}>
+          <p style={{ color: '#9ca3af', fontSize: 11, marginTop: 8, fontFamily: 'var(--font-comic)' }}>
             👈 Veja o painel à esquerda preencher a tupla e a função δ a partir do grafo.
           </p>
         )}
