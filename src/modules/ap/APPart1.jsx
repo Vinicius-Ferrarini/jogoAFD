@@ -25,7 +25,7 @@ import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
 import { logEvent } from '../../services/telemetry';
 
-export default function APPart1({ onBack, progress, updateProgress }) {
+export default function APPart1({ onBack, progress, updateProgress, forceLevelId }) {
   // ── Toast (mesmo padrão do AFD1: local, ignora o showToast no-op do App.jsx) ─
   const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
   const toastRef = useRef(null);
@@ -250,6 +250,20 @@ export default function APPart1({ onBack, progress, updateProgress }) {
     const next = AP_LEVELS[idx + dir];
     if (next) loadLevel(next);
   }, [level, loadLevel]);
+
+  // ── Modo forçado (ex.: Boss/Trabalho): pula o menu interno e entra direto
+  // no nível indicado. Só roda uma vez ao montar — o componente é remontado
+  // (key diferente) a cada troca de exercício dentro do Boss. loadLevel faz
+  // muitos setState (reset completo do tabuleiro) — não dá pra virar
+  // inicializador de useState sem duplicar toda a lógica de reset; supressão
+  // intencional.
+  useEffect(() => {
+    if (forceLevelId == null) return;
+    const lv = AP_LEVELS.find(l => l.id === forceLevelId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (lv) loadLevel(lv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const pickMode = (m) => { setMode(m); setConnectingSource(null); };
 
@@ -505,10 +519,10 @@ export default function APPart1({ onBack, progress, updateProgress }) {
         diffColor={DIFF_COLOR[level.level] ?? '#fff'}
         stars={stars}
         starsMax={3}
-        isFirst={apIdx === 0}
-        isLast={apIdx === AP_LEVELS.length - 1}
+        isFirst={forceLevelId != null || apIdx === 0}
+        isLast={forceLevelId != null || apIdx === AP_LEVELS.length - 1}
         toggleSidebar={() => setFormalOpen(o => !o)}
-        onBack={() => setScreen('MENU')}
+        onBack={forceLevelId != null ? onBack : () => setScreen('MENU')}
         onPrevLevel={() => goLevel(-1)}
         onNextLevel={() => goLevel(1)}
         hasLesson={lesson.hasLesson}
@@ -726,12 +740,12 @@ export default function APPart1({ onBack, progress, updateProgress }) {
       {victory && (
         <EndScreen
           currentLevelId={level.id}
-          nextLevel={nextAp}
+          nextLevel={forceLevelId != null ? null : nextAp}
           message={`Parabéns! Você dominou ${level.label}: ${level.language}. ⭐⭐⭐`}
           balloon={{ width: 320, height: 220, marginTop: -150 }}
           textStyle={{ padding: '20px 38px 52px', fontSize: 15 }}
           nextPrefix="Próximo: "
-          onMenu={() => { setVictory(false); setScreen('MENU'); }}
+          onMenu={() => { setVictory(false); forceLevelId != null ? onBack() : setScreen('MENU'); }}
           onNext={(lv) => loadLevel(lv)}
         />
       )}

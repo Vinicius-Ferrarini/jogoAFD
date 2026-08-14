@@ -92,8 +92,16 @@ function LevelList({ progress, onSelect, onBack }) {
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-export default function AFDPart2({ onBack, showToast }) {
-  const [selectedLevel, setSelectedLevel] = useState(null);
+// forceLevelId (opcional, ex.: Boss/Trabalho): pula a LevelList e entra direto
+// no exercício indicado. Nesse modo, `progress`/`updateProgress` recebidos por
+// prop SUBSTITUEM o par p2Progress/updateP2Progress interno (que fica isolado
+// em turinglab_progress_p2) — o chamador (Boss) controla a chave de gravação.
+export default function AFDPart2({ onBack, showToast, forceLevelId, progress: externalProgress, updateProgress: externalUpdateProgress }) {
+  // forceLevelId vira o estado inicial diretamente (sem useEffect) — evita
+  // uma renderização extra em MENU antes de entrar no exercício.
+  const [selectedLevel, setSelectedLevel] = useState(() =>
+    forceLevelId != null ? (GAME_LEVELS.find(l => l.id === forceLevelId) ?? null) : null
+  );
   const [p2Progress,    setP2Progress]    = useState(getP2Progress);
 
   const updateP2Progress = useCallback((levelId, stars) => {
@@ -106,16 +114,21 @@ export default function AFDPart2({ onBack, showToast }) {
     });
   }, []);
 
+  const isForced = forceLevelId != null;
+  const activeProgress = isForced ? (externalProgress ?? {}) : p2Progress;
+  const activeUpdateProgress = isForced ? externalUpdateProgress : updateP2Progress;
+
   if (selectedLevel) {
     return (
       <ExerciseScreen
         key={selectedLevel.id}
         level={selectedLevel}
-        progress={p2Progress}
-        updateProgress={updateP2Progress}
+        progress={activeProgress}
+        updateProgress={activeUpdateProgress}
         showToast={showToast}
-        onBack={() => setSelectedLevel(null)}
-        onNext={lvl => setSelectedLevel(lvl)}
+        forced={isForced}
+        onBack={isForced ? onBack : () => setSelectedLevel(null)}
+        onNext={lvl => isForced ? onBack() : setSelectedLevel(lvl)}
         onPrev={lvl => setSelectedLevel(lvl)}
       />
     );

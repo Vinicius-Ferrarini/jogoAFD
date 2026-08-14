@@ -76,7 +76,12 @@ export default function MainMenu({ onStart, progress, onFeedback, feedbackRespon
     catch { return {}; }
   })();
   const p2Earned   = AVAILABLE_AFD_LEVEL_IDS.reduce((s, id) => s + (p2Progress[id]?.stars || 0), 0);
-  const totalStars = Object.values(progress).reduce((sum, p) => sum + (p.stars || 0), 0) + p2Earned;
+  // Chaves do Boss (ex.: 'boss-trabalho-1') têm progresso PRÓPRIO, à parte do
+  // total geral da Home — GRAND_MAX_STARS não as inclui, então precisam ser
+  // excluídas daqui também (senão o numerador infla sem o denominador correspondente).
+  const totalStars = Object.entries(progress)
+    .filter(([key]) => !key.startsWith('boss-'))
+    .reduce((sum, [, p]) => sum + (p.stars || 0), 0) + p2Earned;
   const maxStars   = GRAND_MAX_STARS;
 
   return (

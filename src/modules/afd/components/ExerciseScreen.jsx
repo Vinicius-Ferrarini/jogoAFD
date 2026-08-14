@@ -24,7 +24,10 @@ const navBtnStyle = {
 };
 const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none' };
 
-export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev }) {
+// forced (opcional, ex.: Boss/Trabalho): suprime a navegação prev/next entre
+// TODOS os níveis do AFD (calculada aqui via GAME_LEVELS) — dentro do Boss só
+// faz sentido voltar pra grade do Boss, não pular pro L59/L57 do AFD normal.
+export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev, forced = false }) {
   const graph = LEVEL_GRAPHS[level.id];
 
   // .p2-svg-box raramente tem a mesma proporção 580:340 do viewBox default —
@@ -184,12 +187,14 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
   const stars    = progress[level.id]?.stars || 0;
   const levelIdx = GAME_LEVELS.findIndex(l => l.id === level.id);
   let prevLevel = null;
-  for (let i = levelIdx - 1; i >= 0; i--) {
-    if (!HIDDEN_LEVELS.has(GAME_LEVELS[i].id) && !UNAVAILABLE_LEVELS_P2_ONLY.has(GAME_LEVELS[i].id)) { prevLevel = GAME_LEVELS[i]; break; }
-  }
   let nextLevel = null;
-  for (let i = levelIdx + 1; i < GAME_LEVELS.length; i++) {
-    if (!HIDDEN_LEVELS.has(GAME_LEVELS[i].id) && !UNAVAILABLE_LEVELS_P2_ONLY.has(GAME_LEVELS[i].id)) { nextLevel = GAME_LEVELS[i]; break; }
+  if (!forced) {
+    for (let i = levelIdx - 1; i >= 0; i--) {
+      if (!HIDDEN_LEVELS.has(GAME_LEVELS[i].id) && !UNAVAILABLE_LEVELS_P2_ONLY.has(GAME_LEVELS[i].id)) { prevLevel = GAME_LEVELS[i]; break; }
+    }
+    for (let i = levelIdx + 1; i < GAME_LEVELS.length; i++) {
+      if (!HIDDEN_LEVELS.has(GAME_LEVELS[i].id) && !UNAVAILABLE_LEVELS_P2_ONLY.has(GAME_LEVELS[i].id)) { nextLevel = GAME_LEVELS[i]; break; }
+    }
   }
 
   const handleAddSimWord = useCallback(() => {

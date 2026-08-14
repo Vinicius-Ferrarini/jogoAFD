@@ -12,6 +12,7 @@ import LoadingScreen from './components/LoadingScreen';
 import { LEVEL_IDS, UNAVAILABLE_LEVELS, UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS, LEVEL_DIFFICULTY } from './levels';
 import { EXERCISES } from './modules/afd/afdMinimizerExercises';
 import { MT_RECON_LEVEL_IDS, MT_LEVEL_IDS } from './levels_data/mt-ids.js';
+import { BOSS_TRABALHO_EXERCISES } from './modules/boss/bossTrabalhoExercises.js';
 import {
   logEvent, hasConsent,
   hasFeedbackShownOnce, markFeedbackShownOnce, hasFeedbackResponded,
@@ -22,6 +23,7 @@ const AFDMinimizer = lazy(() => import('./modules/afd/AFDMinimizer'));
 const APPart1     = lazy(() => import('./modules/ap/APPart1'));
 const MTPart1     = lazy(() => import('./modules/mt/MTPart1'));
 const MTReconPart1 = lazy(() => import('./modules/mt-recon/MTReconPart1'));
+const BossTrabalho = lazy(() => import('./modules/boss/BossTrabalho'));
 
 // Módulos com uma ÚNICA atividade pulam a tela de submódulos e vão direto ao jogo
 // (ex.: AP só tem "Autômato com Pilha" — não faz sentido escolher pilha 2x).
@@ -166,6 +168,7 @@ export default function App() {
           case 'ap-pilha':  return <APPart1  {...moduleProps} onBack={goModules} />;
           case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={() => goSubmodule('mt')} />;
           case 'mt-recon':  return <MTReconPart1 {...moduleProps} onBack={() => goSubmodule('mt')} />;
+          case 'boss-trabalho': return <BossTrabalho {...moduleProps} onBack={() => goSubmodule('desafio')} />;
           default:          return <div>Módulo não encontrado</div>;
         }
       })();
@@ -206,7 +209,7 @@ function ModuleSelection({ onSelectModule, onBack, onFeedback, feedbackResponded
     { id: 'mt',      badge: 'MT',    label: 'Máquinas de Turing',   icon: '⚙️', color: '#f97316',
       desc: 'Modelos Reconhecedora e Transdutora' },
     { id: 'desafio', badge: 'BOSS',  label: 'Desafio de Prova',     icon: '🏆', color: '#f87171',
-      desc: 'Enfrente questões da última prova como desafio final', locked: true },
+      desc: 'Enfrente questões da última prova como desafio final' },
   ];
 
   return (
@@ -288,6 +291,8 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
   const mtReconEarned = MT_RECON_LEVEL_IDS.reduce((s, id) => s + (progress[`mt-recon-${id}`]?.stars || 0), 0);
   const mtTransTotal  = MT_LEVEL_IDS.length * 3;
   const mtTransEarned = MT_LEVEL_IDS.reduce((s, id) => s + (progress[`mt-trans-${id}`]?.stars || 0), 0);
+  const bossTrabalhoTotal  = BOSS_TRABALHO_EXERCISES.length * 3;
+  const bossTrabalhoEarned = BOSS_TRABALHO_EXERCISES.reduce((s, ex) => s + (progress[`boss-trabalho-${ex.bossId}`]?.stars || 0), 0);
 
   const submodules = {
     afd: [
@@ -307,12 +312,21 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
       { id: 'mt-trans', icon: '🔄', label: 'Transdutora',   desc: 'Desenhe a MT e valide', color: '#fed7aa',
         earned: mtTransEarned, total: mtTransTotal },
     ],
+    desafio: [
+      { id: 'boss-trabalho', icon: '📝', label: 'Trabalho',
+        desc: '5 exercícios já vistos, numa grade própria', color: '#fecaca',
+        earned: bossTrabalhoEarned, total: bossTrabalhoTotal },
+      { id: 'boss-prova', icon: '🎓', label: 'Prova',
+        desc: 'Questões da última prova como desafio final', color: '#e5e7eb',
+        locked: true },
+    ],
   };
 
   const MOD_META = {
     afd: { label: 'Autômatos Finitos',   icon: '🤖', color: '#60a5fa' },
     ap:  { label: 'Autômatos com Pilha', icon: '📚', color: '#a78bfa' },
     mt:  { label: 'Máquinas de Turing',  icon: '⚙️', color: '#f97316' },
+    desafio: { label: 'Desafio de Prova', icon: '🏆', color: '#f87171' },
   };
   const meta    = MOD_META[moduleId] || { label: moduleId, icon: '❓', color: '#ccc' };
   const current = submodules[moduleId] || [];

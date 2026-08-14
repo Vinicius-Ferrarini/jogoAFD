@@ -52,7 +52,7 @@ export function traceWord(nodes, transitions, word) {
 }
 
 // ─── App Principal ────────────────────────────────────────────────────────────
-export default function AFDPart1({ onBack, progress, updateProgress }) {
+export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId }) {
 
 
   // ── Toast ──────────────────────────────────────────────────────────────────
@@ -294,6 +294,19 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     userTransitionsSnapshot.current = null;
     isTableFocusedRef.current = false;
   }, [resetHistory, resetDraw, resetZoom]);
+
+  // ── Modo forçado (ex.: Boss/Trabalho): pula o menu interno e entra direto
+  // no nível indicado. Só roda uma vez ao montar — o componente é remontado
+  // (key diferente) a cada troca de exercício dentro do Boss. loadLevel faz
+  // >15 setState (reset completo do tabuleiro) — não dá pra virar inicializador
+  // de useState sem duplicar toda a lógica de reset; supressão intencional.
+  useEffect(() => {
+    if (forceLevelId == null) return;
+    const level = GAME_LEVELS.find(l => l.id === forceLevelId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (level) loadLevel(level);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Navegação entre fases (pula fases indisponíveis) ──────────────────────
   const handlePrevLevel = useCallback(() => {
@@ -540,10 +553,10 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         progress={progress}
         diffColor={DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff'}
         starsMax={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3}
-        isFirst={GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === 0}
-        isLast={GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === GAME_LEVELS.length - 1}
+        isFirst={forceLevelId != null || GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === 0}
+        isLast={forceLevelId != null || GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === GAME_LEVELS.length - 1}
         toggleSidebar={toggleSidebar}
-        onBack={() => setTela('MENU')}
+        onBack={forceLevelId != null ? onBack : () => setTela('MENU')}
         onPrevLevel={handlePrevLevel}
         onNextLevel={handleNextLevel}
         onStartLesson={() => {
@@ -757,13 +770,14 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       {showImpossibleScreen && (
         <EndScreen
           currentLevelId={currentLevel?.id}
+          nextLevel={forceLevelId != null ? null : undefined}
           message={currentLevel?.wordOnly
             ? (currentLevel?.successMsg || 'Muito bem! Fase concluída.')
             : 'Este exercício é impossível de resolver com AFD! Com AP nós vamos resolvê-lo! 🚫🔄'}
           balloon={{ width: 320, height: 220, marginTop: -150 }}
           textStyle={{ padding: '20px 38px 52px', fontSize: 15 }}
           nextPrefix="Entendido! Próxima: "
-          onMenu={() => { setShowImpossibleScreen(false); setTela('MENU'); }}
+          onMenu={() => { setShowImpossibleScreen(false); forceLevelId != null ? onBack() : setTela('MENU'); }}
           onNext={next => { setShowImpossibleScreen(false); loadLevel(next); }}
         />
       )}
@@ -772,11 +786,12 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
       {showVictoryScreen && (
         <EndScreen
           currentLevelId={currentLevel?.id}
+          nextLevel={forceLevelId != null ? null : undefined}
           message={currentLevel?.successMsg || 'Parabéns, você dominou esta linguagem!'}
           balloon={{ width: 300, height: 210, marginTop: -140 }}
           textStyle={{ padding: '18px 36px 48px', fontSize: 17 }}
           nextPrefix="Próxima: "
-          onMenu={() => { setShowVictoryScreen(false); setTela('MENU'); }}
+          onMenu={() => { setShowVictoryScreen(false); forceLevelId != null ? onBack() : setTela('MENU'); }}
           onNext={next => { setShowVictoryScreen(false); loadLevel(next); }}
         />
       )}
