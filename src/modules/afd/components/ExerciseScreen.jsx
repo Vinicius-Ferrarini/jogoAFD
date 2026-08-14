@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { LEVEL_GRAPHS } from '../../../levels_graphs';
-import { UNAVAILABLE_LEVELS, LEVEL_DIFFICULTY } from '../../../levels';
+import { UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS, LEVEL_DIFFICULTY } from '../../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
 import { logEvent } from '../../../services/telemetry';
 import { SvgStars } from '../SvgStar';
@@ -185,11 +185,11 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
   const levelIdx = GAME_LEVELS.findIndex(l => l.id === level.id);
   let prevLevel = null;
   for (let i = levelIdx - 1; i >= 0; i--) {
-    if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { prevLevel = GAME_LEVELS[i]; break; }
+    if (!HIDDEN_LEVELS.has(GAME_LEVELS[i].id) && !UNAVAILABLE_LEVELS_P2_ONLY.has(GAME_LEVELS[i].id)) { prevLevel = GAME_LEVELS[i]; break; }
   }
   let nextLevel = null;
   for (let i = levelIdx + 1; i < GAME_LEVELS.length; i++) {
-    if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { nextLevel = GAME_LEVELS[i]; break; }
+    if (!HIDDEN_LEVELS.has(GAME_LEVELS[i].id) && !UNAVAILABLE_LEVELS_P2_ONLY.has(GAME_LEVELS[i].id)) { nextLevel = GAME_LEVELS[i]; break; }
   }
 
   const handleAddSimWord = useCallback(() => {

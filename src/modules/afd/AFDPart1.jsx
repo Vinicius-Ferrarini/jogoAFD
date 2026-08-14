@@ -11,11 +11,12 @@ import BlackboardPanel from './components/BlackboardPanel';
 import FooterDeck from './components/FooterDeck';
 import CanvasArea from './components/CanvasArea';
 import EndScreen from './components/EndScreen';
+import L14ImpossibleExplanation from './components/L14ImpossibleExplanation';
 import useHistory from './hooks/useHistory';
 import useGuidedLesson from './hooks/useGuidedLesson';
 import useAFDGraph, { lvlAccepts, validateAFDPure } from './hooks/useAFDGraph';
 import useCanvasState from './hooks/useCanvasState';
-import { UNAVAILABLE_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
+import { UNAVAILABLE_LEVELS, HIDDEN_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../levels_data/afd/index.js';
 import { logEvent } from '../../services/telemetry';
 
@@ -104,6 +105,7 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
   const [professorMessage, setProfessorMessage] = useState('');
   const [showVictoryScreen, setShowVictoryScreen]     = useState(false);
   const [showImpossibleScreen, setShowImpossibleScreen] = useState(false);
+  const [showImpossibleExplanation, setShowImpossibleExplanation] = useState(false);
   const isTableFocusedRef = useRef(false);
   const tableBlurTimeoutRef = useRef(null);
 
@@ -298,14 +300,14 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     if (!currentLevel) return;
     const idx = GAME_LEVELS.findIndex(l => l.id === currentLevel.id);
     for (let i = idx - 1; i >= 0; i--)
-      if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { loadLevel(GAME_LEVELS[i]); return; }
+      if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id) && !HIDDEN_LEVELS.has(GAME_LEVELS[i].id)) { loadLevel(GAME_LEVELS[i]); return; }
   }, [currentLevel, loadLevel]);
 
   const handleNextLevel = useCallback(() => {
     if (!currentLevel) return;
     const idx = GAME_LEVELS.findIndex(l => l.id === currentLevel.id);
     for (let i = idx + 1; i < GAME_LEVELS.length; i++)
-      if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id)) { loadLevel(GAME_LEVELS[i]); return; }
+      if (!UNAVAILABLE_LEVELS.has(GAME_LEVELS[i].id) && !HIDDEN_LEVELS.has(GAME_LEVELS[i].id)) { loadLevel(GAME_LEVELS[i]); return; }
   }, [currentLevel, loadLevel]);
 
   // Abre o painel lateral automaticamente ao entrar na fase FORMAL da aula.
@@ -358,7 +360,9 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
     if (isShortest) {
       if (!isDrawingUnlocked) {
         updateProgress(currentLevel.id, 1, phaseExtras('descoberta_palavra'));
-        if (currentLevel.impossible || currentLevel.wordOnly) {
+        if (currentLevel.impossible && currentLevel.impossibleSteps?.length) {
+          setShowImpossibleExplanation(true);
+        } else if (currentLevel.impossible || currentLevel.wordOnly) {
           setShowImpossibleScreen(true);
         } else {
         setIsDrawingUnlocked(true);
@@ -740,6 +744,14 @@ export default function AFDPart1({ onBack, progress, updateProgress }) {
         onDeckNodeDrop={handleDeckNodeDrop}
         onDeckNodeDragCancel={handleDeckNodeDragCancel}
       />
+
+      {/* ── Explicação em passos (L14): por que é impossível em AFD ── */}
+      {showImpossibleExplanation && (
+        <L14ImpossibleExplanation
+          steps={currentLevel.impossibleSteps}
+          onClose={() => { setShowImpossibleExplanation(false); setShowImpossibleScreen(true); }}
+        />
+      )}
 
       {/* ── Tela Impossível ── */}
       {showImpossibleScreen && (

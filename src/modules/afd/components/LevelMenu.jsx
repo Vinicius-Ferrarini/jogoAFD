@@ -2,15 +2,16 @@
 // Paginação 20/página, progresso de estrelas e legenda de dificuldade.
 // CSS: .menu-screen / .levels-grid / .menu-btn em AFDPart1.css.
 import { SvgStars, DifficultyLegend } from '../SvgStar';
-import { LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../../levels';
+import { LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS, HIDDEN_LEVELS } from '../../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
 
 export default function LevelMenu({ progress, currentPage, setCurrentPage, onBack, onSelect }) {
-  const maxStars    = GAME_LEVELS.reduce((a, l) => a + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : (l.impossible || l.wordOnly ? 1 : 3)), 0);
-  const totalStars  = GAME_LEVELS.reduce((a, l) => a + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : (progress[l.id]?.stars || 0)), 0);
+  const visibleLevels = GAME_LEVELS.filter(l => !HIDDEN_LEVELS.has(l.id));
+  const maxStars    = visibleLevels.reduce((a, l) => a + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : (l.impossible || l.wordOnly ? 1 : 3)), 0);
+  const totalStars  = visibleLevels.reduce((a, l) => a + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : (progress[l.id]?.stars || 0)), 0);
   const perPage     = 20;
-  const totalPages  = Math.ceil(GAME_LEVELS.length / perPage);
-  const pageItems   = GAME_LEVELS.slice((currentPage - 1) * perPage, currentPage * perPage);
+  const totalPages  = Math.ceil(visibleLevels.length / perPage);
+  const pageItems   = visibleLevels.slice((currentPage - 1) * perPage, currentPage * perPage);
 
   return (
     <div className="menu-screen menu-screen-fases" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>

@@ -9,7 +9,23 @@ export const DIFF_COLOR = { easy: '#4ade80', medium: '#facc15', hard: '#f87171',
 // Fases temporariamente INDISPONÍVEIS (complexas de implementar/explicar). Não
 // são clicáveis, não mostram estrelas e não contam no total. Para reativar uma
 // fase, basta removê-la deste conjunto. Vale para AFD_1 (fases) e AFD_2 (exercícios).
-export const UNAVAILABLE_LEVELS = new Set([1, 2, 3, 4, 14]);
+export const UNAVAILABLE_LEVELS = new Set([]);
+
+// Fases OCULTAS (não apenas bloqueadas — não renderizam botão nenhum na grade,
+// como se não existissem). L01-L04 são exercícios básicos demais: implementá-los
+// exigiria ajustar a progressão/numeração de vários outros níveis só por causa
+// deles, sem ganho pedagógico proporcional ao tempo gasto. Vale para AFD_1 e
+// AFD_2 — a numeração dos demais níveis (L05 em diante) não muda, pois o label
+// de cada nível já vem fixo do próprio arquivo (filtrar antes da paginação
+// resolve sozinho, sem precisar renomear nada).
+export const HIDDEN_LEVELS = new Set([1, 2, 3, 4]);
+
+// L14 (|w|a = |w|b) é comprovadamente impossível em AFD — não existe grafo
+// correto pra mostrar num exercício de "dado o grafo, identifique a linguagem".
+// Por isso fica jogável em AFD_1 (onde o aluno tenta construir e recebe uma
+// explicação de por que é impossível — ver L14.js) mas continua bloqueada em
+// AFD_2, que dependeria de um grafo válido que não existe.
+export const UNAVAILABLE_LEVELS_P2_ONLY = new Set([14]);
 
 export const LEVEL_DIFFICULTY = {
    1:'easy',  2:'easy',  3:'easy',  4:'easy',  5:'easy',

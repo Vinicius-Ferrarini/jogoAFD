@@ -8,6 +8,81 @@ export default { id: 14, label: "L14", formula: "L = {w ∈ {a,b}* / |w|a = |w|b
         'Tente construir mesmo assim. Sentir os limites do AFD é a melhor aula de teoria!',
       ] },
     },
+    // Explicação em passos mostrada na tela de vitória (1 estrela) do L14 em
+    // AFD_1 — ver `L14ImpossibleExplanation.jsx` (renderiza via TutorialModal +
+    // GraphView, sem entrar no pipeline do Modo Aula: o último "passo" nunca é
+    // um AFD válido/completo, então a fase FORMAL automática de
+    // useGuidedLesson.js não se aplica aqui). Roteiro próprio, diferente do
+    // `guidedLesson` acima (que é sobre a^k b^k) — aqui o crescimento é por
+    // ramificação (ab / ba) para reforçar visualmente que CADA par novo de
+    // estados exige mais dois estados, sem nunca fechar o ciclo.
+    impossibleSteps: [
+      { text: 'Vamos tentar construir um AFD para <b>|w|a = |w|b</b> mesmo assim — e ver onde ele quebra.<br/>Começando pelo básico: <b>λ</b> (palavra vazia) tem 0 "a"s e 0 "b"s, então é aceita. q0 é inicial <u>e</u> final.',
+        nodes: [
+          { id: 'q0', label: 'q0', x: 50, y: 50, isInitial: true, isFinal: true },
+        ],
+        transitions: [] },
+      { text: 'Agora "ab" e "ba" também precisam ser aceitas. Cada uma pede um caminho próprio: q0→q1→qF (para "ab") e q0→q2→qF (para "ba").',
+        nodes: [
+          { id: 'q0', label: 'q0', x: 50, y: 50, isInitial: true, isFinal: true },
+          { id: 'q1', label: 'q1', x: 20, y: 15, isInitial: false, isFinal: false },
+          { id: 'q2', label: 'q2', x: 80, y: 15, isInitial: false, isFinal: false },
+          { id: 'qF', label: 'qF', x: 50, y: 85, isInitial: false, isFinal: true },
+        ],
+        transitions: [
+          { from: 'q0', to: 'q1', symbol: 'a' },
+          { from: 'q1', to: 'qF', symbol: 'b' },
+          { from: 'q0', to: 'q2', symbol: 'b' },
+          { from: 'q2', to: 'qF', symbol: 'a' },
+        ] },
+      { text: 'Mas "aabb" e "baba" existem também! Cada lado precisa crescer mais um passo: q1→q3→q1 (mais "a"s pendentes) e q2→q4→q2 (mais "b"s pendentes).',
+        nodes: [
+          { id: 'q0', label: 'q0', x: 50, y: 8, isInitial: true, isFinal: true },
+          { id: 'q1', label: 'q1', x: 15, y: 30, isInitial: false, isFinal: false },
+          { id: 'q2', label: 'q2', x: 85, y: 30, isInitial: false, isFinal: false },
+          { id: 'q3', label: 'q3', x: 5,  y: 60, isInitial: false, isFinal: false },
+          { id: 'q4', label: 'q4', x: 95, y: 60, isInitial: false, isFinal: false },
+          { id: 'qF', label: 'qF', x: 50, y: 55, isInitial: false, isFinal: true },
+        ],
+        transitions: [
+          { from: 'q0', to: 'q1', symbol: 'a' },
+          { from: 'q1', to: 'qF', symbol: 'b' },
+          { from: 'q0', to: 'q2', symbol: 'b' },
+          { from: 'q2', to: 'qF', symbol: 'a' },
+          { from: 'q1', to: 'q3', symbol: 'a' },
+          { from: 'q3', to: 'q1', symbol: 'b' },
+          { from: 'q2', to: 'q4', symbol: 'b' },
+          { from: 'q4', to: 'q2', symbol: 'a' },
+        ] },
+      { text: 'E não para por aí: "aaabbb" pede mais um par (q5, q6), "aaaabbbb" pede mais um (q7, q8)... <u>sempre</u> mais dois estados por par de "a"/"b" pendente extra.',
+        nodes: [
+          { id: 'q0', label: 'q0', x: 50, y: 5,  isInitial: true, isFinal: true },
+          { id: 'q1', label: 'q1', x: 22, y: 22, isInitial: false, isFinal: false },
+          { id: 'q2', label: 'q2', x: 78, y: 22, isInitial: false, isFinal: false },
+          { id: 'q3', label: 'q3', x: 10, y: 42, isInitial: false, isFinal: false },
+          { id: 'q4', label: 'q4', x: 90, y: 42, isInitial: false, isFinal: false },
+          { id: 'q5', label: 'q5', x: 2,  y: 62, isInitial: false, isFinal: false },
+          { id: 'q6', label: 'q6', x: 98, y: 62, isInitial: false, isFinal: false },
+          { id: 'qF', label: 'qF', x: 50, y: 48, isInitial: false, isFinal: true },
+        ],
+        transitions: [
+          { from: 'q0', to: 'q1', symbol: 'a' },
+          { from: 'q1', to: 'qF', symbol: 'b' },
+          { from: 'q0', to: 'q2', symbol: 'b' },
+          { from: 'q2', to: 'qF', symbol: 'a' },
+          { from: 'q1', to: 'q3', symbol: 'a' },
+          { from: 'q3', to: 'q1', symbol: 'b' },
+          { from: 'q2', to: 'q4', symbol: 'b' },
+          { from: 'q4', to: 'q2', symbol: 'a' },
+          { from: 'q3', to: 'q5', symbol: 'a' },
+          { from: 'q5', to: 'q3', symbol: 'b' },
+          { from: 'q4', to: 'q6', symbol: 'b' },
+          { from: 'q6', to: 'q4', symbol: 'a' },
+        ] },
+      { text: '<b>É isso.</b> Em AFD isso fica infinito, porque AFD não tem memória — só estados fixos. Não existe um número N de estados que baste: sempre dá para achar uma palavra maior que N que quebra o autômato (é o Lema do Bombeamento de novo).<br/>Esse exercício só é resolvível com <b>AP</b> (autômato com pilha) — a pilha guarda a diferença entre as contagens de "a" e "b", sem limite. A gente resolve ele lá! 🔜',
+        nodes: [],
+        transitions: [] },
+    ],
     boardWords: ['λ', 'ab', 'aabb'],
     guidedLesson: [
       { text: '<b>|w|a = |w|b</b> — quantidades iguais de "a" e "b".<br/>Vamos ver por que um AFD não consegue resolver isso!',

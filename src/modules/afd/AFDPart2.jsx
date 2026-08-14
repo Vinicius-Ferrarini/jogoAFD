@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import './AFDPart1.css';
 import './AFDPart2.css';
 import { SvgStars, DifficultyLegend } from './SvgStar';
-import { LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS } from '../../levels';
+import { LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS } from '../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../levels_data/afd/index.js';
 import ExerciseScreen from './components/ExerciseScreen';
 
@@ -18,11 +18,12 @@ function saveP2Progress(d) {
 // ── Level List ─────────────────────────────────────────────────────────────────
 function LevelList({ progress, onSelect, onBack }) {
   const [page, setPage] = useState(1);
+  const visibleLevels = GAME_LEVELS.filter(l => !HIDDEN_LEVELS.has(l.id));
   const perPage    = 20;
-  const totalPages = Math.ceil(GAME_LEVELS.length / perPage);
-  const pageItems  = GAME_LEVELS.slice((page - 1) * perPage, page * perPage);
-  const maxStars   = GAME_LEVELS.reduce((s, l) => s + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : 3), 0);
-  const totalStars = GAME_LEVELS.reduce((sum, l) => sum + (UNAVAILABLE_LEVELS.has(l.id) ? 0 : (progress[l.id]?.stars || 0)), 0);
+  const totalPages = Math.ceil(visibleLevels.length / perPage);
+  const pageItems  = visibleLevels.slice((page - 1) * perPage, page * perPage);
+  const maxStars   = visibleLevels.reduce((s, l) => s + (UNAVAILABLE_LEVELS_P2_ONLY.has(l.id) ? 0 : 3), 0);
+  const totalStars = visibleLevels.reduce((sum, l) => sum + (UNAVAILABLE_LEVELS_P2_ONLY.has(l.id) ? 0 : (progress[l.id]?.stars || 0)), 0);
 
   return (
     <div className="menu-screen menu-screen-fases" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
@@ -45,7 +46,7 @@ function LevelList({ progress, onSelect, onBack }) {
 
       <div className="levels-grid">
         {pageItems.map(lvl => {
-          if (UNAVAILABLE_LEVELS.has(lvl.id)) {
+          if (UNAVAILABLE_LEVELS_P2_ONLY.has(lvl.id)) {
             return (
               <button key={lvl.id} className="menu-btn primary" disabled
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,

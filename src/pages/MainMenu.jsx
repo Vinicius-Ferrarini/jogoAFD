@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
-import { LEVEL_IDS, UNAVAILABLE_LEVELS } from '../levels';
+import { LEVEL_IDS, UNAVAILABLE_LEVELS, UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS, LEVEL_DIFFICULTY } from '../levels';
 import FeedbackButton, { RepoButton } from '../components/FeedbackButton';
 
 const LAST_COMMIT_CACHE_KEY = 'turinglab_last_commit_cache';
@@ -57,9 +57,14 @@ function useLastCommitDate() {
   return { label, isToday };
 }
 
-const AVAILABLE_AFD_LEVEL_IDS = LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS.has(id));
-// AFD_1 e AFD_2 usam os mesmos níveis disponíveis, com progresso separado
-const P1P2_MAX_STARS    = AVAILABLE_AFD_LEVEL_IDS.length * 3 * 2;
+// AFD_1 e AFD_2 têm listas de disponíveis diferentes: L14 (impossível em AFD,
+// ver L14.js) é jogável só em AFD_1, e vale no máximo 1 estrela (não 3).
+const maxStarsFor = id => LEVEL_DIFFICULTY[id] === 'impossible' ? 1 : 3;
+const P1_LEVEL_IDS = LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS.has(id) && !HIDDEN_LEVELS.has(id));
+const AVAILABLE_AFD_LEVEL_IDS = P1_LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS_P2_ONLY.has(id)); // usado pelo somatório de estrelas de P2 abaixo
+const P1_MAX_STARS = P1_LEVEL_IDS.reduce((s, id) => s + maxStarsFor(id), 0);
+const P2_MAX_STARS = AVAILABLE_AFD_LEVEL_IDS.reduce((s, id) => s + maxStarsFor(id), 0);
+const P1P2_MAX_STARS      = P1_MAX_STARS + P2_MAX_STARS;
 const MINIMIZER_MAX_STARS = 42; // 14 exercícios × 3
 const AP_MAX_STARS        = 45; // 15 níveis × 3 (L16 impossível excluído)
 const GRAND_MAX_STARS     = P1P2_MAX_STARS + MINIMIZER_MAX_STARS + AP_MAX_STARS;

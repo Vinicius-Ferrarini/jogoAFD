@@ -8,7 +8,7 @@ import ConsentGate from './components/ConsentGate';
 import FeedbackButton from './components/FeedbackButton';
 import FeedbackModal from './components/FeedbackModal';
 import LoadingScreen from './components/LoadingScreen';
-import { LEVEL_IDS, UNAVAILABLE_LEVELS } from './levels';
+import { LEVEL_IDS, UNAVAILABLE_LEVELS, UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS, LEVEL_DIFFICULTY } from './levels';
 import { EXERCISES } from './modules/afd/afdMinimizerExercises';
 import { MT_RECON_LEVEL_IDS, MT_LEVEL_IDS } from './levels_data/mt-ids.js';
 import {
@@ -269,11 +269,17 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
     catch { return {}; }
   })();
 
-  const availableLevelIds = LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS.has(id));
-  const p1Total  = availableLevelIds.length * 3;
-  const p1Earned = availableLevelIds.reduce((s, id) => s + (progress[id]?.stars || 0), 0);
-  const p2Total  = availableLevelIds.length * 3;
-  const p2Earned = availableLevelIds.reduce((s, id) => s + (p2Progress[id]?.stars || 0), 0);
+  // AFD_1 e AFD_2 têm listas de disponíveis diferentes desde que L14 (imposível
+  // em AFD, ver L14.js) passou a ser jogável só em AFD_1: entra no total de P1,
+  // mas continua bloqueada (fora do total) em P2. O máximo por nível também não
+  // é mais fixo em 3 — L14 vale no máximo 1 estrela (LEVEL_DIFFICULTY 'impossible').
+  const maxStarsFor = id => LEVEL_DIFFICULTY[id] === 'impossible' ? 1 : 3;
+  const p1LevelIds = LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS.has(id) && !HIDDEN_LEVELS.has(id));
+  const p2LevelIds = LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS.has(id) && !HIDDEN_LEVELS.has(id) && !UNAVAILABLE_LEVELS_P2_ONLY.has(id));
+  const p1Total  = p1LevelIds.reduce((s, id) => s + maxStarsFor(id), 0);
+  const p1Earned = p1LevelIds.reduce((s, id) => s + (progress[id]?.stars || 0), 0);
+  const p2Total  = p2LevelIds.reduce((s, id) => s + maxStarsFor(id), 0);
+  const p2Earned = p2LevelIds.reduce((s, id) => s + (p2Progress[id]?.stars || 0), 0);
   const minTotal  = EXERCISES.length * 3;
   const minEarned = EXERCISES.reduce((s, ex) => s + (progress[`afd-min-${ex.id}`]?.stars || 0), 0);
   const mtReconTotal  = MT_RECON_LEVEL_IDS.length * 3;
