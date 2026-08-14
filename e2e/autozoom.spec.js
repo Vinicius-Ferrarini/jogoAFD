@@ -56,6 +56,37 @@ test.describe('Auto-zoom — cálculo do fator por largura de viewport', () => {
     expect(zoomAfterDebounce).toBe(zoomAfterSettle);
   });
 
+  // Zoom nativo do navegador (Ctrl+scroll/Ctrl+±) não dispara `resize` nem
+  // altera window.innerWidth (confirmado empiricamente via CDP
+  // Emulation.setPageScaleFactor) — por isso useAutoZoom também escuta
+  // window.visualViewport 'resize', que É disparado nesse caso. Simulamos o
+  // zoom nativo via CDP (o mesmo mecanismo por trás de Ctrl+scroll) e
+  // confirmamos que o recálculo acontece e estabiliza sem loop.
+  test('zoom nativo do navegador (via visualViewport) recalcula sem loop', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto('/');
+    await page.waitForTimeout(400);
+
+    await page.evaluate(() => {
+      window.__vvResizeCount = 0;
+      window.visualViewport.addEventListener('resize', () => { window.__vvResizeCount++; });
+    });
+
+    const client = await page.context().newCDPSession(page);
+    await client.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1.5 });
+    await page.waitForTimeout(500);
+
+    const vvCount = await page.evaluate(() => window.__vvResizeCount);
+    const zoomAfter = await page.evaluate(() => getComputedStyle(document.documentElement).zoom);
+    expect(vvCount).toBeGreaterThan(0);
+
+    await page.waitForTimeout(1000);
+    const vvCountSettled = await page.evaluate(() => window.__vvResizeCount);
+    const zoomSettled = await page.evaluate(() => getComputedStyle(document.documentElement).zoom);
+    expect(vvCountSettled).toBe(vvCount);
+    expect(zoomAfter).toBe(zoomSettled);
+  });
+
 });
 
 test.describe('Auto-zoom — página inicial permanece funcional em 1920x1080', () => {
