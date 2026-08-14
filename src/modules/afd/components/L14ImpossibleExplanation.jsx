@@ -67,19 +67,16 @@ export default function L14ImpossibleExplanation({ steps, onClose }) {
               ◀ Anterior
             </button>
           )}
-          {!isLast
-            ? (
-              <button className="menu-btn primary" style={{ padding: '11px 22px', fontSize: 15 }}
-                onClick={() => setStep(s => s + 1)}>
-                Próximo ▶
-              </button>
-            ) : (
-              <button className="menu-btn primary" style={{ padding: '11px 22px', fontSize: 15 }}
-                onClick={onClose}>
-                Entendi! ✔
-              </button>
-            )
-          }
+          {!isLast && (
+            <button className="menu-btn primary" style={{ padding: '11px 22px', fontSize: 15 }}
+              onClick={() => setStep(s => s + 1)}>
+              Próximo ▶
+            </button>
+          )}
+          <button className="menu-btn primary" style={{ padding: '11px 22px', fontSize: 15 }}
+            onClick={onClose}>
+            Entendi! ✔
+          </button>
         </div>
 
         {steps.length > 1 && (

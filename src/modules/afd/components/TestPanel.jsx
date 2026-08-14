@@ -14,7 +14,7 @@ export default function TestPanel({
         <input
           type="text"
           className="word-input"
-          placeholder={currentLevel?.shortestWord === null ? "Digite 'null'..." : "Nova palavra..."}
+          placeholder={currentLevel?.shortestWord === null ? "Digite 'vazio'..." : "Nova palavra..."}
           value={newWord}
           onChange={e => setNewWord(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleTestWord()}
