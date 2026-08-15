@@ -25,7 +25,7 @@ import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
 import { logEvent } from '../../services/telemetry';
 
-export default function APPart1({ onBack, progress, updateProgress, forceLevelId }) {
+export default function APPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel }) {
   // ── Toast (mesmo padrão do AFD1: local, ignora o showToast no-op do App.jsx) ─
   const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
   const toastRef = useRef(null);
@@ -515,7 +515,7 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
       {/* Header (compartilhado com o AFD — mesmo componente/estilo/motor) */}
       <GameHeader
         objective={level.language}
-        label={level.label}
+        label={forceLevelLabel ?? level.label}
         diffColor={DIFF_COLOR[level.level] ?? '#fff'}
         stars={stars}
         starsMax={3}

@@ -63,12 +63,16 @@ export default function useGuidedLesson(currentLevel) {
   const graphSteps = useMemo(() => currentLevel?.guidedLesson ?? [], [currentLevel]);
 
   const formalSteps = useMemo(() => {
+    // L14 (e qualquer outro nível "impossible"): o último passo do guidedLesson
+    // nunca é um AFD válido/completo (o próprio ponto da aula é mostrar que não
+    // existe um), então a fase FORMAL auto-derivada não faz sentido aqui.
+    if (currentLevel?.impossible) return [];
     if (!graphSteps.length || !currentLevel?.alphabet?.length) return [];
     const lastWithNodes = [...graphSteps].reverse()
       .find(s => s.stateUpdate?.nodes?.length > 0);
     if (!lastWithNodes) return [];
     return buildAFDFormalSteps(lastWithNodes.stateUpdate, currentLevel.alphabet);
-  }, [graphSteps, currentLevel?.alphabet]);
+  }, [graphSteps, currentLevel?.alphabet, currentLevel?.impossible]);
 
   const allSteps = useMemo(() => [...graphSteps, ...formalSteps], [graphSteps, formalSteps]);
 

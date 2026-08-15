@@ -104,18 +104,20 @@ body { color: var(--text-main); }
 }
 
 /* --- WORKSPACE (TELA DO JOGO) --- */
+/* --auto-zoom (definida por useAutoZoom.js no <html>): 100vh sempre resolve
+   contra o viewport FÍSICO, mas o zoom do <html> ainda escala visualmente
+   essa caixa — sem a divisão, 100vh×zoom > altura real do viewport sempre
+   que zoom>1, cortando o rodapé (ver comentário em useAutoZoom.js). */
 .workspace-wrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100vh / 0.9);
-  zoom: 0.9;
+  height: calc(100vh / var(--auto-zoom, 1));
   contain: layout;
 }
 
-/* --- MENU DE FASES (zoom para caber em 100% do navegador) --- */
+/* --- MENU DE FASES --- */
 .menu-screen-fases {
-  zoom: 0.9;
-  height: calc(100vh / 0.9);
+  height: calc(100vh / var(--auto-zoom, 1));
 }
 
 /* ── Barra de exemplos de palavras ── */

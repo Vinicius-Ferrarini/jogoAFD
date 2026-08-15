@@ -11,7 +11,6 @@ import BlackboardPanel from './components/BlackboardPanel';
 import FooterDeck from './components/FooterDeck';
 import CanvasArea from './components/CanvasArea';
 import EndScreen from './components/EndScreen';
-import L14ImpossibleExplanation from './components/L14ImpossibleExplanation';
 import useHistory from './hooks/useHistory';
 import useGuidedLesson from './hooks/useGuidedLesson';
 import useAFDGraph, { lvlAccepts, validateAFDPure } from './hooks/useAFDGraph';
@@ -52,7 +51,7 @@ export function traceWord(nodes, transitions, word) {
 }
 
 // ─── App Principal ────────────────────────────────────────────────────────────
-export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId }) {
+export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel }) {
 
 
   // ── Toast ──────────────────────────────────────────────────────────────────
@@ -105,7 +104,6 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
   const [professorMessage, setProfessorMessage] = useState('');
   const [showVictoryScreen, setShowVictoryScreen]     = useState(false);
   const [showImpossibleScreen, setShowImpossibleScreen] = useState(false);
-  const [showImpossibleExplanation, setShowImpossibleExplanation] = useState(false);
   const isTableFocusedRef = useRef(false);
   const tableBlurTimeoutRef = useRef(null);
 
@@ -329,6 +327,12 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
   }, [lessonPhase]);
 
   // ── Encerrar Aula Guiada (restaura snapshot do aluno) ─────────────────────
+  // isImpossibleLessonRef: marca que a aula em andamento foi a auto-aberta pelo
+  // L14 (menor palavra = λ) — nesse caso, ao fechar (✓ Fechar da lousa), em vez
+  // de só devolver o canvas ao aluno, encadeia direto para a tela de 1 estrela
+  // ("impossível/só resolve com AP"). Níveis normais nunca setam essa ref, então
+  // handleLessonFinish continua neutro para eles.
+  const isImpossibleLessonRef = useRef(false);
   const handleLessonFinish = useCallback(() => {
     setGuidedLessonStep(null);
     setIsSidebarOpen(false);
@@ -337,6 +341,10 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     setNodes(sn);
     setTransitions(st);
     resetHistory(sn, st);
+    if (isImpossibleLessonRef.current) {
+      isImpossibleLessonRef.current = false;
+      setShowImpossibleScreen(true);
+    }
   }, [setGuidedLessonStep, setNodes, setTransitions, resetHistory, userNodesSnapshot, userTransitionsSnapshot]);
 
   // ── Teste de palavra ───────────────────────────────────────────────────────
@@ -373,8 +381,14 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     if (isShortest) {
       if (!isDrawingUnlocked) {
         updateProgress(currentLevel.id, 1, phaseExtras('descoberta_palavra'));
-        if (currentLevel.impossible && currentLevel.impossibleSteps?.length) {
-          setShowImpossibleExplanation(true);
+        if (currentLevel.impossible && currentLevel.guidedLesson?.length) {
+          // L14: abre a Aula Guiada de verdade (mesmo fluxo do botão "🎓 Aula"),
+          // sem deixar desenhar — ao fechar (✓ Fechar da lousa), encadeia para
+          // a tela de 1 estrela via isImpossibleLessonRef (ver handleLessonFinish).
+          userNodesSnapshot.current = JSON.parse(JSON.stringify(nodes));
+          userTransitionsSnapshot.current = JSON.parse(JSON.stringify(transitions));
+          isImpossibleLessonRef.current = true;
+          setGuidedLessonStep(0);
         } else if (currentLevel.impossible || currentLevel.wordOnly) {
           setShowImpossibleScreen(true);
         } else {
@@ -403,7 +417,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
       setTestWords(prev => [{ word: wordDisplay, status: 'wrong' }, ...prev]);
     }
     setNewWord('');
-  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, phaseExtras]);
+  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, phaseExtras, nodes, transitions, setGuidedLessonStep, userNodesSnapshot, userTransitionsSnapshot]);
 
   const clearTests = useCallback(() => {
     setTestWords([]);
@@ -550,6 +564,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
       {/* ── Header ── */}
       <GameHeader
         currentLevel={currentLevel}
+        label={forceLevelLabel ?? currentLevel?.label}
         progress={progress}
         diffColor={DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff'}
         starsMax={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3}
@@ -757,14 +772,6 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         onDeckNodeDrop={handleDeckNodeDrop}
         onDeckNodeDragCancel={handleDeckNodeDragCancel}
       />
-
-      {/* ── Explicação em passos (L14): por que é impossível em AFD ── */}
-      {showImpossibleExplanation && (
-        <L14ImpossibleExplanation
-          steps={currentLevel.impossibleSteps}
-          onClose={() => { setShowImpossibleExplanation(false); setShowImpossibleScreen(true); }}
-        />
-      )}
 
       {/* ── Tela Impossível ── */}
       {showImpossibleScreen && (

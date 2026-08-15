@@ -13,6 +13,18 @@ const RESIZE_DEBOUNCE_MS = 180;
 // Emulation.setPageScaleFactor) que aplicar `zoom` no <html> não altera
 // window.innerWidth, então recalcular no resize não entra em loop (não
 // precisa guardar uma largura "crua" de referência).
+//
+// --auto-zoom (custom property no <html>): telas de jogo (.workspace-wrapper,
+// .menu-screen-fases) preenchem exatamente 100vh via flex, sem nenhuma folga
+// vertical. `vh` sempre resolve contra o viewport FÍSICO (não é afetado pelo
+// zoom do próprio <html>), mas o zoom AINDA escala visualmente essa caixa que
+// já mede 100%vh — resultado: 100vh × zoom > altura real do viewport sempre
+// que zoom>1, cortado silenciosamente pelo overflow:hidden do html/body/#root
+// (confirmado empiricamente: zoom:1.2 + height:100vh em viewport 800px de
+// altura rendeu uma caixa de 960px). Expor o fator aqui permite essas telas
+// compensarem com height:calc(100vh / var(--auto-zoom)) — a própria caixa
+// fica 1/zoom menor no referencial local, e o zoom do <html> a traz de volta
+// para exatamente 100% do viewport real.
 export default function useAutoZoom() {
   useEffect(() => {
     const root = document.documentElement;
@@ -21,6 +33,7 @@ export default function useAutoZoom() {
     const apply = () => {
       const factor = Math.min(MAX_ZOOM, Math.max(1, window.innerWidth / DESIGN_WIDTH));
       root.style.zoom = `${factor * 100}%`;
+      root.style.setProperty('--auto-zoom', factor);
     };
 
     const onResize = () => {
@@ -45,6 +58,7 @@ export default function useAutoZoom() {
       window.removeEventListener('resize', onResize);
       if (vv) vv.removeEventListener('resize', onResize);
       root.style.zoom = '';
+      root.style.removeProperty('--auto-zoom');
     };
   }, []);
 }

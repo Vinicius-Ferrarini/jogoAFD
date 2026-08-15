@@ -77,6 +77,7 @@ export default function BossTrabalho({ onBack, progress, updateProgress }) {
         <GameComponent
           key={activeExercise.bossId}
           forceLevelId={activeExercise.originalId}
+          forceLevelLabel={`L${String(activeExercise.bossId).padStart(2, '0')}`}
           progress={proxyProgress}
           updateProgress={proxyUpdateProgress}
           onBack={handleExit}

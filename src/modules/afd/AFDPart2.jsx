@@ -96,7 +96,7 @@ function LevelList({ progress, onSelect, onBack }) {
 // no exercício indicado. Nesse modo, `progress`/`updateProgress` recebidos por
 // prop SUBSTITUEM o par p2Progress/updateP2Progress interno (que fica isolado
 // em turinglab_progress_p2) — o chamador (Boss) controla a chave de gravação.
-export default function AFDPart2({ onBack, showToast, forceLevelId, progress: externalProgress, updateProgress: externalUpdateProgress }) {
+export default function AFDPart2({ onBack, showToast, forceLevelId, forceLevelLabel, progress: externalProgress, updateProgress: externalUpdateProgress }) {
   // forceLevelId vira o estado inicial diretamente (sem useEffect) — evita
   // uma renderização extra em MENU antes de entrar no exercício.
   const [selectedLevel, setSelectedLevel] = useState(() =>
@@ -127,6 +127,7 @@ export default function AFDPart2({ onBack, showToast, forceLevelId, progress: ex
         updateProgress={activeUpdateProgress}
         showToast={showToast}
         forced={isForced}
+        forceLevelLabel={forceLevelLabel}
         onBack={isForced ? onBack : () => setSelectedLevel(null)}
         onNext={lvl => isForced ? onBack() : setSelectedLevel(lvl)}
         onPrev={lvl => setSelectedLevel(lvl)}

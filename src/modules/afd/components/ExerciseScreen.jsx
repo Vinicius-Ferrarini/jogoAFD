@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import './TestPanel.css';
 import { LEVEL_GRAPHS } from '../../../levels_graphs';
 import { UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS, LEVEL_DIFFICULTY } from '../../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
@@ -27,8 +28,9 @@ const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowe
 // forced (opcional, ex.: Boss/Trabalho): suprime a navegação prev/next entre
 // TODOS os níveis do AFD (calculada aqui via GAME_LEVELS) — dentro do Boss só
 // faz sentido voltar pra grade do Boss, não pular pro L59/L57 do AFD normal.
-export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev, forced = false }) {
+export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev, forced = false, forceLevelLabel }) {
   const graph = LEVEL_GRAPHS[level.id];
+  const displayLabel = forceLevelLabel ?? level.label;
 
   // .p2-svg-box raramente tem a mesma proporção 580:340 do viewBox default —
   // sobra margem vazia nas bordas. Medimos o container real via ResizeObserver
@@ -236,14 +238,14 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
         </div>
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
           <span className="mission-label">Identifique a Linguagem</span>
-          <div className="mission-formula">{level.label}</div>
+          <div className="mission-formula">{displayLabel}</div>
         </div>
         <div style={{ width: 160, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <button style={prevLevel ? navBtnStyle : navBtnDisabledStyle}
               disabled={!prevLevel} onClick={() => prevLevel && onPrev(prevLevel)}
               title="Fase anterior">◀</button>
-            <span className="mission-label">{level.label}</span>
+            <span className="mission-label">{displayLabel}</span>
             <button style={nextLevel ? navBtnStyle : navBtnDisabledStyle}
               disabled={!nextLevel} onClick={() => nextLevel && onNext(nextLevel)}
               title="Próxima fase">▶</button>
