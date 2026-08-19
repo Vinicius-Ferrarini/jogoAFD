@@ -991,6 +991,14 @@ body { color: var(--text-main); }
   padding: 28px 32px 40px;
   overflow-y: auto;
 }
+/* Título menor nesta tela: mesmo reforço preventivo do .menu-screen-fases
+   (ver AFDPart1.css) — já tem overflow-y:auto como rede de segurança, mas
+   encolher o título reduz a chance de precisar rolar em telas baixas. */
+.nav-screen .menu-title {
+  font-size: 40px;
+  margin-bottom: 16px;
+  padding: 6px 24px 16px 24px;
+}
 
 /* ── Header das telas de navegação ── */
 .nav-header {

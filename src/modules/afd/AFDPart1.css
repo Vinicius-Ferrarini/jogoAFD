@@ -104,20 +104,27 @@ body { color: var(--text-main); }
 }
 
 /* --- WORKSPACE (TELA DO JOGO) --- */
-/* --auto-zoom (definida por useAutoZoom.js no <html>): 100vh sempre resolve
-   contra o viewport FÍSICO, mas o zoom do <html> ainda escala visualmente
-   essa caixa — sem a divisão, 100vh×zoom > altura real do viewport sempre
-   que zoom>1, cortando o rodapé (ver comentário em useAutoZoom.js). */
 .workspace-wrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100vh / var(--auto-zoom, 1));
+  height: 100vh;
   contain: layout;
 }
 
 /* --- MENU DE FASES --- */
+/* overflow-y:auto = rede de segurança: em viewports baixos (ex.: 1368x768)
+   o conteúdo (título + selo + progresso + grid + rodapé de paginação +
+   legenda) pode ultrapassar a altura disponível. Sem scroll, o rodapé
+   "Anterior/Próxima" ficava cortado pelo overflow:hidden do html/body/#root. */
 .menu-screen-fases {
-  height: calc(100vh / var(--auto-zoom, 1));
+  height: 100vh;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+.menu-screen-fases .menu-title {
+  font-size: 40px;
+  margin-bottom: 16px;
+  padding: 6px 24px 16px 24px;
 }
 
 /* ── Barra de exemplos de palavras ── */

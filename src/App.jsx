@@ -1,7 +1,6 @@
 // TuringLab – App.jsx v3.0 (ROUTER CENTRAL)
 import { useState, useCallback, useRef, useEffect, lazy, Suspense } from 'react';
 import './App.css';
-import useAutoZoom from './hooks/useAutoZoom';
 
 // Importar páginas e módulos
 import MainMenu from './pages/MainMenu';
@@ -32,7 +31,6 @@ const BossTrabalho = lazy(() => import('./modules/boss/BossTrabalho'));
 const DIRECT_GAME = { ap: 'ap-pilha' };
 
 export default function App() {
-  useAutoZoom();
   const [screen, setScreen] = useState('HOME');
   const [currentModule, setCurrentModule] = useState(null);
   // Consentimento de telemetria: enquanto false, mostra o ConsentGate no lugar do jogo.
