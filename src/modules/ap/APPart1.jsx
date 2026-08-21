@@ -25,7 +25,7 @@ import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
 import { logEvent } from '../../services/telemetry';
 
-export default function APPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel }) {
+export default function APPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext }) {
   // ── Toast (mesmo padrão do AFD1: local, ignora o showToast no-op do App.jsx) ─
   const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
   const toastRef = useRef(null);
@@ -519,12 +519,12 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
         diffColor={DIFF_COLOR[level.level] ?? '#fff'}
         stars={stars}
         starsMax={3}
-        isFirst={forceLevelId != null || apIdx === 0}
-        isLast={forceLevelId != null || apIdx === AP_LEVELS.length - 1}
+        isFirst={forceLevelId != null ? !onForcedPrev : apIdx === 0}
+        isLast={forceLevelId != null ? !onForcedNext : apIdx === AP_LEVELS.length - 1}
         toggleSidebar={() => setFormalOpen(o => !o)}
         onBack={forceLevelId != null ? onBack : () => setScreen('MENU')}
-        onPrevLevel={() => goLevel(-1)}
-        onNextLevel={() => goLevel(1)}
+        onPrevLevel={forceLevelId != null ? onForcedPrev : () => goLevel(-1)}
+        onNextLevel={forceLevelId != null ? onForcedNext : () => goLevel(1)}
         hasLesson={lesson.hasLesson}
         lessonActive={lesson.active}
         lessonDisabled={!lesson.hasLesson}

@@ -61,7 +61,7 @@ export default function LevelMenu({ progress, currentPage, setCurrentPage, onBac
         </span>
         <button className="menu-btn" disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={{ opacity: currentPage===totalPages ? 0.5 : 1 }}>Próxima ➡</button>
       </div>
-      <DifficultyLegend />
+      <DifficultyLegend keys={['easy', 'medium', 'hard', 'trabalho', 'prova', 'impossible']} />
     </div>
   );
 }

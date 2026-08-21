@@ -25,6 +25,17 @@ function internalKey(ex) {
 const bossKey = (bossId) => `boss-trabalho-${bossId}`;
 const TOTAL_STARS = BOSS_TRABALHO_EXERCISES.length * 3;
 
+// Cada exercício do Trabalho vem de um módulo diferente — a cor do botão (e a
+// legenda abaixo da grade) sinaliza qual. Reusa a paleta do DIFF_COLOR do jogo:
+// verde (easy), amarelo (medium), vermelho (hard).
+const MODULE_COLOR = { 'afd-p1': '#4ade80', 'afd-p2': '#facc15', 'ap-pilha': '#f87171' };
+// Ordem/entradas da legenda (uma por módulo presente no Trabalho).
+const MODULE_LEGEND = [
+  ['afd-p1', 'AFD 1'],
+  ['afd-p2', 'AFD 2'],
+  ['ap-pilha', 'AP'],
+];
+
 function earnedStarsOf(progress) {
   return BOSS_TRABALHO_EXERCISES.reduce(
     (s, ex) => s + (progress[bossKey(ex.bossId)]?.stars || 0), 0
@@ -52,6 +63,14 @@ export default function BossTrabalho({ onBack, progress, updateProgress }) {
 
   if (activeExercise) {
     const GameComponent = MODULE_COMPONENT[activeExercise.module];
+    // Navegação prev/next ENTRE os exercícios do Boss (não entre os níveis do
+    // módulo original) — usada pelos botões ◀/▶ do cabeçalho de cada módulo em
+    // modo forçado. Trocar activeBossId remonta o GameComponent certo (key), o
+    // que cobre até a mudança de módulo (afd-p1 → afd-p2 → ap-pilha).
+    const activeIdx = BOSS_TRABALHO_EXERCISES.findIndex(e => e.bossId === activeBossId);
+    const prevEx = activeIdx > 0 ? BOSS_TRABALHO_EXERCISES[activeIdx - 1] : null;
+    const nextEx = activeIdx >= 0 && activeIdx < BOSS_TRABALHO_EXERCISES.length - 1
+      ? BOSS_TRABALHO_EXERCISES[activeIdx + 1] : null;
     // Proxy de progress: só a chave que o módulo filho vai ler existe, e
     // aponta pro valor guardado sob a chave própria do Boss.
     const proxyProgress = {
@@ -81,6 +100,8 @@ export default function BossTrabalho({ onBack, progress, updateProgress }) {
           progress={proxyProgress}
           updateProgress={proxyUpdateProgress}
           onBack={handleExit}
+          onForcedPrev={prevEx ? () => openExercise(prevEx.bossId) : null}
+          onForcedNext={nextEx ? () => openExercise(nextEx.bossId) : null}
         />
       </Suspense>
     );
@@ -140,12 +161,26 @@ export default function BossTrabalho({ onBack, progress, updateProgress }) {
             <button key={ex.bossId} className="menu-btn primary"
               onClick={() => openExercise(ex.bossId)}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                background: '#9333ea' }}>
+                background: MODULE_COLOR[ex.module] ?? '#9333ea' }}>
               <span>L{String(ex.bossId).padStart(2, '0')}</span>
               <SvgStars count={stars} size={14} />
             </button>
           );
         })}
+      </div>
+
+      {/* Legenda: cor de cada exercício por módulo de origem (mesmo estilo do
+          DifficultyLegend do jogo). */}
+      <div style={{ position: 'fixed', bottom: 16, right: 16, background: '#fff', border: '3px solid #000',
+        borderRadius: 8, boxShadow: '3px 3px 0 #000', padding: '8px 12px', zIndex: 100,
+        display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, fontWeight: 'bold' }}>
+        {MODULE_LEGEND.map(([mod, lbl]) => (
+          <div key={mod} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 14, height: 14, background: MODULE_COLOR[mod], border: '2px solid #000',
+              borderRadius: 3, display: 'inline-block', flexShrink: 0 }} />
+            {lbl}
+          </div>
+        ))}
       </div>
     </div>
   );

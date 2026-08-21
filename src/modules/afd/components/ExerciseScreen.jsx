@@ -28,7 +28,7 @@ const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowe
 // forced (opcional, ex.: Boss/Trabalho): suprime a navegação prev/next entre
 // TODOS os níveis do AFD (calculada aqui via GAME_LEVELS) — dentro do Boss só
 // faz sentido voltar pra grade do Boss, não pular pro L59/L57 do AFD normal.
-export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev, forced = false, forceLevelLabel }) {
+export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev, forced = false, forceLevelLabel, onForcedPrev, onForcedNext }) {
   const graph = LEVEL_GRAPHS[level.id];
   const displayLabel = forceLevelLabel ?? level.label;
 
@@ -199,6 +199,13 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
     }
   }
 
+  // Em modo forçado (Boss/Trabalho), os botões ◀/▶ navegam ENTRE os exercícios
+  // do Boss (onForcedPrev/onForcedNext), não entre os níveis do AFD.
+  const canPrev = forced ? !!onForcedPrev : !!prevLevel;
+  const canNext = forced ? !!onForcedNext : !!nextLevel;
+  const goPrev  = forced ? onForcedPrev : () => onPrev(prevLevel);
+  const goNext  = forced ? onForcedNext : () => onNext(nextLevel);
+
   const handleAddSimWord = useCallback(() => {
     if (!graph) { showToast('Grafo não disponível.', 'error'); return; }
     const wordDisplay = newSimWord === '' ? 'λ' : newSimWord;
@@ -242,12 +249,12 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
         </div>
         <div style={{ width: 160, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <button style={prevLevel ? navBtnStyle : navBtnDisabledStyle}
-              disabled={!prevLevel} onClick={() => prevLevel && onPrev(prevLevel)}
+            <button style={canPrev ? navBtnStyle : navBtnDisabledStyle}
+              disabled={!canPrev} onClick={() => canPrev && goPrev()}
               title="Fase anterior">◀</button>
             <span className="mission-label">{displayLabel}</span>
-            <button style={nextLevel ? navBtnStyle : navBtnDisabledStyle}
-              disabled={!nextLevel} onClick={() => nextLevel && onNext(nextLevel)}
+            <button style={canNext ? navBtnStyle : navBtnDisabledStyle}
+              disabled={!canNext} onClick={() => canNext && goNext()}
               title="Próxima fase">▶</button>
           </div>
           <SvgStars count={stars} size={20} />

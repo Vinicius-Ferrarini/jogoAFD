@@ -51,7 +51,7 @@ export function traceWord(nodes, transitions, word) {
 }
 
 // ─── App Principal ────────────────────────────────────────────────────────────
-export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel }) {
+export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext }) {
 
 
   // ── Toast ──────────────────────────────────────────────────────────────────
@@ -568,12 +568,12 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         progress={progress}
         diffColor={DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff'}
         starsMax={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3}
-        isFirst={forceLevelId != null || GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === 0}
-        isLast={forceLevelId != null || GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === GAME_LEVELS.length - 1}
+        isFirst={forceLevelId != null ? !onForcedPrev : GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === 0}
+        isLast={forceLevelId != null ? !onForcedNext : GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === GAME_LEVELS.length - 1}
         toggleSidebar={toggleSidebar}
         onBack={forceLevelId != null ? onBack : () => setTela('MENU')}
-        onPrevLevel={handlePrevLevel}
-        onNextLevel={handleNextLevel}
+        onPrevLevel={forceLevelId != null ? onForcedPrev : handlePrevLevel}
+        onNextLevel={forceLevelId != null ? onForcedNext : handleNextLevel}
         onStartLesson={() => {
           userNodesSnapshot.current = JSON.parse(JSON.stringify(nodes));
           userTransitionsSnapshot.current = JSON.parse(JSON.stringify(transitions));
