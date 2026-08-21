@@ -12,6 +12,8 @@ import { LEVEL_IDS, UNAVAILABLE_LEVELS, UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVEL
 import { EXERCISES } from './modules/afd/afdMinimizerExercises';
 import { MT_RECON_LEVEL_IDS, MT_LEVEL_IDS } from './levels_data/mt-ids.js';
 import { BOSS_TRABALHO_EXERCISES } from './modules/boss/bossTrabalhoExercises.js';
+import { BOSS_PROVA_EXERCISES } from './modules/boss/bossProvaExercises.js';
+import { moduleEarnedStars, AFD_MODULE_MAX, AP_MODULE_MAX, MT_MODULE_MAX } from './services/starTotals.js';
 import {
   logEvent, hasConsent,
   hasFeedbackShownOnce, markFeedbackShownOnce, hasFeedbackResponded,
@@ -23,6 +25,7 @@ const APPart1     = lazy(() => import('./modules/ap/APPart1'));
 const MTPart1     = lazy(() => import('./modules/mt/MTPart1'));
 const MTReconPart1 = lazy(() => import('./modules/mt-recon/MTReconPart1'));
 const BossTrabalho = lazy(() => import('./modules/boss/BossTrabalho'));
+const BossProva    = lazy(() => import('./modules/boss/BossProva'));
 
 // Módulos com uma ÚNICA atividade pulam a tela de submódulos e vão direto ao jogo
 // (ex.: AP só tem "Autômato com Pilha" — não faz sentido escolher pilha 2x).
@@ -167,6 +170,7 @@ export default function App() {
           case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={() => goSubmodule('mt')} />;
           case 'mt-recon':  return <MTReconPart1 {...moduleProps} onBack={() => goSubmodule('mt')} />;
           case 'boss-trabalho': return <BossTrabalho {...moduleProps} onBack={() => goSubmodule('desafio')} />;
+          case 'boss-prova':    return <BossProva {...moduleProps} onBack={() => goSubmodule('desafio')} />;
           default:          return <div>Módulo não encontrado</div>;
         }
       })();
@@ -198,16 +202,29 @@ export default function App() {
 }
 
 // ✨ Seleção de Módulos Principais
-function ModuleSelection({ onSelectModule, onBack, onFeedback, feedbackResponded }) {
+function ModuleSelection({ progress, onSelectModule, onBack, onFeedback, feedbackResponded }) {
+  // Contador de estrelas por módulo (soma os submódulos de cada um). Mesmas
+  // fontes/chaves da tela de submódulos, agregadas em services/starTotals.
+  const p2Progress = (() => {
+    try { return JSON.parse(localStorage.getItem('turinglab_progress_p2') || '{}'); }
+    catch { return {}; }
+  })();
+  const earned = moduleEarnedStars(progress, p2Progress);
+  // Boss (Trabalho + Prova) tem chaves próprias, agregadas aqui.
+  const bossTotal  = (BOSS_TRABALHO_EXERCISES.length + BOSS_PROVA_EXERCISES.length) * 3;
+  const bossEarned =
+    BOSS_TRABALHO_EXERCISES.reduce((s, ex) => s + (progress[`boss-trabalho-${ex.bossId}`]?.stars || 0), 0) +
+    BOSS_PROVA_EXERCISES.reduce((s, ex) => s + (progress[`boss-prova-${ex.bossId}`]?.stars || 0), 0);
+
   const modules = [
     { id: 'afd',     badge: 'AFD',   label: 'Autômatos Finitos',    icon: '🤖', color: '#60a5fa',
-      desc: 'Desenhe, analise e minimize AFDs' },
+      desc: 'Desenhe, analise e minimize AFDs', earned: earned.afd, total: AFD_MODULE_MAX },
     { id: 'ap',      badge: 'AP',    label: 'Autômatos com Pilha',  icon: '📚', color: '#a78bfa',
-      desc: 'Reconhecimento com memória (pilha)' },
+      desc: 'Reconhecimento com memória (pilha)', earned: earned.ap, total: AP_MODULE_MAX },
     { id: 'mt',      badge: 'MT',    label: 'Máquinas de Turing',   icon: '⚙️', color: '#f97316',
-      desc: 'Modelos Reconhecedora e Transdutora' },
+      desc: 'Modelos Reconhecedora e Transdutora', earned: earned.mt, total: MT_MODULE_MAX },
     { id: 'desafio', badge: 'BOSS',  label: 'Desafio de Prova',     icon: '🏆', color: '#f87171',
-      desc: 'Enfrente questões da última prova como desafio final' },
+      desc: 'Enfrente questões da última prova como desafio final', earned: bossEarned, total: bossTotal },
   ];
 
   return (
@@ -234,6 +251,9 @@ function ModuleSelection({ onSelectModule, onBack, onFeedback, feedbackResponded
               {mod.label}
             </div>
             <div className="module-card-desc">{mod.desc}</div>
+            {!mod.locked && (
+              <ModuleProgress earned={mod.earned || 0} total={mod.total || 0} />
+            )}
             {!mod.locked && (
               <div className="module-card-cta" style={{ background: mod.color }}>
                 Entrar →
@@ -291,6 +311,8 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
   const mtTransEarned = MT_LEVEL_IDS.reduce((s, id) => s + (progress[`mt-trans-${id}`]?.stars || 0), 0);
   const bossTrabalhoTotal  = BOSS_TRABALHO_EXERCISES.length * 3;
   const bossTrabalhoEarned = BOSS_TRABALHO_EXERCISES.reduce((s, ex) => s + (progress[`boss-trabalho-${ex.bossId}`]?.stars || 0), 0);
+  const bossProvaTotal  = BOSS_PROVA_EXERCISES.length * 3;
+  const bossProvaEarned = BOSS_PROVA_EXERCISES.reduce((s, ex) => s + (progress[`boss-prova-${ex.bossId}`]?.stars || 0), 0);
 
   const submodules = {
     afd: [
@@ -315,8 +337,8 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
         desc: '5 exercícios já vistos, numa grade própria', color: '#fecaca',
         earned: bossTrabalhoEarned, total: bossTrabalhoTotal },
       { id: 'boss-prova', icon: '🎓', label: 'Prova',
-        desc: 'Questões da última prova como desafio final', color: '#e5e7eb',
-        locked: true },
+        desc: `${BOSS_PROVA_EXERCISES.length} questões da última prova, numa grade própria`, color: '#c7d2fe',
+        earned: bossProvaEarned, total: bossProvaTotal },
     ],
   };
 

@@ -58,8 +58,31 @@ function LevelList({ progress, onSelect, onBack }) {
 }
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
-export default function AFDMinimizer({ onBack, progress, updateProgress, showToast }) {
+// forceLevelId (opcional, ex.: Boss): pula a grade e entra direto no exercício.
+// onForcedPrev/onForcedNext navegam ENTRE os exercícios do Boss (não os do módulo);
+// forceLabelColor pinta o chip do rótulo com a cor do módulo no Boss.
+export default function AFDMinimizer({ onBack, progress, updateProgress, showToast,
+  forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
   const [selected, setSelected] = useState(null);
+
+  if (forceLevelId != null) {
+    const ex = EXERCISES.find(e => e.id === forceLevelId);
+    if (!ex) return <div>Exercício de minimização não encontrado</div>;
+    return (
+      <MinGame
+        exercise={ex}
+        exLabel={forceLevelLabel ?? exLabel(ex)}
+        labelColor={forceLabelColor}
+        progress={progress}
+        onBack={onBack}
+        onPrev={onForcedPrev ?? null}
+        onNext={onForcedNext ?? null}
+        nextLabel={null}
+        updateProgress={updateProgress}
+        showToast={showToast}
+      />
+    );
+  }
 
   if (selected) {
     const idx  = SORTED_EXERCISES.findIndex(e => e.id === selected.id);

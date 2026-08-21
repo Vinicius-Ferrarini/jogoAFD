@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import './MainMenu.css';
 import imgMaurilioExplicando from '../assets/maurilio3_explicando.webp';
-import { LEVEL_IDS, UNAVAILABLE_LEVELS, UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS, LEVEL_DIFFICULTY } from '../levels';
+import { GRAND_MAX_STARS, totalEarnedStars } from '../services/starTotals';
 import FeedbackButton, { RepoButton } from '../components/FeedbackButton';
 
 const LAST_COMMIT_CACHE_KEY = 'turinglab_last_commit_cache';
@@ -57,31 +57,15 @@ function useLastCommitDate() {
   return { label, isToday };
 }
 
-// AFD_1 e AFD_2 têm listas de disponíveis diferentes: L14 (impossível em AFD,
-// ver L14.js) é jogável só em AFD_1, e vale no máximo 1 estrela (não 3).
-const maxStarsFor = id => LEVEL_DIFFICULTY[id] === 'impossible' ? 1 : 3;
-const P1_LEVEL_IDS = LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS.has(id) && !HIDDEN_LEVELS.has(id));
-const AVAILABLE_AFD_LEVEL_IDS = P1_LEVEL_IDS.filter(id => !UNAVAILABLE_LEVELS_P2_ONLY.has(id)); // usado pelo somatório de estrelas de P2 abaixo
-const P1_MAX_STARS = P1_LEVEL_IDS.reduce((s, id) => s + maxStarsFor(id), 0);
-const P2_MAX_STARS = AVAILABLE_AFD_LEVEL_IDS.reduce((s, id) => s + maxStarsFor(id), 0);
-const P1P2_MAX_STARS      = P1_MAX_STARS + P2_MAX_STARS;
-const MINIMIZER_MAX_STARS = 42; // 14 exercícios × 3
-const AP_MAX_STARS        = 45; // 15 níveis × 3 (L16 impossível excluído)
-const GRAND_MAX_STARS     = P1P2_MAX_STARS + MINIMIZER_MAX_STARS + AP_MAX_STARS;
-
 export default function MainMenu({ onStart, progress, onFeedback, feedbackResponded }) {
   const { label: lastCommit, isToday: lastCommitIsToday } = useLastCommitDate();
   const p2Progress = (() => {
     try { return JSON.parse(localStorage.getItem('turinglab_progress_p2') || '{}'); }
     catch { return {}; }
   })();
-  const p2Earned   = AVAILABLE_AFD_LEVEL_IDS.reduce((s, id) => s + (p2Progress[id]?.stars || 0), 0);
-  // Chaves do Boss (ex.: 'boss-trabalho-1') têm progresso PRÓPRIO, à parte do
-  // total geral da Home — GRAND_MAX_STARS não as inclui, então precisam ser
-  // excluídas daqui também (senão o numerador infla sem o denominador correspondente).
-  const totalStars = Object.entries(progress)
-    .filter(([key]) => !key.startsWith('boss-'))
-    .reduce((sum, [, p]) => sum + (p.stars || 0), 0) + p2Earned;
+  // Total geral: numerador/denominador vêm de services/starTotals (contam AFD_1/2,
+  // Minimização, AP, MT Rec. e MT Trans.; chaves boss-* têm total próprio e ficam de fora).
+  const totalStars = totalEarnedStars(progress, p2Progress);
   const maxStars   = GRAND_MAX_STARS;
 
   return (

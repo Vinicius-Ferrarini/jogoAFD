@@ -28,7 +28,8 @@ import { logEvent } from '../../services/telemetry';
 // deltaCells: mapa "estado|símbolo" → "destino, escreve, move" (matriz δ)
 const EMPTY_FORMAL = { states: '', sigma: '', gamma: '', initial: '', blank: '', final: '', deltaCells: {} };
 
-export default function MTPart1({ onBack, progress, updateProgress }) {
+export default function MTPart1({ onBack, progress, updateProgress,
+  forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
   // ── Toast (mesmo padrão do AFD1/AP: local, ignora o showToast no-op do App.jsx) ─
   const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
   const toastRef = useRef(null);
@@ -282,6 +283,13 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
     if (next) loadLevel(next);
   }, [level, loadLevel, mtLevels]);
 
+  // Modo forçado (Boss): entra direto no nível indicado (async), pulando o menu.
+  // Só na montagem — o componente é remontado (key) a cada troca no Boss.
+  useEffect(() => {
+    if (forceLevelId != null) loadLevel(forceLevelId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const pickMode = (m) => { setMode(m); setConnectingSource(null); };
 
   // ── Drag da carta ◯ → canvas ────────────────────────────────────────────────
@@ -473,6 +481,15 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
 
   // ── Menu ─────────────────────────────────────────────────────────────────────
   if (screen === 'MENU') {
+    // No Boss (forçado), o nível carrega async: mostra um placeholder em vez de
+    // piscar a grade do menu antes de entrar no exercício.
+    if (forceLevelId != null) {
+      return (
+        <div className="menu-screen menu-screen-fases min-screen" style={{ justifyContent: 'center' }}>
+          <div style={{ fontWeight: 900, color: '#888', padding: 24 }}>Carregando exercício…</div>
+        </div>
+      );
+    }
     const maxStars   = MT_LEVEL_ORDER.length * 3;
     const totalStars = mtLevels.reduce((s, l) => s + (progress?.[`mt-trans-${l.id}`]?.stars || 0), 0);
     return (
@@ -600,16 +617,16 @@ export default function MTPart1({ onBack, progress, updateProgress }) {
       {/* Header (compartilhado com AFD/AP/MTRecon — mesmo componente/estilo/motor) */}
       <GameHeader
         objective={level.description}
-        label={level.label}
-        diffColor={DIFF_COLOR[level.level] ?? '#fff'}
+        label={forceLevelLabel ?? level.label}
+        diffColor={forceLabelColor ?? DIFF_COLOR[level.level] ?? '#fff'}
         stars={stars}
         starsMax={3}
-        isFirst={mtIdx === 0}
-        isLast={mtIdx === mtLevels.length - 1}
+        isFirst={forceLevelId != null ? !onForcedPrev : mtIdx === 0}
+        isLast={forceLevelId != null ? !onForcedNext : mtIdx === mtLevels.length - 1}
         toggleSidebar={() => setFormalMode(o => !o)}
-        onBack={() => { lesson.finish(); setScreen('MENU'); }}
-        onPrevLevel={() => goLevel(-1)}
-        onNextLevel={() => goLevel(1)}
+        onBack={forceLevelId != null ? onBack : () => { lesson.finish(); setScreen('MENU'); }}
+        onPrevLevel={forceLevelId != null ? onForcedPrev : () => goLevel(-1)}
+        onNextLevel={forceLevelId != null ? onForcedNext : () => goLevel(1)}
         hasLesson={lesson.hasLesson}
         lessonActive={lesson.active}
         lessonDisabled={!lesson.hasLesson}
