@@ -1,0 +1,27 @@
+Copyright (c) 2026 Vinicius Ferrarini. Todos os direitos reservados.
+
+TuringLab — Software Proprietário
+
+Este software (código-fonte, arquivos de configuração, dados de exercícios,
+imagens, e demais assets — o "Software") é propriedade exclusiva do autor e
+está protegido pelas leis de direitos autorais aplicáveis, incluindo a Lei
+nº 9.610/1998 (Brasil).
+
+Nenhuma permissão é concedida, por este documento, para copiar, reproduzir,
+distribuir, publicar, sublicenciar, vender, alugar, modificar, criar obras
+derivadas, fazer engenharia reversa ou usar o Software, no todo ou em parte,
+para qualquer finalidade, sem a autorização prévia e expressa, por escrito,
+do autor.
+
+Fontes de terceiros incluídas neste repositório permanecem sob suas próprias
+licenças originais, que prevalecem sobre este documento no que diz respeito
+a elas:
+  - Comic Neue (pasta public/fonts) — SIL Open Font License 1.1.
+As dependências de terceiros (ver package.json) são regidas por suas
+respectivas licenças e não são cobertas por este documento.
+
+O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA
+OU IMPLÍCITA. EM NENHUMA HIPÓTESE O AUTOR SERÁ RESPONSÁVEL POR QUAISQUER
+DANOS DECORRENTES DO USO OU DA IMPOSSIBILIDADE DE USO DO SOFTWARE.
+
+Para solicitar autorização de uso, entre em contato com o autor.
