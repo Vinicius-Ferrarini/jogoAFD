@@ -29,15 +29,16 @@ describe('BOSS_TRABALHO_EXERCISES — sincronizado com o código-fonte', () => {
   });
 
   it('todo exercício AP marcado level:"trabalho" está na lista (e vice-versa)', () => {
+    // originalId de AP é o id NATIVO do módulo (string 'L##'), não um número.
     const apTrabalhoIds = AP_LEVELS
       .filter(l => l.level === 'trabalho')
-      .map(l => Number(l.id.slice(1)))
-      .sort((a, b) => a - b);
+      .map(l => l.id)
+      .sort();
 
     const listedApIds = BOSS_TRABALHO_EXERCISES
       .filter(e => e.module === 'ap-pilha')
       .map(e => e.originalId)
-      .sort((a, b) => a - b);
+      .sort();
 
     expect(listedApIds).toEqual(apTrabalhoIds);
   });

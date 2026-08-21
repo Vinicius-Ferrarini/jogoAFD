@@ -62,7 +62,7 @@ const MT_L1 = {
     alphabet:    ['a', 'b'],
     tapeAlphabet: ['a', 'b', 'A', 'B', '□'],
     language:    '{aⁿbⁿ / n ≥ 0}',
-    description: 'L1 = { aⁿbⁿ | n ≥ 0 }. Tem como entrada palavras aceitas pela linguagem e transforma em MAIÚSCULAS.',
+    description: 'Tem como entrada palavras da linguagem aⁿbⁿ (n ≥ 0) e transforma em MAIÚSCULAS.',
     hint:        'Marque o "a" mais à esquerda como A e ande até achar o "b" correspondente para marcar como B; volte e repita até restarem só letras marcadas.',
     validate:    (w) => /^a*b*$/.test(w) && (w.match(/a/g)?.length ?? 0) === (w.match(/b/g)?.length ?? 0) ? w.toUpperCase() : null,
     testWords:   ['', 'ab', 'aabb', 'aaabbb'],

@@ -25,7 +25,7 @@ import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
 import { logEvent } from '../../services/telemetry';
 
-export default function APPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext }) {
+export default function APPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
   // ── Toast (mesmo padrão do AFD1: local, ignora o showToast no-op do App.jsx) ─
   const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
   const toastRef = useRef(null);
@@ -514,9 +514,12 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
 
       {/* Header (compartilhado com o AFD — mesmo componente/estilo/motor) */}
       <GameHeader
-        objective={level.language}
+        // Objetivo sempre no formato canônico "L = { … }". O AP guarda em
+        // `language` só o corpo "{ … }"; o strip remove qualquer prefixo
+        // "L… =" espúrio de enunciados antigos antes de recolocar o "L = ".
+        objective={`L = ${level.language.replace(/^\s*L[^=]*=\s*/, '')}`}
         label={forceLevelLabel ?? level.label}
-        diffColor={DIFF_COLOR[level.level] ?? '#fff'}
+        diffColor={forceLabelColor ?? DIFF_COLOR[level.level] ?? '#fff'}
         stars={stars}
         starsMax={3}
         isFirst={forceLevelId != null ? !onForcedPrev : apIdx === 0}

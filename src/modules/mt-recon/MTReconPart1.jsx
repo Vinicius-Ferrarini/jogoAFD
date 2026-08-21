@@ -604,7 +604,9 @@ export default function MTReconPart1({ onBack, progress, updateProgress }) {
 
       {/* Header (compartilhado com AFD/AP — mesmo componente/estilo/motor) */}
       <GameHeader
-        objective={level.language}
+        // Objetivo sempre no formato canônico "L = { … }" (igual AP). O strip
+        // remove qualquer prefixo "L… =" espúrio antes de recolocar o "L = ".
+        objective={`L = ${level.language.replace(/^\s*L[^=]*=\s*/, '')}`}
         label={level.label}
         diffColor={DIFF_COLOR[level.level] ?? '#fff'}
         stars={stars}

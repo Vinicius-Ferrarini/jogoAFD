@@ -51,7 +51,7 @@ export function traceWord(nodes, transitions, word) {
 }
 
 // ─── App Principal ────────────────────────────────────────────────────────────
-export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext }) {
+export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
 
 
   // ── Toast ──────────────────────────────────────────────────────────────────
@@ -566,7 +566,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         currentLevel={currentLevel}
         label={forceLevelLabel ?? currentLevel?.label}
         progress={progress}
-        diffColor={DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff'}
+        diffColor={forceLabelColor ?? DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff'}
         starsMax={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3}
         isFirst={forceLevelId != null ? !onForcedPrev : GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === 0}
         isLast={forceLevelId != null ? !onForcedNext : GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === GAME_LEVELS.length - 1}

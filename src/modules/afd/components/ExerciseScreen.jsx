@@ -28,7 +28,7 @@ const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowe
 // forced (opcional, ex.: Boss/Trabalho): suprime a navegação prev/next entre
 // TODOS os níveis do AFD (calculada aqui via GAME_LEVELS) — dentro do Boss só
 // faz sentido voltar pra grade do Boss, não pular pro L59/L57 do AFD normal.
-export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev, forced = false, forceLevelLabel, onForcedPrev, onForcedNext }) {
+export default function ExerciseScreen({ level, progress, updateProgress, showToast, onBack, onNext, onPrev, forced = false, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
   const graph = LEVEL_GRAPHS[level.id];
   const displayLabel = forceLevelLabel ?? level.label;
 
@@ -252,7 +252,7 @@ export default function ExerciseScreen({ level, progress, updateProgress, showTo
             <button style={canPrev ? navBtnStyle : navBtnDisabledStyle}
               disabled={!canPrev} onClick={() => canPrev && goPrev()}
               title="Fase anterior">◀</button>
-            <span className="mission-label">{displayLabel}</span>
+            <span className="mission-label" style={forceLabelColor ? { background: forceLabelColor } : undefined}>{displayLabel}</span>
             <button style={canNext ? navBtnStyle : navBtnDisabledStyle}
               disabled={!canNext} onClick={() => canNext && goNext()}
               title="Próxima fase">▶</button>

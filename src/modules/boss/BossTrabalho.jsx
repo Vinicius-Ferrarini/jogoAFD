@@ -102,6 +102,7 @@ export default function BossTrabalho({ onBack, progress, updateProgress }) {
           onBack={handleExit}
           onForcedPrev={prevEx ? () => openExercise(prevEx.bossId) : null}
           onForcedNext={nextEx ? () => openExercise(nextEx.bossId) : null}
+          forceLabelColor={MODULE_COLOR[activeExercise.module]}
         />
       </Suspense>
     );

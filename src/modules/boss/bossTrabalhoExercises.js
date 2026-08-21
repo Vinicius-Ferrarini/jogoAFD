@@ -6,10 +6,14 @@
 //
 // bossId é a chave de progresso do Boss (`boss-trabalho-${bossId}`),
 // independente do id original — ver BossTrabalho.jsx.
+// originalId usa o formato NATIVO do id de cada módulo: AFD indexa por número
+// (56, 57, 58); AP indexa por string 'L##' ('L17', 'L18'). É esse id cru que
+// cada módulo procura em modo forçado (AFDPart*: GAME_LEVELS.find; APPart1:
+// AP_LEVELS.find) e que o internalKey usa para montar a chave de progresso.
 export const BOSS_TRABALHO_EXERCISES = [
   { bossId: 1, module: 'afd-p1', originalId: 56 },
   { bossId: 2, module: 'afd-p1', originalId: 57 },
   { bossId: 3, module: 'afd-p2', originalId: 58 },
-  { bossId: 4, module: 'ap-pilha', originalId: 17 },
-  { bossId: 5, module: 'ap-pilha', originalId: 18 },
+  { bossId: 4, module: 'ap-pilha', originalId: 'L17' },
+  { bossId: 5, module: 'ap-pilha', originalId: 'L18' },
 ];
