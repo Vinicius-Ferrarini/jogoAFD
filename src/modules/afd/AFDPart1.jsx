@@ -12,6 +12,8 @@ import FooterDeck from './components/FooterDeck';
 import CanvasArea from './components/CanvasArea';
 import EndScreen from './components/EndScreen';
 import useHistory from './hooks/useHistory';
+import useToast from './hooks/useToast';
+import usePhaseTelemetry from './hooks/usePhaseTelemetry';
 import useGuidedLesson from './hooks/useGuidedLesson';
 import useAFDGraph, { lvlAccepts, validateAFDPure } from './hooks/useAFDGraph';
 import useCanvasState from './hooks/useCanvasState';
@@ -55,13 +57,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
 
 
   // ── Toast ──────────────────────────────────────────────────────────────────
-  const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
-  const toastRef = useRef(null);
-  const showToast = useCallback((message, type = 'info') => {
-    setToastData({ show: true, message, type });
-    if (toastRef.current) clearTimeout(toastRef.current);
-    toastRef.current = setTimeout(() => setToastData(d => ({ ...d, show: false })), 4000);
-  }, []);
+  const { toastData, showToast } = useToast();
 
   // ── Grafo: estado base (nós/transições) ────────────────────────────────────
   // Vive aqui (no orquestrador) para quebrar a dependência circular entre
@@ -211,45 +207,15 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     ? { nodeId: lessonSim.frames[lessonSim.idx].nodeId, type: lessonSim.frames[lessonSim.idx].type }
     : simHighlight;
 
-  // ── Telemetria: cronômetro + contadores por fase ───────────────────────────
-  const phaseStartRef = useRef(null);
-  const attemptsRef = useRef(0);               // numero_tentativas da fase atual (reset no loadLevel)
-  const tutorialOpensRef = useRef(0);          // aberturas de ajuda (dica + aula guiada) na fase
-  const errorSinceTutorialRef = useRef(false); // houve erro desde a última abertura de ajuda?
-  const elapsedSeconds = useCallback(() => (
-    phaseStartRef.current == null
-      ? null
-      : Math.round((performance.now() - phaseStartRef.current) / 1000)
-  ), []);
-  // Campos comuns aos eventos fim_fase deste módulo (piloto da telemetria).
-  // `marco` identifica qual das 3 estrelas foi conquistada.
-  // - assistiu_tutorial: a ajuda foi aberta em ALGUM momento da fase.
-  // - acertou_apos_tutorial: o sucesso veio SEM nenhum erro desde a última abertura
-  //   de ajuda (true só se houve ao menos uma abertura E a janela ficou limpa).
-  const phaseExtras = useCallback((marco) => ({
-    modulo: 'afd-p1',
-    nivel_id: currentLevel?.id,
-    tempo_gasto_segundos: elapsedSeconds(),
-    numero_tentativas: attemptsRef.current,
-    dificuldade: LEVEL_DIFFICULTY[currentLevel?.id] ?? null,
-    marco,
-    assistiu_tutorial: tutorialOpensRef.current > 0,
-    acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
-  }), [currentLevel, elapsedSeconds]);
-
-  // Telemetria de "uso de ajuda": abertura da dica do professor OU da aula guiada.
-  // 1ª abertura da fase = tutorial_aberto; demais = tutorial_reaberto. Cada abertura
-  // reinicia a janela "sem erro desde a última ajuda" (usada em acertou_apos_tutorial).
-  const logTutorialOpen = useCallback((origem) => {
-    tutorialOpensRef.current += 1;
-    errorSinceTutorialRef.current = false;
-    logEvent({
-      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
-      modulo: 'afd-p1',
-      nivel_id: currentLevel?.id,
-      origem,
-    });
-  }, [currentLevel]);
+  // ── Telemetria: cronômetro + contadores por fase (helpers em usePhaseTelemetry) ─
+  const phaseStartRef = useRef(null);          // performance.now() do início da fase
+  const attemptsRef = useRef(0);               // numero_tentativas (reset no loadLevel)
+  const tutorialOpensRef = useRef(0);          // aberturas de ajuda (dica + aula) na fase
+  const errorSinceTutorialRef = useRef(false); // houve erro desde a última ajuda?
+  const { phaseExtras, logTutorialOpen } = usePhaseTelemetry({
+    modulo: 'afd-p1', nivelId: currentLevel?.id, dificuldade: LEVEL_DIFFICULTY[currentLevel?.id] ?? null,
+    phaseStartRef, attemptsRef, tutorialOpensRef, errorSinceTutorialRef,
+  });
 
   // ── Carrega fase ──────────────────────────────────────────────────────────
   const loadLevel = useCallback((level) => {
@@ -520,7 +486,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     const newNodes = [...nodes, { uid: genUid(), id: newLabel, label: newLabel, x: ix, y: iy, isInitial: false, isFinal: false }];
     setNodes(newNodes);
     recordHistory(newNodes, transitions);
-  }, [isDrawingUnlocked, nodes, transitions, recordHistory]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isDrawingUnlocked, nodes, transitions, recordHistory]);
 
   const handleDeckNodeDragCancel = useCallback(() => {
     setDeckGhostPos(null);
@@ -593,7 +559,6 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
             nodes={nodes}
             transitions={transitions}
             alphabet={currentLevel?.alphabet}
-            currentLevelId={currentLevel?.id}
             onSuccess={handleFormalSuccess}
             showToast={showToast}
             onValidateGraph={() => validateAFDSilent(true)}

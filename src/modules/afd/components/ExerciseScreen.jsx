@@ -5,6 +5,7 @@ import { UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS, LEVEL_DIFFICULTY } from '../
 import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
 import { logEvent } from '../../../services/telemetry';
 import { SvgStars } from '../SvgStar';
+import { navBtnStyle, navBtnDisabledStyle } from './navButtonStyles';
 import GraphView       from './GraphView';
 import { DrawStroke }  from './StrokeEl';
 import SimPanel        from './SimPanel';
@@ -16,14 +17,6 @@ import imgMaurilioExplicando from '../../../assets/maurilio3_explicando.webp';
 import imgBalaoFala          from '../../../assets/balao_fala_redondo.webp';
 
 const VW = 580, VH = 340;
-
-const navBtnStyle = {
-  padding: '2px 8px', fontSize: 13, fontWeight: 900,
-  background: '#fff', color: '#000', border: '2px solid #000', borderRadius: 6,
-  cursor: 'pointer', boxShadow: '2px 2px 0 #000',
-  fontFamily: 'var(--font-comic)', lineHeight: 1.2,
-};
-const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none' };
 
 // forced (opcional, ex.: Boss/Trabalho): suprime a navegação prev/next entre
 // TODOS os níveis do AFD (calculada aqui via GAME_LEVELS) — dentro do Boss só

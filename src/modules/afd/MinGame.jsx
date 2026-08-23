@@ -12,6 +12,7 @@ import Step4_Propagation    from './components/Step4_Propagation';
 import Step5_Result         from './components/Step5_Result';
 import MinDrawStep          from './components/MinDrawStep';
 import MinLessonOverlay     from './components/MinLessonOverlay';
+import { navBtnStyle, navBtnDisabledStyle } from './components/navButtonStyles';
 import { logEvent } from '../../services/telemetry';
 
 // Máquina de 6 passos: PREP → SETUP → TRIVIAL → PROP → GROUPS → DRAW
@@ -22,14 +23,6 @@ const STEP_NAMES  = {
   PREP: 'Verificar o AFD', SETUP: 'Montar a tabela de pares', TRIVIAL: 'Marcação trivial',
   PROP: 'Propagação', GROUPS: 'Grupos de equivalência', DRAW: 'Desenhar o AFD mínimo',
 };
-
-const navBtnStyle = {
-  padding: '2px 8px', fontSize: 13, fontWeight: 900,
-  background: '#fff', color: '#000', border: '2px solid #000', borderRadius: 6,
-  cursor: 'pointer', boxShadow: '2px 2px 0 #000',
-  fontFamily: 'var(--font-comic)', lineHeight: 1.2,
-};
-const navBtnDisabledStyle = { ...navBtnStyle, opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none' };
 
 export default function MinGame({ exercise, exLabel, progress, onBack, onNext, onPrev, nextLabel, updateProgress, labelColor }) {
   // ── Banner / Professor ──

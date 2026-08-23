@@ -10,6 +10,7 @@
 // mapeamento módulo→componente/chave ficam em bossModules.js.
 import { Suspense, useMemo, useRef, useState } from 'react';
 import { SvgStars } from '../afd/SvgStar';
+import LevelGridScreen from '../afd/components/LevelGridScreen';
 import LoadingScreen from '../../components/LoadingScreen';
 import { MODULE_COMPONENT, MODULE_META, internalKey, legendFor } from './bossModules';
 
@@ -117,52 +118,40 @@ export default function BossMode({
   }
 
   return (
-    <div className="menu-screen menu-screen-fases" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14, width: '100%' }}>
-        <div style={{ flex: 1 }}>
-          <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
+    <LevelGridScreen
+      onBack={onBack}
+      badge={badge}
+      badgeBg={badgeBg}
+      totalStars={earnedStars}
+      maxStars={TOTAL_STARS}
+      footer={
+        /* Legenda: cor de cada exercício por módulo de origem (mesmo estilo do
+           DifficultyLegend do jogo). */
+        <div style={{ position: 'fixed', bottom: 16, right: 16, background: '#fff', border: '3px solid #000',
+          borderRadius: 8, boxShadow: '3px 3px 0 #000', padding: '8px 12px', zIndex: 100,
+          display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, fontWeight: 'bold' }}>
+          {legend.map(([mod, lbl]) => (
+            <div key={mod} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 14, height: 14, background: MODULE_META[mod]?.color, border: '2px solid #000',
+                borderRadius: 3, display: 'inline-block', flexShrink: 0 }} />
+              {lbl}
+            </div>
+          ))}
         </div>
-        <h1 className="menu-title" style={{ margin: 0 }}>TuringLab</h1>
-        <div style={{ flex: 1 }} />
-      </div>
-      <p style={{ fontWeight: 900, fontSize: 16, color: '#555', marginBottom: 12,
-        background: badgeBg, border: '3px solid #000', borderRadius: 8,
-        padding: '4px 16px', boxShadow: '3px 3px 0 #000' }}>
-        {badge}
-      </p>
-      <div style={{ marginBottom: 18, fontWeight: 'bold', fontSize: 16 }}>
-        Progresso: {TOTAL_STARS > 0 ? Math.round((earnedStars / TOTAL_STARS) * 100) : 0}%
-        &nbsp;({earnedStars}/{TOTAL_STARS} ★)
-      </div>
-
-      <div className="levels-grid">
-        {exercises.map(ex => {
-          const stars = progress[bossKey(ex.bossId)]?.stars || 0;
-          return (
-            <button key={ex.bossId} className="menu-btn primary"
-              onClick={() => openExercise(ex.bossId)}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                background: MODULE_META[ex.module]?.color ?? '#9333ea' }}>
-              <span>L{String(ex.bossId).padStart(2, '0')}</span>
-              <SvgStars count={stars} size={14} />
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Legenda: cor de cada exercício por módulo de origem (mesmo estilo do
-          DifficultyLegend do jogo). */}
-      <div style={{ position: 'fixed', bottom: 16, right: 16, background: '#fff', border: '3px solid #000',
-        borderRadius: 8, boxShadow: '3px 3px 0 #000', padding: '8px 12px', zIndex: 100,
-        display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, fontWeight: 'bold' }}>
-        {legend.map(([mod, lbl]) => (
-          <div key={mod} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 14, height: 14, background: MODULE_META[mod]?.color, border: '2px solid #000',
-              borderRadius: 3, display: 'inline-block', flexShrink: 0 }} />
-            {lbl}
-          </div>
-        ))}
-      </div>
-    </div>
+      }
+    >
+      {exercises.map(ex => {
+        const stars = progress[bossKey(ex.bossId)]?.stars || 0;
+        return (
+          <button key={ex.bossId} className="menu-btn primary"
+            onClick={() => openExercise(ex.bossId)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              background: MODULE_META[ex.module]?.color ?? '#9333ea' }}>
+            <span>L{String(ex.bossId).padStart(2, '0')}</span>
+            <SvgStars count={stars} size={14} />
+          </button>
+        );
+      })}
+    </LevelGridScreen>
   );
 }

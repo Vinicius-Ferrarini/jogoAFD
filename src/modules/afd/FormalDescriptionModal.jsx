@@ -135,7 +135,6 @@ export default function FormalDescriptionModal({
   nodes,
   transitions,
   alphabet,
-  currentLevelId,
   onSuccess,
   showToast,
   onValidateGraph,
@@ -258,9 +257,6 @@ export default function FormalDescriptionModal({
   // Returns 'multi_needs_braces' | 'single_no_braces' | null
   // isSingle=true: field must never have braces (q0)
   const checkBraceFormat = (str, isSingle = false) => checkFormalBraceFormat(str, isSingle);
-
-  const setsEqual = (a, b) =>
-    a.length === b.length && a.every(x => b.includes(x)) && b.every(x => a.includes(x));
 
   const validateElements = () => {
     if (onValidateGraph && !onValidateGraph()) return;

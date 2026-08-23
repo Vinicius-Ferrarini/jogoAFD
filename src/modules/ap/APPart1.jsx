@@ -8,7 +8,8 @@ import { createPortal } from 'react-dom';
 import '../afd/AFDPart1.css';
 import '../afd/components/TestPanel.css';
 import './APPart1.css';
-import { SvgStars, DifficultyLegend } from '../afd/SvgStar';
+import { SvgStars } from '../afd/SvgStar';
+import LevelGridScreen from '../afd/components/LevelGridScreen';
 import EndScreen from '../afd/components/EndScreen';
 import APCanvas from './components/APCanvas';
 import APSimPanel from './components/APSimPanel';
@@ -23,17 +24,13 @@ import { AP_LEVELS, getShortestWord } from '../../levels_data/ap/index.js';
 import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
+import useToast from '../afd/hooks/useToast';
+import usePhaseTelemetry from '../afd/hooks/usePhaseTelemetry';
 import { logEvent } from '../../services/telemetry';
 
 export default function APPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
-  // ── Toast (mesmo padrão do AFD1: local, ignora o showToast no-op do App.jsx) ─
-  const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
-  const toastRef = useRef(null);
-  const showToast = useCallback((message, type = 'info') => {
-    setToastData({ show: true, message, type });
-    if (toastRef.current) clearTimeout(toastRef.current);
-    toastRef.current = setTimeout(() => setToastData(d => ({ ...d, show: false })), 4000);
-  }, []);
+  // ── Toast (local, ignora o showToast no-op do App.jsx) ─
+  const { toastData, showToast } = useToast();
 
   const [screen, setScreen] = useState('MENU');
   const [level, setLevel]   = useState(null);
@@ -89,36 +86,16 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
 
   const say = useCallback((message, mood = 'serio') => setProf({ message, mood }), []);
 
-  // ── Telemetria (módulo ap) ─────────────────────────────────────────────────
+  // ── Telemetria (módulo ap) — helpers em usePhaseTelemetry ───────────────────
+  // Marcos: descoberta_palavra (★1), validacao_ap (★2), tabela_formal (★3).
   const phaseStartRef = useRef(null);
   const attemptsRef = useRef(0);
   const tutorialOpensRef = useRef(0);
   const errorSinceTutorialRef = useRef(false);
-  const elapsedSeconds = useCallback(() => (
-    phaseStartRef.current == null ? null
-      : Math.round((performance.now() - phaseStartRef.current) / 1000)
-  ), []);
-  // Marcos: descoberta_palavra (★1), validacao_ap (★2), tabela_formal (★3).
-  const phaseExtras = useCallback((marco) => ({
-    modulo: 'ap',
-    nivel_id: level?.id,
-    tempo_gasto_segundos: elapsedSeconds(),
-    numero_tentativas: attemptsRef.current,
-    dificuldade: level?.level ?? null,
-    marco,
-    assistiu_tutorial: tutorialOpensRef.current > 0,
-    acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
-  }), [level, elapsedSeconds]);
-  const logTutorialOpen = useCallback((origem) => {
-    tutorialOpensRef.current += 1;
-    errorSinceTutorialRef.current = false;
-    logEvent({
-      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
-      modulo: 'ap',
-      nivel_id: level?.id,
-      origem,
-    });
-  }, [level]);
+  const { phaseExtras, logTutorialOpen } = usePhaseTelemetry({
+    modulo: 'ap', nivelId: level?.id, dificuldade: level?.level ?? null,
+    phaseStartRef, attemptsRef, tutorialOpensRef, errorSinceTutorialRef,
+  });
 
   // ── Modo Aula: iniciar / sair / navegar (narração + painel formal sem efeito) ─
   const applyStep = useCallback((st) => {
@@ -467,36 +444,26 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
     const maxStars   = AP_LEVELS.filter(l => !l.impossible).length * 3;
     const totalStars = AP_LEVELS.reduce((s, l) => s + (progress?.[`ap-${l.id}`]?.stars || 0), 0);
     return (
-      <div className="menu-screen menu-screen-fases min-screen" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14, width: '100%' }}>
-          <div style={{ flex: 1 }}>
-            <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
-          </div>
-          <h1 className="menu-title" style={{ margin: 0 }}>TuringLab</h1>
-          <div style={{ flex: 1 }} />
-        </div>
-        <p style={{ fontWeight: 900, fontSize: 16, color: '#555', marginBottom: 12,
-          background: '#ddd6fe', border: '3px solid #000', borderRadius: 8,
-          padding: '4px 16px', boxShadow: '3px 3px 0 #000' }}>
-          📚 Autômato com Pilha
-        </p>
-        <div style={{ marginBottom: 18, fontWeight: 'bold', fontSize: 16 }}>
-          Progresso: {maxStars > 0 ? Math.round((totalStars / maxStars) * 100) : 0}% ({totalStars}/{maxStars} ★)
-        </div>
-        <div className="levels-grid">
-          {AP_LEVELS.map(l => (
-            <button key={l.id} className="menu-btn primary" onClick={() => loadLevel(l)}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                background: DIFF_COLOR[l.level] }}>
-              <span>{l.label}</span>
-              {l.impossible
-                ? <span style={{ fontSize: 11, fontWeight: 900, color: '#000' }}>🚫 só MT</span>
-                : <SvgStars count={progress?.[`ap-${l.id}`]?.stars || 0} size={14} max={3} />}
-            </button>
-          ))}
-        </div>
-        <DifficultyLegend keys={['easy', 'medium', 'hard', 'trabalho', 'prova', 'impossible']} />
-      </div>
+      <LevelGridScreen
+        onBack={onBack}
+        badge="📚 Autômato com Pilha"
+        badgeBg="#ddd6fe"
+        totalStars={totalStars}
+        maxStars={maxStars}
+        extraClass="min-screen"
+        legendKeys={['easy', 'medium', 'hard', 'trabalho', 'prova', 'impossible']}
+      >
+        {AP_LEVELS.map(l => (
+          <button key={l.id} className="menu-btn primary" onClick={() => loadLevel(l)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              background: DIFF_COLOR[l.level] }}>
+            <span>{l.label}</span>
+            {l.impossible
+              ? <span style={{ fontSize: 11, fontWeight: 900, color: '#000' }}>🚫 só MT</span>
+              : <SvgStars count={progress?.[`ap-${l.id}`]?.stars || 0} size={14} max={3} />}
+          </button>
+        ))}
+      </LevelGridScreen>
     );
   }
 

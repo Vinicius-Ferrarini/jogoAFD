@@ -8,7 +8,8 @@ import '../afd/AFDPart1.css';
 import '../afd/components/TestPanel.css';
 import '../afd/FormalDescriptionModal.css';
 import '../ap/APPart1.css';
-import { SvgStars, DifficultyLegend } from '../afd/SvgStar';
+import { SvgStars } from '../afd/SvgStar';
+import LevelGridScreen from '../afd/components/LevelGridScreen';
 import EndScreen from '../afd/components/EndScreen';
 import GameHeader from '../afd/components/GameHeader';
 import MTCanvas from './components/MTCanvas';
@@ -17,6 +18,8 @@ import useTMGraph from './hooks/useTMGraph';
 import useMTGuidedLesson from './hooks/useMTGuidedLesson';
 import useAPDrawing from '../ap/hooks/useAPDrawing';
 import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js';
+import useToast from '../afd/hooks/useToast';
+import usePhaseTelemetry from '../afd/hooks/usePhaseTelemetry';
 import { MT_LEVEL_ORDER, loadMTLevel } from '../../levels_data/mt/index.js';
 import { fuzzTMTransducer, simulateTM, extractTapeOutput, BLANK } from './utils/tmAlgorithms';
 import { validateMTFormalFields, validateMTFormalTransitions } from './utils/mtFormalValidation';
@@ -30,14 +33,8 @@ const EMPTY_FORMAL = { states: '', sigma: '', gamma: '', initial: '', blank: '',
 
 export default function MTPart1({ onBack, progress, updateProgress,
   forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
-  // ── Toast (mesmo padrão do AFD1/AP: local, ignora o showToast no-op do App.jsx) ─
-  const [toastData, setToastData] = useState({ show: false, message: '', type: 'info' });
-  const toastRef = useRef(null);
-  const showToast = useCallback((message, type = 'info') => {
-    setToastData({ show: true, message, type });
-    if (toastRef.current) clearTimeout(toastRef.current);
-    toastRef.current = setTimeout(() => setToastData(d => ({ ...d, show: false })), 4000);
-  }, []);
+  // ── Toast (local, ignora o showToast no-op do App.jsx) ─
+  const { toastData, showToast } = useToast();
 
   const [screen, setScreen] = useState('MENU');
   const [level,  setLevel]  = useState(null);
@@ -117,33 +114,13 @@ export default function MTPart1({ onBack, progress, updateProgress,
   // exploração (aba Linguagem = gabarito estático; aba Desenho = simulador do
   // grafo do aluno), não resposta avaliada.
   const phaseStartRef = useRef(null);
-  const attemptsRef = useRef(0);               // numero_tentativas (Validar que falhou) — reset no loadLevel
-  const tutorialOpensRef = useRef(0);          // aberturas de ajuda (dica + aula guiada) na fase
-  const errorSinceTutorialRef = useRef(false); // houve erro desde a última abertura de ajuda?
-  const elapsedSeconds = useCallback(() => (
-    phaseStartRef.current == null ? null
-      : Math.round((performance.now() - phaseStartRef.current) / 1000)
-  ), []);
-  const phaseExtras = useCallback((marco) => ({
-    modulo: 'mt-trans',
-    nivel_id: level?.id,
-    tempo_gasto_segundos: elapsedSeconds(),
-    numero_tentativas: attemptsRef.current,
-    dificuldade: level?.level ?? null,
-    marco,
-    assistiu_tutorial: tutorialOpensRef.current > 0,
-    acertou_apos_tutorial: tutorialOpensRef.current > 0 && !errorSinceTutorialRef.current,
-  }), [level, elapsedSeconds]);
-  const logTutorialOpen = useCallback((origem) => {
-    tutorialOpensRef.current += 1;
-    errorSinceTutorialRef.current = false;
-    logEvent({
-      tipo_evento: tutorialOpensRef.current === 1 ? 'tutorial_aberto' : 'tutorial_reaberto',
-      modulo: 'mt-trans',
-      nivel_id: level?.id,
-      origem,
-    });
-  }, [level]);
+  const attemptsRef = useRef(0);
+  const tutorialOpensRef = useRef(0);
+  const errorSinceTutorialRef = useRef(false);
+  const { phaseExtras, logTutorialOpen } = usePhaseTelemetry({
+    modulo: 'mt-trans', nivelId: level?.id, dificuldade: level?.level ?? null,
+    phaseStartRef, attemptsRef, tutorialOpensRef, errorSinceTutorialRef,
+  });
 
   // ── Modo Aula: iniciar / navegar / sair ─────────────────────────────────────
   const applyStep = useCallback((st) => {
@@ -493,38 +470,25 @@ export default function MTPart1({ onBack, progress, updateProgress,
     const maxStars   = MT_LEVEL_ORDER.length * 3;
     const totalStars = mtLevels.reduce((s, l) => s + (progress?.[`mt-trans-${l.id}`]?.stars || 0), 0);
     return (
-      <div className="menu-screen menu-screen-fases min-screen" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14, width: '100%' }}>
-          <div style={{ flex: 1 }}>
-            <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
-          </div>
-          <h1 className="menu-title" style={{ margin: 0 }}>TuringLab</h1>
-          <div style={{ flex: 1 }} />
-        </div>
-        <p style={{ fontWeight: 900, fontSize: 16, color: '#555', marginBottom: 12,
-          background: '#fed7aa', border: '3px solid #000', borderRadius: 8,
-          padding: '4px 16px', boxShadow: '3px 3px 0 #000' }}>
-          ⚙️ Máquina de Turing — Transdutora
-        </p>
-        <div style={{ marginBottom: 18, fontWeight: 'bold', fontSize: 16 }}>
-          Progresso: {maxStars > 0 ? Math.round((totalStars / maxStars) * 100) : 0}% ({totalStars}/{maxStars} ★)
-        </div>
-        {mtLevels.length === 0 ? (
-          <div style={{ fontWeight: 900, color: '#888', padding: 24, textAlign: 'center' }}>Carregando níveis…</div>
-        ) : (
-          <div className="levels-grid">
-            {mtLevels.map(l => (
-              <button key={l.id} className="menu-btn primary" onClick={() => loadLevel(l)}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                  background: DIFF_COLOR[l.level] }}>
-                <span>{l.label}</span>
-                <SvgStars count={progress?.[`mt-trans-${l.id}`]?.stars || 0} size={14} max={3} />
-              </button>
-            ))}
-          </div>
-        )}
-        <DifficultyLegend keys={['easy', 'medium', 'hard', 'prova']} />
-      </div>
+      <LevelGridScreen
+        onBack={onBack}
+        badge="⚙️ Máquina de Turing — Transdutora"
+        badgeBg="#fed7aa"
+        totalStars={totalStars}
+        maxStars={maxStars}
+        extraClass="min-screen"
+        loading={mtLevels.length === 0}
+        legendKeys={['easy', 'medium', 'hard', 'prova']}
+      >
+        {mtLevels.map(l => (
+          <button key={l.id} className="menu-btn primary" onClick={() => loadLevel(l)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              background: DIFF_COLOR[l.level] }}>
+            <span>{l.label}</span>
+            <SvgStars count={progress?.[`mt-trans-${l.id}`]?.stars || 0} size={14} max={3} />
+          </button>
+        ))}
+      </LevelGridScreen>
     );
   }
 

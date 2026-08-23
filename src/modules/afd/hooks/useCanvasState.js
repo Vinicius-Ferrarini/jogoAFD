@@ -63,7 +63,7 @@ export default function useCanvasState({
     };
     vp.addEventListener('wheel', onWheel, { passive: false });
     return () => vp.removeEventListener('wheel', onWheel);
-  }, [tela, isSidebarOpen, canvasRef, viewportRef]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tela, isSidebarOpen, canvasRef, viewportRef]);
 
   // ── Undo de traço ────────────────────────────────────────────────────────────
   const drawUndo = useCallback(() => {
@@ -109,7 +109,7 @@ export default function useCanvasState({
     setZoom(100);
     const vp = viewportRef?.current ?? canvasRef.current;
     if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; }
-  }, [viewportRef, canvasRef]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [viewportRef, canvasRef]);
 
   return {
     drawings, setDrawings, drawingStack, setDrawingStack,

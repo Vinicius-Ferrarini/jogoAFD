@@ -1,7 +1,9 @@
 // ─── LevelMenu: grade de seleção de fases (tela MENU do AFDPart1) ────────────
 // Paginação 20/página, progresso de estrelas e legenda de dificuldade.
-// CSS: .menu-screen / .levels-grid / .menu-btn em AFDPart1.css.
-import { SvgStars, DifficultyLegend } from '../SvgStar';
+// A moldura (cabeçalho/chip/progresso/grade/paginação/legenda) vem de
+// <LevelGridScreen>; aqui só montamos os azulejos de cada fase.
+import { SvgStars } from '../SvgStar';
+import LevelGridScreen from './LevelGridScreen';
 import { LEVEL_DIFFICULTY, DIFF_COLOR, UNAVAILABLE_LEVELS, HIDDEN_LEVELS } from '../../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../../levels_data/afd/index.js';
 
@@ -14,54 +16,37 @@ export default function LevelMenu({ progress, currentPage, setCurrentPage, onBac
   const pageItems   = visibleLevels.slice((currentPage - 1) * perPage, currentPage * perPage);
 
   return (
-    <div className="menu-screen menu-screen-fases" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
-      <div style={{ display:'flex', alignItems:'center', marginBottom:14, width:'100%' }}>
-        <div style={{ flex:1 }}>
-          <button className="back-btn" onClick={() => onBack?.()}>⬅ Voltar</button>
-        </div>
-        <h1 className="menu-title" style={{ margin:0 }}>TuringLab</h1>
-        <div style={{ flex:1 }} />
-      </div>
-      <p style={{ fontWeight: 900, fontSize: 16, color: '#555', marginBottom: 12,
-        background: '#fde68a', border: '3px solid #000', borderRadius: 8,
-        padding: '4px 16px', boxShadow: '3px 3px 0 #000' }}>
-        🎨 Desenhar &amp; Formalizar
-      </p>
-      <div style={{ marginBottom: 18, fontWeight: 'bold', fontSize: 16 }}>
-        Progresso: {maxStars > 0 ? Math.round((totalStars/maxStars)*100) : 0}% ({totalStars}/{maxStars} ★)
-      </div>
-      <div className="levels-grid">
-        {pageItems.map(lvl => {
-          if (UNAVAILABLE_LEVELS.has(lvl.id)) {
-            return (
-              <button key={lvl.id} className="menu-btn primary" disabled
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                  background: DIFF_COLOR.unavailable, cursor: 'not-allowed', opacity: 0.8 }}>
-                <span>{lvl.label}</span>
-                <span style={{ fontSize: 18, lineHeight: 1, display: 'flex', alignItems: 'center' }}>🔒</span>
-              </button>
-            );
-          }
-          const diff = LEVEL_DIFFICULTY[lvl.id] || 'easy';
-          const bg   = DIFF_COLOR[diff];
+    <LevelGridScreen
+      onBack={onBack}
+      badge="🎨 Desenhar & Formalizar"
+      badgeBg="#fde68a"
+      totalStars={totalStars}
+      maxStars={maxStars}
+      pagination={{ page: currentPage, totalPages, setPage: setCurrentPage }}
+      legendKeys={['easy', 'medium', 'hard', 'trabalho', 'prova', 'impossible']}
+    >
+      {pageItems.map(lvl => {
+        if (UNAVAILABLE_LEVELS.has(lvl.id)) {
           return (
-            <button key={lvl.id} className="menu-btn primary" onClick={() => onSelect(lvl)}
+            <button key={lvl.id} className="menu-btn primary" disabled
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                background: bg }}>
+                background: DIFF_COLOR.unavailable, cursor: 'not-allowed', opacity: 0.8 }}>
               <span>{lvl.label}</span>
-              <SvgStars count={progress[lvl.id]?.stars || 0} size={14} max={lvl.impossible || lvl.wordOnly ? 1 : 3} />
+              <span style={{ fontSize: 18, lineHeight: 1, display: 'flex', alignItems: 'center' }}>🔒</span>
             </button>
           );
-        })}
-      </div>
-      <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginTop: 20 }}>
-        <button className="menu-btn" disabled={currentPage===1} onClick={() => setCurrentPage(p=>p-1)} style={{ opacity: currentPage===1 ? 0.5 : 1 }}>⬅ Anterior</button>
-        <span style={{ fontWeight:'bold', fontSize:18, background:'#fff', padding:'5px 15px', border:'3px solid #000', borderRadius:8 }}>
-          {currentPage} / {totalPages}
-        </span>
-        <button className="menu-btn" disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={{ opacity: currentPage===totalPages ? 0.5 : 1 }}>Próxima ➡</button>
-      </div>
-      <DifficultyLegend keys={['easy', 'medium', 'hard', 'trabalho', 'prova', 'impossible']} />
-    </div>
+        }
+        const diff = LEVEL_DIFFICULTY[lvl.id] || 'easy';
+        const bg   = DIFF_COLOR[diff];
+        return (
+          <button key={lvl.id} className="menu-btn primary" onClick={() => onSelect(lvl)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              background: bg }}>
+            <span>{lvl.label}</span>
+            <SvgStars count={progress[lvl.id]?.stars || 0} size={14} max={lvl.impossible || lvl.wordOnly ? 1 : 3} />
+          </button>
+        );
+      })}
+    </LevelGridScreen>
   );
 }

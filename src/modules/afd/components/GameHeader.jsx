@@ -8,18 +8,7 @@
 // opcionais — omitidas, o header se comporta exatamente como antes.
 import './GameHeader.css';
 import { SvgStars } from '../SvgStar';
-
-const navBtnStyle = {
-  padding: '2px 8px', fontSize: 13, fontWeight: 900,
-  background: '#fff', color: '#000', border: '2px solid #000', borderRadius: 6,
-  cursor: 'pointer', boxShadow: '2px 2px 0 #000',
-  fontFamily: 'var(--font-comic)',
-  lineHeight: 1.2,
-};
-const navBtnDisabledStyle = {
-  ...navBtnStyle,
-  opacity: 0.35, cursor: 'not-allowed', boxShadow: 'none',
-};
+import { navBtnStyle, navBtnDisabledStyle } from './navButtonStyles';
 
 export default function GameHeader({
   // Dados do nível (genéricos): objective = texto mostrado como "Objetivo".

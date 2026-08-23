@@ -83,7 +83,7 @@ describe('normalize – pipeline completo', () => {
 
   it('chaves e colchetes são removidos', () => {
     const r = normalize('{ a^n | n > 0 }');
-    expect(r).not.toMatch(/[{}\[\]]/);
+    expect(r).not.toMatch(/[{}[\]]/);
   });
 
   it('/ vira |', () => {
