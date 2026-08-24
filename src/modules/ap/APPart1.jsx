@@ -21,6 +21,7 @@ import useAPDrawing from './hooks/useAPDrawing';
 import useAPGuidedLesson from './hooks/useAPGuidedLesson';
 import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js';
 import { AP_LEVELS, getShortestWord } from '../../levels_data/ap/index.js';
+import { buildNoAttemptHintMessage, buildSizeHintMessage } from '../afd/utils/sizeHint';
 import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
@@ -58,6 +59,9 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
   const innerCanvasRef = useRef(null);
   const viewportRef = useRef(null);
   const noopRef = useRef(false);
+  // Última palavra testada em modo LANGUAGE durante a fase de descoberta
+  // (normalizada — 'null'/'vazio' já viram ''), usada só pela Dica de Tamanho.
+  const lastAttemptRef = useRef(null);
 
   const g = usePDAGraph({ showToast, selectedNodes, setSelectedNodes });
   const draw = useAPDrawing(innerCanvasRef);
@@ -194,6 +198,7 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
     attemptsRef.current = 0;
     tutorialOpensRef.current = 0;
     errorSinceTutorialRef.current = false;
+    lastAttemptRef.current = null;
     logEvent({
       tipo_evento: 'inicio_fase',
       modulo: 'ap',
@@ -361,6 +366,7 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
         const shortest = getShortestWord(level);
         const isShortest = acceptedByTruth && word === shortest;
         const status = isShortest ? 'shortest' : acceptedByTruth ? 'correct' : 'wrong';
+        lastAttemptRef.current = word;
         attemptsRef.current += 1;
         if (status === 'wrong') errorSinceTutorialRef.current = true;
         logEvent({ tipo_evento: 'tentativa', modulo: 'ap', nivel_id: level.id, resultado: status, numero_tentativas: attemptsRef.current });
@@ -386,6 +392,16 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
       ? prev : [{ word: display, mode: 'DRAWING', accepted: pdaAccepts(g.studentPda, word) }, ...prev]);
     setSimWord('');
   }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.studentPda, updateProgress, showToast, phaseExtras]);
+
+  // ── Dica de Tamanho: mostra num toast, nunca revela a palavra em si ────────
+  const handleSizeHint = useCallback(() => {
+    if (lastAttemptRef.current === null) {
+      showToast?.(buildNoAttemptHintMessage(), 'info');
+      return;
+    }
+    showToast?.(buildSizeHintMessage(level ? getShortestWord(level) : null, lastAttemptRef.current), 'info');
+    logTutorialOpen('dica_tamanho');
+  }, [level, showToast, logTutorialOpen]);
 
   // ── Simular palavra: abre APSimPanel passo a passo (rodapé) + adiciona à lista ─
   const simulate = useCallback(() => {
@@ -500,6 +516,8 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
         lessonDisabled={!lesson.hasLesson}
         onStartLesson={startLesson}
         onCloseLesson={finishLesson}
+        showSizeHint={!isDrawingUnlocked}
+        onSizeHint={handleSizeHint}
       />
 
       <div className="workspace">

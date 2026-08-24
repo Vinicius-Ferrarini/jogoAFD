@@ -24,6 +24,7 @@ import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js
 import useToast from '../afd/hooks/useToast';
 import usePhaseTelemetry from '../afd/hooks/usePhaseTelemetry';
 import { MT_RECON_LEVEL_ORDER, loadMTReconLevel, getShortestWord, getGabaritoGraph } from '../../levels_data/mt-recon/index.js';
+import { buildNoAttemptHintMessage, buildSizeHintMessage } from '../afd/utils/sizeHint';
 import { fuzzTMRecognizer, simulateTM } from '../mt/utils/tmAlgorithms';
 import { validateMTFormalFields, validateMTFormalTransitions } from '../mt/utils/mtFormalValidation';
 import { onBracketKeyDown } from '../afd/utils/bracketAutoClose';
@@ -77,6 +78,9 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
   const formalRef      = useRef(null);
   const formalFieldRefs = useRef({}); // { [campo]: {current: <input>} } — p/ inserir símbolo no cursor
   const noopRef        = useRef(false);
+  // Última palavra testada em modo LANGUAGE durante a fase de descoberta
+  // (normalizada — 'null'/'vazio' já viram ''), usada só pela Dica de Tamanho.
+  const lastAttemptRef = useRef(null);
 
   const lesson = useMTGuidedLesson(level);
   const g    = useTMGraph({ showToast, selectedNodes, setSelectedNodes });
@@ -226,6 +230,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
     attemptsRef.current = 0;
     tutorialOpensRef.current = 0;
     errorSinceTutorialRef.current = false;
+    lastAttemptRef.current = null;
     logEvent({
       tipo_evento: 'inicio_fase',
       modulo: 'mt-recon',
@@ -309,6 +314,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
         const shortest = getShortestWord(level);
         const isShortest = accepted && word === shortest;
         const resultado = isShortest ? 'shortest' : accepted ? 'correct' : 'wrong';
+        lastAttemptRef.current = word;
         // Telemetria: teste de palavra em LANGUAGE é resposta avaliada (gabarito).
         attemptsRef.current += 1;
         if (resultado === 'wrong') errorSinceTutorialRef.current = true;
@@ -463,6 +469,16 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
     if (isOpening) logTutorialOpen('dica');
   }, [prof.message, level, logTutorialOpen]);
 
+  // ── Dica de Tamanho: mostra num toast, nunca revela a palavra em si ────────
+  const handleSizeHint = useCallback(() => {
+    if (lastAttemptRef.current === null) {
+      showToast?.(buildNoAttemptHintMessage(), 'info');
+      return;
+    }
+    showToast?.(buildSizeHintMessage(level ? getShortestWord(level) : null, lastAttemptRef.current), 'info');
+    logTutorialOpen('dica_tamanho');
+  }, [level, showToast, logTutorialOpen]);
+
   const stars = level ? (progress?.[`mt-recon-${level.id}`]?.stars || 0) : 0;
 
   // ── Menu ─────────────────────────────────────────────────────────────────────
@@ -603,6 +619,8 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
         lessonDisabled={!lesson.hasLesson}
         onStartLesson={startLesson}
         onCloseLesson={finishLesson}
+        showSizeHint={!isDrawingUnlocked}
+        onSizeHint={handleSizeHint}
       />
 
       <div className="workspace">

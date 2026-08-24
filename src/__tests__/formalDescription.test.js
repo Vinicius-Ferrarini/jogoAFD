@@ -4,7 +4,7 @@ import {
   checkFormalBraceFormat,
   validateFormalElements,
   validateFormalTransitions,
-} from '../modules/afd/FormalDescriptionModal.jsx';
+} from '../modules/afd/utils/formalDescriptionLogic.js';
 
 // ─── Canvas base: q0(inicial) -a-> q1(final), q0 -b-> q0 ────────────────────
 const NODES = [

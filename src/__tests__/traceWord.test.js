@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traceWord } from '../modules/afd/AFDPart1.jsx';
+import { traceWord } from '../modules/afd/utils/traceWord.js';
 
 // ─── Grafo auxiliar mínimo ────────────────────────────────────────────────────
 // q0 (inicial) --a--> q1 (final)

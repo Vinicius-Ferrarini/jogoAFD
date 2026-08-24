@@ -17,6 +17,8 @@ import usePhaseTelemetry from './hooks/usePhaseTelemetry';
 import useGuidedLesson from './hooks/useGuidedLesson';
 import useAFDGraph, { lvlAccepts, validateAFDPure } from './hooks/useAFDGraph';
 import useCanvasState from './hooks/useCanvasState';
+import { traceWord } from './utils/traceWord';
+import { buildNoAttemptHintMessage, buildSizeHintMessage } from './utils/sizeHint';
 import { UNAVAILABLE_LEVELS, HIDDEN_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../levels_data/afd/index.js';
 import { logEvent } from '../../services/telemetry';
@@ -28,29 +30,6 @@ const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6
 // Dimensões lógicas do canvas interno (devem casar com INNER_W/INNER_H de CanvasArea.jsx)
 const INNER_W = 8000;
 const INNER_H = 8000;
-
-// ─── Rastreio de palavra no Modo Aula ────────────────────────────────────────
-// Simula a palavra no grafo CONGELADO do passo atual e devolve os "quadros" da
-// animação: cada quadro marca o estado ativo, a última letra consumida e o tipo
-// de destaque ('ok' = rastreando/amarelo, 'done' = aceitou/verde, 'error' =
-// travou ou parou em não-final/vermelho).
-export function traceWord(nodes, transitions, word) {
-  const initial = (nodes ?? []).find(n => n.isInitial);
-  if (!initial) return [];
-  const frames = [{ nodeId: initial.id, type: 'ok', letter: -1 }];
-  let cur = initial.id;
-  for (let i = 0; i < word.length; i++) {
-    const ch = word[i];
-    const tr = (transitions ?? []).find(t =>
-      t.from === cur && String(t.symbol).split(',').map(s => s.trim()).includes(ch));
-    if (!tr) { frames.push({ nodeId: cur, type: 'error', letter: i }); return frames; }
-    cur = tr.to;
-    frames.push({ nodeId: cur, type: 'ok', letter: i });
-  }
-  const last = nodes.find(n => n.id === cur);
-  frames[frames.length - 1].type = last?.isFinal ? 'done' : 'error';
-  return frames;
-}
 
 // ─── App Principal ────────────────────────────────────────────────────────────
 export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
@@ -81,6 +60,9 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
 
   const [testWords, setTestWords]   = useState([]);
   const [newWord, setNewWord]       = useState('');
+  // Última palavra testada (normalizada — 'null'/'vazio' já viram ''), usada
+  // só pela Dica de Tamanho (regra: diff = tentativa.length - shortestWord.length).
+  const lastAttemptRef = useRef(null);
   const [drawnCards, setDrawnCards] = useState([]);
   const [selectedSymbolCard, setSelectedSymbolCard] = useState(null);
 
@@ -240,6 +222,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     setIsDrawingUnlocked(false);
     setIsSidebarOpen(false);
     setNewWord('');
+    lastAttemptRef.current = null;
     setProfessorMessage('');
     setInteractionMode('IDLE');
     setDrawnCards([]);
@@ -319,18 +302,25 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     const target       = currentLevel.shortestWord;
     const lower        = newWord.toLowerCase();
     const isSpecialNull = lower === 'null' || lower === 'vazio';
+    // "null"/"vazio" digitados são a forma de escrever λ (string vazia) — mesma
+    // normalização já usada em APPart1/MTReconPart1, aplicada ANTES de comparar
+    // tamanho/validade. target === null (L01, L = ∅) continua no branch à
+    // parte: ali não existe menor palavra nenhuma, então "null"/"vazio" seguem
+    // sendo o único jeito de sinalizar a resposta especial.
+    const word = isSpecialNull ? '' : newWord;
     let isShortest = false, isValid = false;
 
     if (target === null) { if (isSpecialNull) isShortest = true; }
-    else if (newWord.length === target.length && lvlAccepts(currentLevel, newWord)) isShortest = true;
+    else if (word.length === target.length && lvlAccepts(currentLevel, word)) isShortest = true;
 
     if ((currentLevel.regex || currentLevel.validate) && !(target === null && isSpecialNull))
-      isValid = lvlAccepts(currentLevel, newWord);
+      isValid = lvlAccepts(currentLevel, word);
 
-    const wordDisplay = newWord === '' ? 'λ' : newWord;
+    const wordDisplay = word === '' ? 'λ' : word;
     if (testWords.some(w => w.word === wordDisplay)) {
       showToast('Você já testou essa palavra!', 'info'); return;
     }
+    lastAttemptRef.current = word;
 
     // Telemetria: registra cada tentativa nova (repetições saem no early-return acima).
     const resultado = isShortest ? 'shortest' : (isValid ? 'correct' : 'wrong');
@@ -389,6 +379,16 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     setTestWords([]);
     setNewWord('');
   }, []);
+
+  // ── Dica de Tamanho: mostra num toast, nunca revela a palavra em si ────────
+  const handleSizeHint = useCallback(() => {
+    if (lastAttemptRef.current === null) {
+      showToast(buildNoAttemptHintMessage(), 'info');
+      return;
+    }
+    showToast(buildSizeHintMessage(currentLevel?.shortestWord, lastAttemptRef.current), 'info');
+    logTutorialOpen('dica_tamanho');
+  }, [currentLevel, showToast, logTutorialOpen]);
 
   // Atalhos de teclado: Ctrl+Z, Ctrl+Y, Esc, Delete
   useEffect(() => {
@@ -548,6 +548,8 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         }}
         lessonActive={lessonActive}
         onCloseLesson={handleLessonFinish}
+        showSizeHint={!isDrawingUnlocked}
+        onSizeHint={handleSizeHint}
       />
 
       <div className="workspace">

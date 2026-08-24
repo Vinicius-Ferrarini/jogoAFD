@@ -23,6 +23,11 @@ export default function GameHeader({
   lessonActiveLabel, lessonToggleMode = 'badge', lessonDisabled = false,
   // Ação secundária opcional (AP: "📝 Descrição Formal"). Omitida no AFD.
   secondaryAction,
+  // Dica de tamanho (fase "descubra a menor palavra"): visível só enquanto
+  // showSizeHint for true (o módulo pai decide, mesma condição já usada para
+  // saber se ainda está na fase de descoberta). onSizeHint calcula e mostra a
+  // mensagem (ex.: via showToast) — este componente não sabe o conteúdo dela.
+  showSizeHint = false, onSizeHint,
 }) {
   const objectiveText = objective ?? currentLevel?.formula ?? '';
   const levelLabel = label ?? currentLevel?.label;
@@ -75,6 +80,16 @@ export default function GameHeader({
                 }}>✕</span>
             )}
           </div>
+        )}
+        {showSizeHint && (
+          <button
+            className="menu-btn"
+            style={{ padding: '4px 12px', fontSize: 12, marginLeft: 6 }}
+            onClick={onSizeHint}
+            title="Dica sobre o tamanho da menor palavra"
+          >
+            💡 Dica
+          </button>
         )}
         {secondaryAction && (
           <button
