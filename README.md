@@ -66,9 +66,12 @@ Este projeto **não é só um jogo** — é um instrumento de pesquisa acadêmic
 | 📊 | **Grafo → Linguagem (P2)** | Modo inverso: dado um autômato, o aluno deve identificar a linguagem formal aceita |
 | 🔽 | **Minimização de AFD** | Reduz um autômato ao equivalente mínimo em passos guiados |
 | 📚 | **Autômatos com Pilha** | Construção de AP com aceitação por pilha vazia |
-| 🎞️ | **Máquinas de Turing** | Reconhecedora (aceita/rejeita) e Transdutora (transforma a fita) — construção passo a passo com simulação em tempo real |
-| 🎓 | **Modo Aula Guiada** | Storyboard passo a passo, narrado pelo professor, disponível em todos os módulos |
-| ⭐ | **Sistema de Estrelas** | Até 3 estrelas por fase com base no número de tentativas |
+| 🔍 | **Máquina de Turing Reconhecedora** | Construção passo a passo de MT que aceita ou rejeita a palavra na fita |
+| 🔄 | **Máquina de Turing Transdutora** | Construção passo a passo de MT que transforma a fita de entrada numa saída, com simulação em tempo real |
+| 📝 | **Boss Mode — Trabalho** | Desafio final que reúne, numa grade própria, 5 exercícios já vistos de AFD Parte 1, AFD Parte 2 e Autômatos com Pilha |
+| 🏆 | **Boss Mode — Prova** | Desafio final maior, com 8 questões cobrindo os 6 tipos de exercício do jogo (AFD P1, AFD P2, Minimização, AP, MT Reconhecedora e MT Transdutora) |
+| 🎓 | **Modo Aula Guiada** | Storyboard passo a passo, narrado pelo Professor Maurílio, cobrindo 100% dos níveis de AFD Parte 1, Minimização, AP e MT (reconhecedora e transdutora) — não disponível em AFD Parte 2 |
+| ⭐ | **Sistema de Estrelas** | Até 3 estrelas por fase — a regra varia por módulo (ver [Sistema de Estrelas](#-sistema-de-estrelas)) |
 
 ---
 
@@ -81,10 +84,104 @@ TuringLab
 │   ├── Parte 2 — Identificar a linguagem a partir do grafo
 │   └── Minimização — reduzir um autômato ao seu equivalente mínimo
 ├── Autômatos com Pilha — construção e aceitação por pilha vazia
-└── Máquinas de Turing
-    ├── Reconhecedora — aceita ou rejeita a palavra na fita
-    └── Transdutora — transforma a fita de entrada numa saída
+├── Máquinas de Turing
+│   ├── Reconhecedora — aceita ou rejeita a palavra na fita
+│   └── Transdutora — transforma a fita de entrada numa saída
+└── Desafio de Prova (Boss Mode)
+    ├── Trabalho — 5 exercícios-marco de AFD P1/P2 e AP, numa grade própria
+    └── Prova — 8 questões cobrindo os 6 tipos de exercício do jogo
 ```
+
+---
+
+## 📈 Progressão de dificuldade
+
+Cada fase do jogo (definidas em `src/levels.js`, mapa `LEVEL_DIFFICULTY`) tem um
+nível de dificuldade associado, usado para colorir os cards no menu de seleção:
+
+| Dificuldade | Cor | Uso |
+|---|---|---|
+| 🟢 `easy` | verde | Introdução ao conceito, exemplos diretos |
+| 🟡 `medium` | amarelo | Combina duas ou mais regras/condições |
+| 🔴 `hard` | vermelho | Casos com múltiplas exceções, "pegadinhas" clássicas do modelo |
+| 🟣 `impossible` | lilás | Linguagem comprovadamente fora do poder do modelo atual — exercício pedagógico sobre os *limites* do formalismo |
+| 🟪 `trabalho` / 🔵 `prova` | roxo / azul | Fases-marco reunidas no Boss Mode (Desafio de Prova) |
+
+O caso `impossible` é usado uma única vez, na fase **L14** (`|w|ₐ = |w|_b`, mesmo
+número de "a"s e "b"s numa palavra): é uma linguagem comprovadamente **não
+regular**, então não existe nenhum AFD correto para ela. O jogo mantém L14
+jogável em AFD Parte 1 — o aluno tenta construir o autômato e recebe uma
+explicação de por que é impossível — mas a mantém bloqueada em AFD Parte 2
+(`UNAVAILABLE_LEVELS_P2_ONLY`), já que essa parte depende de um grafo válido
+que, neste caso, não existe. Nesse nível, o "exercício" é a própria
+demonstração de um limite formal do modelo, não uma tarefa a resolver.
+
+---
+
+## 🎓 Professor Maurílio — Modo Aula passo a passo
+
+Em todo módulo jogável (AFD Parte 1, Minimização, Autômatos com Pilha, MT
+Reconhecedora e MT Transdutora), o aluno pode abrir o **Modo Aula**: o
+professor Maurílio narra, passo a passo, a construção e a simulação completa
+do autômato daquela fase — sem pular etapas. AFD Parte 2 não tem Modo Aula,
+já que seu exercício é o inverso (identificar a linguagem a partir de um
+grafo pronto), sem construção guiada.
+
+A parte notável é *como* essa narração é gerada: em vez de um roteiro escrito
+manualmente para cada exercício (o que não escalaria — seriam dezenas de
+roteiros para manter), a aula é **auto-derivada do próprio gabarito** de cada
+nível (ver [ADR 0005](docs/adr/0005-modo-aula-auto-derivado-do-gabarito.md)):
+
+- **AFD (Minimização):** `useMinimizationGame.js` gera os frames de cada etapa
+  (PREP/SETUP/TRIVIAL/PROP/GROUPS/DRAW) a partir dos mesmos gabaritos
+  memoizados usados para validar o jogo.
+- **Autômatos com Pilha:** `buildApLesson.js` deriva a aula (fase Grafo + fase
+  Formal) diretamente da tripla `(read, pop, push)` de cada transição do
+  `.jff`/`.xml` de cada nível.
+- **Máquinas de Turing:** cada transição de cada nível carrega sua própria
+  narração (`"prof": "..."`), lida passo a passo pelo hook
+  `useMTGuidedLesson` — reaproveitado tanto pela MT Reconhecedora quanto pela
+  Transdutora.
+
+Essa abordagem cobre **100% dos níveis "de graça"**, sem depender de um
+roteiro manual por exercício. Nos níveis mais longos de MT Transdutora, isso
+se traduz em narrações extensas: **L23 e L24 têm 904 passos narrados pelo
+professor cada um** (contagem de chaves `"prof"` em
+`src/levels_data/mt/L23.js` e `L24.js`), cobrindo cada transição da simulação
+completa, sem atalhos.
+
+---
+
+## ⭐ Sistema de Estrelas
+
+Toda fase concede **até 3 estrelas**, mas a regra de cálculo não é uniforme
+entre módulos — ela reflete o formato de cada exercício (fonte única dos
+totais: `src/services/starTotals.js`):
+
+- **AFD Parte 1, Autômatos com Pilha, MT Reconhecedora, MT Transdutora e
+  Minimização** — as estrelas são **marcos de progresso dentro da própria
+  fase**, não uma penalidade por erro:
+  1. ⭐ descobrir o exemplo mínimo da linguagem (desbloqueia o canvas de
+     desenho);
+  2. ⭐⭐ validar o autômato desenhado contra a especificação;
+  3. ⭐⭐⭐ completar a descrição formal (a tupla do modelo — quíntupla,
+     sêxtupla etc.) ou, na Minimização, terminar o desenho do autômato
+     mínimo.
+
+  (Na Minimização o fluxo entra direto a partir de 2 marcos — propagação e
+  desenho mínimo — sem uma etapa de "descoberta" prévia como nos demais.)
+
+- **AFD Parte 2** (Grafo → Linguagem) é a exceção: aqui a estrela **de fato
+  depende do número de tentativas** para acertar a fórmula da linguagem —
+  acertar de primeira vale 3⭐, na segunda tentativa 2⭐, da terceira em
+  diante 1⭐ (`useP2Answer.js`).
+
+- **Boss Mode (Trabalho e Prova)** reaproveita o mesmo componente e a mesma
+  regra de estrelas do módulo original de cada exercício, só que gravando o
+  progresso numa chave própria (`boss-trabalho-{id}` / `boss-prova-{id}`),
+  independente do progresso do exercício na tela normal daquele módulo — e
+  fora do total geral de estrelas da Home (`totalEarnedStars` ignora
+  qualquer chave `boss-*`, para não contar a mesma estrela duas vezes).
 
 ---
 
