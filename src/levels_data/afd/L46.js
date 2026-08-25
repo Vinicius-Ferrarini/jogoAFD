@@ -28,7 +28,7 @@ function buildLessonL46() {
   return steps;
 }
 
-export default { id: 46, layout: LAYOUT, label: "L46", formula: "L = {w ∈ {a,b,c}* / a quantidade de a, b e c é par}",              desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['a','b','c'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","aabb","aabbcc"],      rejectedWords: ["a","b","abc"],         hint: "Isso é um cubo mágico de estados! Paridade para 3 letras exige 8 estados.",                                        successMsg: "Paridade em 3D completada!",
+export default { id: 46, layout: LAYOUT, label: "L46", formula: "L = {w ∈ {a,b,c}* / a quantidade de a, b e c é par}",              desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => [...w].every(c=>c==='a'||c==='b'||c==='c') && ['a','b','c'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['a', 'b', 'c'],        acceptedWords: ["λ","aabb","aabbcc"],      rejectedWords: ["a","b","abc"],         hint: "Isso é um cubo mágico de estados! Paridade para 3 letras exige 8 estados.",                                        successMsg: "Paridade em 3D completada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Cubo de paridade: 3 letras, 8 estados!', dialog: [
         'L46: contar a, b e c separadamente. Aceito quando TODOS pares.',

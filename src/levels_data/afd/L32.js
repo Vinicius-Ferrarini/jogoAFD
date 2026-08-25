@@ -29,7 +29,7 @@ function buildLessonL32() {
   return steps;
 }
 
-export default { id: 32, layout: LAYOUT, label: "L32", formula: "L = {w ∈ {0,1,2}* / w tem número par de 0's, 1's e 2's}",          desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
+export default { id: 32, layout: LAYOUT, label: "L32", formula: "L = {w ∈ {0,1,2}* / w tem número par de 0's, 1's e 2's}",          desc: "",                                                                 shortestWord: "",         regex: /^.*$/, validate: w => [...w].every(c => c==='0'||c==='1'||c==='2') && ['0','1','2'].every(c => [...w].filter(x=>x===c).length%2===0), alphabet: ['0', '1', '2'],        acceptedWords: ["λ","0011","001122"],      rejectedWords: ["0","1","012"],         hint: "Paridade tripla! Vai precisar de estados para todas as combinações de par/ímpar.",                                  successMsg: "Autômato massivo concluído.",
     tutorials: {
       onStart: { type: 'theory', title: 'Explosão de Estados — 2³ = 8!', dialog: [
         'Paridade tripla simultânea: par/ímpar de 0s, de 1s e de 2s — totalmente independentes.',

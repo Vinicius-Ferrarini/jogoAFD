@@ -318,12 +318,16 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     if (!currentLevel) return;
     const target       = currentLevel.shortestWord;
     const lower        = newWord.toLowerCase();
-    const isSpecialNull = lower === 'null' || lower === 'vazio';
-    // "null"/"vazio" digitados são a forma de escrever λ (string vazia) — mesma
-    // normalização já usada em APPart1/MTReconPart1, aplicada ANTES de comparar
-    // tamanho/validade. target === null (L01, L = ∅) continua no branch à
-    // parte: ali não existe menor palavra nenhuma, então "null"/"vazio" seguem
-    // sendo o único jeito de sinalizar a resposta especial.
+    // "null"/"vazio" digitados só viram o sentinela quando target === null
+    // (L01, L = ∅ — linguagem sem NENHUMA palavra, nem λ): ali não existe
+    // menor palavra nenhuma, então "null"/"vazio" são o único jeito de
+    // sinalizar essa resposta especial (mesma normalização usada em
+    // APPart1/MTReconPart1). Quando target É a string vazia de verdade (ex.:
+    // L14 — λ é aceita), a palavra vazia já é testável na prática deixando o
+    // campo em branco e clicando "+"/Enter — digitar o TEXTO "null" ali não
+    // deve contar como achar λ (achado real: L14 "aceitava" null, abrindo a
+    // Aula Guiada, mesmo "null" não sendo uma palavra de {a,b}*).
+    const isSpecialNull = target === null && (lower === 'null' || lower === 'vazio');
     const word = isSpecialNull ? '' : newWord;
 
     // Piloto WordleBoard (L08): a grade já revela o tamanho da menor palavra

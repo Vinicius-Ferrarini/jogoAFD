@@ -22,7 +22,7 @@ function buildLessonL19() {
   return steps;
 }
 
-export default { id: 19, layout: LAYOUT, label: "L19", formula: "L = {w ∈ {a,b}* / w tem um número impar de ab's}",           desc: "",                                                                 shortestWord: "ab",       validate: (w) => { let a=0,b=0; for(const c of w){if(c==='a')a++;else if(c==='b')b++;} return a%2===1&&b%2===1; },                                                                           alphabet: ['a', 'b'],             acceptedWords: ["ab","ba","aaab"],          rejectedWords: ["λ","aa","abab","b"],   hint: "Cada 'a' alterna a paridade do contador de a's; cada 'b' alterna o de b's. Aceite quando os dois forem ímpares.",  successMsg: "Paridade dupla dominada!",
+export default { id: 19, layout: LAYOUT, label: "L19", formula: "L = {w ∈ {a,b}* / w tem um número impar de ab's}",           desc: "",                                                                 shortestWord: "ab",       validate: (w) => { let a=0,b=0; for(const c of w){if(c==='a')a++;else if(c==='b')b++;else return false;} return a%2===1&&b%2===1; },                                                                           alphabet: ['a', 'b'],             acceptedWords: ["ab","ba","aaab"],          rejectedWords: ["λ","aa","abab","b"],   hint: "Cada 'a' alterna a paridade do contador de a's; cada 'b' alterna o de b's. Aceite quando os dois forem ímpares.",  successMsg: "Paridade dupla dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade Dupla!', dialog: [
         'Aceitar quando a quantidade de "a"s E a de "b"s são ambas ímpares ao mesmo tempo.',

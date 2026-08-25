@@ -22,7 +22,7 @@ function buildLessonL38() {
   return steps;
 }
 
-export default { id: 38, layout: LAYOUT, label: "L38", formula: "L = {w ∈ {a,b}* / a quantidade de a é par e a quantidade de b é impar}", desc: "",                                                             shortestWord: "b",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["λ","a","ab"],          hint: "Você precisa de 4 estados para controlar: Par/Par, Par/Ímpar, Ímpar/Par, Ímpar/Ímpar.",                             successMsg: "Quadrante de paridade solucionado.",
+export default { id: 38, layout: LAYOUT, label: "L38", formula: "L = {w ∈ {a,b}* / a quantidade de a é par e a quantidade de b é impar}", desc: "",                                                             shortestWord: "b",        regex: /^.*$/, validate: w => [...w].every(c=>c==='a'||c==='b') && [...w].filter(c=>c==='a').length%2===0 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["b","aab","bbb"],          rejectedWords: ["λ","a","ab"],          hint: "Você precisa de 4 estados para controlar: Par/Par, Par/Ímpar, Ímpar/Par, Ímpar/Ímpar.",                             successMsg: "Quadrante de paridade solucionado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade Dupla: a-par e b-ímpar!', dialog: [
         'L38: contar a\'s e b\'s separadamente. Aceito quando #a par E #b ímpar.',

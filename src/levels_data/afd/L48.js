@@ -22,7 +22,7 @@ function buildLessonL48() {
   return steps;
 }
 
-export default { id: 48, layout: LAYOUT, label: "L48", formula: "L = {w ∈ {0,1}* / a quantidade de zeros é par e a quantidade de 1 é impar}", desc: "",                                                         shortestWord: "1",        regex: /^.*$/, validate: w => [...w].filter(c=>c==='0').length%2===0 && [...w].filter(c=>c==='1').length%2===1, alphabet: ['0', '1'],             acceptedWords: ["1","001","11100"],        rejectedWords: ["λ","0","01"],          hint: "Parecido com a L38, mas com números. Foque no estado correto de parada.",                                           successMsg: "Paridade binária.",
+export default { id: 48, layout: LAYOUT, label: "L48", formula: "L = {w ∈ {0,1}* / a quantidade de zeros é par e a quantidade de 1 é impar}", desc: "",                                                         shortestWord: "1",        regex: /^.*$/, validate: w => [...w].every(c=>c==='0'||c==='1') && [...w].filter(c=>c==='0').length%2===0 && [...w].filter(c=>c==='1').length%2===1, alphabet: ['0', '1'],             acceptedWords: ["1","001","11100"],        rejectedWords: ["λ","0","01"],          hint: "Parecido com a L38, mas com números. Foque no estado correto de parada.",                                           successMsg: "Paridade binária.",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade Binária: 0-par e 1-ímpar!', dialog: [
         'L48: contar 0s e 1s separadamente. Aceito quando #0 par E #1 ímpar.',

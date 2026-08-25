@@ -94,10 +94,8 @@ export default function BossMode({
   if (showDone) {
     return (
       <div className="menu-screen menu-screen-fases" style={{ justifyContent: 'flex-start', paddingTop: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14, width: '100%' }}>
-          <div style={{ flex: 1 }}>
-            <button className="back-btn" onClick={() => setShowDone(false)}>⬅ Voltar</button>
-          </div>
+        <div className="nav-header">
+          <button className="back-btn" onClick={() => setShowDone(false)}>⬅ Voltar</button>
           <h1 className="menu-title" style={{ margin: 0 }}>TuringLab</h1>
           <div style={{ flex: 1 }} />
         </div>

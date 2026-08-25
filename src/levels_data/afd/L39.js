@@ -22,7 +22,7 @@ function buildLessonL39() {
   return steps;
 }
 
-export default { id: 39, layout: LAYOUT, label: "L39", formula: "L = {w ∈ {a,b}* / a quantidade de a é impar e a quantidade de b é impar}", desc: "",                                                            shortestWord: "ab",       regex: /^.*$/, validate: w => [...w].filter(c=>c==='a').length%2===1 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["ab","abbb","aaabbb"],     rejectedWords: ["λ","a","b"],           hint: "Parecido com a anterior, mas o estado de aceitação muda.",                                                          successMsg: "Paridade ímpar cruzada!",
+export default { id: 39, layout: LAYOUT, label: "L39", formula: "L = {w ∈ {a,b}* / a quantidade de a é impar e a quantidade de b é impar}", desc: "",                                                            shortestWord: "ab",       regex: /^.*$/, validate: w => [...w].every(c=>c==='a'||c==='b') && [...w].filter(c=>c==='a').length%2===1 && [...w].filter(c=>c==='b').length%2===1, alphabet: ['a', 'b'],             acceptedWords: ["ab","abbb","aaabbb"],     rejectedWords: ["λ","a","b"],           hint: "Parecido com a anterior, mas o estado de aceitação muda.",                                                          successMsg: "Paridade ímpar cruzada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade Dupla: a-ímpar e b-ímpar!', dialog: [
         'L39: aceito quando #a ímpar E #b ímpar. Estado final: q3=(í,í) no canto oposto de q0.',

@@ -27,7 +27,7 @@ function buildLessonL29() {
   return steps;
 }
 
-export default { id: 29, layout: LAYOUT, label: "L29", formula: "L = {w ∈ {0,1}* / os primeiros 4 símbolos contêm, no mínimo, dois 1's}", desc: "", shortestWord: "11", validate: w => { const first4 = [...w].slice(0,4); return first4.filter(c=>c==='1').length >= 2; }, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Analise apenas os primeiros 4 símbolos e conte os 1s.",                                                              successMsg: "Análise de janela inicial!",
+export default { id: 29, layout: LAYOUT, label: "L29", formula: "L = {w ∈ {0,1}* / os primeiros 4 símbolos contêm, no mínimo, dois 1's}", desc: "", shortestWord: "11", validate: w => { if (![...w].every(c => c === '0' || c === '1')) return false; const first4 = [...w].slice(0,4); return first4.filter(c=>c==='1').length >= 2; }, alphabet: ['0', '1'], acceptedWords: ["11","0011","1011"],      rejectedWords: ["0","00","0001"],       hint: "Analise apenas os primeiros 4 símbolos e conte os 1s.",                                                              successMsg: "Análise de janela inicial!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois 1s nos primeiros 4 símbolos!', dialog: [
         'L29: os primeiros 4 símbolos devem conter ao menos dois "1"s.',
