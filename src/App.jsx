@@ -32,8 +32,9 @@ const WordGuess    = lazy(() => import('./modules/word-guess/WordGuess'));
 // Módulos com uma ÚNICA atividade pulam a tela de submódulos e vão direto ao jogo
 // (ex.: AP só tem "Autômato com Pilha" — não faz sentido escolher pilha 2x).
 // MT tem 2 atividades (Reconhecedora + Transdutora), então passa pela tela de
-// submódulos como o AFD. word-guess (minigame Menor Palavra) idem AP.
-const DIRECT_GAME = { ap: 'ap-pilha', 'word-guess': 'word-guess-play' };
+// submódulos como o AFD. minigames também tem 3 (Trabalho/Prova/Menor Palavra),
+// então idem — passa pela tela de submódulos.
+const DIRECT_GAME = { ap: 'ap-pilha' };
 
 export default function App() {
   const [screen, setScreen] = useState('HOME');
@@ -169,11 +170,11 @@ export default function App() {
           case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
           case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
           case 'ap-pilha':  return <APPart1  {...moduleProps} onBack={goModules} />;
-          case 'word-guess-play': return <WordGuess {...moduleProps} onBack={goModules} />;
+          case 'word-guess-play': return <WordGuess {...moduleProps} onBack={() => goSubmodule('minigames')} />;
           case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={() => goSubmodule('mt')} />;
           case 'mt-recon':  return <MTReconPart1 {...moduleProps} onBack={() => goSubmodule('mt')} />;
-          case 'boss-trabalho': return <BossTrabalho {...moduleProps} onBack={() => goSubmodule('desafio')} />;
-          case 'boss-prova':    return <BossProva {...moduleProps} onBack={() => goSubmodule('desafio')} />;
+          case 'boss-trabalho': return <BossTrabalho {...moduleProps} onBack={() => goSubmodule('minigames')} />;
+          case 'boss-prova':    return <BossProva {...moduleProps} onBack={() => goSubmodule('minigames')} />;
           default:          return <div>Módulo não encontrado</div>;
         }
       })();
@@ -230,10 +231,8 @@ function ModuleSelection({ progress, onSelectModule, onBack, onFeedback, feedbac
       desc: 'Reconhecimento com memória (pilha)', earned: earned.ap, total: AP_MODULE_MAX },
     { id: 'mt',      badge: 'MT',    label: 'Máquinas de Turing',   icon: '⚙️', color: '#f97316',
       desc: 'Modelos Reconhecedora e Transdutora', earned: earned.mt, total: MT_MODULE_MAX },
-    { id: 'desafio', badge: 'BOSS',  label: 'Desafio de Prova',     icon: '🏆', color: '#f87171',
-      desc: 'Enfrente questões da última prova como desafio final', earned: bossEarned, total: bossTotal },
-    { id: 'word-guess', badge: '🔤', label: 'Menor Palavra',        icon: '🔤', color: '#fbbf24',
-      desc: 'Descubra a menor palavra de exercícios de todos os módulos', earned: wordGuessEarned, total: TOTAL_WORD_EXERCISE_COUNT },
+    { id: 'minigames', badge: 'MINI', label: 'Mini-Games',          icon: '🎮', color: '#2dd4bf',
+      desc: 'Desafios extras: Trabalho, Prova e Menor Palavra', earned: bossEarned + wordGuessEarned, total: bossTotal + TOTAL_WORD_EXERCISE_COUNT },
   ];
 
   return (
@@ -322,6 +321,8 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
   const bossTrabalhoEarned = BOSS_TRABALHO_EXERCISES.reduce((s, ex) => s + (progress[`boss-trabalho-${ex.bossId}`]?.stars || 0), 0);
   const bossProvaTotal  = BOSS_PROVA_EXERCISES.length * 3;
   const bossProvaEarned = BOSS_PROVA_EXERCISES.reduce((s, ex) => s + (progress[`boss-prova-${ex.bossId}`]?.stars || 0), 0);
+  const wordGuessEarned = Object.keys(progress)
+    .filter(k => k.startsWith('word-guess-') && (progress[k]?.stars || 0) > 0).length;
 
   const submodules = {
     afd: [
@@ -341,13 +342,16 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
       { id: 'mt-trans', icon: '🔄', label: 'Transdutora',   desc: 'Desenhe a MT e valide', color: '#fed7aa',
         earned: mtTransEarned, total: mtTransTotal },
     ],
-    desafio: [
+    minigames: [
       { id: 'boss-trabalho', icon: '📝', label: 'Trabalho',
         desc: '5 exercícios já vistos, numa grade própria', color: '#fecaca',
         earned: bossTrabalhoEarned, total: bossTrabalhoTotal },
       { id: 'boss-prova', icon: '🎓', label: 'Prova',
         desc: `${BOSS_PROVA_EXERCISES.length} questões da última prova, numa grade própria`, color: '#c7d2fe',
         earned: bossProvaEarned, total: bossProvaTotal },
+      { id: 'word-guess-play', icon: '🔤', label: 'Menor Palavra',
+        desc: 'Descubra a menor palavra de exercícios de todos os módulos', color: '#99f6e4',
+        earned: wordGuessEarned, total: TOTAL_WORD_EXERCISE_COUNT },
     ],
   };
 
@@ -355,7 +359,7 @@ function SubmoduleSelection({ moduleId, progress, onSelectGame, onBack }) {
     afd: { label: 'Autômatos Finitos',   icon: '🤖', color: '#60a5fa' },
     ap:  { label: 'Autômatos com Pilha', icon: '📚', color: '#a78bfa' },
     mt:  { label: 'Máquinas de Turing',  icon: '⚙️', color: '#f97316' },
-    desafio: { label: 'Desafio de Prova', icon: '🏆', color: '#f87171' },
+    minigames: { label: 'Mini-Games', icon: '🎮', color: '#2dd4bf' },
   };
   const meta    = MOD_META[moduleId] || { label: moduleId, icon: '❓', color: '#ccc' };
   const current = submodules[moduleId] || [];

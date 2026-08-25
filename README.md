@@ -87,11 +87,11 @@ TuringLab
 ├── Máquinas de Turing
 │   ├── Reconhecedora — aceita ou rejeita a palavra na fita
 │   └── Transdutora — transforma a fita de entrada numa saída
-├── Desafio de Prova (Boss Mode)
-│   ├── Trabalho — 5 exercícios-marco de AFD P1/P2 e AP, numa grade própria
-│   └── Prova — 8 questões cobrindo os 6 tipos de exercício do jogo
-└── Menor Palavra (minigame) — descubra a menor palavra da linguagem, reunindo
-    num só lugar os exercícios de AFD, Autômatos com Pilha e MT Reconhecedora
+└── Mini-Games
+    ├── Trabalho (Boss Mode) — 5 exercícios-marco de AFD P1/P2 e AP, numa grade própria
+    ├── Prova (Boss Mode) — 8 questões cobrindo os 6 tipos de exercício do jogo
+    └── Menor Palavra — descubra a menor palavra da linguagem, reunindo num só
+        lugar os exercícios de AFD, Autômatos com Pilha e MT Reconhecedora
 ```
 
 ---
