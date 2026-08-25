@@ -41,6 +41,29 @@ marcando o checklist conforme cada passo é concluído e testado.
    da linguagem, comparar a própria linguagem é a fonte de verdade correta.
    Isso exige normalizar a notação primeiro (ver Fase 3 abaixo) — AFD e
    AP/MT-Recon escrevem a mesma linguagem de formas textualmente diferentes.
+7. **Escopo confirma só AFD+AP+MT-Recon, sem MT Transdutora**: o módulo `mt`
+   (Transdutora, com os níveis pesados L23/L24 citados na memória do projeto)
+   fica de fora do minigame — não faz parte do escopo combinado inicialmente.
+8. **Paginação de 20 em 20 na grade**: ao entrar no minigame, carrega os
+   primeiros 20 exercícios (metadado + checkWord); os próximos só carregam ao
+   paginar. Ordem da lista combinada: **AFD → AP → MT-Recon** — como MT-Recon
+   é o único módulo com lazy-load por nível já existente (`import()` dinâmico,
+   ver decisão 9), ficar por último na paginação significa que o custo de
+   carregar seus arquivos (o maior, L8, tem ~140KB) só é pago quando o aluno
+   já rolou bastante a grade, não instantaneamente ao abrir o minigame.
+9. **MT-Recon mantém seu lazy-load original**: `levels_data/mt-recon/index.js`
+   já carrega cada nível sob demanda via `import()` dinâmico (comentário no
+   código: "17 níveis, import estático somava ~11MB de source"). O adaptador
+   `fromMTRecon.js` **não** deve forçar um `prefetchAllMTReconLevels()` de
+   uma vez só — a paginação da decisão 8 é o que evita precisar disso.
+10. **Dedupe pré-computado offline, nunca em runtime**: calcular duplicatas
+    toda vez que o minigame abre exigiria carregar todos os 18 níveis
+    MT-Recon de uma vez (~90 exercícios comparados par-a-par), anulando o
+    lazy-load da decisão 9 e degradando performance. Em vez disso, um script
+    Node (`scripts/generate-deduped-word-exercises.mjs`) roda manualmente e
+    gera um arquivo estático (`dedupedLevelIds.js`) com os ids a excluir — os
+    adaptadores só leem esse arquivo. Reexecutar o script quando níveis forem
+    adicionados/editados (não é automático a cada build).
 
 ## Arquitetura: extrair a mecânica antes de construir o minigame
 
@@ -168,118 +191,210 @@ locais e o estado de digitação que hoje vive espalhado em `WordleBoard.jsx`.
       (`setNewWord` não usado em `CanvasArea.jsx`) e corrigido removendo o
       parâmetro; baseline restaurado (0 errors/36 warnings).
 
-### Fase 3 — Normalização de linguagem (PLANEJADA — não implementar ainda)
+### Fase 3 — Normalização de linguagem ✅
 
-Objetivo: uma função `normalizeLanguage(text, { fromAFD })` que converte tanto
+Objetivo: uma função `normalizeLanguage(text)` que converte tanto
 `level.formula` (AFD) quanto `level.language` (AP/MT-Recon) para uma única
 forma canônica — o padrão de notação do AP (Unicode sobrescrito, sem prefixo
 `L =`), conforme decidido com o usuário. Essa é a fonte de comparação da Fase
-4 (dedupe). **Não implementar nesta fase — só o design abaixo, para revisão.**
+4 (dedupe).
 
-- [ ] Levantar TODAS as variações de notação realmente usadas em
-      `level.formula` (AFD, 61 níveis) antes de escrever qualquer regex de
-      conversão — não assumir o padrão a partir de 2-3 exemplos. Catalogar:
-      prefixos (`L = `, `L=`), expoentes (`^n`, `^m`, `^2`, `^(2m)` etc.),
-      operadores (`>=`, `<=`, `!=`), símbolos especiais (`∅`, `λ`, `∈`),
-      chaves/delimitadores.
-- [ ] Levantar as variações equivalentes já usadas em `level.language` (AP +
-      MT-Recon, ambos no mesmo formato-alvo) para confirmar que realmente
-      convergem sem normalização adicional além de trim/collapse de espaços
-      (a amostra inicial sugere isso, mas checar os ~60+ arquivos de cada,
-      não só a amostra vista nesta conversa).
-- [ ] Desenhar a tabela de conversão ASCII→Unicode (`^n`→`ⁿ`, `^m`→`ᵐ`,
-      `>=`→`≥`, `<=`→`≤`, etc.) e decidir o que fazer com formas que não têm
-      um sobrescrito Unicode direto (ex.: `^(2m)`, `^n+1`) — provavelmente
-      preservar como está entre parênteses, mas decidir caso a caso ao ver os
-      dados reais.
-- [ ] Decidir explicitamente o que **não** normalizar: linguagens
-      logicamente equivalentes mas descritas com estruturas diferentes (ex.:
-      `n > 0` vs `n ≥ 1`, ou duas formas de escrever a mesma união de casos)
-      **não** serão detectadas como duplicata — isso é uma limitação aceita
-      da normalização textual (não é comparação semântica), documentar
-      explicitamente no código e no relatório final para o usuário revisar
-      manualmente se quiser.
-- [ ] Só depois desse levantamento: implementar `normalizeLanguage()` em
-      `src/modules/shared/wordExercises/normalizeLanguage.js`, com testes
-      cobrindo casos reais dos 3 módulos (não só o L08).
-- [ ] `npx vitest run` — confirmar suite verde antes de seguir para a Fase 4.
+**Levantamento real (concluído)** — extraído de todos os 61 níveis AFD + 20
+AP + 15 MT-Recon via grep, não amostra:
 
-### Fase 4 — Adaptadores de dados por módulo (com dedupe)
+- [x] **Achado principal: AFD é quase 100% prosa, não fórmula com expoentes.**
+      Só 1 nível (L13, `(ab)^n (cd)^m`) e uns poucos outros (L10, L11, L12,
+      L14 antigo formato) usam `a^n`/`b^m` — os outros ~55 níveis são frases
+      tipo `"L = {w ∈ {0,1}* / w tem tamanho 3}"`,
+      `"L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo}"`. Isso muda a
+      prioridade da normalização: o mapeamento ASCII→Unicode de expoentes
+      (`^n`→`ⁿ`) afeta poucos níveis; o que domina é (1) remover o prefixo
+      `L = `, (2) normalizar `>=`→`≥`/`<=`→`≤`, (3) trim/collapse de espaços.
+- [x] AP e MT-Recon já usam o mesmo formato-alvo (Unicode sobrescrito, sem
+      prefixo) — divergem só em espaçamento (`{aⁿbⁿ / n ≥ 0}` vs
+      `{aⁿbⁿ/² / n > 0 e n par}` vs variações de espaço em torno de `/`).
+      Normalização entre os dois é essencialmente trim/collapse.
+- [x] **Teste de comparação cross-módulo real (rodado após implementar, sobre
+      as 97 strings reais — 62 AFD + 20 AP + 15 MT-Recon)**: a estimativa
+      inicial manual ("só 1 par bate, e esse sai do pool") estava incompleta
+      — era baseada numa amostra pequena, não no dataset inteiro. O resultado
+      real, rodando `normalizeLanguage` sobre todos os arquivos: **8 grupos
+      cross-módulo** batem por igualdade textual exata, todos entre
+      **AP ↔ MT-Recon** (L1, L4, L10, L11, L12, L13, L16 — o mesmo material
+      reaproveitado nos dois módulos, com a mesma notação Unicode) + o caso
+      já prático **AFD-L14 ↔ MT-Recon-L6** (que sai do pool por
+      `impossible: true`, então não gera um card duplicado de verdade).
+      Também apareceram 2 duplicatas DENTRO do próprio AFD (L40/L47 e
+      L49/L51 — mesma fórmula, ids diferentes), que também merecem dedupe.
+      **Conclusão corrigida: o dedupe tem valor prático real** — evita ~8-10
+      cards repetidos no minigame, não é só uma salvaguarda para o futuro.
+- [x] Decisão explícita sobre o que **não** normalizar: linguagens
+      logicamente equivalentes mas descritas com estruturas ou palavras
+      diferentes (ex.: AP descrever em prosa "w tem quantidade igual de a e
+      de b" onde AFD/MT-Recon usam `|w|a = |w|b`) **não** serão detectadas
+      como duplicata — é uma limitação aceita da normalização textual (não é
+      comparação semântica). Documentar no código e no relatório final.
 
-- [ ] `src/modules/shared/wordExercises/fromAFD.js` — mapeia `AFD_LEVELS`
-      (excluindo `UNAVAILABLE_LEVELS`/`HIDDEN_LEVELS`, e o L14 impossível/λ
-      conforme regra abaixo) para a forma genérica, usando `lvlAccepts` +
-      `normalizeLanguage(level.formula, { fromAFD: true })`.
-- [ ] `src/modules/shared/wordExercises/fromAP.js` — idem para `AP_LEVELS`,
-      usando `getShortestWord`/`getBattery`/`level.alphabet` +
-      `normalizeLanguage(level.language)`. Níveis `impossible` (shortestWord
-      null) ficam de fora do minigame — não há "menor palavra" para
-      descobrir.
-- [ ] `src/modules/shared/wordExercises/fromMTRecon.js` — idem para
-      `MT_RECON_LEVELS`, usando `getShortestWord`/`getGabaritoGraph`/
-      `simulateTM` + `normalizeLanguage(level.language)`.
-- [ ] `src/modules/shared/wordExercises/index.js` — agrega os 3 num único
-      array, com `id` estável tipo `afd-8`, `ap-12`, `mt-recon-5` (mesmo
-      padrão de progresso `afd-min-${id}` já usado). Depois de agregar,
-      **deduplica por `languageNormalized`**: quando 2+ exercícios têm a
-      mesma linguagem normalizada, mantém 1 só (critério de desempate a
-      definir — ex.: prioridade AFD > AP > MT-Recon, ou o de menor `id`) e
-      registra os `id`s descartados num array `DEDUPED_OUT` exportado, só
-      para o relatório final poder listar o que foi unificado.
-- [ ] Testes: (1) para cada exercício gerado, `checkWord(shortestWord)` deve
-      retornar aceito, e o tamanho/alfabeto batem com o nível original —
-      roda sobre os arrays reais (não fixtures fake); (2) teste de dedupe com
-      2 níveis reais que o levantamento da Fase 3 identificar como mesma
-      linguagem (se nenhum par real existir, um teste com dados sintéticos
-      cobrindo a função de dedupe isoladamente).
-- [ ] `npx vitest run` — confirmar suite verde.
+**Implementação**:
 
-### Fase 5 — Tela do minigame (leve, sem canvas)
+- [x] `src/modules/shared/wordExercises/normalizeLanguage.js`: remove prefixo
+      `L = `/`L=`, normaliza `>=`→`≥`, `<=`→`≤`, `!=`→`≠`, colapsa espaços
+      múltiplos e trim geral (incluindo espaço logo após `{` e antes de `}`).
+      Mapeamento de expoentes ASCII→Unicode caractere a caractere (dígitos +
+      `n,m,p,r,s,t,u,k,i,j`) — `q` não tem sobrescrito Unicode oficial e fica
+      sem conversão (limitação documentada no código, não um bug).
+- [x] Testes em `src/__tests__/normalizeLanguage.test.js` — 24 testes
+      (prefixo, expoentes incluindo o caso sem sobrescrito `q`, operadores,
+      espaçamento, guards de null/vazio, casos reais dos 3 módulos incluindo
+      o par AFD-L14/MT-Recon-L6 batendo após normalização).
+- [x] Validação extra rodando `normalizeLanguage` sobre as 97 strings reais
+      via script descartável (não faz parte da suite) — confirmou 0
+      exceções, 0 `^` sobrando, 0 prefixo `L=` sobrando, e revelou os 8
+      grupos cross-módulo reais descritos acima (achado que corrigiu a
+      estimativa inicial).
+- [x] `npx vitest run` — 1937/1937 (1913 + 24 novos). `npm run lint` — 0
+      errors/36 warnings (baseline mantido).
 
-- [ ] `src/modules/word-guess/WordGuessLevelList.jsx` — grade reaproveitando
+### Fase 4 — Adaptadores de dados por módulo (com dedupe) ✅
+
+**Mudança de desenho importante (confirmada com o usuário)**: o dedupe NÃO é
+calculado em runtime. MT-Recon é lazy-loaded por nível (`import()` dinâmico) —
+calcular duplicatas toda vez que o minigame abre exigiria carregar os 18
+arquivos MT-Recon de uma vez, sempre, anulando a otimização original e
+degradando performance. Em vez disso: um **script Node offline**
+(`scripts/generate-deduped-word-exercises.mjs`) roda 1x manualmente, compara
+todas as linguagens normalizadas dos 3 módulos, e gera um arquivo estático
+(`dedupedLevelIds.js`) com os ids a excluir — os adaptadores só importam e
+filtram por esse `Set`, sem nenhum cálculo em tempo real. Reexecutar o script
+sempre que níveis forem adicionados/editados (não é automático no build).
+
+- [x] `src/modules/shared/wordExercises/fromAFD.js` — mapeia `AFD_LEVELS`
+      (excluindo `UNAVAILABLE_LEVELS`/`HIDDEN_LEVELS`, `impossible`) usando
+      `lvlAccepts` + `normalizeLanguage(level.formula)`, filtra por
+      `EXCLUDED_WORD_EXERCISE_IDS`.
+- [x] `src/modules/shared/wordExercises/fromAP.js` — idem para `AP_LEVELS`,
+      usando `getShortestWord`/`pdaAccepts(level.solution, word)` (aplicando
+      `level.truth` quando existe, igual ao `buildBattery` faz) +
+      `normalizeLanguage(level.language)`.
+- [x] `src/modules/shared/wordExercises/fromMTRecon.js` — **assíncrono**
+      (só módulo lazy): expõe `MT_RECON_EXERCISE_IDS` (lista leve de ids, já
+      filtrada pelo dedupe, sem carregar nenhum arquivo) e
+      `buildWordExercisesFromMTRecon(ids)` que dispara `loadMTReconLevel` só
+      para os ids pedidos — nunca `prefetchAllMTReconLevels()`.
+- [x] `src/modules/shared/wordExercises/index.js` — `ALL_EXERCISE_STUBS`
+      (AFD+AP resolvidos + MT-Recon como stub leve `{id, moduleId}`, nessa
+      ordem) e `getExercisesPage(pageIndex)` assíncrona que resolve 20 por vez
+      (`PAGE_SIZE`), carregando MT-Recon só quando a página pedida o contém.
+- [x] **`scripts/generate-deduped-word-exercises.mjs`** — script standalone
+      (não usa `migrador_afd.js` nem nenhum script existente, arquivo novo e
+      isolado) que extrai `formula`/`language` de todos os arquivos de nível
+      via regex de arquivo (sem precisar do bundler), normaliza, agrupa por
+      linguagem, e escreve `dedupedLevelIds.js` com critério de desempate
+      afd > ap > mt-recon, depois id. Rodado — resultado real: **8 exercícios
+      excluídos** (2 intra-AFD: afd-47/afd-51; 6 cross-módulo AP↔MT-Recon:
+      L1/L4/L10/L11/L12/L13).
+- [x] **Achado extra (bug pré-existente, fora do escopo do minigame)**:
+      `afd-50` (`L50`) tem `shortestWord: "ac"` mas a própria `validate()` do
+      nível REJEITA "ac" (a fórmula exige `n+p` ímpar; "ac" dá soma par — "ac"
+      inclusive está em `rejectedWords` do próprio arquivo). Confirmado com o
+      usuário: **não mexer em `L50.js`** (afetaria a fase normal de AFD) — só
+      excluir do minigame. Implementada uma guarda genérica em todos os 3
+      adaptadores (`checkWord(shortestWord)` deve ser `true`, senão exclui com
+      `console.warn`) — não hardcoded só pro L50, protege contra qualquer
+      inconsistência de dados equivalente, existente ou futura.
+- [x] Testes em `src/__tests__/wordExercisesAdapters.test.js` (15 testes,
+      rodando sobre o dataset real, não fixtures): campos genéricos presentes,
+      `checkWord(shortestWord)` aceita em todos os exercícios restantes,
+      exclusão de impossible/hidden/L50 confirmada, dedupe intra-AFD
+      confirmado (afd-47/51 ausentes, afd-40/49 presentes), ordem AFD→AP→
+      MT-Recon nos stubs, paginação síncrona (página 0 sem MT-Recon) e
+      assíncrona (última página resolve MT-Recon com `checkWord` funcional),
+      drift guard entre `TOTAL_WORD_EXERCISE_COUNT` (leve) e
+      `TOTAL_EXERCISE_COUNT` (real) — ver bug real pego por esse teste abaixo.
+- [x] **Bug real pego pelo drift guard**: o script offline usava uma regex
+      que só reconhecia `language: '...'` (aspas simples) — os arquivos
+      `L5.js`/`L8.js`/`L9.js` do MT-Recon usam um formato JSON-like com
+      `"language": "..."` (aspas duplas na chave E no valor), então esses 3
+      níveis silenciosamente desapareciam da contagem/dedupe do script
+      (mas não dos adaptadores reais, que leem o objeto JS já parseado).
+      Corrigido: regex aceita ambas as formas de aspas. Resultado final após
+      o fix: 84 exercícios (54 AFD + 19 AP + 12 MT-Recon, pós-dedupe/L50),
+      9 grupos deduplicados (o fix revelou mais 1: `mt-recon-9`↔`ap-L9`).
+- [x] `npx vitest run` — 1952/1952 (1937 + 15 novos). `npm run lint` — 0
+      errors/36 warnings (baseline mantido).
+
+### Fase 5 — Tela do minigame (leve, sem canvas) ✅
+
+- [x] `src/modules/word-guess/WordGuessLevelList.jsx` — grade reaproveitando
       `LevelGridScreen` (mesmo padrão do `AFDMinimizer.jsx`/`MinGame.jsx`),
       badge "🔤 Menor Palavra", 1 card por exercício já deduplicado,
-      agrupado/colorido por módulo de origem (AFD/AP/MT-Recon) em vez de
-      dificuldade.
-- [ ] `src/modules/word-guess/WordGuessGame.jsx` — usa `useWordGuessGame` +
+      colorido por módulo de origem (AFD azul/AP roxo/MT-Recon laranja) em
+      vez de dificuldade. Paginação de 20 (`getExercisesPage`), loading state
+      derivado de `{forPage, list}` em vez de um 2º `setState` síncrono no
+      efeito (evitou um warning novo de lint, corrigido antes de prosseguir).
+- [x] `src/modules/word-guess/WordGuessGame.jsx` — usa `useWordGuessGame` +
       `WordleBoard` diretamente (sem canvas, sem Maurílio aula-guiada, sem
-      undo/redo) — layout propositalmente mais simples/leve que as fases
-      normais: título do exercício, linguagem formal no topo (mesma regra
-      "nunca esconder a linguagem"), grade do Termo no centro, resultado
-      final ao acertar.
-- [ ] Sistema de estrelas: **1 estrela binária por nível** (decisão 5 acima)
-      — ganha ao acertar a menor palavra, independente de dica usada. Não
-      precisa da complexidade de `errorSinceTutorialRef`/3-níveis das fases
-      normais.
-- [ ] Testes unitários da tela (se o padrão de testes de componente do
-      projeto cobrir isso) ou, no mínimo, teste da regra de estrela como
-      função pura extraída (trivial: `won → 1, else → 0`, mas ainda testável).
-- [ ] `npx vitest run` + `npm run lint`.
+      undo/redo) — layout simples: título do exercício + linguagem
+      (`languageNormalized`, nunca escondida), grade do Termo sempre visível
+      desde o início (diferente do L08 — aqui não há Maurílio pra esconder
+      atrás), botão de dica avança pro estágio 2 (letras), mensagem de
+      vitória ao acertar.
+- [x] `src/modules/word-guess/WordGuess.jsx` — raiz que alterna grade/jogo
+      com estado local (mesmo padrão de `AFDMinimizer.jsx`).
+- [x] Sistema de estrelas: **1 estrela binária por nível** (decisão 5) — ganha
+      ao acertar a menor palavra, independente de dica usada.
+- [x] **Bug de UI pego na verificação visual**: `exercise.language` bruto tem
+      prefixo `"L = "` só no AFD (não em AP/MT-Recon) — concatenar
+      `"L = " + exercise.language` produzia `"L = L = {...}"` pro AFD.
+      Corrigido usando `exercise.languageNormalized` (já sem prefixo nos 3
+      módulos, gerado pela Fase 3) + o `"L = "` fixo do template.
+- [x] Teste unitário dedicado da tela não implementado (o projeto não tem
+      padrão de teste de componente React — os demais módulos de tela também
+      não têm; a lógica de dados/dedupe/normalização já está 100% coberta em
+      `wordExercisesAdapters.test.js`/`wordGuessLogic.test.js`, e o
+      comportamento visual foi validado via Playwright na integração, Fase 6).
+- [x] `npx vitest run` + `npm run lint` — verde (ver números na Fase 6, feita
+      junto para permitir o teste ponta a ponta).
 
-### Fase 6 — Integração no menu principal
+### Fase 6 — Integração no menu principal ✅
 
-- [ ] `App.jsx`: novo módulo `word-guess` **lazy-loaded** (`lazy(() =>
-      import(...))`, mesmo padrão dos outros módulos de tela) na tela inicial
-      (`MODULE` screen), ícone/cor a definir, ao lado de afd/ap/mt/desafio.
-- [ ] Progresso: `progress['word-guess-<id>']` seguindo o padrão existente,
-      total de estrelas = número de exercícios já deduplicados (1 cada).
-- [ ] Teste manual via Playwright: navegar do menu principal até o minigame,
-      abrir um exercício de cada módulo de origem (AFD/AP/MT-Recon), testar
-      palavra certa e errada, confirmar estrela salva.
-- [ ] `npx vitest run` + `npm run lint` — rodada final.
+- [x] `App.jsx`: novo módulo `word-guess` **lazy-loaded**
+      (`lazy(() => import('./modules/word-guess/WordGuess'))`) — adicionado a
+      `DIRECT_GAME` (pula a tela de submódulos, mesmo padrão do AP) e ao case
+      `'word-guess-play'` no switch de `GAME`.
+- [x] Card no `ModuleSelection` (tela `MODULES`), ao lado de afd/ap/mt/desafio
+      — ícone/cor `🔤`/amarelo, total vindo de `TOTAL_WORD_EXERCISE_COUNT`
+      (arquivo leve gerado pelo script, evita importar os adaptadores pesados
+      no bundle sempre-carregado do `App.jsx` — mesmo padrão de
+      `services/starTotals.js` para AP/MT).
+- [x] Progresso: `progress['word-guess-<id>']`, `updateProgress(key, 1)` ao
+      acertar — reaproveita o `updateProgress` genérico existente (já suporta
+      qualquer `moduleId` string e só grava se `stars > cur`).
+- [x] Teste manual via Playwright, ponta a ponta: menu principal → card
+      "Menor Palavra" → grade paginada (5 páginas, 84 exercícios) → abre
+      exercício AFD-L05 (`{aⁿ | n > 0}`) → digita "a" → vence, estrela salva
+      e visível ao voltar pra grade → navega até a última página → abre
+      exercício MT-Recon (L15, `{aⁿbⁿ/³ / ...}`) → grade carrega via
+      `import()` dinâmico, `checkWord` funcional. 0 exceções no console.
+- [x] `npx vitest run` — 1952/1952. `npm run lint` — 0 errors/36 warnings.
 
-### Fase 7 — Limpeza e revisão final
+### Fase 7 — Limpeza e revisão final ✅
 
-- [ ] Reler `AFDPart1.jsx`/`CanvasArea.jsx` — confirmar que não sobrou código
-      morto da mecânica antiga do Termo (pré-hook).
-- [ ] Atualizar `README.md` se ele documentar a lista de módulos/submódulos
-      (checar antes de escrever qualquer número).
-- [ ] Listar para o usuário o conteúdo de `DEDUPED_OUT` (Fase 4) — quais pares
-      de níveis foram unificados por terem a mesma linguagem normalizada, para
-      ele revisar se concorda com o resultado da dedupe.
-- [ ] Resumo final para o usuário: o que foi criado, onde ficou a lógica
-      compartilhada, quais módulos entraram, quantos exercícios no total
-      (antes/depois da dedupe), tamanho do bundle do novo módulo.
+- [x] Relido `AFDPart1.jsx`/`CanvasArea.jsx` — sem código morto: única
+      referência restante é `handleWordleHint` (atual, delega pra
+      `wordleGame.requestHint()`), nenhuma referência a `wordleHintStage`/
+      `setWordleHintStage` (removidos na Fase 2) sobrou em lugar nenhum.
+- [x] `README.md` atualizado — item novo na árvore de módulos (`## Módulos`)
+      e parágrafo novo em `## ⭐ Sistema de Estrelas` explicando a estrela
+      binária separada do total geral, seguindo o mesmo padrão de nota já
+      usado pro Boss Mode.
+- [x] `DEDUPE_REPORT` (Fase 4) listado e reportado ao usuário — ver
+      resumo final abaixo.
+- [x] Resumo final reportado ao usuário (ver mensagem de fechamento da
+      conversa) — build de produção confirmou chunk do módulo leve:
+      `WordGuess-*.js` 6,95 kB (gzip 2,91 kB) + `useWordGuessGame-*.js`
+      0,51 kB (gzip 0,33 kB), sem arrastar `AFDPart1`/`APPart1`/
+      `MTReconPart1` no bundle do minigame.
 
 ## Notas / riscos identificados
 

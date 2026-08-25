@@ -14,6 +14,7 @@ import { MT_RECON_LEVEL_IDS, MT_LEVEL_IDS } from './levels_data/mt-ids.js';
 import { BOSS_TRABALHO_EXERCISES } from './modules/boss/bossTrabalhoExercises.js';
 import { BOSS_PROVA_EXERCISES } from './modules/boss/bossProvaExercises.js';
 import { moduleEarnedStars, AFD_MODULE_MAX, AP_MODULE_MAX, MT_MODULE_MAX } from './services/starTotals.js';
+import { TOTAL_WORD_EXERCISE_COUNT } from './modules/shared/wordExercises/wordExerciseCount.js';
 import {
   logEvent, hasConsent,
   hasFeedbackShownOnce, markFeedbackShownOnce, hasFeedbackResponded,
@@ -26,12 +27,13 @@ const MTPart1     = lazy(() => import('./modules/mt/MTPart1'));
 const MTReconPart1 = lazy(() => import('./modules/mt-recon/MTReconPart1'));
 const BossTrabalho = lazy(() => import('./modules/boss/BossTrabalho'));
 const BossProva    = lazy(() => import('./modules/boss/BossProva'));
+const WordGuess    = lazy(() => import('./modules/word-guess/WordGuess'));
 
 // Módulos com uma ÚNICA atividade pulam a tela de submódulos e vão direto ao jogo
 // (ex.: AP só tem "Autômato com Pilha" — não faz sentido escolher pilha 2x).
 // MT tem 2 atividades (Reconhecedora + Transdutora), então passa pela tela de
-// submódulos como o AFD.
-const DIRECT_GAME = { ap: 'ap-pilha' };
+// submódulos como o AFD. word-guess (minigame Menor Palavra) idem AP.
+const DIRECT_GAME = { ap: 'ap-pilha', 'word-guess': 'word-guess-play' };
 
 export default function App() {
   const [screen, setScreen] = useState('HOME');
@@ -167,6 +169,7 @@ export default function App() {
           case 'afd-p2':  return <AFDPart2 {...moduleProps} onBack={() => goSubmodule('afd')} />;
           case 'afd-min': return <AFDMinimizer {...moduleProps} onBack={() => goSubmodule('afd')} />;
           case 'ap-pilha':  return <APPart1  {...moduleProps} onBack={goModules} />;
+          case 'word-guess-play': return <WordGuess {...moduleProps} onBack={goModules} />;
           case 'mt-trans':  return <MTPart1  {...moduleProps} onBack={() => goSubmodule('mt')} />;
           case 'mt-recon':  return <MTReconPart1 {...moduleProps} onBack={() => goSubmodule('mt')} />;
           case 'boss-trabalho': return <BossTrabalho {...moduleProps} onBack={() => goSubmodule('desafio')} />;
@@ -215,6 +218,10 @@ function ModuleSelection({ progress, onSelectModule, onBack, onFeedback, feedbac
   const bossEarned =
     BOSS_TRABALHO_EXERCISES.reduce((s, ex) => s + (progress[`boss-trabalho-${ex.bossId}`]?.stars || 0), 0) +
     BOSS_PROVA_EXERCISES.reduce((s, ex) => s + (progress[`boss-prova-${ex.bossId}`]?.stars || 0), 0);
+  // Minigame "Menor Palavra": estrela binária por exercício (0 ou 1) — soma
+  // simples das chaves word-guess-* já conquistadas.
+  const wordGuessEarned = Object.keys(progress)
+    .filter(k => k.startsWith('word-guess-') && (progress[k]?.stars || 0) > 0).length;
 
   const modules = [
     { id: 'afd',     badge: 'AFD',   label: 'Autômatos Finitos',    icon: '🤖', color: '#60a5fa',
@@ -225,6 +232,8 @@ function ModuleSelection({ progress, onSelectModule, onBack, onFeedback, feedbac
       desc: 'Modelos Reconhecedora e Transdutora', earned: earned.mt, total: MT_MODULE_MAX },
     { id: 'desafio', badge: 'BOSS',  label: 'Desafio de Prova',     icon: '🏆', color: '#f87171',
       desc: 'Enfrente questões da última prova como desafio final', earned: bossEarned, total: bossTotal },
+    { id: 'word-guess', badge: '🔤', label: 'Menor Palavra',        icon: '🔤', color: '#fbbf24',
+      desc: 'Descubra a menor palavra de exercícios de todos os módulos', earned: wordGuessEarned, total: TOTAL_WORD_EXERCISE_COUNT },
   ];
 
   return (

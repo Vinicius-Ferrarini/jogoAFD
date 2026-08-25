@@ -87,9 +87,11 @@ TuringLab
 ├── Máquinas de Turing
 │   ├── Reconhecedora — aceita ou rejeita a palavra na fita
 │   └── Transdutora — transforma a fita de entrada numa saída
-└── Desafio de Prova (Boss Mode)
-    ├── Trabalho — 5 exercícios-marco de AFD P1/P2 e AP, numa grade própria
-    └── Prova — 8 questões cobrindo os 6 tipos de exercício do jogo
+├── Desafio de Prova (Boss Mode)
+│   ├── Trabalho — 5 exercícios-marco de AFD P1/P2 e AP, numa grade própria
+│   └── Prova — 8 questões cobrindo os 6 tipos de exercício do jogo
+└── Menor Palavra (minigame) — descubra a menor palavra da linguagem, reunindo
+    num só lugar os exercícios de AFD, Autômatos com Pilha e MT Reconhecedora
 ```
 
 ---
@@ -182,6 +184,15 @@ totais: `src/services/starTotals.js`):
   independente do progresso do exercício na tela normal daquele módulo — e
   fora do total geral de estrelas da Home (`totalEarnedStars` ignora
   qualquer chave `boss-*`, para não contar a mesma estrela duas vezes).
+
+- **Menor Palavra** (minigame) reúne, num módulo próprio, os exercícios de
+  "descobrir a menor palavra" de AFD, Autômatos com Pilha e MT Reconhecedora
+  — a mesma mecânica de tentativas usada na fase AFD Parte 1, mas sem canvas
+  nem aula guiada. A estrela aqui é **binária** (0 ou 1 por exercício, ganha
+  ao acertar a menor palavra, com ou sem dica), gravada numa chave própria
+  (`word-guess-{id}`) e fora do total geral de estrelas da Home. Exercícios
+  com a mesma linguagem formal em módulos diferentes contam uma única vez
+  (deduplicados por um script offline, `scripts/generate-deduped-word-exercises.mjs`).
 
 ---
 
