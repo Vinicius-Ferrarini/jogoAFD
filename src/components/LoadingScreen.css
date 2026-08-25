@@ -1,8 +1,16 @@
+/* position: fixed + inset: 0 (em vez de height: 100%) — ancora direto na
+   viewport do navegador, sem depender da cadeia html/body/#root ter altura
+   resolvida corretamente. Achado real: com viewport baixa (Firefox/Edge com
+   mais UI de navegador visível, innerHeight < 640px), a media query em
+   App.css troca #root de height:100% para height:auto, e um .loading-screen
+   dependente de height:100% do pai colapsava para a altura do próprio
+   conteúdo em vez de cobrir a tela. */
 .loading-screen {
+  position: fixed;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   background: var(--bg-dark, #fff9c4);
   background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1.5px, transparent 1.5px);
   background-size: 22px 22px;
