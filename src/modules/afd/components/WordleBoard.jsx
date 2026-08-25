@@ -8,8 +8,14 @@
 // um texto fixo abaixo com o conjunto de letras distintas da palavra, em
 // ordem alfabética (revela quais letras existem, não a ordem nem preenche
 // a grade sozinho — o aluno ainda precisa digitar pra descobrir a posição).
+//
+// Componente de apresentação puro: a mecânica (digitação, estágio de dica) vem
+// de fora via useWordGuessGame (ver src/modules/shared/) — este componente só
+// desenha, não decide regra. É reutilizado tanto pela fase AFD-L08 quanto pelo
+// minigame standalone "Menor Palavra" (ver docs/MENOR_PALAVRA_MINIGAME.md).
 import { useEffect, useRef } from 'react';
 import { buildLetterFeedback } from '../utils/wordleFeedback';
+import { distinctLetters } from '../../shared/wordGuessLogic';
 
 const STATUS_STYLE = {
   correct: { background: 'var(--accent-green)', color: '#000' },
@@ -78,52 +84,30 @@ function GuessCell({ index, value, active, onType, onBackspace, inputRef }) {
 // hintStage: 0 = sem linha de dica (só o histórico de tentativas, se houver
 // alguma), 1 = linha de dica clicável com bordas vazias (tamanho), 2 = mesma
 // linha clicável + texto fixo com as letras distintas da palavra (sem posição).
-// guess/setGuess: string da tentativa em digitação (mesmo estado do TestPanel,
-// 'newWord'/'setNewWord') — as células escrevem direto nela. onSubmit: chamado
-// quando a última célula é preenchida (equivalente a apertar Testar/Enter).
+// guess: string da tentativa em digitação (controlado de fora — no AFD-P1 é o
+// mesmo 'newWord' do TestPanel). typeAt/backspaceAt: callbacks do hook
+// useWordGuessGame que produzem o próximo guess. onSubmit: chamado quando a
+// última célula é preenchida (equivalente a apertar Testar/Enter).
 export default function WordleBoard({
   attempts, targetLength, shortestWord, hintStage = 0,
-  guess = '', setGuess, onSubmit,
+  guess = '', typeAt, backspaceAt, onSubmit,
 }) {
   const inputRefs = useRef([]);
 
-  // guess é sempre um prefixo contíguo sem buracos (como no Wordle real):
-  // só dá para digitar na próxima célula livre e apagar a última preenchida.
   const letterAt = (i) => guess[i] ?? '';
 
-  const handleTypeAt = (i, ch) => {
-    if (!ch) return;
-    if (i !== guess.length) return; // só a próxima célula livre aceita digitação
-    const next = (guess + ch).slice(0, targetLength);
-    setGuess?.(next);
-    if (next.length < targetLength) {
-      inputRefs.current[next.length]?.focus();
-    }
-  };
-
   // Dispara o teste quando a grade fica completa. Fica num efeito (em vez de
-  // um setTimeout no próprio handler de digitação) para garantir que onSubmit
-  // já seja a versão mais atual — handleTestWord (no orquestrador) é recriado
-  // a cada mudança de 'guess'/'newWord', então a prop só fica "fresca" depois
-  // do render que segue o setGuess acima.
+  // dentro do handler de digitação) para garantir que onSubmit já seja a
+  // versão mais atual — handleTestWord (no orquestrador) é recriado a cada
+  // mudança de 'guess'/'newWord', então a prop só fica "fresca" depois do
+  // render que segue a digitação.
   const submittedForRef = useRef('');
   useEffect(() => {
-    if (guess.length === targetLength && submittedForRef.current !== guess) {
+    if (targetLength > 0 && guess.length === targetLength && submittedForRef.current !== guess) {
       submittedForRef.current = guess;
       onSubmit?.();
     }
   }, [guess, targetLength, onSubmit]);
-
-  const handleBackspace = (i) => {
-    if (i === guess.length - 1) {
-      // Apagando a última letra preenchida: remove e mantém o foco nela.
-      setGuess?.(guess.slice(0, -1));
-    } else if (i === guess.length) {
-      // Célula vazia após a última preenchida: Backspace volta e apaga aquela.
-      setGuess?.(guess.slice(0, -1));
-      inputRefs.current[i - 1]?.focus();
-    }
-  };
 
   // Mantém o foco sempre na célula ativa (próxima livre): ao abrir o board,
   // ao digitar, ao apagar, e também depois de um submit — quando handleTestWord
@@ -134,9 +118,7 @@ export default function WordleBoard({
     if (hintStage > 0) inputRefs.current[Math.min(guess.length, targetLength - 1)]?.focus();
   }, [hintStage, guess, targetLength]);
 
-  const distinctLetters = hintStage >= 2 && shortestWord
-    ? [...new Set(shortestWord.split(''))].filter(c => c !== 'λ').sort()
-    : null;
+  const hintLetters = hintStage >= 2 && shortestWord ? distinctLetters(shortestWord) : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
@@ -160,16 +142,16 @@ export default function WordleBoard({
               index={i}
               value={letterAt(i)}
               active={i === guess.length}
-              onType={handleTypeAt}
-              onBackspace={handleBackspace}
+              onType={typeAt}
+              onBackspace={backspaceAt}
               inputRef={el => { inputRefs.current[i] = el; }}
             />
           ))}
         </div>
       )}
-      {distinctLetters && (
+      {hintLetters && (
         <div style={{ color: '#fff', fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}>
-          Letras da menor palavra: [{distinctLetters.join(', ')}]
+          Letras da menor palavra: [{hintLetters.join(', ')}]
         </div>
       )}
     </div>

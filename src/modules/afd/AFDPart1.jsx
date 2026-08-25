@@ -19,6 +19,7 @@ import useAFDGraph, { lvlAccepts, validateAFDPure } from './hooks/useAFDGraph';
 import useCanvasState from './hooks/useCanvasState';
 import { traceWord } from './utils/traceWord';
 import { buildNoAttemptHintMessage, buildSizeHintMessage } from './utils/sizeHint';
+import useWordGuessGame from '../shared/useWordGuessGame';
 import { UNAVAILABLE_LEVELS, HIDDEN_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../levels_data/afd/index.js';
 import { logEvent } from '../../services/telemetry';
@@ -60,6 +61,16 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
 
   const [testWords, setTestWords]   = useState([]);
   const [newWord, setNewWord]       = useState('');
+  // Piloto WordleBoard (L08): mecânica de grade/dica compartilhada (ver
+  // src/modules/shared/useWordGuessGame.js) — 'guess' é o próprio newWord
+  // (controlado), então digitar na grade e no campo lateral do TestPanel são
+  // a mesma coisa. Genérico o bastante para ser reaproveitado pelo minigame
+  // standalone "Menor Palavra" (ver docs/MENOR_PALAVRA_MINIGAME.md).
+  const wordleGame = useWordGuessGame({
+    shortestWord: currentLevel?.shortestWord,
+    guess: newWord,
+    setGuess: setNewWord,
+  });
   // Última palavra testada (normalizada — 'null'/'vazio' já viram ''), usada
   // só pela Dica de Tamanho (regra: diff = tentativa.length - shortestWord.length).
   const lastAttemptRef = useRef(null);
@@ -67,10 +78,6 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
   // antes de destravar — limpo ao trocar de nível pra não disparar setState
   // num nível que o aluno já saiu.
   const unlockDelayRef = useRef(null);
-  // Piloto WordleBoard (L08): estágio da dica pedida pelo botão 💡 — 0 = board
-  // escondido (default), 1 = tamanho (bordas vazias), 2 = letras embaralhadas.
-  // Clicar em 2 não avança mais (trava — a próxima "dica" seria a resposta).
-  const [wordleHintStage, setWordleHintStage] = useState(0);
   const [drawnCards, setDrawnCards] = useState([]);
   const [selectedSymbolCard, setSelectedSymbolCard] = useState(null);
 
@@ -232,7 +239,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     setNewWord('');
     lastAttemptRef.current = null;
     clearTimeout(unlockDelayRef.current);
-    setWordleHintStage(0);
+    wordleGame.reset();
     setProfessorMessage('');
     setInteractionMode('IDLE');
     setDrawnCards([]);
@@ -419,15 +426,14 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
   }, [currentLevel, showToast, logTutorialOpen]);
 
   // Piloto WordleBoard (L08): o botão 💡 vira um controle de estágio em vez de
-  // um toast — 1º clique revela o tamanho (bordas vazias), 2º clique revela as
-  // letras embaralhadas (sem posição). Trava em 2: a 3ª dica seria a resposta.
+  // um toast — 1º clique revela o tamanho (bordas vazias), 2º clique revela o
+  // texto fixo com as letras da palavra (sem posição). Trava em 2: a 3ª dica
+  // seria a resposta. Mecânica delegada ao hook compartilhado (wordleGame).
   const handleWordleHint = useCallback(() => {
-    setWordleHintStage(s => {
-      const next = Math.min(s + 1, 2);
-      if (next !== s) logTutorialOpen(next === 1 ? 'dica_tamanho' : 'dica_letras');
-      return next;
-    });
-  }, [logTutorialOpen]);
+    const before = wordleGame.hintStage;
+    wordleGame.requestHint();
+    if (before < 2) logTutorialOpen(before === 0 ? 'dica_tamanho' : 'dica_letras');
+  }, [wordleGame, logTutorialOpen]);
 
   // Atalhos de teclado: Ctrl+Z, Ctrl+Y, Esc, Delete
   useEffect(() => {
@@ -587,7 +593,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         }}
         lessonActive={lessonActive}
         onCloseLesson={handleLessonFinish}
-        showSizeHint={!isDrawingUnlocked && (currentLevel?.id !== 8 || wordleHintStage < 2)}
+        showSizeHint={!isDrawingUnlocked && (currentLevel?.id !== 8 || wordleGame.hintStage < 2)}
         onSizeHint={currentLevel?.id === 8 ? handleWordleHint : handleSizeHint}
       />
 
@@ -702,9 +708,8 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
           resetHistory={resetHistory}
           lessonActive={lessonActive}
           testWords={testWords}
-          wordleHintStage={wordleHintStage}
+          wordleGame={wordleGame}
           newWord={newWord}
-          setNewWord={setNewWord}
           handleTestWord={handleTestWord}
         />
         </div>

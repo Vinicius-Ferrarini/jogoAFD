@@ -68,16 +68,15 @@ export default function CanvasArea({
   errorNodeIds = null,
   enableContextMenu = true,
   // Piloto do WordleBoard: histórico de tentativas da fase "descubra a menor
-  // palavra" (mesma lista testWords do orquestrador) e o estágio da dica
-  // pedida via botão 💡 (0=escondido, 1=tamanho, 2=letras) — só usado quando
+  // palavra" (mesma lista testWords do orquestrador) e wordleGame (mecânica de
+  // grade/dica — ver src/modules/shared/useWordGuessGame.js) — só usado quando
   // o nível é o piloto (ver AFDPart1.jsx: restrito ao L08 por ora). newWord/
-  // setNewWord/handleTestWord são os MESMOS do TestPanel — a grade escreve
-  // direto nesse estado compartilhado, então digitar ali equivale a digitar
-  // no campo "Nova palavra..." e apertar Testar.
+  // handleTestWord são os MESMOS do TestPanel — a grade escreve direto nesse
+  // estado compartilhado (via wordleGame.typeAt/backspaceAt), então digitar
+  // ali equivale a digitar no campo "Nova palavra..." e apertar Testar.
   testWords = [],
-  wordleHintStage = 0,
+  wordleGame = null,
   newWord = '',
-  setNewWord,
   handleTestWord,
 }) {
   // Ref local para o canvas-inner (se não for fornecido externamente)
@@ -574,16 +573,17 @@ export default function CanvasArea({
                 ou já testou alguma palavra — sobrepõe o Maurílio (z-index maior),
                 não desloca o layout. shortestWord aqui é sempre string não-vazia
                 nesse gate — L08 não é λ nem impossible. */}
-            {currentLevel?.id === 8 && currentLevel?.shortestWord && (wordleHintStage > 0 || testWords.length > 0) && (
+            {currentLevel?.id === 8 && currentLevel?.shortestWord && wordleGame && (wordleGame.hintStage > 0 || testWords.length > 0) && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
                 <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: 12, padding: '14px 18px' }}>
                   <WordleBoard
                     attempts={testWords.slice().reverse()}
                     targetLength={currentLevel.shortestWord.length}
                     shortestWord={currentLevel.shortestWord}
-                    hintStage={wordleHintStage}
+                    hintStage={wordleGame.hintStage}
                     guess={newWord}
-                    setGuess={setNewWord}
+                    typeAt={wordleGame.typeAt}
+                    backspaceAt={wordleGame.backspaceAt}
                     onSubmit={handleTestWord}
                   />
                 </div>
