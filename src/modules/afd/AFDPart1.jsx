@@ -63,6 +63,14 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
   // Última palavra testada (normalizada — 'null'/'vazio' já viram ''), usada
   // só pela Dica de Tamanho (regra: diff = tentativa.length - shortestWord.length).
   const lastAttemptRef = useRef(null);
+  // Piloto WordleBoard (L08): timeout do "segurar a linha vencedora visível"
+  // antes de destravar — limpo ao trocar de nível pra não disparar setState
+  // num nível que o aluno já saiu.
+  const unlockDelayRef = useRef(null);
+  // Piloto WordleBoard (L08): estágio da dica pedida pelo botão 💡 — 0 = board
+  // escondido (default), 1 = tamanho (bordas vazias), 2 = letras embaralhadas.
+  // Clicar em 2 não avança mais (trava — a próxima "dica" seria a resposta).
+  const [wordleHintStage, setWordleHintStage] = useState(0);
   const [drawnCards, setDrawnCards] = useState([]);
   const [selectedSymbolCard, setSelectedSymbolCard] = useState(null);
 
@@ -223,6 +231,8 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     setIsSidebarOpen(false);
     setNewWord('');
     lastAttemptRef.current = null;
+    clearTimeout(unlockDelayRef.current);
+    setWordleHintStage(0);
     setProfessorMessage('');
     setInteractionMode('IDLE');
     setDrawnCards([]);
@@ -308,6 +318,16 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     // parte: ali não existe menor palavra nenhuma, então "null"/"vazio" seguem
     // sendo o único jeito de sinalizar a resposta especial.
     const word = isSpecialNull ? '' : newWord;
+
+    // Piloto WordleBoard (L08): a grade já revela o tamanho da menor palavra
+    // como células vazias — uma tentativa de tamanho errado não cabe na grade
+    // e não geraria feedback por letra útil, então é rejeitada antes de contar
+    // como tentativa (sem telemetria de 'tentativa', sem consumir attemptsRef).
+    if (currentLevel.id === 8 && !isDrawingUnlocked && target != null && word.length !== target.length) {
+      showToast(`A menor palavra tem ${target.length} caracteres — sua tentativa tem ${word.length}.`, 'info');
+      return;
+    }
+
     let isShortest = false, isValid = false;
 
     if (target === null) { if (isSpecialNull) isShortest = true; }
@@ -348,22 +368,30 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         } else if (currentLevel.impossible || currentLevel.wordOnly) {
           setShowImpossibleScreen(true);
         } else {
-        setIsDrawingUnlocked(true);
-        showToast('Sucesso! Tabuleiro liberado.', 'success');
-        const allowed = currentLevel.allowedCards;
-        const initialCards = [
-          { id: 'c0', type: 'action', action: 'toggleInitial', icon: '▶', label: 'Estado Inicial' },
-          { id: 'c3', type: 'action', action: 'toggleFinal',   icon: '◎', label: 'Definir Final' },
-          { id: 'c1', type: 'action', action: 'addNode',       icon: '◯', label: 'Novo Estado' },
-          { id: 'c2', type: 'action', action: 'addTransition', icon: '↗', label: 'Criar Seta' },
-          { id: 'c4', type: 'action', action: 'erase',         icon: '🗑', label: 'Apagar' },
-          { id: 'cu', type: 'action', action: 'undo',          icon: '↶', label: 'Desfazer' },
-          { id: 'cr', type: 'action', action: 'redo',          icon: '↷', label: 'Refazer' },
-        ].filter(c => !allowed || allowed.includes(c.action));
-        const symbolCards = (currentLevel.alphabet || []).map((sym, i) => ({
-          id: `s${i}`, type: 'symbol', symbol: sym, label: `Símbolo ${sym}`,
-        }));
-        setDrawnCards([...initialCards, { type: 'separator', id: 'sep1' }, ...symbolCards]);
+        const unlock = () => {
+          setIsDrawingUnlocked(true);
+          showToast('Sucesso! Tabuleiro liberado.', 'success');
+          const allowed = currentLevel.allowedCards;
+          const initialCards = [
+            { id: 'c0', type: 'action', action: 'toggleInitial', icon: '▶', label: 'Estado Inicial' },
+            { id: 'c3', type: 'action', action: 'toggleFinal',   icon: '◎', label: 'Definir Final' },
+            { id: 'c1', type: 'action', action: 'addNode',       icon: '◯', label: 'Novo Estado' },
+            { id: 'c2', type: 'action', action: 'addTransition', icon: '↗', label: 'Criar Seta' },
+            { id: 'c4', type: 'action', action: 'erase',         icon: '🗑', label: 'Apagar' },
+            { id: 'cu', type: 'action', action: 'undo',          icon: '↶', label: 'Desfazer' },
+            { id: 'cr', type: 'action', action: 'redo',          icon: '↷', label: 'Refazer' },
+          ].filter(c => !allowed || allowed.includes(c.action));
+          const symbolCards = (currentLevel.alphabet || []).map((sym, i) => ({
+            id: `s${i}`, type: 'symbol', symbol: sym, label: `Símbolo ${sym}`,
+          }));
+          setDrawnCards([...initialCards, { type: 'separator', id: 'sep1' }, ...symbolCards]);
+        };
+        // Piloto WordleBoard (L08): segura a última linha (toda verde) visível
+        // por um instante antes de destravar — sem o delay, o overlay some
+        // junto com o acerto e o aluno nunca chega a ver a vitória na grade.
+        // Demais níveis destravam na hora, como sempre.
+        if (currentLevel.id === 8) unlockDelayRef.current = setTimeout(unlock, 900);
+        else unlock();
         }
       }
       setTestWords(prev => [{ word: wordDisplay, status: 'shortest' }, ...prev]);
@@ -389,6 +417,17 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     showToast(buildSizeHintMessage(currentLevel?.shortestWord, lastAttemptRef.current), 'info');
     logTutorialOpen('dica_tamanho');
   }, [currentLevel, showToast, logTutorialOpen]);
+
+  // Piloto WordleBoard (L08): o botão 💡 vira um controle de estágio em vez de
+  // um toast — 1º clique revela o tamanho (bordas vazias), 2º clique revela as
+  // letras embaralhadas (sem posição). Trava em 2: a 3ª dica seria a resposta.
+  const handleWordleHint = useCallback(() => {
+    setWordleHintStage(s => {
+      const next = Math.min(s + 1, 2);
+      if (next !== s) logTutorialOpen(next === 1 ? 'dica_tamanho' : 'dica_letras');
+      return next;
+    });
+  }, [logTutorialOpen]);
 
   // Atalhos de teclado: Ctrl+Z, Ctrl+Y, Esc, Delete
   useEffect(() => {
@@ -548,8 +587,8 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         }}
         lessonActive={lessonActive}
         onCloseLesson={handleLessonFinish}
-        showSizeHint={!isDrawingUnlocked}
-        onSizeHint={handleSizeHint}
+        showSizeHint={!isDrawingUnlocked && (currentLevel?.id !== 8 || wordleHintStage < 2)}
+        onSizeHint={currentLevel?.id === 8 ? handleWordleHint : handleSizeHint}
       />
 
       <div className="workspace">
@@ -662,6 +701,11 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
           userTransitionsSnapshot={userTransitionsSnapshot}
           resetHistory={resetHistory}
           lessonActive={lessonActive}
+          testWords={testWords}
+          wordleHintStage={wordleHintStage}
+          newWord={newWord}
+          setNewWord={setNewWord}
+          handleTestWord={handleTestWord}
         />
         </div>
 

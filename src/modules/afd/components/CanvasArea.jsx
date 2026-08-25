@@ -10,6 +10,7 @@ import NodeContextMenu from './NodeContextMenu';
 import { DRAW_COLORS } from '../hooks/useDrawing';
 import imgMaurilioApontando from '../../../assets/maurilio2_apontando_pro_lado.webp';
 import imgBalaoFala         from '../../../assets/balao_fala_redondo.webp';
+import WordleBoard from './WordleBoard';
 
 const INNER_W = 8000;
 const INNER_H = 8000;
@@ -66,6 +67,18 @@ export default function CanvasArea({
   lessonActive = false,
   errorNodeIds = null,
   enableContextMenu = true,
+  // Piloto do WordleBoard: histórico de tentativas da fase "descubra a menor
+  // palavra" (mesma lista testWords do orquestrador) e o estágio da dica
+  // pedida via botão 💡 (0=escondido, 1=tamanho, 2=letras) — só usado quando
+  // o nível é o piloto (ver AFDPart1.jsx: restrito ao L08 por ora). newWord/
+  // setNewWord/handleTestWord são os MESMOS do TestPanel — a grade escreve
+  // direto nesse estado compartilhado, então digitar ali equivale a digitar
+  // no campo "Nova palavra..." e apertar Testar.
+  testWords = [],
+  wordleHintStage = 0,
+  newWord = '',
+  setNewWord,
+  handleTestWord,
 }) {
   // Ref local para o canvas-inner (se não for fornecido externamente)
   const localInnerRef = useRef(null);
@@ -547,7 +560,7 @@ export default function CanvasArea({
 
       {!isDrawingUnlocked && guidedLessonStep === null ? (
         <div className="locked-overlay">
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', marginTop:80 }}>
+          <div style={{ position: 'relative', display:'flex', alignItems:'center', justifyContent:'center', marginTop:80 }}>
             <img src={imgMaurilioApontando} alt="Professor" style={{ height:320, zIndex:1 }} />
             <div style={{ position:'relative', width:210, height:140, marginLeft:-80, alignSelf:'flex-start', marginTop:-80 }}>
               <img src={imgBalaoFala} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:1 }} />
@@ -556,6 +569,26 @@ export default function CanvasArea({
                 1ª Coisa: Descubra a Menor Palavra!
               </div>
             </div>
+            {/* Piloto: grade estilo Wordle/Termo, restrita ao L08 por ora (ver
+                AFDPart1.jsx). Só aparece quando o aluno pediu dica (hintStage>0)
+                ou já testou alguma palavra — sobrepõe o Maurílio (z-index maior),
+                não desloca o layout. shortestWord aqui é sempre string não-vazia
+                nesse gate — L08 não é λ nem impossible. */}
+            {currentLevel?.id === 8 && currentLevel?.shortestWord && (wordleHintStage > 0 || testWords.length > 0) && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
+                <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: 12, padding: '14px 18px' }}>
+                  <WordleBoard
+                    attempts={testWords.slice().reverse()}
+                    targetLength={currentLevel.shortestWord.length}
+                    shortestWord={currentLevel.shortestWord}
+                    hintStage={wordleHintStage}
+                    guess={newWord}
+                    setGuess={setNewWord}
+                    onSubmit={handleTestWord}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ) : (
