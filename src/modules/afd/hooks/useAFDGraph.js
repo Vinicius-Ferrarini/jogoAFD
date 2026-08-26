@@ -44,7 +44,11 @@ export function validateAFDPure({ nodes, transitions, testWords = [], currentLev
   const simulateDFA = (word) => {
     let cur = nodes.find(n => n.isInitial)?.id;
     if (!cur) return false;
-    const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
+    // testWords guarda 'λ' como display da palavra vazia (ver handleTestWord
+    // em AFDPart1.jsx) — nunca o literal "null"/"vazio" (esses só existiam
+    // aqui como resquício redundante; a conversão real já acontece antes,
+    // no momento em que a tentativa é registrada).
+    const w = word === 'λ' ? '' : word;
     for (const ch of w) {
       const tr = transitions.find(t => t.from === cur && t.symbol.split(',').map(s => s.trim()).includes(ch));
       if (!tr) return false;
@@ -164,7 +168,11 @@ export default function useAFDGraph({
     const simulateDFA = (word) => {
       let cur = nodes.find(n => n.isInitial)?.id;
       if (!cur) return false;
-      const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
+      // testWords guarda 'λ' como display da palavra vazia (ver handleTestWord
+    // em AFDPart1.jsx) — nunca o literal "null"/"vazio" (esses só existiam
+    // aqui como resquício redundante; a conversão real já acontece antes,
+    // no momento em que a tentativa é registrada).
+    const w = word === 'λ' ? '' : word;
       for (const ch of w) {
         const tr = transitions.find(t => t.from === cur && t.symbol.split(',').map(s => s.trim()).includes(ch));
         if (!tr) return false;

@@ -284,9 +284,10 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
   // de onboarding "descubra a menor palavra", igual ao AP/AFD.
   const testWord = useCallback(() => {
     if (!level) return;
-    const raw = simWord.trim();
-    const lower = raw.toLowerCase();
-    const word = (lower === 'null' || lower === 'vazio') ? '' : raw;
+    // MT-Recon não tem nível "impossível sem menor palavra" (diferente de
+    // AFD-L14/AP-L16) — "null"/"vazio" digitados não têm sentinela aqui;
+    // testar λ de verdade é deixar o campo em branco e confirmar.
+    const word = simWord.trim();
     const display = word === '' ? 'λ' : word;
 
     if (word !== '') {
@@ -868,7 +869,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
 
           <div className="test-input-area">
             <input type="text" className="word-input"
-              placeholder={!isDrawingUnlocked && getShortestWord(level) === '' ? "Digite 'null'..." : "ex: aabb (vazio = λ)"}
+              placeholder="ex: aabb (vazio = λ)"
               value={simWord} onChange={e => { setSimWord(e.target.value); setInputError(null); }}
               onKeyDown={e => e.key === 'Enter' && testWord()}
               translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off"

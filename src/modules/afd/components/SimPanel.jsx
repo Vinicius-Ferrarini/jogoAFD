@@ -7,7 +7,7 @@ export default function SimPanel({ word, nodes, transitions, onClose, onHighligh
 
   const buildSteps = () => {
     const steps = [];
-    const w = (word === 'λ' || word === 'null' || word === 'vazio') ? '' : word;
+    const w = word === 'λ' ? '' : word;
     if (!initState) {
       steps.push({ type: 'error', icon: '❌', text: 'Nenhum estado inicial definido!', state: null, charIdx: -1 });
       return steps;

@@ -293,11 +293,13 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
       // erros, só sucesso/dicas.
       showToast?.(res.message, 'error');
       if (res.run) {
-        // res.run vem de pdaAcceptingRun (gabarito ou aluno) — é sempre uma
-        // computação que ACEITA (pilha esvazia); accepted:true reflete isso.
-        // O contexto de "isso está ERRADO" vem do banner (title/message), não
-        // do veredito ✓/✗ do próprio passo a passo.
-        openSim({ run: res.run, word: res.counterexample.word, accepted: true,
+        // expected:true (aluno rejeita quando deveria aceitar) ⇒ res.run vem de
+        // pdaRejectingTrace no AP do PRÓPRIO ALUNO — mostra onde/por que ele trava,
+        // igual ao "Testar palavra" (accepted:false + reason). expected:false (aluno
+        // aceita quando deveria rejeitar) ⇒ res.run vem de pdaAcceptingRun no AP do
+        // aluno — mostra o caminho indevido que ele usou pra aceitar (accepted:true).
+        openSim({ run: res.run, word: res.counterexample.word,
+          accepted: !res.counterexample.expected, reason: res.rejectReason,
           title: `Contraexemplo: "${res.counterexample.word === '' ? 'λ' : res.counterexample.word}"`,
           message: res.message });
       }
@@ -343,10 +345,15 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
   const testWord = useCallback(() => {
     if (!level) return;
     const raw = simWord.trim();
-    // "null"/"vazio" (como no AFD) são a forma de digitar λ — testar uma string
-    // vazia direto não dá pro aluno saber o que está acontecendo.
+    // "null"/"vazio" só viram o sentinela de λ quando level.impossible (não
+    // existe menor palavra nenhuma pra digitar, ex.: L16 — mesma regra do
+    // AFD, ver AFDPart1.jsx). Em qualquer outro nível (ex.: L01, que aceita λ
+    // de verdade), digitar o TEXTO "null" não deve contar como achar λ — o
+    // jeito de testar λ de verdade é deixar o campo em branco e confirmar
+    // (achado real: L01 "aceitava" null como se fosse a palavra vazia).
     const lower = raw.toLowerCase();
-    const word = (lower === 'null' || lower === 'vazio') ? '' : raw;
+    const isSpecialNull = level.impossible && (lower === 'null' || lower === 'vazio');
+    const word = isSpecialNull ? '' : raw;
     const display = word === '' ? 'λ' : word;
 
     if (!isDrawingUnlocked || testMode === 'LANGUAGE') {
@@ -651,7 +658,7 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
 
           <div className="test-input-area">
             <input type="text" className="word-input"
-              placeholder={!isDrawingUnlocked && getShortestWord(level) === '' ? "Digite 'null'..." : "ex: aabb (vazio = λ)"}
+              placeholder={!isDrawingUnlocked && level.impossible ? "Digite 'null'..." : "ex: aabb (vazio = λ)"}
               value={simWord} onChange={e => setSimWord(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && testWord()}
               translate="no" spellCheck={false} autoCorrect="off" autoCapitalize="off" />

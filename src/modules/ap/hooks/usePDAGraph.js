@@ -4,7 +4,7 @@
 // past/present/future para dar Undo/Redo. Validação por bateria do gabarito.
 import { useCallback, useMemo, useReducer, useRef } from 'react';
 import { getBattery } from '../../../levels_data/ap/index.js';
-import { validateStudentPda, pdaAcceptingRun } from '../utils/pdaAlgorithms';
+import { validateStudentPda, pdaAcceptingRun, pdaRejectingTrace } from '../utils/pdaAlgorithms';
 
 let _uid = 0;
 const genUid = () => `_ap${++_uid}_${Math.random().toString(36).slice(2, 6)}`;
@@ -225,19 +225,25 @@ export default function usePDAGraph({ showToast, selectedNodes = [], setSelected
       return { ok: true, message: 'Perfeito! Seu AP reconhece a linguagem. 🎉', battery };
 
     const { word, expected } = res.counterexample;
-    const run = expected ? pdaAcceptingRun(level.solution, word) : pdaAcceptingRun(pda, word);
     const show = word === '' ? 'λ' : word;
-    let message;
+    let message, run, trace;
     if (expected) {
-      message = run
-        ? `Seu AP REJEITA "${show}", mas ela deveria ser ACEITA. Veja como o gabarito aceita:`
-        : (word === ''
-            ? 'Seu AP REJEITA λ, mas ela deveria ser ACEITA. Dica: adicione a transição "λ, Z ; λ" no estado inicial para esvaziar a pilha sem ler nada.'
-            : `Seu AP REJEITA "${show}", mas ela deveria ser ACEITA.`);
+      // Aluno REJEITA quando deveria ACEITAR: não existe computação aceitadora no
+      // AP do aluno pra mostrar — em vez disso, mostramos onde/por que ele trava
+      // (mesma trilha do "Testar palavra", ver pdaRejectingTrace).
+      trace = pdaRejectingTrace(pda, word);
+      message = word === ''
+        ? 'Seu AP REJEITA λ, mas ela deveria ser ACEITA. Dica: adicione a transição "λ, Z ; λ" no estado inicial para esvaziar a pilha sem ler nada.'
+        : `Seu AP REJEITA "${show}", mas ela deveria ser ACEITA. Veja onde ele trava:`;
     } else {
+      run = pdaAcceptingRun(pda, word);
       message = `Seu AP ACEITA "${show}", mas ela deveria ser REJEITADA. Veja o caminho indevido:`;
     }
-    return { ok: false, reason: 'counterexample', counterexample: res.counterexample, run, runSource: expected ? 'gabarito' : 'aluno', message };
+    return {
+      ok: false, reason: 'counterexample', counterexample: res.counterexample, message,
+      run: expected ? trace?.run : run,
+      rejectReason: expected ? trace?.reason : null,
+    };
   }, [studentPda]);
 
   return {
