@@ -98,15 +98,17 @@ export default function WordGuessGame({
         {/* No minigame a grade é o jogo inteiro — diferente do L08 (onde fica
             escondida atrás do Maurílio até pedir dica), aqui já começa
             visível e digitável. wordleGame.hintStage nasce em 0 (mesmo
-            default do hook); Math.max(1, ...) força a exibição mínima (só
-            bordas vazias) sem precisar de um estado "hintStage inicial"
-            diferente — o botão de dica abaixo ainda controla o avanço real
-            para 2 (texto de letras), a partir do 0 real do hook. */}
+            default do hook, que sobe 0→1→2 num contexto onde 1=grade e
+            2=letras). Aqui a grade (estágio 1) já é o ponto de partida fixo
+            — não algo que o clique revela — então 1 clique real do usuário
+            (hook 0→1) precisa corresponder ao estágio visual 2 (letras),
+            senão o clique parece não fazer nada. displayStage soma +1 assim
+            que o hook sai de 0, capando em 2 (nunca ultrapassa o real). */}
         <WordleBoard
           attempts={attempts}
           targetLength={exercise.shortestWord.length}
           shortestWord={exercise.shortestWord}
-          hintStage={won ? 0 : Math.max(1, wordleGame.hintStage)}
+          hintStage={won ? 0 : Math.min(2, wordleGame.hintStage > 0 ? wordleGame.hintStage + 1 : 1)}
           guess={guess}
           typeAt={won ? undefined : wordleGame.typeAt}
           backspaceAt={won ? undefined : wordleGame.backspaceAt}
@@ -115,9 +117,12 @@ export default function WordGuessGame({
       </div>
 
       {!won && (
-        <button className="menu-btn" onClick={wordleGame.requestHint} disabled={wordleGame.hintStage >= 2}
+        // hintStage >= 1 (não 2): aqui 1 clique já revela tudo que existe pra
+        // revelar (letras — ver displayStage acima), então o botão trava
+        // depois do 1º clique em vez de esperar um 2º que nunca muda nada.
+        <button className="menu-btn" onClick={wordleGame.requestHint} disabled={wordleGame.hintStage >= 1}
           style={{ marginBottom: 12 }}>
-          💡 Dica {wordleGame.hintStage >= 2 ? '(máxima)' : ''}
+          💡 Dica {wordleGame.hintStage >= 1 ? '(máxima)' : ''}
         </button>
       )}
 

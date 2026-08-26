@@ -577,7 +577,7 @@ export default function CanvasArea({
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
                 <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: 12, padding: '14px 18px' }}>
                   <WordleBoard
-                    attempts={testWords.slice().reverse()}
+                    attempts={testWords}
                     targetLength={currentLevel.shortestWord.length}
                     shortestWord={currentLevel.shortestWord}
                     hintStage={wordleGame.hintStage}

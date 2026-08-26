@@ -13,7 +13,7 @@
 // de fora via useWordGuessGame (ver src/modules/shared/) — este componente só
 // desenha, não decide regra. É reutilizado tanto pela fase AFD-L08 quanto pelo
 // minigame standalone "Menor Palavra" (ver docs/MENOR_PALAVRA_MINIGAME.md).
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { buildLetterFeedback } from '../utils/wordleFeedback';
 import { distinctLetters } from '../../shared/wordGuessLogic';
 
@@ -24,8 +24,45 @@ const STATUS_STYLE = {
   empty:   { background: '#fff', color: '#000' },
 };
 
-function Cell({ letter, status }) {
-  const style = STATUS_STYLE[status] ?? STATUS_STYLE.empty;
+// Keyframes do flip embutidas no próprio componente (não num .css externo) —
+// WordleBoard é reusado pelo minigame standalone "Menor Palavra", que não
+// importa AFDPart1.css, então a animação precisa viajar junto com o componente
+// para funcionar nos dois lugares sem depender de qual tela carregou primeiro.
+const FLIP_STYLE_ID = 'wordle-board-flip-keyframes';
+function ensureFlipKeyframes() {
+  if (typeof document === 'undefined' || document.getElementById(FLIP_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = FLIP_STYLE_ID;
+  style.textContent = `
+@keyframes wordleCellFlip {
+  0%   { transform: rotateX(0deg); }
+  50%  { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}`;
+  document.head.appendChild(style);
+}
+
+// flipDelayMs: null = sem animação (linhas já antigas, renderizadas direto no
+// estado final). Um número = anima o flip, trocando de 'empty' pro status real
+// na metade do giro (90°, quando a carta está "de perfil" e o conteúdo não é
+// visível) — igual ao Termo/Wordle: vira, e só do outro lado revela a cor.
+function Cell({ letter, status, flipDelayMs }) {
+  // Captura flipDelayMs SÓ na montagem (useState com inicializador lazy) — o
+  // pai (isNewRow) volta a `null` assim que 'vê' a tentativa nova (1 render
+  // depois, via useEffect), mas a animação ainda está no ar; se a prop fosse
+  // lida ao vivo a cada render, o CSS `animation` sumiria do meio do giro e
+  // cortaria o flip. Uma vez decidido "essa linha vai animar", isso não muda
+  // mais durante o ciclo de vida deste Cell.
+  const [ownDelay] = useState(flipDelayMs);
+  const animate = ownDelay != null;
+  const [revealed, setRevealed] = useState(!animate);
+  useEffect(() => {
+    if (!animate) return;
+    const t = setTimeout(() => setRevealed(true), ownDelay + 250); // metade dos 500ms do flip
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const style = STATUS_STYLE[revealed ? status : 'empty'] ?? STATUS_STYLE.empty;
   return (
     <div style={{
       width: 34, height: 34,
@@ -33,6 +70,7 @@ function Cell({ letter, status }) {
       border: '3px solid #000', borderRadius: 6,
       fontWeight: 900, fontSize: 16,
       boxShadow: '2px 2px 0 #000',
+      ...(animate ? { animation: `wordleCellFlip 500ms ease ${ownDelay}ms both` } : null),
       ...style,
     }}>
       {letter === '' ? '' : letter === undefined ? '' : (letter === 'λ' ? '' : letter)}
@@ -78,7 +116,9 @@ function GuessCell({ index, value, active, onType, onBackspace, inputRef }) {
   );
 }
 
-// attempts: lista de tentativas JÁ TESTADAS nessa fase, mais antiga primeiro,
+// attempts: lista de tentativas JÁ TESTADAS nessa fase, MAIS RECENTE PRIMEIRO
+// (mesma convenção de testWords/attempts nos chamadores) — o componente é quem
+// inverte pra exibir (mais antiga em cima, mais recente embaixo, como o Termo).
 // cada uma no formato { word } (a mesma string comparada contra shortestWord).
 // targetLength: tamanho da menor palavra (número de células por linha).
 // hintStage: 0 = sem linha de dica (só o histórico de tentativas, se houver
@@ -92,7 +132,26 @@ export default function WordleBoard({
   attempts, targetLength, shortestWord, hintStage = 0,
   guess = '', typeAt, backspaceAt, onSubmit,
 }) {
+  useEffect(ensureFlipKeyframes, []);
   const inputRefs = useRef([]);
+
+  // attempts chega mais-recente-primeiro; exibimos mais-antiga-em-cima (Termo).
+  // A tentativa nova (attempts[0]) é sempre a última linha, e é a única que
+  // recebe animação de flip — as demais (já vistas em renders anteriores) só
+  // continuam existindo, sem refazer o efeito visual.
+  const ordered = attempts.slice().reverse();
+  // Começa em attempts.length (não 0): se o board monta já com histórico (ex.:
+  // reabrir a fase depois de testar palavras antes), nada deve animar — só uma
+  // tentativa nova de verdade, adicionada DEPOIS da montagem, dispara o flip.
+  // Precisa ser um useEffect (roda DEPOIS do commit/paint) — ajustar durante o
+  // render faria o React descartar o frame com isNewRow=true antes da tela
+  // chegar a pintá-lo, e o flip nunca apareceria.
+  const [seenCount, setSeenCount] = useState(attempts.length);
+  const isNewRow = ordered.length > seenCount;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSeenCount(attempts.length);
+  }, [attempts.length]);
 
   const letterAt = (i) => guess[i] ?? '';
 
@@ -122,13 +181,26 @@ export default function WordleBoard({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-      {attempts.map((attempt, rowIdx) => {
+      {ordered.map((attempt, idx) => {
         const word = attempt.word === 'λ' ? '' : attempt.word;
-        const feedback = buildLetterFeedback(word, shortestWord) ?? [];
+        // Quando a linguagem aceita mais de uma menor palavra do mesmo tamanho
+        // (ex.: L24 "w tem tamanho 3" — 000..111 são todas corretas), comparar
+        // letra-a-letra contra o shortestWord fixo pintaria uma resposta certa
+        // como errada. status==='shortest' já veio validado pelo chamador
+        // (checkWord + comprimento) — nesse caso a linha é sempre 100% verde.
+        const feedback = attempt.status === 'shortest'
+          ? new Array(word.length).fill('correct')
+          : buildLetterFeedback(word, shortestWord) ?? [];
+        const isLastRow = idx === ordered.length - 1;
         return (
-          <div key={rowIdx} style={{ display: 'flex', gap: 5 }}>
+          <div key={attempt.word} style={{ display: 'flex', gap: 5 }}>
             {Array.from({ length: targetLength }, (_, i) => (
-              <Cell key={i} letter={word[i]} status={feedback[i] ?? 'empty'} />
+              <Cell
+                key={i}
+                letter={word[i]}
+                status={feedback[i] ?? 'empty'}
+                flipDelayMs={isLastRow && isNewRow ? i * 220 : null}
+              />
             ))}
           </div>
         );
