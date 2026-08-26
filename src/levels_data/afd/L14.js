@@ -2,7 +2,7 @@ export default { id: 14, label: "L14", formula: "L = {w ∈ {a,b}* / |w|a = |w|b
     tutorials: {
       onStart: { type: 'theory', title: 'Linguagem IMPOSSÍVEL para AFD!', dialog: [
         'Esta linguagem é IMPOSSÍVEL para qualquer AFD — impossibilidade provada matematicamente!',
-        'Para aceitar a^k b^k, o AFD precisaria lembrar k enquanto lê os "b"s. Mas k é ilimitado!',
+        'Para aceitar aᵏ bᵏ, o AFD precisaria lembrar k enquanto lê os "b"s. Mas k é ilimitado!',
         'Com apenas N estados fixos, palavras longas forçam repetição de estado (Pigeonhole). O Lema do Bombeamento conclui: a^(N+j)b^N seria aceita — mas ela não está em L. Contradição!',
         'Conclusão: AFDs não têm memória para comparar dois contadores sem ordem fixa. Isso é coisa de PDA (pilha).',
         'Tente construir mesmo assim. Sentir os limites do AFD é a melhor aula de teoria!',

@@ -21,10 +21,10 @@ function buildLessonL52() {
   return steps;
 }
 
-export default { id: 52, layout: LAYOUT, label: "L52", formula: "L = {a^n b^m c^p / n > 0, m é impar e p é par}",                   desc: "",                                                                 shortestWord: "ab",       regex: /^a+(bb)*b(cc)*(cc)*$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["ab","aab","aabcc"],       rejectedWords: ["a","ba","abc"],         hint: "a-s, depois b-pares opcionais e um b extra, depois c-pares.",                                                       successMsg: "Paridade correlacionada dominada.",
+export default { id: 52, layout: LAYOUT, label: "L52", formula: "L = {aⁿ bᵐ cᵖ / n > 0, m é impar e p é par}",                   desc: "",                                                                 shortestWord: "ab",       regex: /^a+(bb)*b(cc)*(cc)*$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["ab","aab","aabcc"],       rejectedWords: ["a","ba","abc"],         hint: "a-s, depois b-pares opcionais e um b extra, depois c-pares.",                                                       successMsg: "Paridade correlacionada dominada.",
     tutorials: {
       onStart: { type: 'theory', title: 'a+ (bb)* b (cc)*!', dialog: [
-        'L52: a^n(bb)^m b c^(2p). a-s positivos, b-pares opcionais, um b extra, c-pares opcionais.',
+        'L52: aⁿ(bb)ᵐ b c²ᵖ. a-s positivos, b-pares opcionais, um b extra, c-pares opcionais.',
         '"ab" ✓ (1a, 1b). "aab" ✓ (2a, 1b). "aaabcc" ✓ (3a, 1b, 2c).',
         '"a" ✗ (sem b). "ba" ✗ (começa com b). "abc" ✗ (1c é ímpar).',
       ] },

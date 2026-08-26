@@ -23,10 +23,10 @@ function buildLessonL50() {
   return steps;
 }
 
-export default { id: 50, layout: LAYOUT, label: "L50", formula: "L = {a^n b^m c^p / n > 0, p > 0, m >= 0 e (n+p) é impar}",          desc: "",                                                                 shortestWord: "ac",       regex: /^.*$/, validate: w => /^a+b*c+$/.test(w) && ([...w].filter(c=>c==='a').length + [...w].filter(c=>c==='c').length)%2===1, alphabet: ['a', 'b', 'c'],        acceptedWords: ["acc","aac","abcc"],       rejectedWords: ["ac","aacc","c"],        hint: "Se a quantidade de 'a's for ímpar, os 'c's precisam ser pares, e vice versa.",                                     successMsg: "Paridade correlacionada funcionando!",
+export default { id: 50, layout: LAYOUT, label: "L50", formula: "L = {aⁿ bᵐ cᵖ / n > 0, p > 0, m >= 0 e (n+p) é impar}",          desc: "",                                                                 shortestWord: "ac",       regex: /^.*$/, validate: w => /^a+b*c+$/.test(w) && ([...w].filter(c=>c==='a').length + [...w].filter(c=>c==='c').length)%2===1, alphabet: ['a', 'b', 'c'],        acceptedWords: ["acc","aac","abcc"],       rejectedWords: ["ac","aacc","c"],        hint: "Se a quantidade de 'a's for ímpar, os 'c's precisam ser pares, e vice versa.",                                     successMsg: "Paridade correlacionada funcionando!",
     tutorials: {
       onStart: { type: 'theory', title: 'a+ b* c+ com (n+p) impar!', dialog: [
-        'L50: a^n b^m c^p. n>0, p>0, m>=0. Mas a quantidade (n+p) tem que ser impar.',
+        'L50: aⁿ bᵐ cᵖ. n>0, p>0, m>=0. Mas a quantidade (n+p) tem que ser impar.',
         '"acc" ✓ (1a+2c=3 impar). "aac" ✓ (2a+1c=3). "abcc" ✓ (1a+2c=3).',
         '"ac" ✗ (1+1=2 par). "aacc" ✗ (2+2=4 par). 7 estados: paridade de a e c.',
       ] },

@@ -4,13 +4,21 @@
  *
  * Ambiente: node (sem DOM) — função pura.
  *
+ * Nota (pós docs/AFD_NOTACAO_ELEVADO.md): level.formula do AFD hoje já usa
+ * Unicode sobrescrito nativamente (aⁿ, não a^n) — a conversão ASCII→Unicode
+ * abaixo não é mais exercitada pelo fluxo real do dataset AFD (que já chega
+ * pronto), mas a função continua precisando saber fazer essa conversão por
+ * robustez (ex.: um texto ASCII cru vindo de outra origem no futuro) — os
+ * testes abaixo continuam validando a função pura, não mais "casos reais"
+ * do dataset atual.
+ *
  * Suites:
  *   1. Prefixo "L = " (só AFD) — removido
  *   2. Expoentes ASCII → Unicode (^n, ^m, ^2m etc.)
  *   3. Operadores de comparação (>=, <=, !=)
  *   4. Espaçamento (colapso de espaços, bordas de chaves)
- *   5. Casos reais dos 3 módulos, incluindo o único par cross-módulo
- *      idêntico do dataset (AFD-L14 ↔ MT-Recon-L6)
+ *   5. Casos do formato real dos 3 módulos, incluindo o único par
+ *      cross-módulo idêntico do dataset (AFD-L14 ↔ MT-Recon-L6)
  */
 import { describe, it, expect } from 'vitest';
 import { normalizeLanguage } from '../modules/shared/wordExercises/normalizeLanguage.js';
@@ -104,12 +112,17 @@ describe('normalizeLanguage — guards', () => {
   });
 });
 
-describe('normalizeLanguage — casos reais dos 3 módulos', () => {
-  it('AFD-L8: "L = { a(bc)^n a | n > 0 }"', () => {
+describe('normalizeLanguage — casos do formato real dos 3 módulos', () => {
+  // AFD-L8/L40: level.formula já vem em Unicode nativamente hoje (ver nota
+  // do topo do arquivo) — estes 2 casos exercitam a conversão ASCII→Unicode
+  // com o MESMO texto/estrutura que os níveis tinham antes da normalização,
+  // como teste de regressão da função pura (não mais um "caso real" lido
+  // direto do dataset).
+  it('padrão equivalente ao AFD-L8 antes da normalização: "L = { a(bc)^n a | n > 0 }"', () => {
     expect(normalizeLanguage('L = { a(bc)^n a | n > 0 }')).toBe('{a(bc)ⁿ a | n > 0}');
   });
 
-  it('AFD-L40: "L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}"', () => {
+  it('padrão equivalente ao AFD-L40 antes da normalização: "L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}"', () => {
     expect(normalizeLanguage('L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}'))
       .toBe('{aⁿ b²ᵐ d c³ᵖ d / n ≥ 0, m ≥ 0, p ≥ 0}');
   });

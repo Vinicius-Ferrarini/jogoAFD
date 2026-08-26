@@ -106,7 +106,7 @@ AFDPart1.jsx   MinWordGame.jsx (NOVO — tela standalone do minigame)
 
 | Módulo | Como obter shortestWord | Como obter alphabet | Como validar uma palavra | Campo de linguagem (texto) |
 |---|---|---|---|---|
-| AFD | `level.shortestWord` (campo estático) | `level.alphabet` | `lvlAccepts(level, word)` — já existe em `useAFDGraph.js` | `level.formula` — ex.: `"L = { a(bc)^n a \| n > 0 }"` (ASCII, prefixo `L =`) |
+| AFD | `level.shortestWord` (campo estático) | `level.alphabet` | `lvlAccepts(level, word)` — já existe em `useAFDGraph.js` | `level.formula` — ex.: `"L = { a(bc)ⁿ a \| n > 0 }"` (Unicode sobrescrito desde a normalização AFD, ver nota abaixo; prefixo `L =`) |
 | AP | `getShortestWord(level)` (derivado da bateria) | `level.alphabet` (derivado do gabarito) | bateria (`getBattery(level).accepted`) | `level.language` — ex.: `"{ aⁿbⁿ / n ≥ 0 }"` (Unicode sobrescrito, sem prefixo) |
 | MT-Recon | `getShortestWord(level)` (BFS sobre o gabarito) | `level.alphabet` | `simulateTM(graph, word, ...)` contra o gabarito | `level.language` — mesmo formato do AP (`"{aⁿbⁿ / n ≥ 0}"`) |
 
@@ -202,14 +202,19 @@ forma canônica — o padrão de notação do AP (Unicode sobrescrito, sem prefi
 **Levantamento real (concluído)** — extraído de todos os 61 níveis AFD + 20
 AP + 15 MT-Recon via grep, não amostra:
 
-- [x] **Achado principal: AFD é quase 100% prosa, não fórmula com expoentes.**
-      Só 1 nível (L13, `(ab)^n (cd)^m`) e uns poucos outros (L10, L11, L12,
-      L14 antigo formato) usam `a^n`/`b^m` — os outros ~55 níveis são frases
-      tipo `"L = {w ∈ {0,1}* / w tem tamanho 3}"`,
-      `"L = {w ∈ {a,b,c,d}* / w tem abcd como prefixo}"`. Isso muda a
-      prioridade da normalização: o mapeamento ASCII→Unicode de expoentes
-      (`^n`→`ⁿ`) afeta poucos níveis; o que domina é (1) remover o prefixo
-      `L = `, (2) normalizar `>=`→`≥`/`<=`→`≤`, (3) trim/collapse de espaços.
+- [x] **Achado principal (histórico — ver nota de atualização abaixo): AFD é
+      quase 100% prosa, não fórmula com expoentes.** Um levantamento mais
+      completo, feito depois desta Fase 3 (ver
+      `docs/AFD_NOTACAO_ELEVADO.md`), encontrou na verdade 21 níveis com
+      `a^n`/`b^m` (não "1 nível + uns poucos"), a maioria em `formula` —
+      subestimativa corrigida quando `level.formula` do AFD foi normalizado
+      para usar Unicode sobrescrito nativamente (ver nota abaixo). O restante
+      (~40 níveis) continua sendo prosa tipo
+      `"L = {w ∈ {0,1}* / w tem tamanho 3}"`. Isso não muda a prioridade da
+      normalização em si: (1) remover o prefixo `L = `, (2) normalizar
+      `>=`→`≥`/`<=`→`≤`, (3) trim/collapse de espaços continuam sendo o que
+      mais frequentemente entra em jogo — só o mapeamento ASCII→Unicode de
+      expoentes afeta mais níveis do que se pensava originalmente.
 - [x] AP e MT-Recon já usam o mesmo formato-alvo (Unicode sobrescrito, sem
       prefixo) — divergem só em espaçamento (`{aⁿbⁿ / n ≥ 0}` vs
       `{aⁿbⁿ/² / n > 0 e n par}` vs variações de espaço em torno de `/`).
@@ -241,8 +246,13 @@ AP + 15 MT-Recon via grep, não amostra:
       `L = `/`L=`, normaliza `>=`→`≥`, `<=`→`≤`, `!=`→`≠`, colapsa espaços
       múltiplos e trim geral (incluindo espaço logo após `{` e antes de `}`).
       Mapeamento de expoentes ASCII→Unicode caractere a caractere (dígitos +
-      `n,m,p,r,s,t,u,k,i,j`) — `q` não tem sobrescrito Unicode oficial e fica
-      sem conversão (limitação documentada no código, não um bug).
+      `n,m,p,r,s,t,u,k,i,j`) — `q` não tem sobrescrito Unicode oficial (não é
+      uma limitação desta função: o Unicode simplesmente não define esse
+      glyph). Continua documentado aqui para o caso de texto de OUTRO módulo
+      vir a usar `^q` no futuro — mas depois da normalização AFD (ver
+      `docs/AFD_NOTACAO_ELEVADO.md`), os 2 níveis do dataset que usavam essa
+      variável (`c^q` em L58/L59) foram renomeados para `c^k`, então não há
+      mais nenhum `^q` real no dataset atual.
 - [x] Testes em `src/__tests__/normalizeLanguage.test.js` — 24 testes
       (prefixo, expoentes incluindo o caso sem sobrescrito `q`, operadores,
       espaçamento, guards de null/vazio, casos reais dos 3 módulos incluindo

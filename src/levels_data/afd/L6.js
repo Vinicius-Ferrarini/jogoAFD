@@ -17,7 +17,7 @@ function buildLessonL6() {
   return steps;
 }
 
-export default { id: 6, layout: LAYOUT,  label: "L06", formula: "L = { a^n | n > 0 e n é ímpar }",                                    desc: "",                                                                 shortestWord: "a",        regex: /^a(aa)*$/,                                                  alphabet: ['a'],                  acceptedWords: ["a","aaa","aaaaa"],         rejectedWords: ["λ","aa","aaaa"],       hint: "Ímpar significa 1, 3, 5... Vai e volta entre dois estados!",                                                        successMsg: "Mecânica de paridade dominada!",
+export default { id: 6, layout: LAYOUT,  label: "L06", formula: "L = { aⁿ | n > 0 e n é ímpar }",                                    desc: "",                                                                 shortestWord: "a",        regex: /^a(aa)*$/,                                                  alphabet: ['a'],                  acceptedWords: ["a","aaa","aaaaa"],         rejectedWords: ["λ","aa","aaaa"],       hint: "Ímpar significa 1, 3, 5... Vai e volta entre dois estados!",                                                        successMsg: "Mecânica de paridade dominada!",
     tutorials: {
       onStart: { type: 'theory', title: 'Paridade: Ímpar vs Par', dialog: [
         'Novo conceito: PARIDADE! 🔢 Ímpar = 1,3,5... Par = 0,2,4...',

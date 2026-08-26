@@ -22,10 +22,10 @@ function buildLessonL9() {
   return steps;
 }
 
-export default { id: 9, layout: LAYOUT,  label: "L09", formula: "L = { a^n b^m c^p | n > 0, m ≥ 0, p ≥ 0 }",                         desc: "",                                                                 shortestWord: "a",        regex: /^a+b*c*$/,                                                  alphabet: ['a', 'b', 'c'],        acceptedWords: ["a","ab","abc"],            rejectedWords: ["λ","b","ba"],          hint: "Os blocos não se misturam. Primeiro só 'a's, depois só 'b's, e por fim só 'c's.",                                  successMsg: "Progresso linear perfeito!",
+export default { id: 9, layout: LAYOUT,  label: "L09", formula: "L = { aⁿ bᵐ cᵖ | n > 0, m ≥ 0, p ≥ 0 }",                         desc: "",                                                                 shortestWord: "a",        regex: /^a+b*c*$/,                                                  alphabet: ['a', 'b', 'c'],        acceptedWords: ["a","ab","abc"],            rejectedWords: ["λ","b","ba"],          hint: "Os blocos não se misturam. Primeiro só 'a's, depois só 'b's, e por fim só 'c's.",                                  successMsg: "Progresso linear perfeito!",
     tutorials: {
       onStart: { type: 'theory', title: 'Variáveis Independentes!', dialog: [
-        'Três blocos independentes: a^n (n>0, obrigatório), b^m (m≥0, opcional), c^p (p≥0, opcional).',
+        'Três blocos independentes: aⁿ (n>0, obrigatório), bᵐ (m≥0, opcional), cᵖ (p≥0, opcional).',
         'Independente significa que cada bloco tem sua regra própria. "a" sozinho é válido!',
         'O fluxo é estritamente da esquerda para a direita — nunca se volta para o bloco anterior.',
       ] },

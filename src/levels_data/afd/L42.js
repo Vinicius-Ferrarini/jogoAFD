@@ -21,10 +21,10 @@ function buildLessonL42() {
   return steps;
 }
 
-export default { id: 42, layout: LAYOUT, label: "L42", formula: "L = {a^n b^2m cc d^p / n > 0 é impar, m >= 0, p >= 0}",           desc: "",                                                                 shortestWord: "acc",      regex: /^a(aa)*(bb)*ccd*$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["acc","aaacc","accdd"],   rejectedWords: ["cc","aacc","abcc"],    hint: "O início exige vai-e-volta ímpar para os 'a's, depois 'b's em duplas.",                                             successMsg: "Paridade e duplas em sequência perfeita.",
+export default { id: 42, layout: LAYOUT, label: "L42", formula: "L = {aⁿ b²ᵐ cc dᵖ / n > 0 é impar, m >= 0, p >= 0}",           desc: "",                                                                 shortestWord: "acc",      regex: /^a(aa)*(bb)*ccd*$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["acc","aaacc","accdd"],   rejectedWords: ["cc","aacc","abcc"],    hint: "O início exige vai-e-volta ímpar para os 'a's, depois 'b's em duplas.",                                             successMsg: "Paridade e duplas em sequência perfeita.",
     tutorials: {
       onStart: { type: 'theory', title: 'a-ímpar + b-pares + cc + d*!', dialog: [
-        'L42: a^n b^2m cc d^p onde n > 0 ímpar, m ≥ 0, p ≥ 0.',
+        'L42: aⁿ b²ᵐ cc dᵖ onde n > 0 ímpar, m ≥ 0, p ≥ 0.',
         '"acc" ✓ (1a, 0b). "aaacc" ✓ (3a, 0b). "abbcc" ✓ (1a, 2b). "aacc" ✗ (2a = par!).',
         '6 estados: q0 (start), q1 (odd-a), q2 (odd-b/even-b via q3), q4 (1ºc), q5 (final).',
       ] },

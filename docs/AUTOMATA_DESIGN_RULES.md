@@ -62,7 +62,7 @@ q1 --c--> q2(c,f)            // q2 NÃO tem aresta para 'a' ou 'b'
 
 **Exceção válida:** Atalhos para frente são permitidos (ex: `q0 --d--> q3` para pular blocos b e c), mas nunca para trás.
 
-**Casos cobertos:** L21 (`a*b*c*d*`), L40 / L47 (`a^n b^2m d c^3p d`).
+**Casos cobertos:** L21 (`a*b*c*d*`), L40 / L47 (`aⁿ b²ᵐ d c³ᵖ d`).
 
 ---
 

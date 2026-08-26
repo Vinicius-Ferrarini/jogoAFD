@@ -18,7 +18,7 @@ function buildLessonL56() {
   steps.push(b.test('Veja como "aaabcabaabc" percorre essa espinha dorsal.', 'aaabcabaabc', 0));
   steps.push(b.reject('Mas "aabcabaabc" tem só dois "a": sem um terceiro, a máquina trava em q2!', 'aabcabaabc', 0));
   b.addEdges(['q3','a','q3'],['q8','e','q8']);
-  steps.push(b.draw('Agora os laços para as repetições: a^n (em q3) e e^p (em q8).', 0));
+  steps.push(b.draw('Agora os laços para as repetições: aⁿ (em q3) e eᵖ (em q8).', 0));
   steps.push(b.test('Com os laços, "aaaabcabaeabc" usa um "a" extra e um "e".', 'aaaabcabaeabc', 0));
   b.addNodes('q9','q10','q11')
    .addEdges(['q3','c','q9'],['q9','b','q5'],['q5','d','q10'],['q10','d','q11'],['q11','d','q5']);
@@ -31,7 +31,7 @@ function buildLessonL56() {
   return steps;
 }
 
-export default { id: 56, layout: LAYOUT, label: "L56", formula: "L = { a^n a a a (bc+cb)(ddd)^m aba e^p a(bc)^q | n,m,p ≥ 0, q > 0 }", desc: "(trabalho)", shortestWord: "aaabcabaabc", regex: /^a{3,}(?:bc|cb)(?:ddd)*abae*a(?:bc)+$/, fuzzMaxLen: 5, alphabet: ['a', 'b', 'c', 'd', 'e'], acceptedWords: ["aaabcabaabc","aaaabcabaabc","aaacbabaabc","aaabcdddabaabc","aaabcabaeeabcbc"], rejectedWords: ["aabcabaabc","aaababaabc","aaabcddabaabc","aaabcabaa","aaabcababc"], hint: "3+'a', 'bc'/'cb', 'ddd' em trios, 'aba' fixo, 'e's livres, fecha 'a'+'bc'.", successMsg: "Trabalho concluído — autômato gigante dominado!",
+export default { id: 56, layout: LAYOUT, label: "L56", formula: "L = { aⁿ a a a (bc+cb)(ddd)ᵐ aba eᵖ a(bc)ᵏ | n,m,p ≥ 0, k > 0 }", desc: "(trabalho)", shortestWord: "aaabcabaabc", regex: /^a{3,}(?:bc|cb)(?:ddd)*abae*a(?:bc)+$/, fuzzMaxLen: 5, alphabet: ['a', 'b', 'c', 'd', 'e'], acceptedWords: ["aaabcabaabc","aaaabcabaabc","aaacbabaabc","aaabcdddabaabc","aaabcabaeeabcbc"], rejectedWords: ["aabcabaabc","aaababaabc","aaabcddabaabc","aaabcabaa","aaabcababc"], hint: "3+'a', 'bc'/'cb', 'ddd' em trios, 'aba' fixo, 'e's livres, fecha 'a'+'bc'.", successMsg: "Trabalho concluído — autômato gigante dominado!",
     boardWords: ['aaabcabaabc', 'aabcabaabc', 'aaaabcabaeabc', 'aaacbdddabaabc', 'aaabcabaabcbc'],
     guidedLesson: buildLessonL56(),
   };

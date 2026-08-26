@@ -25,7 +25,7 @@ function buildLessonL11() {
   return steps;
 }
 
-export default { id: 11, layout: LAYOUT, label: "L11", formula: "L = {a^n b^m / (n+m) é par, n >= 0, m >= 0}",                         desc: "",                                                                 shortestWord: "",         regex: /^((aa)*(bb)*|a(aa)*b(bb)*)$/,                               alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "A soma é par se ambos forem pares, ou se ambos forem ímpares!",                                                    successMsg: "Lógica matemática aplicada no grafo. Lindo!",
+export default { id: 11, layout: LAYOUT, label: "L11", formula: "L = {aⁿ bᵐ / (n+m) é par, n >= 0, m >= 0}",                         desc: "",                                                                 shortestWord: "",         regex: /^((aa)*(bb)*|a(aa)*b(bb)*)$/,                               alphabet: ['a', 'b'],             acceptedWords: ["λ","aa","ab"],            rejectedWords: ["a","b","aab"],         hint: "A soma é par se ambos forem pares, ou se ambos forem ímpares!",                                                    successMsg: "Lógica matemática aplicada no grafo. Lindo!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Casos de Paridade!', dialog: [
         'n + m é par em dois casos: AMBOS pares (0+0, 2+2...) ou AMBOS ímpares (1+1, 3+1...).',

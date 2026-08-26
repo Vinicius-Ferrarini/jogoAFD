@@ -1,8 +1,30 @@
 import { useState, useRef, useCallback } from 'react';
 
+// Sobrescritos Unicode (usados em level.formula/aliases, ver docs/AFD_NOTACAO_ELEVADO.md)
+// → forma ASCII "^letra" antes de qualquer outra normalização. O jogador só
+// consegue DIGITAR "^" (não há tecla de sobrescrito), então o gabarito
+// precisa "descer" pro mesmo formato ASCII que a resposta do usuário já usa
+// — o restante do algoritmo (ex.: a regra de "bb^n" na linha ~40) depende
+// sintaticamente de "^" literal. Sem esta conversão, o charset final
+// (.replace(/[^a-z0-9^*+|(),_.=><!]/g, '')) descartaria ⁿ/ᵐ/etc. em silêncio,
+// e a fórmula esperada perderia todos os expoentes.
+const SUPERSCRIPT_TO_ASCII = {
+  '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5',
+  '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+  'ⁿ': 'n', 'ᵐ': 'm', 'ᵖ': 'p', 'ʳ': 'r', 'ˢ': 's', 'ᵗ': 't',
+  'ᵘ': 'u', 'ᵏ': 'k', 'ⁱ': 'i', 'ʲ': 'j',
+};
+// Um "^" só no INÍCIO de cada bloco contíguo de sobrescritos (ex.: "b²ᵐ" → "b^2m",
+// não "b^2^m") — replicando o formato ASCII original onde o expoente inteiro
+// (dígitos+letra colados, ex.: "2m") vem de um único "^".
+function superscriptToAscii(s) {
+  return s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹ⁿᵐᵖʳˢᵗᵘᵏⁱʲ]+/g,
+    block => '^' + [...block].map(ch => SUPERSCRIPT_TO_ASCII[ch]).join(''));
+}
+
 // ── Normalize for comparison ──────────────────────────────────────────────────
 export function normalize(s) {
-  let r = s
+  let r = superscriptToAscii(s)
     .replace(/^L\s*=\s*/, '')
     .trim()
     .toLowerCase()

@@ -17,10 +17,10 @@ function buildLessonL5() {
   return steps;
 }
 
-export default { id: 5, layout: LAYOUT,  label: "L05", formula: "L = { a^n | n > 0 }",                                                 desc: "",                                                                 shortestWord: "a",        regex: /^a+$/,                                                      alphabet: ['a'],                  acceptedWords: ["a","aa","aaa"],            rejectedWords: ["λ","b","ba"],          hint: "Você precisa ler pelo menos um 'a', e depois pode ler infinitos.",                                                  successMsg: "Ótimo uso de repetição (loop) no estado final!",
+export default { id: 5, layout: LAYOUT,  label: "L05", formula: "L = { aⁿ | n > 0 }",                                                 desc: "",                                                                 shortestWord: "a",        regex: /^a+$/,                                                      alphabet: ['a'],                  acceptedWords: ["a","aa","aaa"],            rejectedWords: ["λ","b","ba"],          hint: "Você precisa ler pelo menos um 'a', e depois pode ler infinitos.",                                                  successMsg: "Ótimo uso de repetição (loop) no estado final!",
     tutorials: {
-      onStart: { type: 'theory', title: 'Notação a^n — Repetição Infinita!', dialog: [
-        'Nova notação: a^n com n > 0 significa "pelo menos um a, podendo ser infinitos".',
+      onStart: { type: 'theory', title: 'Notação aⁿ — Repetição Infinita!', dialog: [
+        'Nova notação: aⁿ com n > 0 significa "pelo menos um a, podendo ser infinitos".',
         '"a", "aa", "aaa"... todos aceitos. λ NÃO — pois n > 0 exige ao menos 1 símbolo!',
         'Para aceitar infinitas palavras, o grafo precisa de um LOOP — seta que aponta para si mesma.',
       ] },

@@ -23,10 +23,10 @@ function buildLessonL40() {
   return steps;
 }
 
-export default { id: 40, layout: LAYOUT, label: "L40", formula: "L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}",                desc: "",                                                                 shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Essa é grande! Blocos de 'b' em duplas, o primeiro 'd' serve de ponte, e 'c' em trios.",                            successMsg: "Sintaxe complexa analisada com sucesso.",
+export default { id: 40, layout: LAYOUT, label: "L40", formula: "L = {aⁿ b²ᵐ d c³ᵖ d / n >= 0, m >= 0, p >= 0}",                desc: "",                                                                 shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Essa é grande! Blocos de 'b' em duplas, o primeiro 'd' serve de ponte, e 'c' em trios.",                            successMsg: "Sintaxe complexa analisada com sucesso.",
     tutorials: {
       onStart: { type: 'theory', title: 'Blocos: a-block, b-pares, d, c-trios, d!', dialog: [
-        'L40: a^n b^2m d c^3p d. a-s, depois b-pares, depois d, depois c-trios, depois d.',
+        'L40: aⁿ b²ᵐ d c³ᵖ d. a-s, depois b-pares, depois d, depois c-trios, depois d.',
         '"dd" ✓ (0a 0b 0c). "abbdd" ✓ (1a 1par-b). "adcccd" ✓ (1a 1trio-c).',
         '7 estados: q0(ini/a), q1(b-ímpar), q2(b-par), q3(após-d), q4/q5(c-trio), q6(f).',
       ] },

@@ -33,7 +33,7 @@ export default { id: 46, layout: LAYOUT, label: "L46", formula: "L = {w ∈ {a,b
       onStart: { type: 'theory', title: 'Cubo de paridade: 3 letras, 8 estados!', dialog: [
         'L46: contar a, b e c separadamente. Aceito quando TODOS pares.',
         '"λ" ✓ (0+0+0). "aabb" ✓ (2a,2b,0c). "aabbcc" ✓ (2a,2b,2c). "a" ✗ (1a impar).',
-        '8 combinacoes de paridade: 2^3 = 8 estados. Apenas q0(ini,f) aceita.',
+        '8 combinacoes de paridade: 2³ = 8 estados. Apenas q0(ini,f) aceita.',
       ] },
       onDrawGraph: { type: 'mechanic', title: '8 Estados em Cubo', dialog: [
         'q0(f)=(p,p,p). "a" inverte bit-a, "b" inverte bit-b, "c" inverte bit-c.',

@@ -19,7 +19,7 @@ function buildLessonL7() {
   return steps;
 }
 
-export default { id: 7, layout: LAYOUT,  label: "L07", formula: "L = { a b^n a | n ≥ 0 e n é par }",                                  desc: "",                                                                 shortestWord: "aa",       regex: /^a(bb)*a$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["aa","abba","abbbba"],      rejectedWords: ["a","aba","abbba","b","ba","baa","babba","aab","aaba","abbab","aaa"],     hint: "A palavra começa com 'a', termina com 'a', e no meio os 'b's andam em duplas.",                                    successMsg: "Excelente! Você controlou o sanduíche de 'b's pares.",
+export default { id: 7, layout: LAYOUT,  label: "L07", formula: "L = { a bⁿ a | n ≥ 0 e n é par }",                                  desc: "",                                                                 shortestWord: "aa",       regex: /^a(bb)*a$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["aa","abba","abbbba"],      rejectedWords: ["a","aba","abbba","b","ba","baa","babba","aab","aaba","abbab","aaa"],     hint: "A palavra começa com 'a', termina com 'a', e no meio os 'b's andam em duplas.",                                    successMsg: "Excelente! Você controlou o sanduíche de 'b's pares.",
     tutorials: {
       onStart: { type: 'theory', title: 'Linguagem Sanduíche!', dialog: [
         'Linguagem SANDUÍCHE! 🥪 Início e fim fixos, meio variável.',

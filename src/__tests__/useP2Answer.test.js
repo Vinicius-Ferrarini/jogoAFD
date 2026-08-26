@@ -676,3 +676,79 @@ describe('REG-14: resposta vazia não deve contar como tentativa', () => {
     expect(isCorrect('', lvl(1))).toBe(false);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Suite 8 — Sobrescrito Unicode no gabarito vs digitação ASCII do jogador
+// (ver docs/AFD_NOTACAO_ELEVADO.md — level.formula do AFD usa "aⁿ" nativamente
+// desde a normalização; o jogador só consegue DIGITAR "a^n", nunca "aⁿ", pois
+// não há tecla de sobrescrito. normalize() precisa converter o gabarito de
+// volta para "^" antes do resto do pipeline rodar, ou os expoentes seriam
+// descartados pelo charset final e nenhuma resposta correta seria aceita.)
+// ══════════════════════════════════════════════════════════════════════════════
+describe('REG-15: gabarito em Unicode sobrescrito aceita resposta ASCII do jogador', () => {
+  it('"aⁿ" (gabarito) === "a^n" (resposta digitada)', () => {
+    expect(normalize('aⁿ')).toBe(normalize('a^n'));
+  });
+
+  it('bloco dígito+letra: "b²ᵐ" (gabarito) === "b^2m" (resposta digitada)', () => {
+    expect(normalize('b²ᵐ')).toBe(normalize('b^2m'));
+  });
+
+  it('bloco NÃO gera "^" duplicado no meio (b²ᵐ ≠ b^2^m)', () => {
+    // Contra-verificação direta: b^2m (correto) e um hipotético b^2^m (bug)
+    // devem produzir resultados DIFERENTES — prova que o bloco "²ᵐ" gera um
+    // único "^" no início, não um "^" por caractere.
+    expect(normalize('b²ᵐ')).not.toBe(normalize('b^2^m'));
+    expect(normalize('b²ᵐ')).toBe(normalize('b^2m'));
+  });
+
+  it('parênteses antes do sobrescrito: "(ab)ⁿ (cd)ᵐ" === "(ab)^n (cd)^m"', () => {
+    expect(normalize('(ab)ⁿ (cd)ᵐ')).toBe(normalize('(ab)^n (cd)^m'));
+  });
+
+  it('fórmula completa multi-variável (padrão L58): bⁿ a (bcd)ᵐ a bᵖ cᵏ e w eʳ aˢ bᵗ cᵘ === versão ASCII', () => {
+    const unicode = 'bⁿ a (bcd)ᵐ a bᵖ cᵏ e w eʳ aˢ bᵗ cᵘ | n,m,p,r,s,t,u ≥ 0, k > 0';
+    const ascii   = 'b^n a (bcd)^m a b^p c^k e w e^r a^s b^t c^u | n,m,p,r,s,t,u >= 0, k > 0';
+    expect(normalize(unicode)).toBe(normalize(ascii));
+  });
+
+  it('dígitos sobrescritos isolados (sem letra): "2³" normaliza igual a "2^3"', () => {
+    expect(normalize('2³')).toBe(normalize('2^3'));
+  });
+});
+
+describe('REG-16: todos os 61 níveis AFD aceitam a própria formula digitada em ASCII', () => {
+  // Prova de regressão de ponta a ponta: para cada nível que usa sobrescrito
+  // Unicode em `formula` hoje, a versão ASCII (a que qualquer jogador real
+  // digitaria) precisa continuar sendo aceita como resposta correta. Isso
+  // simula o teclado real do jogador — trocando cada sobrescrito conhecido
+  // pela sua forma "^letra" antes de comparar.
+  const SUPERSCRIPT_TO_ASCII_TEST = {
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5',
+    '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+    'ⁿ': 'n', 'ᵐ': 'm', 'ᵖ': 'p', 'ʳ': 'r', 'ˢ': 's', 'ᵗ': 't',
+    'ᵘ': 'u', 'ᵏ': 'k', 'ⁱ': 'i', 'ʲ': 'j',
+  };
+  function toAsciiLikeAPlayerWouldType(s) {
+    return s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹ⁿᵐᵖʳˢᵗᵘᵏⁱʲ]+/g,
+      block => '^' + [...block].map(ch => SUPERSCRIPT_TO_ASCII_TEST[ch]).join(''));
+  }
+
+  const levelsWithSuperscript = AFD_LEVELS.filter(l =>
+    /[⁰¹²³⁴⁵⁶⁷⁸⁹ⁿᵐᵖʳˢᵗᵘᵏⁱʲ]/.test(l.formula)
+  );
+
+  it('há pelo menos 15 níveis com sobrescrito Unicode em formula', () => {
+    // 20 dos 21 níveis identificados em docs/AFD_NOTACAO_ELEVADO.md foram
+    // normalizados (L14 fica de fora — expressão composta, exceção documentada)
+    expect(levelsWithSuperscript.length).toBeGreaterThanOrEqual(15);
+  });
+
+  test.each(levelsWithSuperscript)(
+    'REG-16 L$id ($label): normalize(ascii-digitado-pelo-jogador) === normalize(formula)',
+    (level) => {
+      const asciiVersion = toAsciiLikeAPlayerWouldType(level.formula);
+      expect(normalize(asciiVersion)).toBe(normalize(level.formula));
+    }
+  );
+});

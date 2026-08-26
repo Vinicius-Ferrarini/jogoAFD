@@ -23,10 +23,10 @@ function buildLessonL47() {
   return steps;
 }
 
-export default { id: 47, layout: LAYOUT, label: "L47", formula: "L = {a^n b^2m d c^3p d / n >= 0, m >= 0, p >= 0}",                desc: "(Revisão L40)",                                                    shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Se chegou até aqui, já sabe: separe o problema em bloquinhos lógicos.",                                             successMsg: "Revisão bem sucedida.",
+export default { id: 47, layout: LAYOUT, label: "L47", formula: "L = {aⁿ b²ᵐ d c³ᵖ d / n >= 0, m >= 0, p >= 0}",                desc: "(Revisão L40)",                                                    shortestWord: "dd",       regex: /^a*(bb)*d(ccc)*d$/,                                         alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["dd","abbdd","adcccd"],  rejectedWords: ["d","abd","abcdd"],     hint: "Se chegou até aqui, já sabe: separe o problema em bloquinhos lógicos.",                                             successMsg: "Revisão bem sucedida.",
     tutorials: {
       onStart: { type: 'theory', title: 'Revisão L40: blocos a, b-pares, d, c-trios, d!', dialog: [
-        'L47 é revisão de L40. Mesma linguagem a^n b^2m d c^3p d.',
+        'L47 é revisão de L40. Mesma linguagem aⁿ b²ᵐ d c³ᵖ d.',
         '"dd" ✓. "abbdd" ✓. "adcccd" ✓. "d" ✗. "abcdd" ✗.',
         '7 estados: q0(ini/a), q1(b-ímpar), q2(b-par), q3(após-d), q4/q5(c-trio), q6(f).',
       ] },

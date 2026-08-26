@@ -21,10 +21,10 @@ function buildLessonL8() {
   return steps;
 }
 
-export default { id: 8, layout: LAYOUT,  label: "L08", formula: "L = { a(bc)^n a | n > 0 }",                                          desc: "",                                                                 shortestWord: "abca",     regex: /^a(bc)+a$/,                                                 alphabet: ['a', 'b', 'c'],        acceptedWords: ["abca","abcbca"],           rejectedWords: ["aa","aca","abba"],     hint: "Começa com 'a', depois exige o ciclo exato 'bc', 'bc', e fecha com 'a'.",                                           successMsg: "Belo ciclo! A sequência foi respeitada.",
+export default { id: 8, layout: LAYOUT,  label: "L08", formula: "L = { a(bc)ⁿ a | n > 0 }",                                          desc: "",                                                                 shortestWord: "abca",     regex: /^a(bc)+a$/,                                                 alphabet: ['a', 'b', 'c'],        acceptedWords: ["abca","abcbca"],           rejectedWords: ["aa","aca","abba"],     hint: "Começa com 'a', depois exige o ciclo exato 'bc', 'bc', e fecha com 'a'.",                                           successMsg: "Belo ciclo! A sequência foi respeitada.",
     tutorials: {
-      onStart: { type: 'theory', title: 'Agrupamento Cíclico (bc)^n', dialog: [
-        'Parênteses na notação! (bc)^n significa o GRUPO "bc" repetido n vezes, com n > 0.',
+      onStart: { type: 'theory', title: 'Agrupamento Cíclico (bc)ⁿ', dialog: [
+        'Parênteses na notação! (bc)ⁿ significa o GRUPO "bc" repetido n vezes, com n > 0.',
         'Cada volta do ciclo consome DOIS símbolos em ordem fixa: primeiro "b", depois "c".',
         'Para isso, dois estados formam o ciclo: q2→(c)→q3→(b)→q2 — um ping-pong de dois passos.',
       ] },

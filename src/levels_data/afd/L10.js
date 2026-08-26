@@ -22,7 +22,7 @@ function buildLessonL10() {
   return steps;
 }
 
-export default { id: 10, layout: LAYOUT, label: "L10", formula: "L = {a^n b b a^m / n >= 0 é par, m >= 0 e m é par}",                 desc: "",                                                                 shortestWord: "bb",       regex: /^(aa)*bb(aa)*$/,                                            alphabet: ['a', 'b'],             acceptedWords: ["bb","aabb","bbaa"],        rejectedWords: ["abb","bba","b"],       hint: "Começa com 'a's pares (ou zero), o núcleo é 'bb', termina com 'a's pares.",                                        successMsg: "Núcleo isolado com sucesso!",
+export default { id: 10, layout: LAYOUT, label: "L10", formula: "L = {aⁿ b b aᵐ / n >= 0 é par, m >= 0 e m é par}",                 desc: "",                                                                 shortestWord: "bb",       regex: /^(aa)*bb(aa)*$/,                                            alphabet: ['a', 'b'],             acceptedWords: ["bb","aabb","bbaa"],        rejectedWords: ["abb","bba","b"],       hint: "Começa com 'a's pares (ou zero), o núcleo é 'bb', termina com 'a's pares.",                                        successMsg: "Núcleo isolado com sucesso!",
     tutorials: {
       onStart: { type: 'theory', title: 'Dois Vai-e-Volta nos Flancos!', dialog: [
         'L10 tem um núcleo fixo "bb" cercado por a\'s em quantidade PAR.',

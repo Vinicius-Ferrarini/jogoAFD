@@ -22,7 +22,7 @@ function buildLessonL41() {
   return steps;
 }
 
-export default { id: 41, layout: LAYOUT, label: "L41", formula: "L = {a(dcb)^n a^m (bb)^p / n > 0, m > 0, p >= 0}",               desc: "",                                                                 shortestWord: "adcba",    regex: /^a(dcb)+a+(bb)*$/,                                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["adcba","adcbaa","adcbabb"], rejectedWords: ["a","adcb","dcba"],  hint: "Siga a receita passo a passo: a, ciclo dcb, a, b-pares.",                                                           successMsg: "Ciclo dominado.",
+export default { id: 41, layout: LAYOUT, label: "L41", formula: "L = {a(dcb)ⁿ aᵐ (bb)ᵖ / n > 0, m > 0, p >= 0}",               desc: "",                                                                 shortestWord: "adcba",    regex: /^a(dcb)+a+(bb)*$/,                                          alphabet: ['a', 'b', 'c', 'd'],   acceptedWords: ["adcba","adcbaa","adcbabb"], rejectedWords: ["a","adcb","dcba"],  hint: "Siga a receita passo a passo: a, ciclo dcb, a, b-pares.",                                                           successMsg: "Ciclo dominado.",
     tutorials: {
       onStart: { type: 'theory', title: 'Ciclo dcb: a + dcb+ + a+ + b-pares!', dialog: [
         'L41: "a", depois 1+ ciclos de "dcb", depois 1+ "a", depois b-pares opcionais.',

@@ -24,7 +24,7 @@ function buildLessonL49() {
   return steps;
 }
 
-export default { id: 49, layout: LAYOUT, label: "L49", formula: "L = {a^n a c^m (ab+ba) c a^2p / n >= 0, m > 0, p > 0}",            desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)c(aa)+$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
+export default { id: 49, layout: LAYOUT, label: "L49", formula: "L = {aⁿ a cᵐ (ab+ba) c a²ᵖ / n >= 0, m > 0, p > 0}",            desc: "",                                                                 shortestWord: "acabcaa",  regex: /^a+c+(ab|ba)c(aa)+$/,                                      alphabet: ['a', 'b', 'c'],        acceptedWords: ["acabcaa","aacabcaa","acbacaa"], rejectedWords: ["a","acabca","ab"], hint: "Na bifurcação no meio, o caminho pode ir por 'ab' ou por 'ba'.",                                                   successMsg: "Expressão bifurcada com sucesso.",
     tutorials: {
       onStart: { type: 'theory', title: 'a+ c+ (ab|ba) c aa+ — bifurcacao!', dialog: [
         'L49: a-s, c-s, depois "ab" OU "ba", depois c, depois pares de a (min 1 par).',

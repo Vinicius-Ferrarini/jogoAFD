@@ -17,7 +17,7 @@ function buildLessonL58() {
   steps.push(b.test('Veja como "aaceabe" percorre essa espinha dorsal até q9.', 'aaceabe', 0));
   steps.push(b.reject('Mas "aaeabae" pula o "c" obrigatório (q>0): q4 não tem saída por "e" e trava!', 'aaeabae', 0));
   b.addEdges(['q0','b','q0'],['q4','b','q4'],['q5','c','q5'],['q9','e','q9']);
-  steps.push(b.draw('Agora os laços das repetições: b^n, b^p, c^q e e^r.', 0));
+  steps.push(b.draw('Agora os laços das repetições: bⁿ, bᵖ, cᵏ e eʳ.', 0));
   steps.push(b.test('"baabcceabe" usa o "b" inicial, um "b" extra e dois "c".', 'baabcceabe', 0));
   b.addNodes('q2','q3')
    .addEdges(['q1','b','q2'],['q2','c','q3'],['q3','d','q1']);
@@ -39,7 +39,7 @@ function buildLessonL58() {
   return steps;
 }
 
-export default { id: 58, layout: LAYOUT, label: "L58", formula: "L = { b^n a (bcd)^m a b^p c^q e w e^r a^s b^t c^u | n,m,p,r,s,t,u ≥ 0, q > 0, w ∈ {a,b,c,d}*, w tem 'ab' como sufixo }", desc: "(trabalho — boss final)", shortestWord: "aaceabe",
+export default { id: 58, layout: LAYOUT, label: "L58", formula: "L = { bⁿ a (bcd)ᵐ a bᵖ cᵏ e w eʳ aˢ bᵗ cᵘ | n,m,p,r,s,t,u ≥ 0, k > 0, w ∈ {a,b,c,d}*, w tem 'ab' como sufixo }", desc: "(trabalho — boss final)", shortestWord: "aaceabe",
     validate: (s) => {
       const delta = {
         q0:{b:'q0',a:'q1'}, q1:{b:'q2',a:'q4'}, q2:{c:'q3'}, q3:{d:'q1'},

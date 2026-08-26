@@ -23,10 +23,10 @@ function buildLessonL12() {
   return steps;
 }
 
-export default { id: 12, layout: LAYOUT, label: "L12", formula: "L = {a^n b^2m / n > 0, m > 0}",                                    desc: "",                                                                 shortestWord: "abb",      regex: /^a+(bb)+$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["abb","aabb","abbbb"],      rejectedWords: ["a","ab","bb"],         hint: "Os 'b's só podem vir em duplas após pelo menos um 'a'.",                                                            successMsg: "Duplas de B controladas.",
+export default { id: 12, layout: LAYOUT, label: "L12", formula: "L = {aⁿ b²ᵐ / n > 0, m > 0}",                                    desc: "",                                                                 shortestWord: "abb",      regex: /^a+(bb)+$/,                                                 alphabet: ['a', 'b'],             acceptedWords: ["abb","aabb","abbbb"],      rejectedWords: ["a","ab","bb"],         hint: "Os 'b's só podem vir em duplas após pelo menos um 'a'.",                                                            successMsg: "Duplas de B controladas.",
     tutorials: {
       onStart: { type: 'theory', title: 'Armadilha Natural dos "b"s Ímpares!', dialog: [
-        'b^2m com m > 0: pelo menos UM par de "b"s, nunca um "b" avulso.',
+        'b²ᵐ com m > 0: pelo menos UM par de "b"s, nunca um "b" avulso.',
         'Segredo: o estado no "meio" de cada par NÃO é final — "b" solitário trava e morre!',
         'Isso cria um <u>ping-pong</u> natural: estado-de-ida (não-final) ↔ estado-de-chegada (final).',
       ] },
