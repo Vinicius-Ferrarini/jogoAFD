@@ -102,7 +102,7 @@ export const EXERCISES = [
   {
     id: 6, level: 'medium', title: 'Zeros múltiplos de 3',
     desc: 'AFD com 6 estados e alfabeto {0,1}. Estados finais: q0 e q1. O AFD aceita strings onde o número de zeros é divisível por 3. Encontre o AFD mínimo.',
-    hint: 'Há 3 pares de estados equivalentes escondidos entre 6 estados. Leia o símbolo "1": ele não muda a contagem de zeros — quais pares têm comportamento simétrico sob "1"?',
+    hint: 'Há 3 pares de estados equivalentes entre os 6. Leia o símbolo "1" — ele não muda a contagem de zeros. Quais pares se comportam igual sob "1"?',
     explanation: 'q0≡q1 (finais simétricos), q2≡q3 (precisam de 2 zeros a mais), q4≡q5 (precisam de 1 zero a mais). O AFD mínimo tem 3 estados: {q0,q1}, {q2,q3} e {q4,q5}.',
     initial: {
       states: ['q0','q1','q2','q3','q4','q5'],
@@ -163,7 +163,7 @@ export const EXERCISES = [
   {
     id: 9, level: 'easy', title: 'Todos os estados finais',
     desc: 'AFD com 3 estados e alfabeto {a,b}. TODOS os estados são finais. O que acontece ao minimizar?',
-    hint: 'Se todos os estados são finais, nenhum par pode ser distinguido pela condição "um final e um não-final". Olhe apenas as transições: todos os estados chegam ao mesmo grupo?',
+    hint: 'Todos finais? Então nenhum par se distingue por "um final, um não". Olhe só as transições: todos chegam ao mesmo grupo?',
     explanation: 'Como todos são finais, a partição inicial é {q0,q1,q2}. Como todos os estados transitam entre si dentro desse único grupo, nenhum par é distinguível. Todos fundem em 1 único estado — o AFD mínimo tem 1 estado.',
     initial: {
       states: ['q0','q1','q2'],
@@ -219,7 +219,7 @@ export const EXERCISES = [
   {
     id: 12, level: 'medium', title: 'Tripla fusão em {a,b,c}',
     desc: 'AFD com 6 estados e alfabeto {a,b,c}. Estados finais: q3, q4 e q5. Encontre o AFD mínimo.',
-    hint: 'Os não-finais {q0,q1,q2} são todos distinguíveis entre si (cada um tem perfil único de símbolos que levam a finais). Compare agora os finais {q3,q4,q5} em cada símbolo.',
+    hint: '{q0,q1,q2} já são distinguíveis entre si (perfil único de símbolos que levam a finais). Compare os finais {q3,q4,q5} em cada símbolo.',
     explanation: 'q3≡q4≡q5 (todos finais com transições idênticas entre si: →a→final, →b→{q1}, →c→final). Os não-finais q0, q1 e q2 são todos distinguíveis. O AFD mínimo tem 4 estados: {q0}, {q1}, {q2}, {q3q4q5}.',
     initial: {
       states: ['q0','q1','q2','q3','q4','q5'],

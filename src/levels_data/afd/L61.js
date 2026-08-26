@@ -27,7 +27,7 @@ function buildLessonL61() {
 
 export default { id: 61, layout: LAYOUT, label: "L61", formula: "L = { w ∈ {0,1}* | w é múltiplo de 6 }", desc: "(prova)", shortestWord: "0",
     validate: (w) => { if (w === '' || !/^[01]+$/.test(w)) return false; let r = 0; for (const ch of w) r = (r*2 + (ch === '1' ? 1 : 0)) % 6; return r === 0; },
-    alphabet: ['0', '1'], acceptedWords: ["0","110","1100","10010"], rejectedWords: ["1","10","101","111"], hint: "Leia da esquerda para a direita acumulando o resto mod 6: a cada bit, resto = (resto×2 + bit) mod 6. Aceita se terminar em resto 0. A palavra vazia não conta.", successMsg: "Prova L61 resolvida — máquina de módulo 6!",
+    alphabet: ['0', '1'], acceptedWords: ["0","110","1100","10010"], rejectedWords: ["1","10","101","111"], hint: "Acumule resto mod 6: resto=(resto×2+bit)mod6. Termina 0=aceita; vazia não conta.", successMsg: "Prova L61 resolvida — máquina de módulo 6!",
     boardWords: ['110', '1', '000', '10010'],
     guidedLesson: buildLessonL61(),
   };

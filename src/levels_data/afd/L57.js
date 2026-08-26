@@ -32,7 +32,7 @@ function buildLessonL57() {
 
 export default { id: 57, layout: LAYOUT, label: "L57", formula: "L = { a w a x a | w,x ∈ {b,c}*, |w|b é par e |w|c é par, |x|b é par e |x|c é par }", desc: "(trabalho)", shortestWord: "aaa",
     validate: (s) => { const m = /^a([bc]*)a([bc]*)a$/.exec(s); if (!m) return false; const even = (t) => (t.match(/b/g)||[]).length%2===0 && (t.match(/c/g)||[]).length%2===0; return even(m[1]) && even(m[2]); },
-    alphabet: ['a', 'b', 'c'], acceptedWords: ["aaa","abbaa","aabba","abcbcaa","aabcbca","abbccabbcca"], rejectedWords: ["aabaa","aaaba","aaaa","aaaaaa","acbcaa","bbbaaaaa"], hint: "Estrutura a·w·a·x·a: três 'a's separam dois blocos de b/c. Em cada bloco, a quantidade de 'b' e de 'c' precisa ser PAR. Caso vazio = 'aaa'.", successMsg: "Trabalho concluído — paridade dupla em dois blocos dominada!",
+    alphabet: ['a', 'b', 'c'], acceptedWords: ["aaa","abbaa","aabba","abcbcaa","aabcbca","abbccabbcca"], rejectedWords: ["aabaa","aaaba","aaaa","aaaaaa","acbcaa","bbbaaaaa"], hint: "a·w·a·x·a: 'a's separam 2 blocos b/c. Em cada bloco, 'b' e 'c' PAR. Vazio='aaa'.", successMsg: "Trabalho concluído — paridade dupla em dois blocos dominada!",
     boardWords: ['aaa', 'abbaa', 'abbabba'],
     guidedLesson: buildLessonL57(),
   };

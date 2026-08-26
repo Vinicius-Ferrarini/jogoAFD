@@ -10,7 +10,13 @@ export default { id: 14, label: "L14", formula: "L = {w ∈ {a,b}* / |w|a = |w|b
     },
     boardWords: ['λ', 'ab / ba', 'bbaa', 'bbbaaa / bbbbaaaa...'],
     guidedLesson: [
-      { text: 'Vamos tentar construir um AFD para <b>|w|a = |w|b</b> mesmo assim — e ver onde ele quebra.<br/>Começando pelo básico: <b>λ</b> (palavra vazia) tem 0 "a"s e 0 "b"s, então é aceita. q0 é inicial <u>e</u> final.',
+      { text: 'Vamos tentar construir um AFD para <b>|w|a = |w|b</b> mesmo assim — e ver onde ele quebra.',
+        boardDoneUpTo: 0, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 1000, y: 1000, isInitial: true, isFinal: true },
+          ],
+          transitions: [] } },
+      { text: 'Começando pelo básico: <b>λ</b> (palavra vazia) tem 0 "a"s e 0 "b"s, então é aceita. q0 é inicial <u>e</u> final.',
         boardDoneUpTo: 0, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 1000, y: 1000, isInitial: true, isFinal: true },
@@ -70,7 +76,53 @@ export default { id: 14, label: "L14", formula: "L = {w ∈ {a,b}* / |w|a = |w|b
             { from: 'q4', to: 'q5', symbol: 'b' },
             { from: 'q5', to: 'q4', symbol: 'a' },
           ] } },
-      { text: '<b>É isso.</b> Não tem limite: pra <u>qualquer</u> número N de estados, dá pra achar uma palavra com N+1 "b"s pendentes que quebra o autômato. Em AFD isso fica infinito, porque <b>AFD não tem memória</b> — só estados fixos, não existe "contador" que cresça à vontade.<br/>Esse exercício só é resolvível com <b>AP</b> (autômato com pilha) — a pilha guarda a diferença entre as contagens de "a" e "b", sem limite. A gente resolve ele lá! 🔜',
+      { text: '<b>É isso.</b> Não tem limite: pra <u>qualquer</u> número N de estados, dá pra achar uma palavra com N+1 "b"s pendentes que quebra o autômato.',
+        boardDoneUpTo: 4, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 1000, y: 100,  isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 300,  y: 450,  isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 1700, y: 450,  isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 1700, y: 950,  isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 1700, y: 1450, isInitial: false, isFinal: false },
+            { id: 'q5', label: 'q5', x: 1700, y: 1950, isInitial: false, isFinal: false },
+            { id: 'qF', label: 'qF', x: 900,  y: 1450, isInitial: false, isFinal: true },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'a' },
+            { from: 'q1', to: 'qF', symbol: 'b' },
+            { from: 'q0', to: 'q2', symbol: 'b' },
+            { from: 'q2', to: 'qF', symbol: 'a' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+            { from: 'q3', to: 'q2', symbol: 'a' },
+            { from: 'q3', to: 'q4', symbol: 'b' },
+            { from: 'q4', to: 'q3', symbol: 'a' },
+            { from: 'q4', to: 'q5', symbol: 'b' },
+            { from: 'q5', to: 'q4', symbol: 'a' },
+          ] } },
+      { text: 'Em AFD isso fica infinito, porque <b>AFD não tem memória</b> — só estados fixos, não existe "contador" que cresça à vontade.',
+        boardDoneUpTo: 4, stateUpdate: {
+          nodes: [
+            { id: 'q0', label: 'q0', x: 1000, y: 100,  isInitial: true, isFinal: true },
+            { id: 'q1', label: 'q1', x: 300,  y: 450,  isInitial: false, isFinal: false },
+            { id: 'q2', label: 'q2', x: 1700, y: 450,  isInitial: false, isFinal: false },
+            { id: 'q3', label: 'q3', x: 1700, y: 950,  isInitial: false, isFinal: false },
+            { id: 'q4', label: 'q4', x: 1700, y: 1450, isInitial: false, isFinal: false },
+            { id: 'q5', label: 'q5', x: 1700, y: 1950, isInitial: false, isFinal: false },
+            { id: 'qF', label: 'qF', x: 900,  y: 1450, isInitial: false, isFinal: true },
+          ],
+          transitions: [
+            { from: 'q0', to: 'q1', symbol: 'a' },
+            { from: 'q1', to: 'qF', symbol: 'b' },
+            { from: 'q0', to: 'q2', symbol: 'b' },
+            { from: 'q2', to: 'qF', symbol: 'a' },
+            { from: 'q2', to: 'q3', symbol: 'b' },
+            { from: 'q3', to: 'q2', symbol: 'a' },
+            { from: 'q3', to: 'q4', symbol: 'b' },
+            { from: 'q4', to: 'q3', symbol: 'a' },
+            { from: 'q4', to: 'q5', symbol: 'b' },
+            { from: 'q5', to: 'q4', symbol: 'a' },
+          ] } },
+      { text: 'Esse exercício só é resolvível com <b>AP</b> (autômato com pilha) — a pilha guarda a diferença entre as contagens de "a" e "b", sem limite. A gente resolve ele lá! 🔜',
         boardDoneUpTo: 4, stateUpdate: {
           nodes: [
             { id: 'q0', label: 'q0', x: 1000, y: 100,  isInitial: true, isFinal: true },

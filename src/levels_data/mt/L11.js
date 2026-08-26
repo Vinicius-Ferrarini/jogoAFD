@@ -31,7 +31,7 @@ const MT_L11 = {
     steps: [
     {
       "prof": {
-        "message": "Bem-vindo! Vamos construir a MT Transdutora que tem como entrada um texto qualquer (letras, números, pontuação, acentos) e criptografa usando uma cifra mono alfabética simples – criptografia mono alfabética. [gabarito não-oficial: cifra assumida como deslocamento fixo +3 por classe de caractere — validar com o professor]",
+        "message": "Bem-vindo! Vamos construir a MT Transdutora: entrada é um texto qualquer (letras, números, pontuação, acentos), saída é ele criptografado por cifra mono alfabética. [gabarito não-oficial: validar com o professor]",
         "mood": "explicando"
       },
       "stateUpdate": {

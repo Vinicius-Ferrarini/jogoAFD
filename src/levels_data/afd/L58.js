@@ -54,7 +54,7 @@ export default { id: 58, layout: LAYOUT, label: "L58", formula: "L = { b^n a (bc
       for (const ch of s) { cur = delta[cur] && delta[cur][ch]; if (!cur) return false; }
       return finals.has(cur);
     },
-    fuzzMaxLen: 6, alphabet: ['a', 'b', 'c', 'd', 'e'], acceptedWords: ["aaceabe","aaceabea","babcdabbcceabcabeeeaab","aaceabeac"], rejectedWords: ["aaceaba","aacbaabce","aaceabcdae","aaeabae"], hint: "Boss final! Estrutura: b* a (bcd)* a b* c+ — depois 'e', um w que termina em 'ab', outro 'e', e a cauda e* a* b* c*. Cada 'e' separa os blocos; o 'c' antes do primeiro 'e' é obrigatório (q>0).", successMsg: "BOSS FINAL DERROTADO! Você dominou o autômato de 13 estados! 🏆",
+    fuzzMaxLen: 6, alphabet: ['a', 'b', 'c', 'd', 'e'], acceptedWords: ["aaceabe","aaceabea","babcdabbcceabcabeeeaab","aaceabeac"], rejectedWords: ["aaceaba","aacbaabce","aaceabcdae","aaeabae"], hint: "b*a(bcd)*ab*c+,'e',w term.'ab','e',cauda e*a*b*c*. 'c' antes do 1º'e' é obrigatório.", successMsg: "BOSS FINAL DERROTADO! Você dominou o autômato de 13 estados! 🏆",
     boardWords: ['aaceabe', 'aaeabae', 'baabcceabe', 'abcdaceabe', 'aaceacabe', 'aaceabcdae', 'aaceabeaabbcc'],
     guidedLesson: buildLessonL58(),
   };

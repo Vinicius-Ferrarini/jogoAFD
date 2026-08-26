@@ -41,7 +41,7 @@ function buildLessonL54() {
   return steps;
 }
 
-export default { id: 54, layout: LAYOUT, label: "L54", formula: "L = {w ∈ {a,b,c}* / |w|a, |w|b e |w|c são todos ímpares}", desc: "", shortestWord: "abc", alphabet: ['a', 'b', 'c'], acceptedWords: ["abc","abccc","aaabccc","cba"], rejectedWords: ["","a","ab","aabbcc"], hint: "Pense num cubo: cada vértice é uma combinação de paridades (par/ímpar) de a, b e c. Só o vértice 'tudo ímpar' (q7) é final.", successMsg: "Cubo de paridade dominado!",
+export default { id: 54, layout: LAYOUT, label: "L54", formula: "L = {w ∈ {a,b,c}* / |w|a, |w|b e |w|c são todos ímpares}", desc: "", shortestWord: "abc", alphabet: ['a', 'b', 'c'], acceptedWords: ["abc","abccc","aaabccc","cba"], rejectedWords: ["","a","ab","aabbcc"], hint: "Pense num cubo: cada vértice é paridade de a, b e c. Só 'tudo ímpar' (q7) é final.", successMsg: "Cubo de paridade dominado!",
     validate: (w) => {
       if (!/^[abc]*$/.test(w)) return false;
       const count = (ch) => (w.match(new RegExp(ch, 'g')) || []).length;

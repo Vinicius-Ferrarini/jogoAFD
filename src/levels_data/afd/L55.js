@@ -51,7 +51,7 @@ function buildLessonL55() {
   return steps;
 }
 
-export default { id: 55, layout: LAYOUT, label: "L55", formula: "L = { wxy | w∈{a,b}*, x∈{c,d}*, y∈{e,f}* e cada símbolo tem qtd par }", desc: "", shortestWord: "", validate: (w) => { if (!/^([ab]*)([cd]*)([ef]*)$/.test(w)) return false; const counts = ['a','b','c','d','e','f'].map(ch => (w.match(new RegExp(ch,'g'))||[]).length); return counts.every(c => c%2===0); }, fuzzMaxLen: 0, alphabet: ['a','b','c','d','e','f'], acceptedWords: ['','aabb','ccdd','aabbccdd','abba'], rejectedWords: ['a','abccdd','ac','ba','c','aabbcde'], hint: "Três seções em ordem! [ab]* depois [cd]* depois [ef]*. Cada par de letras com paridade independente. O AFD completo tem mais de 80 estados!", successMsg: "Mestre das seis paridades!",
+export default { id: 55, layout: LAYOUT, label: "L55", formula: "L = { wxy | w∈{a,b}*, x∈{c,d}*, y∈{e,f}* e cada símbolo tem qtd par }", desc: "", shortestWord: "", validate: (w) => { if (!/^([ab]*)([cd]*)([ef]*)$/.test(w)) return false; const counts = ['a','b','c','d','e','f'].map(ch => (w.match(new RegExp(ch,'g'))||[]).length); return counts.every(c => c%2===0); }, fuzzMaxLen: 0, alphabet: ['a','b','c','d','e','f'], acceptedWords: ['','aabb','ccdd','aabbccdd','abba'], rejectedWords: ['a','abccdd','ac','ba','c','aabbcde'], hint: "Três seções: [ab]* [cd]* [ef]*. Paridade independente em cada par. 80+ estados!", successMsg: "Mestre das seis paridades!",
     tutorials: {
       onStart: { type: 'theory', title: '6 Letras, 3 Seções, Paridade Total!', dialog: [
         'L55: forma [ab]*[cd]*[ef]* com TODAS as 6 contagens pares.',

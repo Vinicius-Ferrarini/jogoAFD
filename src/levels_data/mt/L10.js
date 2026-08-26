@@ -184,7 +184,7 @@ const MT_L10 = {
         },
         // 1 — Grafo completo + técnica
         {
-          prof: { message: "Técnica de Shift: q1 marca a→A ou b→B e vai para q2, que insere um X placeholder ao fim. q3 rebobina. Quando q1 encontra X (todos marcados), vai para q4→q5→q6 para decodificar. q7 lê X e escolhe q8(para A→R) ou q9(para B→S). Os X's viram 0 ou 1. q17 converte R→a e S→b no passo final. q18 aceita.", mood: 'explicando' },
+          prof: { message: "Técnica de Shift: q1 marca a→A/b→B, q2 insere X no fim, q3 rebobina. Ao achar X, vai p/ q4→q5→q6 decodificar. q7 lê X: q8(A→R) ou q9(B→S). X's viram 0/1. q17 converte R→a, S→b. q18 aceita.", mood: 'explicando' },
           stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
         },
         // 2 — Fita inicial
