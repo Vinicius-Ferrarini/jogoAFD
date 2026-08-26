@@ -8,7 +8,6 @@ import ConsentGate from './components/ConsentGate';
 import FeedbackButton from './components/FeedbackButton';
 import FeedbackModal from './components/FeedbackModal';
 import LoadingScreen from './components/LoadingScreen';
-import useAutoZoom from './hooks/useAutoZoom';
 import { LEVEL_IDS, UNAVAILABLE_LEVELS, UNAVAILABLE_LEVELS_P2_ONLY, HIDDEN_LEVELS, LEVEL_DIFFICULTY } from './levels';
 import { EXERCISES } from './modules/afd/afdMinimizerExercises';
 import { MT_RECON_LEVEL_IDS, MT_LEVEL_IDS } from './levels_data/mt-ids.js';
@@ -38,7 +37,6 @@ const WordGuess    = lazy(() => import('./modules/word-guess/WordGuess'));
 const DIRECT_GAME = { ap: 'ap-pilha' };
 
 export default function App() {
-  useAutoZoom();
   const [screen, setScreen] = useState('HOME');
   const [currentModule, setCurrentModule] = useState(null);
   // Consentimento de telemetria: enquanto false, mostra o ConsentGate no lugar do jogo.

@@ -8,7 +8,7 @@
 // pago quando o aluno já rolou boa parte da grade.
 import { buildWordExercisesFromAFD } from './fromAFD.js';
 import { buildWordExercisesFromAP } from './fromAP.js';
-import { MT_RECON_EXERCISE_IDS, buildWordExercisesFromMTRecon } from './fromMTRecon.js';
+import { MT_RECON_EXERCISE_IDS, buildWordExercisesFromMTRecon, buildWordExerciseFromMTRecon } from './fromMTRecon.js';
 
 export const PAGE_SIZE = 20;
 
@@ -45,6 +45,18 @@ export async function getExercisesPage(pageIndex) {
   // Mantém a ordem original da página (sync antes de mt-recon dentro dela,
   // que já é a ordem natural já que MT-Recon só aparece nas últimas páginas).
   return [...resolvedSync, ...resolvedMTRecon];
+}
+
+// Resolve 1 exercício isolado pelo índice global (0-indexed em
+// ALL_EXERCISE_STUBS) — usado pelo botão "Próxima fase" do minigame para
+// avançar sem precisar carregar a página de 20 inteira. AFD/AP resolvem na
+// hora (já em memória); MT-Recon dispara só o import() daquele nível.
+// Retorna null se index estiver fora dos limites (fim da lista).
+export async function getExerciseAtIndex(index) {
+  if (index < 0 || index >= ALL_EXERCISE_STUBS.length) return null;
+  const stub = ALL_EXERCISE_STUBS[index];
+  if (stub.moduleId === 'mt-recon') return buildWordExerciseFromMTRecon(stub.id);
+  return SYNC_EXERCISES.find(ex => ex.id === stub.id) ?? null;
 }
 
 export { EXCLUDED_WORD_EXERCISE_IDS, DEDUPE_REPORT } from './dedupedLevelIds.js';

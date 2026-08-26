@@ -583,8 +583,8 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         progress={progress}
         diffColor={forceLabelColor ?? DIFF_COLOR[LEVEL_DIFFICULTY[currentLevel?.id]] ?? '#fff'}
         starsMax={currentLevel?.impossible || currentLevel?.wordOnly ? 1 : 3}
-        isFirst={forceLevelId != null ? !onForcedPrev : GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === 0}
-        isLast={forceLevelId != null ? !onForcedNext : GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) === GAME_LEVELS.length - 1}
+        isFirst={forceLevelId != null ? !onForcedPrev : !GAME_LEVELS.slice(0, GAME_LEVELS.findIndex(l => l.id === currentLevel?.id)).some(l => !UNAVAILABLE_LEVELS.has(l.id) && !HIDDEN_LEVELS.has(l.id))}
+        isLast={forceLevelId != null ? !onForcedNext : !GAME_LEVELS.slice(GAME_LEVELS.findIndex(l => l.id === currentLevel?.id) + 1).some(l => !UNAVAILABLE_LEVELS.has(l.id) && !HIDDEN_LEVELS.has(l.id))}
         toggleSidebar={toggleSidebar}
         onBack={forceLevelId != null ? onBack : () => setTela('MENU')}
         onPrevLevel={forceLevelId != null ? onForcedPrev : handlePrevLevel}

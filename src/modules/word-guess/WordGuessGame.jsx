@@ -7,10 +7,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import WordleBoard from '../afd/components/WordleBoard';
 import useWordGuessGame from '../shared/useWordGuessGame';
+import { navBtnStyle, navBtnDisabledStyle } from '../afd/components/navButtonStyles';
 
 const MODULE_LABEL = { afd: 'Autômatos Finitos', ap: 'Autômato com Pilha', 'mt-recon': 'Máquina de Turing' };
 
-export default function WordGuessGame({ exercise, progress, updateProgress, showToast, onBack }) {
+export default function WordGuessGame({
+  exercise, progress, updateProgress, showToast, onBack,
+  isFirst, isLast, onPrevExercise, onNextExercise,
+}) {
   const [guess, setGuess] = useState('');
   const [attempts, setAttempts] = useState([]); // [{ word, status }], mais recente primeiro
   const [won, setWon] = useState(false);
@@ -63,6 +67,20 @@ export default function WordGuessGame({ exercise, progress, updateProgress, show
       <div style={{ width: '100%', maxWidth: 720, display: 'flex', alignItems: 'center', marginBottom: 16 }}>
         <button className="back-btn" onClick={onBack}>⬅ Voltar</button>
         <div style={{ flex: 1 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button
+            style={isFirst ? navBtnDisabledStyle : navBtnStyle}
+            onClick={onPrevExercise}
+            disabled={isFirst}
+            title="Exercício anterior"
+          >◀</button>
+          <button
+            style={isLast ? navBtnDisabledStyle : navBtnStyle}
+            onClick={onNextExercise}
+            disabled={isLast}
+            title="Próximo exercício"
+          >▶</button>
+        </div>
       </div>
 
       <div style={{ background: '#fff', border: '3px solid #000', borderRadius: 10, boxShadow: '4px 4px 0 #000',
@@ -105,8 +123,15 @@ export default function WordGuessGame({ exercise, progress, updateProgress, show
 
       {won && (
         <div style={{ background: 'var(--accent-green)', border: '3px solid #000', borderRadius: 10,
-          boxShadow: '4px 4px 0 #000', padding: '10px 20px', fontWeight: 900, textAlign: 'center' }}>
-          ⭐ Menor palavra encontrada: "{exercise.shortestWord === '' ? 'λ' : exercise.shortestWord}"
+          boxShadow: '4px 4px 0 #000', padding: '10px 20px', fontWeight: 900, textAlign: 'center',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <span>⭐ Menor palavra encontrada: "{exercise.shortestWord === '' ? 'λ' : exercise.shortestWord}"</span>
+          {!isLast && (
+            <button className="menu-btn" onClick={onNextExercise}
+              style={{ padding: '8px 20px', fontSize: 14, background: '#fff' }}>
+              Próxima fase ▶
+            </button>
+          )}
         </div>
       )}
     </div>
