@@ -160,9 +160,9 @@ Toda fase concede **até 3 estrelas**, mas a regra de cálculo não é uniforme
 entre módulos — ela reflete o formato de cada exercício (fonte única dos
 totais: `src/services/starTotals.js`):
 
-- **AFD Parte 1, Autômatos com Pilha, MT Reconhecedora, MT Transdutora e
-  Minimização** — as estrelas são **marcos de progresso dentro da própria
-  fase**, não uma penalidade por erro:
+- **AFD Parte 1, Autômatos com Pilha, MT Reconhecedora e Minimização** — as
+  estrelas são **marcos de progresso dentro da própria fase**, não uma
+  penalidade por erro:
   1. ⭐ descobrir o exemplo mínimo da linguagem (desbloqueia o canvas de
      desenho);
   2. ⭐⭐ validar o autômato desenhado contra a especificação;
@@ -172,6 +172,10 @@ totais: `src/services/starTotals.js`):
 
   (Na Minimização o fluxo entra direto a partir de 2 marcos — propagação e
   desenho mínimo — sem uma etapa de "descoberta" prévia como nos demais.)
+
+  **MT Transdutora** ainda não tem a etapa de descoberta (o canvas já começa
+  destravado), então hoje concede no máximo **2 de 3 estrelas** por fase —
+  ajuste em andamento para trazer esse módulo para o mesmo padrão dos demais.
 
 - **AFD Parte 2** (Grafo → Linguagem) é a exceção: aqui a estrela **de fato
   depende do número de tentativas** para acertar a fórmula da linguagem —

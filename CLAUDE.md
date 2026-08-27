@@ -153,3 +153,47 @@ count is higher — never regresses). Boss Mode (Trabalho/Prova) and the "Menor 
 to their own key namespaces (`boss-trabalho-{id}`, `boss-prova-{id}`, `word-guess-{id}`) so they don't
 double-count against the same exercise's normal-mode stars; `starTotals.js` explicitly excludes
 `boss-*` keys from the home screen's total.
+
+### AFD / AP / MT: same idea, genuinely different UX — don't assume parity
+
+AFD, AP, and MT-Recognizer/MT-Transducer all implement "build an automaton on a canvas", but they've
+diverged in several UX dimensions that are easy to *assume* are shared when they aren't. A blink
+animation on the just-traversed transition (yellow, 2 iterations, `key`-remount trick to restart on
+repeated self-loops) was ported from AP to MT and made uniform across all three in 2026-08 — that one
+*is* now standardized. The following are **not** standardized (verified by reading the code, not
+inferred) — know this before assuming a fix/feature in one module should be ported to the others, or
+before treating a difference as a bug:
+
+- **Manual step-by-step simulator ("🔬 Simular")**: exists in AFD (`SimPanel.jsx`), AP (`APSimPanel`),
+  and MT Recognizer (`MTSimPanel.jsx`, added 2026-08). **MT Transducer has none** — `MTPart1.jsx` only
+  has two isolated tabs ("⚙ Linguagem" / "✏ Desenho") with flat result lists, no step navigation, no
+  auto-opened trace on failure.
+- **"Descubra a menor palavra" (Wordle-style grid)**: only AFD has the actual grid UI
+  (`WordleBoard.jsx`/`useWordGuessGame`). AP and MT-Recognizer gate the canvas the same way
+  conceptually (`isDrawingUnlocked` starts `false` until the shortest word is guessed) but the locked
+  screen is just a static Maurílio speech bubble — no grid, no per-letter feedback, no 2-stage hint.
+  **MT Transducer skips this gate entirely** — `isDrawingUnlocked: true` is hardcoded in
+  `MTPart1.jsx`, so there's no "discovery" phase at all.
+- **Auto-opened trace on validation failure**: only **AP** opens `APSimPanel` automatically at the
+  exact point the student's own automaton got stuck (`pdaRejectingTrace`, wired in `APPart1.jsx`'s
+  `validate` callback) — this is the pattern documented above under "Validation is battery-based" and
+  it is *not* actually implemented in AFD or either MT module, which only show a generic error toast
+  (`useAFDGraph.js`, `MTReconPart1.jsx`, `MTPart1.jsx`). Don't assume the toast-only modules already
+  have trace-on-failure; they don't.
+- **Guided-lesson replay/manual trigger**: only AFD has a "↺ Repetir Animação" button and lets the
+  student click an already-taught word on the chalkboard to re-run its trace inline (`AFDPart1.jsx`
+  `replayLessonSim`/`onTriggerManualTrace`, `traceWord.js`). AP has a partial equivalent (clicking a
+  taught word opens the full `APSimPanel`, not an inline replay). MT has neither.
+- **Star count for MT Transducer is effectively capped at 2, not 3**: `MTPart1.jsx` never calls
+  `updateProgress(..., 1, ...)` — only `..., 2, ...` (validation) and `..., 3, ...` (formal
+  description) — because there's no discovery-phase milestone to award star 1 for (consistent with
+  `isDrawingUnlocked: true` above). This is a real gap versus the other four modules' 3-milestone
+  pattern, not a documented design choice — flag it if working on MT Transducer progression.
+- **Transition editing model**: AFD edits a transition via a symbol *card* selected beforehand, then
+  clicking the arrow to apply it. AP/MT edit inline on the arrow itself via a triple/quadruple editor
+  popup (`APTransitionLabel.jsx`'s `TripleEditor`, `TMTransitionEditor.jsx`) — no separate symbol
+  cards exist in AP/MT's footer deck at all. Neither pattern is "the bug"; they're just different.
+- **Formal-description screen**: AFD (`FormalDescriptionModal`) and AP (`APFormalDescription`) are
+  standalone reusable components. MT's formal tuple UI is inline JSX duplicated between
+  `MTReconPart1.jsx` and `MTPart1.jsx` (`formalField()` defined locally in each), not a shared
+  component — a bug fixed in one MT formal screen needs to be checked in the other by hand.
