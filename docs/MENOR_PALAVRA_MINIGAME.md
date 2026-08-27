@@ -412,14 +412,30 @@ sempre que níveis forem adicionados/editados (não é automático no build).
   exercício no minigame (não há "descobrir" nada, é λ direto e a lição é sobre
   impossibilidade). Mesma exclusão vale para qualquer nível `impossible` de
   AP/MT-Recon.
+- **BUG CORRIGIDO — `shortestWord === ''` em exercícios normais (não
+  `impossible`)**: 25 exercícios (14 AFD + 9 AP + 2 MT-Recon) têm λ como
+  menor palavra mas SÃO jogáveis (não são `impossible`). A grade
+  (`WordleBoard`) desenha `targetLength` células — com `targetLength=0` isso
+  gera 0 células e o gatilho de auto-envio (`guess.length===targetLength`
+  guardado por `targetLength>0`) nunca dispara, então a fase ficava
+  impossível de vencer na prática. Corrigido com `findSecondShortestWord.js`
+  (mesma técnica de BFS de `afd_levels.test.js`): os 3 adaptadores calculam
+  `secondShortestWord` (a 1ª palavra NÃO-vazia aceita, em ordem de tamanho
+  crescente, até `maxLen=8`) só quando `shortestWord===''`; `WordGuessGame.jsx`
+  usa esse valor como `targetWord` (o alvo jogável da grade) nesse caso. Um
+  exercício cuja linguagem não aceite NADA além de λ até `maxLen` (nenhum
+  caso real encontrado nos 25) seria excluído do minigame, mesma lógica de
+  `impossible`.
 - **Alfabetos multi-símbolo**: a mecânica do Termo foi pilotada só no L08
-  porque ele tem alfabeto pequeno (`{a,b,c}`). Ao abrir para todos os níveis
-  AFD/AP/MT-Recon, alguns podem ter alfabetos maiores ou símbolos de mais de 1
-  caractere (checar antes da Fase 4) — decidir se isso afeta a exibição da
-  grade (célula por símbolo, não por caractere) e ajustar `WordleBoard`/hook
-  se necessário. **Não assumir 1 caractere = 1 símbolo sem checar os dados.**
-  Confirmado nesta conversa que AFD é sempre 1 caractere; AP (`t.read`) ainda
-  não foi confirmado — checar na Fase 4.
+  (alfabeto pequeno `{a,b,c}`), depois expandida para todo AFD_1 (ver nota
+  "Grade Termo expandida" acima) — confirmado que AFD é sempre 1 caractere
+  por símbolo em todos os 57 níveis ativos, então célula = caractere segue
+  válido sem ajuste no `WordleBoard`/hook. Ao abrir para AP/MT-Recon no
+  minigame standalone, alguns podem ter alfabetos maiores ou símbolos de mais
+  de 1 caractere (checar antes da Fase 4) — decidir se isso afeta a exibição
+  da grade (célula por símbolo, não por caractere) e ajustar se necessário.
+  **Não assumir 1 caractere = 1 símbolo sem checar os dados.** AP (`t.read`)
+  ainda não foi confirmado — checar na Fase 4.
 - **Performance do `getShortestWord`/`getBattery`**: já são memoizados
   (`Map` cache) nos módulos de origem — o adaptador do minigame deve
   reaproveitar essas mesmas funções (não recalcular na mão) para não pagar
@@ -442,3 +458,20 @@ sempre que níveis forem adicionados/editados (não é automático no build).
   depois de ver quantas colisões reais existem (pode ser tão raro que a regra
   de desempate importa pouco, ou comum o bastante para merecer critério
   explícito, ex.: preferir o módulo "mais simples" AFD > AP > MT-Recon).
+- **Grade Termo expandida para todos os níveis ativos de AFD_1**: a mecânica
+  (grade + balão de dica do Maurílio anunciando o tamanho da menor palavra)
+  saiu do piloto L08 e passou a valer para TODO nível ativo de AFD_1 — todo
+  `id` fora de `HIDDEN_LEVELS`/`UNAVAILABLE_LEVELS`, exceto L14 (impossível
+  em AFD, tem fluxo próprio de Aula Guiada automática). `WORDLE_GRID_LEVEL_IDS`
+  em `AFDPart1.jsx` deixou de ser uma lista fixa e passou a ser calculada a
+  partir de `GAME_LEVELS`, então acompanha sozinha qualquer nível
+  reativado/ocultado depois. Ao clicar em Dica pela 1ª vez, o Maurílio fala
+  "A menor palavra tem tamanho N." (ou a variante com λ/2ª menor palavra nos
+  14 níveis onde `shortestWord===''`: L11, L15, L18, L21, L25, L27, L28, L30,
+  L31, L32, L46, L53, L55, L59 — todos com `secondShortestWord` calculável).
+  Verificado que alfabeto/tamanho da menor palavra não quebram a grade: L45
+  (12 caracteres) e L56 (11 caracteres) — as maiores palavras entre os 57
+  níveis ativos — renderizam a grade normalmente, sem overflow nem quebra de
+  layout (células de largura fixa em `flex` sem wrap, cabem no espaço
+  central do canvas). Nenhum tratamento diferente por dificuldade/tamanho:
+  Trabalho (L56-L58) e Prova (L59-L61) usam a mesma mecânica normal.

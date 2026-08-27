@@ -20,6 +20,7 @@ import useCanvasState from './hooks/useCanvasState';
 import { traceWord } from './utils/traceWord';
 import { buildNoAttemptHintMessage, buildSizeHintMessage } from './utils/sizeHint';
 import useWordGuessGame from '../shared/useWordGuessGame';
+import { findSecondShortestWord } from '../shared/wordExercises/findSecondShortestWord.js';
 import { UNAVAILABLE_LEVELS, HIDDEN_LEVELS, LEVEL_DIFFICULTY, DIFF_COLOR } from '../../levels';
 import { AFD_LEVELS as GAME_LEVELS } from '../../levels_data/afd/index.js';
 import { logEvent } from '../../services/telemetry';
@@ -31,6 +32,21 @@ const genUid = () => `_n${++_uidCounter}_${Math.random().toString(36).slice(2, 6
 // Dimensões lógicas do canvas interno (devem casar com INNER_W/INNER_H de CanvasArea.jsx)
 const INNER_W = 8000;
 const INNER_H = 8000;
+
+// Níveis que usam a grade estilo Wordle/Termo na fase 1 (descubra a menor
+// palavra) — ver docs/MENOR_PALAVRA_MINIGAME.md. Piloto original: L08. Hoje
+// vale para TODOS os níveis ativos de AFD_1 (todo id fora de HIDDEN_LEVELS/
+// UNAVAILABLE_LEVELS, exceto L14 — impossível em AFD, tem fluxo próprio de
+// Aula Guiada automática, não faz sentido pedir "menor palavra" ali).
+// Calculado a partir de GAME_LEVELS em vez de listado à mão: acompanha
+// sozinho qualquer nível novo/reativado/ocultado depois, sem precisar tocar
+// aqui. Níveis com shortestWord==='' (λ aceita, ex.: L11) usam a 2ª menor
+// palavra como alvo jogável — ver effectiveShortestWord/findSecondShortestWord.js.
+const WORDLE_GRID_LEVEL_IDS = new Set(
+  GAME_LEVELS
+    .filter(l => !HIDDEN_LEVELS.has(l.id) && !UNAVAILABLE_LEVELS.has(l.id) && l.id !== 14)
+    .map(l => l.id)
+);
 
 // ─── App Principal ────────────────────────────────────────────────────────────
 export default function AFDPart1({ onBack, progress, updateProgress, forceLevelId, forceLevelLabel, onForcedPrev, onForcedNext, forceLabelColor }) {
@@ -61,20 +77,35 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
 
   const [testWords, setTestWords]   = useState([]);
   const [newWord, setNewWord]       = useState('');
-  // Piloto WordleBoard (L08): mecânica de grade/dica compartilhada (ver
+  // effectiveShortestWord só é não-nulo nos níveis com grade estilo Termo
+  // (WORDLE_GRID_LEVEL_IDS, hoje todo nível ativo exceto L14) — é o gate que
+  // CanvasArea.jsx usa pra decidir se desenha o WordleBoard, então precisa
+  // ser null/undefined em todo nível fora da lista. Quando shortestWord===''
+  // (λ aceita — ex.: L11 e outros 13 níveis), a grade não tem célula pra
+  // digitar λ e o gatilho de envio nunca dispara (mesmo bug corrigido no
+  // minigame "Menor Palavra" — ver findSecondShortestWord.js) — usa a 2ª
+  // menor palavra (não-vazia) como alvo jogável nesse caso; nos demais
+  // níveis (shortestWord nunca é '') é idêntico a shortestWord.
+  const effectiveShortestWord = useMemo(() => {
+    if (!WORDLE_GRID_LEVEL_IDS.has(currentLevel?.id)) return null;
+    const sw = currentLevel.shortestWord;
+    if (sw !== '') return sw;
+    return findSecondShortestWord((word) => lvlAccepts(currentLevel, word), currentLevel.alphabet ?? []);
+  }, [currentLevel]);
+  // Grade WordleBoard: mecânica de grade/dica compartilhada (ver
   // src/modules/shared/useWordGuessGame.js) — 'guess' é o próprio newWord
   // (controlado), então digitar na grade e no campo lateral do TestPanel são
   // a mesma coisa. Genérico o bastante para ser reaproveitado pelo minigame
   // standalone "Menor Palavra" (ver docs/MENOR_PALAVRA_MINIGAME.md).
   const wordleGame = useWordGuessGame({
-    shortestWord: currentLevel?.shortestWord,
+    shortestWord: effectiveShortestWord,
     guess: newWord,
     setGuess: setNewWord,
   });
   // Última palavra testada (normalizada — 'null'/'vazio' já viram ''), usada
   // só pela Dica de Tamanho (regra: diff = tentativa.length - shortestWord.length).
   const lastAttemptRef = useRef(null);
-  // Piloto WordleBoard (L08): timeout do "segurar a linha vencedora visível"
+  // Grade WordleBoard: timeout do "segurar a linha vencedora visível"
   // antes de destravar — limpo ao trocar de nível pra não disparar setState
   // num nível que o aluno já saiu.
   const unlockDelayRef = useRef(null);
@@ -317,6 +348,14 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
   const handleTestWord = useCallback(() => {
     if (!currentLevel) return;
     const target       = currentLevel.shortestWord;
+    // gridTarget é o alvo que a MECÂNICA DE VITÓRIA usa (tamanho certo pra
+    // vencer a fase 1) — igual a target, EXCETO nos níveis com grade
+    // (WORDLE_GRID_LEVEL_IDS) quando target==='' (ex.: L11), onde a 2ª menor
+    // palavra (effectiveShortestWord) é o alvo jogável de verdade. Fora da
+    // lista, effectiveShortestWord é sempre null (ver sua definição acima),
+    // então caímos de volta em target — nunca null.length nos poucos níveis
+    // fora da grade (L01-L04 ocultos, L14 impossível).
+    const gridTarget   = WORDLE_GRID_LEVEL_IDS.has(currentLevel.id) ? effectiveShortestWord : target;
     const lower        = newWord.toLowerCase();
     // "null"/"vazio" digitados só viram o sentinela quando target === null
     // (L01, L = ∅ — linguagem sem NENHUMA palavra, nem λ): ali não existe
@@ -330,19 +369,20 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     const isSpecialNull = target === null && (lower === 'null' || lower === 'vazio');
     const word = isSpecialNull ? '' : newWord;
 
-    // Piloto WordleBoard (L08): a grade já revela o tamanho da menor palavra
-    // como células vazias — uma tentativa de tamanho errado não cabe na grade
-    // e não geraria feedback por letra útil, então é rejeitada antes de contar
-    // como tentativa (sem telemetria de 'tentativa', sem consumir attemptsRef).
-    if (currentLevel.id === 8 && !isDrawingUnlocked && target != null && word.length !== target.length) {
-      showToast(`A menor palavra tem ${target.length} caracteres — sua tentativa tem ${word.length}.`, 'info');
+    // Grade WordleBoard: a grade já revela o tamanho da menor palavra
+    // jogável como células vazias — uma tentativa de tamanho errado não
+    // cabe na grade e não geraria feedback por letra útil, então é
+    // rejeitada antes de contar como tentativa (sem telemetria de
+    // 'tentativa', sem consumir attemptsRef).
+    if (WORDLE_GRID_LEVEL_IDS.has(currentLevel.id) && !isDrawingUnlocked && gridTarget != null && word.length !== gridTarget.length) {
+      showToast(`A menor palavra tem ${gridTarget.length} caracteres — sua tentativa tem ${word.length}.`, 'info');
       return;
     }
 
     let isShortest = false, isValid = false;
 
     if (target === null) { if (isSpecialNull) isShortest = true; }
-    else if (word.length === target.length && lvlAccepts(currentLevel, word)) isShortest = true;
+    else if (gridTarget != null && word.length === gridTarget.length && lvlAccepts(currentLevel, word)) isShortest = true;
 
     if ((currentLevel.regex || currentLevel.validate) && !(target === null && isSpecialNull))
       isValid = lvlAccepts(currentLevel, word);
@@ -397,11 +437,11 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
           }));
           setDrawnCards([...initialCards, { type: 'separator', id: 'sep1' }, ...symbolCards]);
         };
-        // Piloto WordleBoard (L08): segura a última linha (toda verde) visível
-        // por um instante antes de destravar — sem o delay, o overlay some
-        // junto com o acerto e o aluno nunca chega a ver a vitória na grade.
-        // Demais níveis destravam na hora, como sempre.
-        if (currentLevel.id === 8) unlockDelayRef.current = setTimeout(unlock, 900);
+        // Grade WordleBoard: segura a última linha (toda verde) visível por
+        // um instante antes de destravar — sem o delay, o overlay some
+        // junto com o acerto e o aluno nunca chega a ver a vitória na
+        // grade. Níveis fora da grade destravam na hora, como sempre.
+        if (WORDLE_GRID_LEVEL_IDS.has(currentLevel.id)) unlockDelayRef.current = setTimeout(unlock, 900);
         else unlock();
         }
       }
@@ -412,7 +452,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
       setTestWords(prev => [{ word: wordDisplay, status: 'wrong' }, ...prev]);
     }
     setNewWord('');
-  }, [currentLevel, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, phaseExtras, nodes, transitions, setGuidedLessonStep, userNodesSnapshot, userTransitionsSnapshot]);
+  }, [currentLevel, effectiveShortestWord, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, phaseExtras, nodes, transitions, setGuidedLessonStep, userNodesSnapshot, userTransitionsSnapshot]);
 
   const clearTests = useCallback(() => {
     setTestWords([]);
@@ -429,7 +469,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     logTutorialOpen('dica_tamanho');
   }, [currentLevel, showToast, logTutorialOpen]);
 
-  // Piloto WordleBoard (L08): o botão 💡 vira um controle de estágio em vez de
+  // Grade WordleBoard: o botão 💡 vira um controle de estágio em vez de
   // um toast — 1º clique revela o tamanho (bordas vazias), 2º clique revela o
   // texto fixo com as letras da palavra (sem posição). Trava em 2: a 3ª dica
   // seria a resposta. Mecânica delegada ao hook compartilhado (wordleGame).
@@ -597,8 +637,8 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         }}
         lessonActive={lessonActive}
         onCloseLesson={handleLessonFinish}
-        showSizeHint={!isDrawingUnlocked && (currentLevel?.id !== 8 || wordleGame.hintStage < 2)}
-        onSizeHint={currentLevel?.id === 8 ? handleWordleHint : handleSizeHint}
+        showSizeHint={!isDrawingUnlocked && (!WORDLE_GRID_LEVEL_IDS.has(currentLevel?.id) || wordleGame.hintStage < 2)}
+        onSizeHint={WORDLE_GRID_LEVEL_IDS.has(currentLevel?.id) ? handleWordleHint : handleSizeHint}
       />
 
       <div className="workspace">
@@ -713,6 +753,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
           lessonActive={lessonActive}
           testWords={testWords}
           wordleGame={wordleGame}
+          effectiveShortestWord={effectiveShortestWord}
           newWord={newWord}
           handleTestWord={handleTestWord}
         />

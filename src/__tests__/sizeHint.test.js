@@ -172,9 +172,9 @@ describe('buildSizeHintMessage – nunca revela a palavra, só o tamanho', () =>
 describe('REG — integração da Dica de Tamanho não altera a classificação shortest/correct/wrong', () => {
   const readSrc = (relPath) => fs.readFileSync(path.join(__dirname, relPath), 'utf-8');
 
-  it('AFDPart1.jsx: isShortest ainda depende de word.length === target.length && lvlAccepts', () => {
+  it('AFDPart1.jsx: isShortest ainda depende de word.length === gridTarget.length && lvlAccepts (gridTarget === target em todo nível fora de WORDLE_GRID_LEVEL_IDS — ver AFDPart1.jsx)', () => {
     const src = readSrc('../modules/afd/AFDPart1.jsx');
-    expect(src).toMatch(/word\.length === target\.length && lvlAccepts\(currentLevel, word\)\) isShortest = true/);
+    expect(src).toMatch(/word\.length === gridTarget\.length && lvlAccepts\(currentLevel, word\)\) isShortest = true/);
   });
 
   it('AFDPart1.jsx: branch target === null (L01) continua a exigir isSpecialNull', () => {

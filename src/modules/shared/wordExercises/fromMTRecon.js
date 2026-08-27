@@ -12,6 +12,7 @@ import {
 import { simulateTM } from '../../mt/utils/tmAlgorithms.js';
 import { normalizeLanguage } from './normalizeLanguage.js';
 import { EXCLUDED_WORD_EXERCISE_IDS } from './dedupedLevelIds.js';
+import { findSecondShortestWord } from './findSecondShortestWord.js';
 
 // Lista leve dos ids disponíveis (sem carregar nenhum arquivo de nível) — já
 // filtrada pelo dedupe pré-computado (dedupedLevelIds.js), então um nível
@@ -43,6 +44,15 @@ export async function buildWordExerciseFromMTRecon(exerciseId) {
     return null;
   }
 
+  // shortestWord === '' (λ aceita): grade sem célula pra digitar λ, fase
+  // impossível de vencer (ver mesma correção em fromAFD.js/fromAP.js). Busca
+  // a 1ª palavra não-vazia aceita; sem nenhuma até maxLen, exclui do minigame.
+  let secondShortestWord;
+  if (shortestWord === '') {
+    secondShortestWord = findSecondShortestWord(checkWord, level.alphabet ?? []);
+    if (secondShortestWord == null) return null;
+  }
+
   return {
     id: exerciseId,
     moduleId: 'mt-recon',
@@ -52,6 +62,7 @@ export async function buildWordExerciseFromMTRecon(exerciseId) {
     languageNormalized: normalizeLanguage(level.language),
     alphabet: level.alphabet ?? [],
     shortestWord,
+    secondShortestWord,
     checkWord,
   };
 }

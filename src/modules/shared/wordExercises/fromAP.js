@@ -8,6 +8,7 @@ import { AP_LEVELS, getShortestWord } from '../../../levels_data/ap/index.js';
 import { pdaAccepts } from '../../ap/utils/pdaAlgorithms.js';
 import { normalizeLanguage } from './normalizeLanguage.js';
 import { EXCLUDED_WORD_EXERCISE_IDS } from './dedupedLevelIds.js';
+import { findSecondShortestWord } from './findSecondShortestWord.js';
 
 // Níveis impossíveis não têm gabarito (solution === null) — sem "menor
 // palavra" descobrível, ficam fora do minigame (mesma regra do AFD/L14).
@@ -40,5 +41,14 @@ export function buildWordExercisesFromAP() {
       const ok = ex.checkWord(ex.shortestWord);
       if (!ok) console.warn(`[wordExercises/fromAP] ${ex.id}: shortestWord "${ex.shortestWord}" não é aceita pela própria regra do nível — excluído do minigame.`);
       return ok;
-    });
+    })
+    // shortestWord === '' (λ aceita): grade sem célula pra digitar λ, fase
+    // impossível de vencer (ver mesma correção em fromAFD.js). Busca a 1ª
+    // palavra não-vazia aceita; sem nenhuma até maxLen, exclui do minigame.
+    .map(ex => {
+      if (ex.shortestWord !== '') return ex;
+      const secondShortestWord = findSecondShortestWord(ex.checkWord, ex.alphabet);
+      return { ...ex, secondShortestWord };
+    })
+    .filter(ex => ex.shortestWord !== '' || ex.secondShortestWord != null);
 }

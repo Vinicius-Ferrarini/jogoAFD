@@ -19,8 +19,19 @@ export default function WordGuessGame({
   const [attempts, setAttempts] = useState([]); // [{ word, status }], mais recente primeiro
   const [won, setWon] = useState(false);
 
+  // Quando a linguagem aceita λ (shortestWord === ''), a grade não tem
+  // nenhuma célula pra digitar (targetLength=0) e a fase fica impossível de
+  // vencer — effectiveTarget usa a 2ª menor palavra (não-vazia) calculada
+  // pelo adaptador (fromAFD/fromAP/fromMTRecon) como alvo jogável nesse caso.
+  // Nos outros ~59 exercícios (shortestWord não-vazio), effectiveTarget ===
+  // shortestWord, sem mudança de comportamento. secondShortestWord só existe
+  // quando necessário (ver findSecondShortestWord.js); exercícios sem
+  // nenhuma palavra não-vazia aceita já são excluídos do minigame no adaptador.
+  const isEmptyCase = exercise.shortestWord === '';
+  const effectiveTarget = isEmptyCase ? exercise.secondShortestWord : exercise.shortestWord;
+
   const wordleGame = useWordGuessGame({
-    shortestWord: exercise.shortestWord,
+    shortestWord: effectiveTarget,
     guess,
     setGuess,
   });
@@ -51,7 +62,7 @@ export default function WordGuessGame({
       return;
     }
     const isCorrect = exercise.checkWord(guess);
-    const isShortest = isCorrect && guess.length === exercise.shortestWord.length;
+    const isShortest = isCorrect && guess.length === effectiveTarget.length;
     const status = isShortest ? 'shortest' : (isCorrect ? 'correct' : 'wrong');
     setAttempts(prev => [{ word: wordDisplay, status }, ...prev]);
     if (isShortest) {
@@ -60,7 +71,7 @@ export default function WordGuessGame({
       showToast?.('Acertou a menor palavra! ⭐', 'success');
     }
     setGuess('');
-  }, [guess, attempts, exercise, alreadyWon, progressKey, updateProgress, showToast]);
+  }, [guess, attempts, exercise, effectiveTarget, alreadyWon, progressKey, updateProgress, showToast]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#8a8262', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20 }}>
@@ -83,15 +94,27 @@ export default function WordGuessGame({
         </div>
       </div>
 
-      <div style={{ background: '#fff', border: '3px solid #000', borderRadius: 10, boxShadow: '4px 4px 0 #000',
-        padding: '10px 20px', marginBottom: 20, fontWeight: 900, textAlign: 'center' }}>
-        <div style={{ fontSize: 11, opacity: 0.6, marginBottom: 2 }}>
-          {MODULE_LABEL[exercise.moduleId] || exercise.moduleId} · {exercise.label}
+      <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+        <div style={{ background: '#fff', border: '3px solid #000', borderRadius: 10, boxShadow: '4px 4px 0 #000',
+          padding: '10px 20px', fontWeight: 900, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, opacity: 0.6, marginBottom: 2 }}>
+            {MODULE_LABEL[exercise.moduleId] || exercise.moduleId} · {exercise.label}
+          </div>
+          {/* languageNormalized já é canônico sem prefixo nos 3 módulos (ver
+              normalizeLanguage.js) — exercise.language bruto tem "L = " só no
+              AFD, então usar languageNormalized aqui evita "L = L = {...}". */}
+          <div style={{ fontSize: 16 }}>L = {exercise.languageNormalized}</div>
         </div>
-        {/* languageNormalized já é canônico sem prefixo nos 3 módulos (ver
-            normalizeLanguage.js) — exercise.language bruto tem "L = " só no
-            AFD, então usar languageNormalized aqui evita "L = L = {...}". */}
-        <div style={{ fontSize: 16 }}>L = {exercise.languageNormalized}</div>
+
+        {isEmptyCase && (
+          // Posicionado absoluto saindo para a direita do card de linguagem
+          // (que continua centralizado normalmente) — não desloca o centro.
+          <div style={{ position: 'absolute', left: '100%', top: 0, marginLeft: 16,
+            background: '#fff', border: '3px solid #000', borderRadius: 10, boxShadow: '4px 4px 0 #000',
+            padding: '10px 20px', fontWeight: 900, textAlign: 'center', width: 260 }}>
+            A menor palavra é "Vazia (λ)", encontre a 2ª menor palavra.
+          </div>
+        )}
       </div>
 
       <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: 12, padding: '18px 22px', marginBottom: 16 }}>
@@ -102,12 +125,12 @@ export default function WordGuessGame({
             2=letras). Aqui a grade (estágio 1) já é o ponto de partida fixo
             — não algo que o clique revela — então 1 clique real do usuário
             (hook 0→1) precisa corresponder ao estágio visual 2 (letras),
-            senão o clique parece não fazer nada. displayStage soma +1 assim
-            que o hook sai de 0, capando em 2 (nunca ultrapassa o real). */}
+            senão o clique parece não fazer nada; o Math.min/ternário abaixo
+            soma +1 assim que o hook sai de 0, capando em 2. */}
         <WordleBoard
           attempts={attempts}
-          targetLength={exercise.shortestWord.length}
-          shortestWord={exercise.shortestWord}
+          targetLength={effectiveTarget.length}
+          shortestWord={effectiveTarget}
           hintStage={won ? 0 : Math.min(2, wordleGame.hintStage > 0 ? wordleGame.hintStage + 1 : 1)}
           guess={guess}
           typeAt={won ? undefined : wordleGame.typeAt}
@@ -130,7 +153,10 @@ export default function WordGuessGame({
         <div style={{ background: 'var(--accent-green)', border: '3px solid #000', borderRadius: 10,
           boxShadow: '4px 4px 0 #000', padding: '10px 20px', fontWeight: 900, textAlign: 'center',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <span>⭐ Menor palavra encontrada: "{exercise.shortestWord === '' ? 'λ' : exercise.shortestWord}"</span>
+          <span>⭐ Menor palavra encontrada: "{effectiveTarget === '' ? 'λ' : effectiveTarget}"</span>
+          {isEmptyCase && (
+            <span style={{ fontSize: 12, fontWeight: 400 }}>(essa linguagem também aceita a palavra vazia)</span>
+          )}
           {!isLast && (
             <button className="menu-btn" onClick={onNextExercise}
               style={{ padding: '8px 20px', fontSize: 14, background: '#fff' }}>

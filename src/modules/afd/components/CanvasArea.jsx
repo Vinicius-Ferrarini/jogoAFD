@@ -15,6 +15,22 @@ import WordleBoard from './WordleBoard';
 const INNER_W = 8000;
 const INNER_H = 8000;
 
+// ─── MaurilioBalloon: balão de fala PADRÃO do Maurílio (imgBalaoFala) ─────────
+// Dimensões e posicionamento fixos (mesmos do balão original "1ª Coisa:
+// Descubra a Menor Palavra!") — reaproveitado tal qual em qualquer fala do
+// Maurílio no canvas, nunca redimensionado por texto específico.
+function MaurilioBalloon({ children, fontSize = 16 }) {
+  return (
+    <div style={{ position:'relative', width:210, height:140, marginLeft:-80, alignSelf:'flex-start', marginTop:-80 }}>
+      <img src={imgBalaoFala} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:1 }} />
+      <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center',
+        padding:'14px 25px 34px 25px', boxSizing:'border-box', color:'#000', fontWeight:'bold', fontSize, textAlign:'center', zIndex:2 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function pxFromEvent(e, innerRef) {
   const el = innerRef.current;
   if (!el) return { x: 0, y: 0 };
@@ -67,15 +83,20 @@ export default function CanvasArea({
   lessonActive = false,
   errorNodeIds = null,
   enableContextMenu = true,
-  // Piloto do WordleBoard: histórico de tentativas da fase "descubra a menor
-  // palavra" (mesma lista testWords do orquestrador) e wordleGame (mecânica de
-  // grade/dica — ver src/modules/shared/useWordGuessGame.js) — só usado quando
-  // o nível é o piloto (ver AFDPart1.jsx: restrito ao L08 por ora). newWord/
-  // handleTestWord são os MESMOS do TestPanel — a grade escreve direto nesse
-  // estado compartilhado (via wordleGame.typeAt/backspaceAt), então digitar
-  // ali equivale a digitar no campo "Nova palavra..." e apertar Testar.
+  // WordleBoard: histórico de tentativas da fase "descubra a menor palavra"
+  // (mesma lista testWords do orquestrador) e wordleGame (mecânica de
+  // grade/dica — ver src/modules/shared/useWordGuessGame.js) — só usado nos
+  // níveis da grade (ver AFDPart1.jsx: WORDLE_GRID_LEVEL_IDS, hoje todo
+  // nível ativo de AFD_1 exceto L14).
+  // effectiveShortestWord é o alvo jogável da grade (pode diferir do
+  // currentLevel.shortestWord real quando este é '' — ver AFDPart1.jsx).
+  // newWord/handleTestWord são os MESMOS do TestPanel — a grade escreve
+  // direto nesse estado compartilhado (via wordleGame.typeAt/backspaceAt),
+  // então digitar ali equivale a digitar no campo "Nova palavra..." e
+  // apertar Testar.
   testWords = [],
   wordleGame = null,
+  effectiveShortestWord = null,
   newWord = '',
   handleTestWord,
 }) {
@@ -559,27 +580,38 @@ export default function CanvasArea({
 
       {!isDrawingUnlocked && guidedLessonStep === null ? (
         <div className="locked-overlay">
-          <div style={{ position: 'relative', display:'flex', alignItems:'center', justifyContent:'center', marginTop:80 }}>
-            <img src={imgMaurilioApontando} alt="Professor" style={{ height:320, zIndex:1 }} />
-            <div style={{ position:'relative', width:210, height:140, marginLeft:-80, alignSelf:'flex-start', marginTop:-80 }}>
-              <img src={imgBalaoFala} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:1 }} />
-              <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center',
-                padding:'14px 25px 34px 25px', boxSizing:'border-box', color:'#000', fontWeight:'bold', fontSize:16, textAlign:'center', zIndex:2 }}>
-                1ª Coisa: Descubra a Menor Palavra!
+          {/* Grade estilo Wordle/Termo — níveis em WORDLE_GRID_LEVEL_IDS
+              (AFDPart1.jsx: hoje todo nível ativo de AFD_1 exceto L14). Só aparece quando o aluno pediu
+              dica (hintStage>0) ou já testou alguma palavra. Nesse estado, o
+              layout muda: Maurílio fica ancorado à ESQUERDA (não sobrepõe
+              mais a grade) e a grade ocupa o centro do espaço restante —
+              mesma ideia do minigame standalone "Menor Palavra". Antes do 1º
+              clique em Dica, o layout continua sendo o original (Maurílio +
+              balão centralizados). effectiveShortestWord é sempre string
+              não-vazia nesse gate (nos níveis λ como L11, já é a 2ª menor
+              palavra — ver AFDPart1.jsx). */}
+          {currentLevel?.id != null && effectiveShortestWord && wordleGame && (wordleGame.hintStage > 0 || testWords.length > 0) ? (
+            <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+              <div style={{ position: 'absolute', left: 40, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'flex-start', zIndex: 1 }}>
+                <img src={imgMaurilioApontando} alt="Professor" style={{ height: 280 }} />
+                {/* Balão PADRÃO do Maurílio (MaurilioBalloon) — sempre que a
+                    grade está ativa, anunciando o tamanho da menor palavra
+                    jogável (nunca a palavra em si). Quando a menor palavra
+                    REAL é λ (shortestWord===''), o texto também explica a 2ª
+                    menor palavra; effectiveShortestWord é a 2ª menor calculada
+                    nesse caso, ou a própria shortestWord nos demais níveis. */}
+                <MaurilioBalloon fontSize={13}>
+                  {currentLevel.shortestWord === ''
+                    ? `A menor palavra é "Vazia (λ)", encontre a 2ª menor palavra, tem tamanho ${effectiveShortestWord.length}.`
+                    : `A menor palavra tem tamanho ${effectiveShortestWord.length}.`}
+                </MaurilioBalloon>
               </div>
-            </div>
-            {/* Piloto: grade estilo Wordle/Termo, restrita ao L08 por ora (ver
-                AFDPart1.jsx). Só aparece quando o aluno pediu dica (hintStage>0)
-                ou já testou alguma palavra — sobrepõe o Maurílio (z-index maior),
-                não desloca o layout. shortestWord aqui é sempre string não-vazia
-                nesse gate — L08 não é λ nem impossible. */}
-            {currentLevel?.id === 8 && currentLevel?.shortestWord && wordleGame && (wordleGame.hintStage > 0 || testWords.length > 0) && (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
                 <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: 12, padding: '14px 18px' }}>
                   <WordleBoard
                     attempts={testWords}
-                    targetLength={currentLevel.shortestWord.length}
-                    shortestWord={currentLevel.shortestWord}
+                    targetLength={effectiveShortestWord.length}
+                    shortestWord={effectiveShortestWord}
                     hintStage={wordleGame.hintStage}
                     guess={newWord}
                     typeAt={wordleGame.typeAt}
@@ -588,8 +620,13 @@ export default function CanvasArea({
                   />
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div style={{ position: 'relative', display:'flex', alignItems:'center', justifyContent:'center', marginTop:80 }}>
+              <img src={imgMaurilioApontando} alt="Professor" style={{ height:320, zIndex:1 }} />
+              <MaurilioBalloon>1ª Coisa: Descubra a Menor Palavra!</MaurilioBalloon>
+            </div>
+          )}
         </div>
       ) : (
         <>
