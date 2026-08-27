@@ -579,6 +579,20 @@ body { color: var(--text-main); }
   animation: severePulse 0.8s infinite;
 }
 
+/* Chip da transição percorrida no passo atual (Aula Guiada com simulateWord OU
+   "🔬 Simular") — pisca em amarelo só 2x pra guiar o olho, depois volta ao
+   normal (mesmo padrão de .ap-tl-chip.sim-active no AP e .tm-tl-chip no MT —
+   ver MTTransitions.css). A key do <span> muda a cada passo (ver
+   TransitionLabel.jsx), remontando o elemento e reiniciando a animação mesmo
+   quando o mesmo símbolo é destacado 2 passos seguidos (self-loop). */
+.transition-chip.active-chip {
+  animation: transition-chip-blink 0.6s ease-in-out 2;
+}
+@keyframes transition-chip-blink {
+  0%, 100% { background: #fff; border-color: #1e3a8a; color: #1e3a8a; box-shadow: 2px 2px 0 #000; }
+  50% { background: #fde047; border-color: #a16207; color: #422006; box-shadow: 0 0 0 3px rgba(253, 224, 71, .5), 2px 2px 0 #000; }
+}
+
 .transition-chip-input {
   min-width: 2ch;
   width: 2ch; /* sobrescrito inline pelo React com largura dinâmica */

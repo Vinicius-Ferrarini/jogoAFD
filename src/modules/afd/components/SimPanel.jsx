@@ -9,31 +9,32 @@ export default function SimPanel({ word, nodes, transitions, onClose, onHighligh
     const steps = [];
     const w = word === 'λ' ? '' : word;
     if (!initState) {
-      steps.push({ type: 'error', icon: '❌', text: 'Nenhum estado inicial definido!', state: null, charIdx: -1 });
+      steps.push({ type: 'error', icon: '❌', text: 'Nenhum estado inicial definido!', state: null, charIdx: -1, tIdx: null });
       return steps;
     }
     const initLabel = nodes.find(n => n.id === initState)?.label ?? initState;
-    steps.push({ type: 'info', icon: '▶', text: `Início em "${initLabel}"`, state: initState, charIdx: -1 });
+    steps.push({ type: 'info', icon: '▶', text: `Início em "${initLabel}"`, state: initState, charIdx: -1, tIdx: null });
     let current = initState;
     for (let i = 0; i < w.length; i++) {
       const ch = w[i];
-      const tr = transitions.find(t => t.from === current && t.symbol.split(',').map(s => s.trim()).includes(ch));
-      if (!tr) {
+      const trIdx = transitions.findIndex(t => t.from === current && t.symbol.split(',').map(s => s.trim()).includes(ch));
+      if (trIdx === -1) {
         const curLabel = nodes.find(n => n.id === current)?.label ?? current;
-        steps.push({ type: 'error', icon: '❌', text: `"${curLabel}" sem transição com '${ch}' — REJEITADA`, state: current, charIdx: i });
+        steps.push({ type: 'error', icon: '❌', text: `"${curLabel}" sem transição com '${ch}' — REJEITADA`, state: current, charIdx: i, tIdx: null });
         return steps;
       }
+      const tr = transitions[trIdx];
       const fromLabel = nodes.find(n => n.id === tr.from)?.label ?? tr.from;
       const toLabel   = nodes.find(n => n.id === tr.to)?.label   ?? tr.to;
-      steps.push({ type: 'ok', icon: '➡', text: `"${fromLabel}" —[${ch}]→ "${toLabel}"`, state: tr.to, charIdx: i });
+      steps.push({ type: 'ok', icon: '➡', text: `"${fromLabel}" —[${ch}]→ "${toLabel}"`, state: tr.to, charIdx: i, tIdx: trIdx, symbol: ch });
       current = tr.to;
     }
     const finalNode  = nodes.find(n => n.id === current);
     const finalLabel = finalNode?.label ?? current;
     if (finalNode?.isFinal) {
-      steps.push({ type: 'done', icon: '✅', text: `"${finalLabel}" é estado final`, state: current, charIdx: w.length });
+      steps.push({ type: 'done', icon: '✅', text: `"${finalLabel}" é estado final`, state: current, charIdx: w.length, tIdx: null });
     } else {
-      steps.push({ type: 'error', icon: '❌', text: `"${finalLabel}" não é estado final`, state: current, charIdx: w.length });
+      steps.push({ type: 'error', icon: '❌', text: `"${finalLabel}" não é estado final`, state: current, charIdx: w.length, tIdx: null });
     }
     return steps;
   };
@@ -47,8 +48,8 @@ export default function SimPanel({ word, nodes, transitions, onClose, onHighligh
   const accepted   = isFinished && currentStep?.type === 'done';
 
   useEffect(() => {
-    onHighlightNode(currentStep?.state ?? null, currentStep?.type ?? null);
-    return () => onHighlightNode(null, null);
+    onHighlightNode(currentStep?.state ?? null, currentStep?.type ?? null, currentStep?.tIdx ?? null, currentStep?.symbol ?? null);
+    return () => onHighlightNode(null, null, null, null);
   }, [stepIdx, currentStep, onHighlightNode]);
 
   useEffect(() => {

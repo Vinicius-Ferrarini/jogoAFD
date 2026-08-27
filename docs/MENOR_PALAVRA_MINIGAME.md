@@ -458,20 +458,31 @@ sempre que níveis forem adicionados/editados (não é automático no build).
   depois de ver quantas colisões reais existem (pode ser tão raro que a regra
   de desempate importa pouco, ou comum o bastante para merecer critério
   explícito, ex.: preferir o módulo "mais simples" AFD > AP > MT-Recon).
-- **Grade Termo expandida para todos os níveis ativos de AFD_1**: a mecânica
-  (grade + balão de dica do Maurílio anunciando o tamanho da menor palavra)
-  saiu do piloto L08 e passou a valer para TODO nível ativo de AFD_1 — todo
-  `id` fora de `HIDDEN_LEVELS`/`UNAVAILABLE_LEVELS`, exceto L14 (impossível
-  em AFD, tem fluxo próprio de Aula Guiada automática). `WORDLE_GRID_LEVEL_IDS`
-  em `AFDPart1.jsx` deixou de ser uma lista fixa e passou a ser calculada a
-  partir de `GAME_LEVELS`, então acompanha sozinha qualquer nível
-  reativado/ocultado depois. Ao clicar em Dica pela 1ª vez, o Maurílio fala
-  "A menor palavra tem tamanho N." (ou a variante com λ/2ª menor palavra nos
-  14 níveis onde `shortestWord===''`: L11, L15, L18, L21, L25, L27, L28, L30,
-  L31, L32, L46, L53, L55, L59 — todos com `secondShortestWord` calculável).
-  Verificado que alfabeto/tamanho da menor palavra não quebram a grade: L45
-  (12 caracteres) e L56 (11 caracteres) — as maiores palavras entre os 57
-  níveis ativos — renderizam a grade normalmente, sem overflow nem quebra de
-  layout (células de largura fixa em `flex` sem wrap, cabem no espaço
-  central do canvas). Nenhum tratamento diferente por dificuldade/tamanho:
-  Trabalho (L56-L58) e Prova (L59-L61) usam a mesma mecânica normal.
+- **Grade Termo expandida para todos os níveis ativos de AFD_1 (incluindo
+  L14)**: a mecânica (grade + balão de dica do Maurílio anunciando o tamanho
+  da menor palavra) saiu do piloto L08 e passou a valer para TODO nível ativo
+  de AFD_1 — todo `id` fora de `HIDDEN_LEVELS`/`UNAVAILABLE_LEVELS`, **sem
+  exceção**. `WORDLE_GRID_LEVEL_IDS` em `AFDPart1.jsx` deixou de ser uma lista
+  fixa e passou a ser calculada a partir de `GAME_LEVELS`, então acompanha
+  sozinha qualquer nível reativado/ocultado depois. Ao clicar em Dica pela 1ª
+  vez, o Maurílio fala "A menor palavra tem tamanho N." (ou a variante com
+  λ/2ª menor palavra nos níveis onde `shortestWord===''`: L11, L14, L15, L18,
+  L21, L25, L27, L28, L30, L31, L32, L46, L53, L55, L59 — todos com
+  `secondShortestWord` calculável). Verificado que alfabeto/tamanho da menor
+  palavra não quebram a grade: L45 (12 caracteres) e L56 (11 caracteres) — as
+  maiores palavras entre os níveis ativos — renderizam a grade normalmente,
+  sem overflow nem quebra de layout (células de largura fixa em `flex` sem
+  wrap, cabem no espaço central do canvas). Nenhum tratamento diferente por
+  dificuldade/tamanho: Trabalho (L56-L58) e Prova (L59-L61) usam a mesma
+  mecânica normal.
+- **L14 entrou na grade (revisão da nota "L14 — não deve virar exercício"
+  acima)**: aquela nota vale só para o **minigame standalone** "Menor
+  Palavra" (`fromAFD.js`, que continua filtrando `!level.impossible` — L14
+  segue de fora de lá, sem mudança). Dentro da própria fase AFD_1
+  (`AFDPart1.jsx`), a mecânica de grade passou a cobrir L14 também: a
+  linguagem `|w|a=|w|b` tem menor palavra normalíssima (λ, com "ab" como 2ª
+  menor) — o que é impossível não é achar a menor palavra, é *desenhar* o
+  AFD depois. `impossible: true` continua controlando só o que acontece
+  DEPOIS de acertar a grade: em vez de liberar o canvas de desenho, abre a
+  Aula Guiada automaticamente (mesmo fluxo de antes, só que agora acionado
+  ao digitar "ab"/"ba" na grade em vez de deixar o campo em branco).

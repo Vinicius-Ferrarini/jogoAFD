@@ -5,7 +5,7 @@
 // seria recriado a cada render do pai e invalidaria a comparação do memo).
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle, memo } from 'react';
 
-const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, labelSide, left, top, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
+const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, activeSymbol, activeSeq, labelSide, left, top, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
   const [mode, setMode] = useState(null); // null | 'adding' | { type:'editing', chipIdx:number }
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef(null);
@@ -78,8 +78,14 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
       onClick={handleContainerClick}
     >
       <div className="transition-chips">
-        {symList.map((sym, i) =>
-          mode?.type === 'editing' && mode.chipIdx === i ? (
+        {symList.map((sym, i) => {
+          // Chip da transição percorrida no passo atual (Aula Guiada OU
+          // "🔬 Simular") — pisca em amarelo 2x, mesmo padrão de AP/MT (ver
+          // MTTransitions.css tm-tl-chip-blink). A key muda a cada `activeSeq`
+          // pra forçar o React a remontar o span e reiniciar a animação mesmo
+          // quando o MESMO símbolo é usado 2 passos seguidos (self-loop).
+          const isActive = sym === activeSymbol;
+          return mode?.type === 'editing' && mode.chipIdx === i ? (
             <input key={i} ref={inputRef} className="transition-chip-input"
               value={inputVal} onChange={e => setInputVal(e.target.value)}
               onBlur={commitEdit} onKeyDown={handleKeyDown}
@@ -87,9 +93,11 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
               style={{ width: inputWidth }}
               autoComplete="off" spellCheck={false} />
           ) : (
-            <span key={i} className="transition-chip" onClick={e => handleChipClick(e, i)}>{sym}</span>
-          )
-        )}
+            <span key={isActive ? `${i}-${activeSeq}` : i}
+              className={`transition-chip${isActive ? ' active-chip' : ''}`}
+              onClick={e => handleChipClick(e, i)}>{sym}</span>
+          );
+        })}
         {mode === 'adding' && (
           <input ref={inputRef} className="transition-chip-input"
             value={inputVal} onChange={e => setInputVal(e.target.value)}

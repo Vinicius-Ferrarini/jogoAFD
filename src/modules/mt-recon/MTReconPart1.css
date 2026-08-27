@@ -1,0 +1,51 @@
+/* ── MTSimPanel: simulador compacto (estilo SimPanel do AFD) + fita ────────── */
+/* Ocupa o rodapé inteiro (mesmo lugar do SimPanel no AFD/APSimPanel). Banner +
+   header + fita + linha de status + nav empilhados em coluna — precisa de
+   mais altura que o .bottom-hand padrão (168px) pra não cortar a fita/status
+   (achado real: com 168px, .sim-panel-body's overflow:hidden escondia a fita
+   inteira, sobrando só header+nav visíveis — ver print do usuário). 260px
+   cabe fita(compact)+status+nav com folga em telas de 700px+ de altura, sem
+   sobrar um vão vazio entre o status e o nav (achado real #2: com
+   .sim-panel-body esticando via flex:1 1 auto pra preencher os 300px
+   originais, sobrava uma faixa em branco entre o status e a navegação —
+   ver print do usuário; corrigido com flex:0 0 auto, que faz o bloco
+   fita+status ocupar só a altura do próprio conteúdo). */
+.mt-simp-footer {
+  height: 260px !important;
+  align-items: stretch !important;
+  padding: 6px 16px !important;
+}
+.mt-simp-body {
+  display: flex; flex-direction: column; gap: 3px;
+  width: 100%; height: 100%; padding: 0;
+  min-height: 0;
+}
+/* .sim-panel-body (AFDPart1.css) por padrão é `flex:1; align-items:center;
+   overflow:hidden` (pensado pra 1 linha de texto só, no SimPanel do AFD) —
+   aqui precisa empilhar fita+status em COLUNA, ocupando só a altura que o
+   próprio conteúdo pede (flex:0 0 auto — NÃO esticar pra preencher o rodapé
+   inteiro, senão sobra vão vazio entre o status e o nav). Se ainda faltar
+   espaço numa tela muito baixa, ROLA (overflow-y:auto) em vez de cortar
+   silenciosamente. */
+.mt-simp-footer .mt-simp-body .sim-panel-body {
+  flex-direction: column;
+  align-items: stretch;
+  overflow-y: auto;
+  flex: 0 0 auto;
+  max-height: 100%;
+  min-height: 0;
+  padding: 3px 16px;
+  gap: 3px;
+}
+.mt-simp-footer .sim-panel-header { flex-shrink: 0; padding: 4px 10px; }
+.mt-simp-footer .ap-simp-banner   { margin: 0; flex-shrink: 0; padding: 3px 8px; }
+.mt-simp-footer .ap-simp-banner b { font-size: 11px; }
+.mt-simp-footer .ap-simp-banner span { font-size: 10px; }
+.mt-simp-footer .sim-panel-nav    { flex-shrink: 0; padding: 4px; margin-top: auto; }
+.mt-simp-footer .sim-current-step { padding: 5px 10px; font-size: 12px; }
+.mt-simp-tape-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+  flex-shrink: 0;
+}

@@ -11,12 +11,14 @@ import '../afd/AFDPart1.css';
 import '../afd/components/TestPanel.css';
 import '../afd/FormalDescriptionModal.css';
 import '../ap/APPart1.css';
+import './MTReconPart1.css';
 import { SvgStars } from '../afd/SvgStar';
 import LevelGridScreen from '../afd/components/LevelGridScreen';
 import EndScreen from '../afd/components/EndScreen';
 import GameHeader from '../afd/components/GameHeader';
 import MTCanvas from '../mt/components/MTCanvas';
 import APFooterDeck from '../ap/components/APFooterDeck';
+import MTSimPanel from '../mt/components/MTSimPanel';
 import useTMGraph from '../mt/hooks/useTMGraph';
 import useMTGuidedLesson from '../mt/hooks/useMTGuidedLesson';
 import useAPDrawing from '../ap/hooks/useAPDrawing';
@@ -25,11 +27,13 @@ import useToast from '../afd/hooks/useToast';
 import usePhaseTelemetry from '../afd/hooks/usePhaseTelemetry';
 import { MT_RECON_LEVEL_ORDER, loadMTReconLevel, getShortestWord, getGabaritoGraph } from '../../levels_data/mt-recon/index.js';
 import { buildNoAttemptHintMessage, buildSizeHintMessage } from '../afd/utils/sizeHint';
-import { fuzzTMRecognizer, simulateTM } from '../mt/utils/tmAlgorithms';
+import { fuzzTMRecognizer, simulateTM, simulateTMSteps } from '../mt/utils/tmAlgorithms';
 import { validateMTFormalFields, validateMTFormalTransitions } from '../mt/utils/mtFormalValidation';
 import { onBracketKeyDown } from '../afd/utils/bracketAutoClose';
 import { DIFF_COLOR } from '../../levels';
 import { logEvent } from '../../services/telemetry';
+
+const SIM_MAX_STEPS = 500;
 
 const EMPTY_FORMAL = { states: '', sigma: '', gamma: '', initial: '', blank: '', final: '', deltaCells: {} };
 
@@ -72,6 +76,25 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
   const [fieldErrors, setFieldErrors] = useState({}); // erros por campo — igual AFD/AP (borda vermelha)
   const [cellErrors,  setCellErrors]  = useState({}); // erros por célula da tabela δ — 'q0|a': true
   const [inputError, setInputError]           = useState(null);
+  // ── Simulador passo a passo (botão "🔬 Simular") ────────────────────────────
+  // sim: { configs, word, title, message } | null — mesmo padrão do AP
+  // (openSim/closeSim/sim/simKey). simKey força o MTSimPanel a remontar (e
+  // resetar seu índice de passo interno) a cada nova simulação, mesmo se a
+  // palavra digitada for igual à anterior.
+  const [sim, setSim] = useState(null);
+  const [simKey, setSimKey] = useState(0);
+  // { nodeId, type, tIdx, seq } do passo atual da simulação — realça o estado
+  // E a transição percorrida no canvas fora da Aula Guiada (MTCanvas só
+  // realça lessonActive por padrão; ver props simActiveNodeId/simActiveTIdx/
+  // simActiveSeq abaixo). `seq` incrementa a cada passo (mesmo padrão do AP
+  // — simHighlight.seq em APPart1.jsx) — é o que permite a animação de
+  // "piscar" reiniciar mesmo quando o MESMO tIdx é destacado 2 passos
+  // seguidos (ver MTCanvas.jsx: a key do chip usa tIdx+seq).
+  const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null, tIdx: null, seq: 0 });
+  const openSim  = useCallback((s) => { setSim(s); setSimKey(k => k + 1); }, []);
+  const closeSim = useCallback(() => { setSim(null); setSimHighlight({ nodeId: null, type: null, tIdx: null, seq: 0 }); }, []);
+  const handleSimHighlight = useCallback((nodeId, type, tIdx) =>
+    setSimHighlight(prev => ({ nodeId, type, tIdx: tIdx ?? null, seq: prev.seq + 1 })), []);
   const canvasRef      = useRef(null);
   const innerCanvasRef = useRef(null);
   const viewportRef    = useRef(null);
@@ -344,6 +367,34 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
       ? prev : [{ word: display, mode: 'DRAWING', accepted: status === 'ACCEPTED' }, ...prev]);
     setSimWord('');
   }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.nodes, g.transitions, updateProgress, showToast, phaseExtras]);
+
+  // ── Simular palavra: abre MTSimPanel passo a passo (rodapé) — SEMPRE contra
+  // a MT do ALUNO (g.nodes/g.transitions), nunca o gabarito (igual ao
+  // "Simular" do AP: é uma ferramenta de depuração do próprio desenho, não
+  // uma resposta avaliada — não gera telemetria de 'tentativa'). node.id do
+  // grafo do aluno já É o rótulo (ver useTMGraph — addNode grava
+  // { id: label, label }), então stateId retornado por simulateTMSteps bate
+  // direto com node.id, sem precisar de mapeamento label↔id como o AP faz
+  // com PDAs importados do JFLAP.
+  const simulate = useCallback(() => {
+    if (!level) return;
+    const word = simWord.trim();
+    if (word !== '') {
+      const alphabet = level.alphabet ?? [];
+      const invalid = [...word].find(ch => !alphabet.includes(ch));
+      if (invalid) {
+        setInputError(`O símbolo "${invalid}" não faz parte do alfabeto (${alphabet.join(', ')}).`);
+        return;
+      }
+    }
+    setInputError(null);
+    const show = word === '' ? 'λ' : word;
+    const mtGraph = { states: g.nodes, transitions: g.transitions };
+    const configs = simulateTMSteps(mtGraph, word, SIM_MAX_STEPS, level.startMarker ?? null);
+    openSim({ configs, word, maxSteps: SIM_MAX_STEPS, title: `Simulação: "${show}"`,
+      message: 'Passo a passo da SUA máquina (não é o gabarito):' });
+    setSimWord('');
+  }, [level, simWord, g.nodes, g.transitions, openSim]);
 
   // ── Validar (bateria) = ★1 ──────────────────────────────────────────────────
   const validate = useCallback(() => {
@@ -716,6 +767,9 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
           lessonActive={lesson.active}
           activeNodeId={lesson.cur?.activeNode}
           activeTransition={lesson.activeTransition}
+          simActiveNodeId={simHighlight.nodeId}
+          simActiveTIdx={simHighlight.tIdx}
+          simActiveSeq={simHighlight.seq}
           connectingSource={connectingSource}
           setConnectingSource={setConnectingSource}
           addNode={g.addNode}
@@ -887,6 +941,10 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
             </div>
           )}
 
+          {isDrawingUnlocked && (
+            <button className="simulate-btn" onClick={simulate}>🔬 Simular</button>
+          )}
+
           <div className="words-list">
             {testedWords.map((t, i) => (
               <div key={i} className={`word-row ${t.status ? t.status : t.accepted ? 'correct' : 'wrong'}`}>
@@ -940,6 +998,12 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
         tapeHead={lesson.cur?.head ?? 0}
         errAction={errAction}
         compactWhenLesson
+        simPanel={sim && (
+          <MTSimPanel key={simKey} configs={sim.configs} word={sim.word} maxSteps={sim.maxSteps}
+            title={sim.title} message={sim.message}
+            onHighlight={handleSimHighlight} onClose={closeSim} />
+        )}
+        simPanelClassName="mt-simp-footer"
       />
 
       {victory && (

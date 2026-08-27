@@ -74,3 +74,26 @@
   color: #dc2626;
   font-weight: 900;
 }
+
+/* ── Variante compacta (MTSimPanel — rodapé com menos altura disponível que
+   a tela cheia da Aula Guiada) ── */
+.turing-tape-container.compact {
+  padding: 6px 8px 4px;
+  border-width: 2px;
+  box-shadow: 2px 2px 0 #000;
+  border-radius: 8px;
+}
+.tape-cell.compact {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+  border-width: 2px;
+}
+.tape-cell.compact.head-active {
+  border-width: 2px;
+  box-shadow: 0 2px 0 #dc2626;
+}
+.tape-head-slot.compact {
+  width: 26px;
+  font-size: 10px;
+}

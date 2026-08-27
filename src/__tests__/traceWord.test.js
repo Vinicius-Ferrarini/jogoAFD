@@ -60,9 +60,25 @@ describe('traceWord — casos básicos', () => {
     expect(traceWord(null, TRANSITIONS, 'a')).toEqual([]);
   });
 
-  it('primeiro frame sempre é o estado inicial com letter -1', () => {
+  it('primeiro frame sempre é o estado inicial com letter -1 e tIdx/symbol null', () => {
     const frames = traceWord(NODES, TRANSITIONS, 'ba');
-    expect(frames[0]).toEqual({ nodeId: 'q0', type: 'ok', letter: -1 });
+    expect(frames[0]).toEqual({ nodeId: 'q0', type: 'ok', letter: -1, tIdx: null, symbol: null });
+  });
+
+  it('frames após o inicial carregam tIdx/symbol da transição percorrida', () => {
+    const frames = traceWord(NODES, TRANSITIONS, 'ba');
+    // 'b': q0--b-->q0 é TRANSITIONS[1]
+    expect(frames[1].tIdx).toBe(1);
+    expect(frames[1].symbol).toBe('b');
+    // 'a': q0--a-->q1 é TRANSITIONS[0]
+    expect(frames[2].tIdx).toBe(0);
+    expect(frames[2].symbol).toBe('a');
+  });
+
+  it('frame de erro por transição inexistente tem tIdx/symbol null', () => {
+    const frames = traceWord(NODES, TRANSITIONS, 'c');
+    expect(frames.at(-1).tIdx).toBeNull();
+    expect(frames.at(-1).symbol).toBeNull();
   });
 
   it('número total de frames = comprimento da palavra + 1', () => {

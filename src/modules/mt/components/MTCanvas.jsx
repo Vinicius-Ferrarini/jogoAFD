@@ -74,6 +74,20 @@ export default function MTCanvas({
   addNode, moveNodes, toggleInitial, toggleFinal, setNodeLabel, renameNode, deleteNode,
   addTriple, editTriple, removeTriple, removeEdge,
   draw, lessonActive, activeNodeId, activeTransition,
+  // Realce do estado atual durante o simulador "🔬 Simular" (fora da Aula
+  // Guiada — ver MTReconPart1.jsx). Prop separado de activeNodeId porque
+  // aquele só se aplica com lessonActive=true; aqui o simulador roda com o
+  // canvas em edição normal (lessonActive=false).
+  simActiveNodeId = null,
+  // tIdx da transição percorrida no passo atual do simulador (índice em
+  // `transitions`, mesma convenção de activeTIdx abaixo) + um contador que
+  // muda a cada passo — mesmo par tIdx/seq que o AP usa (simHighlight.tIdx/
+  // .seq) pra REINICIAR a animação de "piscar" mesmo quando dois passos
+  // seguidos destacam o mesmo tIdx (self-loop lido 2x seguidas, por ex.) —
+  // sem o seq mudando, o React não remonta o elemento e a animação de
+  // iteration-count finito não voltaria a rodar.
+  simActiveTIdx = null,
+  simActiveSeq = null,
   selectedNodes = [], setSelectedNodes,
   selectionBox, setSelectionBox,
   guidedLessonStep = null,
@@ -410,14 +424,23 @@ export default function MTCanvas({
 
   // Modo Aula: tIdx da tripla percorrida no passo atual (se houver), pra
   // destacar tanto a linha da aresta (SVG) quanto o chip específico da regra.
+  // Fora da aula, usa o tIdx do simulador "🔬 Simular" (simActiveTIdx) — os
+  // dois nunca coexistem (lessonActive=true só durante a Aula Guiada).
   const activeTIdx = useMemo(() => (
     lessonActive && activeTransition
       ? transitions.findIndex(t =>
           t.from === activeTransition.from && t.to === activeTransition.to &&
           t.read === activeTransition.read && t.write === activeTransition.write &&
           t.move === activeTransition.move)
-      : -1
-  ), [lessonActive, activeTransition, transitions]);
+      : !lessonActive && simActiveTIdx != null ? simActiveTIdx : -1
+  ), [lessonActive, activeTransition, simActiveTIdx, transitions]);
+  // "seq" que muda a cada passo — usado só pra formar a `key` do chip ativo
+  // (ver TMTransitionLabel abaixo) e assim reiniciar a animação de piscar
+  // mesmo em 2 passos seguidos que destacam o MESMO tIdx. Na aula usa
+  // guidedLessonStep (já é um número que muda a cada `lesson.goTo`); no
+  // simulador usa simActiveSeq (contador dedicado — ver MTSimPanel/
+  // MTReconPart1.jsx). Os dois nunca coexistem (mesma lógica de activeTIdx).
+  const activeSeq = lessonActive ? guidedLessonStep : simActiveSeq;
 
   // ── Agrupa transições por aresta + geometria ────────────────────────────────
   // Memoizado: recalcular groups/edgeRenders (find() por aresta + trig de
@@ -644,7 +667,16 @@ export default function MTCanvas({
                       onCancel={() => setEditing(null)}
                     />
                   ) : (
-                    <div key={t.tIdx} style={{ position: 'relative' }}>
+                    // key muda a cada passo em que ESTE tIdx é o ativo (t.tIdx===
+                    // activeTIdx ? `${tIdx}-${seq}` : tIdx) — força o React a
+                    // REMONTAR o elemento, reiniciando a animação de piscar
+                    // (ap-tl-chip-blink-equivalente) mesmo quando 2 passos
+                    // seguidos destacam a mesma transição (self-loop lido 2x
+                    // seguidas, por ex.) — sem isso, TMTransitionLabel (memo)
+                    // não re-renderizaria e a animação de iteration-count
+                    // finito nunca voltaria a tocar. Mesmo padrão de
+                    // APTransitionLabel.jsx (AP).
+                    <div key={t.tIdx === activeTIdx ? `${t.tIdx}-${activeSeq}` : t.tIdx} style={{ position: 'relative' }}>
                       <TMTransitionLabel
                         transition={t}
                         eraseMode={eraseMode}
@@ -704,7 +736,8 @@ export default function MTCanvas({
 
             {/* Nós — posicionados em px absolutos */}
             {nodes.map((node) => {
-              const isActive = lessonActive && activeNodeId && node.id === activeNodeId;
+              const isActive = (lessonActive && activeNodeId && node.id === activeNodeId)
+                || (!lessonActive && simActiveNodeId && node.id === simActiveNodeId);
               return (
                 <div key={node.uid}
                   data-uid={node.uid}

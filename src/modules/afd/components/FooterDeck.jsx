@@ -1,7 +1,7 @@
 // ─── FooterDeck: rodapé com a "mão" de cartas de ação/símbolos + HUD Maurílio ─
 // Alterna entre o SimPanel (durante a simulação) e a fileira de cartas. Inclui o
 // professor (balão de fala + figura). CSS: .bottom-hand / .card* / .professor-* .
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import './FooterDeck.css';
 import SimPanel from './SimPanel';
 import imgMaurilioSerio      from '../../../assets/maurilio1_serio.webp';
@@ -28,6 +28,21 @@ export default function FooterDeck({
 
   // Onboarding de 2 passos: canvas vazio → só addNode livre; 1+ estado → tudo livre
   const isCanvasEmpty = nodes.length === 0;
+
+  // Callbacks do SimPanel — precisam ser ESTÁVEIS (useCallback), não arrow
+  // functions inline no JSX: SimPanel usa onHighlightNode nas deps do seu
+  // useEffect de destaque; uma função recriada a cada render dispararia esse
+  // efeito de novo a cada render → setSimHighlight → novo render → nova
+  // função → loop infinito (isso também impedia a animação de piscar
+  // terminar: o chip remontava a cada poucos ms, sempre reiniciando a
+  // animação no frame 0%, nunca chegando ao pico amarelo em 50%).
+  const closeSimPanel = useCallback(() => {
+    setShowSimPanel(false);
+    setSimHighlight({ nodeId: null, type: null, tIdx: null, symbol: null });
+  }, [setShowSimPanel, setSimHighlight]);
+  const highlightFromSim = useCallback((nid, type, tIdx, symbol) => {
+    setSimHighlight(prev => ({ nodeId: nid, type, tIdx, symbol, seq: (prev?.seq ?? 0) + 1 }));
+  }, [setSimHighlight]);
 
   // No modo Aula V2 mostra só o HUD do professor (sem cartas/sim)
   if (isLessonActive) {
@@ -57,8 +72,8 @@ export default function FooterDeck({
           word={simWord}
           nodes={nodes}
           transitions={transitions}
-          onClose={() => { setShowSimPanel(false); setSimHighlight({ nodeId: null, type: null }); }}
-          onHighlightNode={(nid, type) => setSimHighlight({ nodeId: nid, type })}
+          onClose={closeSimPanel}
+          onHighlightNode={highlightFromSim}
         />
       ) : (
         <div className="cards-scroll-wrapper">

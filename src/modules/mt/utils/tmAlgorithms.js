@@ -106,33 +106,38 @@ export function fuzzTMRecognizer(graph, level) {
   return { ok: true };
 }
 
-// ── Simulador passo a passo (para animação da aula guiada) ──────────────────
-// Retorna um array de configs { tape, head, stateId, step, status? }.
+// ── Simulador passo a passo (para animação da aula guiada e o "🔬 Simular") ──
+// Retorna um array de configs { tape, head, stateId, step, tIdx, status? }.
+// tIdx é o ÍNDICE (em graph.transitions) da transição aplicada PARA CHEGAR
+// nesse config — null no config[0] (configuração inicial, nenhuma transição
+// ainda) — usado por MTCanvas.jsx (t.tIdx === activeTIdx) pra destacar o
+// chip/aresta percorrida no canvas, mesma convenção do pdaAcceptingRun (AP).
 // status só existe na última config: 'ACCEPTED' | 'REJECTED' | 'LOOP'.
 export function simulateTMSteps(graph, inputWord, maxSteps = 80, startMarker = null) {
   const stateMap = new Map((graph.states ?? []).map(s => [s.id, s]));
   const initial  = (graph.states ?? []).find(s => s.isInitial);
-  if (!initial) return [{ tape: [BLANK], head: 0, stateId: null, step: 0, status: 'REJECTED' }];
+  if (!initial) return [{ tape: [BLANK], head: 0, stateId: null, step: 0, tIdx: null, status: 'REJECTED' }];
 
   const tape = [BLANK, BLANK, ...(startMarker != null ? [startMarker] : []),
     ...(inputWord === '' ? [] : inputWord.split('')), BLANK, BLANK];
   let head    = 2;
   let stateId = initial.id;
-  const configs = [{ tape: [...tape], head, stateId, step: 0 }];
+  const configs = [{ tape: [...tape], head, stateId, step: 0, tIdx: null }];
 
   for (let s = 0; s < maxSteps; s++) {
     const symbol = tape[head] ?? BLANK;
-    const tr = (graph.transitions ?? []).find(t => {
+    const trIdx = (graph.transitions ?? []).findIndex(t => {
       const r = t.read === '' ? BLANK : t.read;
       return t.from === stateId && r === symbol;
     });
-    if (!tr) break;
+    if (trIdx === -1) break;
+    const tr = graph.transitions[trIdx];
     tape[head] = tr.write === '' ? BLANK : tr.write;
     stateId    = tr.to;
     head      += MOVE_DELTA[tr.move] ?? 0;
     if (head < 0)              { tape.unshift(BLANK); head = 0; }
     if (head >= tape.length)   tape.push(BLANK);
-    configs.push({ tape: [...tape], head, stateId, step: s + 1 });
+    configs.push({ tape: [...tape], head, stateId, step: s + 1, tIdx: trIdx });
   }
 
   const finalState = stateMap.get(stateId) ?? null;

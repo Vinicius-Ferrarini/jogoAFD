@@ -83,9 +83,14 @@ step-by-step frames for "Modo Aula"). An `index.js` per module aggregates them.
 render at all — hidden levels (currently L1-L4 in AFD) render no button, unavailable ones render
 disabled. **L14** (`|w|ₐ = |w|_b`) is a deliberate exception: a provably non-regular language kept
 playable in AFD Part 1 as a lesson about the model's limits, but blocked in AFD Part 2 (no valid graph
-exists to show). Several other AFD-only mechanics (e.g. the Wordle-style "menor palavra" grid,
-`WORDLE_GRID_LEVEL_IDS` in `AFDPart1.jsx`) exclude L14 the same way — check for that pattern before
-assuming a feature should cover every level uniformly.
+exists to show). `impossible: true` on a level (L14 today) means *the graph* can't be drawn — it says
+nothing about the level's `shortestWord` or its "descubra a menor palavra" mechanic, which stay
+completely normal (L14's language does have an ordinary shortest word, λ). Don't conflate "impossible
+to draw" with "impossible to play" when touching level-gating logic — `WORDLE_GRID_LEVEL_IDS` in
+`AFDPart1.jsx` covers L14 like every other active level; only the *post-victory* branch in
+`handleTestWord` treats `impossible` specially (opens the guided lesson instead of unlocking the
+canvas). The standalone "Menor Palavra" minigame (`fromAFD.js`) is a separate, narrower filter that
+does exclude every `impossible` level — the two exclusion rules are intentionally different.
 
 ### `modules/<name>/` layout
 

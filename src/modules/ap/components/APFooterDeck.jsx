@@ -22,6 +22,10 @@ export default function APFooterDeck({
   showFinalCard = false,
   tape, tapeHead,
   simPanel,
+  // Classe que dimensiona o rodapé quando simPanel está ativo — .ap-simp-footer
+  // (padrão, cresce em ALTURA pra caber a coluna vertical da pilha do AP) ou
+  // .mt-simp-footer (MT: a fita cresce em LARGURA, não precisa da mesma altura).
+  simPanelClassName = 'ap-simp-footer',
   isDrawingUnlocked = true,
   errAction,
   // Aula guiada de MT: grafos importados do JFLAP costumam ter muitos estados
@@ -46,7 +50,7 @@ export default function APFooterDeck({
   // do AFD, mas sem o HUD do professor por baixo (o painel já é o foco).
   if (simPanel) {
     return (
-      <footer className="bottom-hand ap-simp-footer">
+      <footer className={`bottom-hand ${simPanelClassName}`}>
         {simPanel}
       </footer>
     );

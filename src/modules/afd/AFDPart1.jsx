@@ -36,15 +36,20 @@ const INNER_H = 8000;
 // Níveis que usam a grade estilo Wordle/Termo na fase 1 (descubra a menor
 // palavra) — ver docs/MENOR_PALAVRA_MINIGAME.md. Piloto original: L08. Hoje
 // vale para TODOS os níveis ativos de AFD_1 (todo id fora de HIDDEN_LEVELS/
-// UNAVAILABLE_LEVELS, exceto L14 — impossível em AFD, tem fluxo próprio de
-// Aula Guiada automática, não faz sentido pedir "menor palavra" ali).
+// UNAVAILABLE_LEVELS) — incluindo L14: ele é IMPOSSÍVEL DE DESENHAR em AFD
+// (por isso `impossible: true` — ver o próprio L14.js), mas a linguagem em
+// si (|w|a=|w|b) tem menor palavra normalíssima (λ) e não há razão pra negar
+// a mecânica de "descubra a menor palavra" só porque o desenho depois é
+// impossível — essas são duas coisas independentes. `impossible` continua
+// controlando só o que acontece DEPOIS de achar a palavra (abre a Aula
+// Guiada em vez de liberar o canvas — ver handleTestWord).
 // Calculado a partir de GAME_LEVELS em vez de listado à mão: acompanha
 // sozinho qualquer nível novo/reativado/ocultado depois, sem precisar tocar
-// aqui. Níveis com shortestWord==='' (λ aceita, ex.: L11) usam a 2ª menor
-// palavra como alvo jogável — ver effectiveShortestWord/findSecondShortestWord.js.
+// aqui. Níveis com shortestWord==='' (λ aceita, ex.: L11 e L14) usam a 2ª
+// menor palavra como alvo jogável — ver effectiveShortestWord/findSecondShortestWord.js.
 const WORDLE_GRID_LEVEL_IDS = new Set(
   GAME_LEVELS
-    .filter(l => !HIDDEN_LEVELS.has(l.id) && !UNAVAILABLE_LEVELS.has(l.id) && l.id !== 14)
+    .filter(l => !HIDDEN_LEVELS.has(l.id) && !UNAVAILABLE_LEVELS.has(l.id))
     .map(l => l.id)
 );
 
@@ -159,7 +164,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
   // Simulação no rodapé (não modal)
   const [showSimPanel, setShowSimPanel] = useState(false);
   const [simWord, setSimWord]           = useState('');
-  const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null });
+  const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null, tIdx: null, seq: 0 });
   // Animação de rastreio de palavra no Modo Aula: { word, frames, idx }
   const [lessonSim, setLessonSim]       = useState(null);
   const [simReplay, setSimReplay]       = useState(0); // bump → re-roda a animação
@@ -230,9 +235,14 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     return set;
   }, [guidedLessonStep, lessonAllSteps]);
 
-  // Destaque efetivo dos nós: a animação da aula tem prioridade sobre a sim manual.
+  // Destaque efetivo dos nós/transições: a animação da aula tem prioridade sobre
+  // a sim manual. `idx` do frame vira o `seq` — já muda a cada passo do
+  // rastreio, então serve de "seq" pra remontar o chip e reiniciar o piscar
+  // mesmo quando a mesma transição é usada 2 passos seguidos (self-loop).
   const effectiveSimHighlight = lessonSim
-    ? { nodeId: lessonSim.frames[lessonSim.idx].nodeId, type: lessonSim.frames[lessonSim.idx].type }
+    ? { nodeId: lessonSim.frames[lessonSim.idx].nodeId, type: lessonSim.frames[lessonSim.idx].type,
+        tIdx: lessonSim.frames[lessonSim.idx].tIdx ?? null, symbol: lessonSim.frames[lessonSim.idx].symbol ?? null,
+        seq: lessonSim.idx }
     : simHighlight;
 
   // ── Telemetria: cronômetro + contadores por fase (helpers em usePhaseTelemetry) ─
@@ -350,11 +360,11 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     const target       = currentLevel.shortestWord;
     // gridTarget é o alvo que a MECÂNICA DE VITÓRIA usa (tamanho certo pra
     // vencer a fase 1) — igual a target, EXCETO nos níveis com grade
-    // (WORDLE_GRID_LEVEL_IDS) quando target==='' (ex.: L11), onde a 2ª menor
-    // palavra (effectiveShortestWord) é o alvo jogável de verdade. Fora da
-    // lista, effectiveShortestWord é sempre null (ver sua definição acima),
-    // então caímos de volta em target — nunca null.length nos poucos níveis
-    // fora da grade (L01-L04 ocultos, L14 impossível).
+    // (WORDLE_GRID_LEVEL_IDS) quando target==='' (ex.: L11 e L14), onde a 2ª
+    // menor palavra (effectiveShortestWord) é o alvo jogável de verdade. Fora
+    // da lista, effectiveShortestWord é sempre null (ver sua definição
+    // acima), então caímos de volta em target — nunca null.length nos poucos
+    // níveis fora da grade (L01-L04 ocultos).
     const gridTarget   = WORDLE_GRID_LEVEL_IDS.has(currentLevel.id) ? effectiveShortestWord : target;
     const lower        = newWord.toLowerCase();
     // "null"/"vazio" digitados só viram o sentinela quando target === null
@@ -362,10 +372,10 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     // menor palavra nenhuma, então "null"/"vazio" são o único jeito de
     // sinalizar essa resposta especial (mesma normalização usada em
     // APPart1/MTReconPart1). Quando target É a string vazia de verdade (ex.:
-    // L14 — λ é aceita), a palavra vazia já é testável na prática deixando o
-    // campo em branco e clicando "+"/Enter — digitar o TEXTO "null" ali não
-    // deve contar como achar λ (achado real: L14 "aceitava" null, abrindo a
-    // Aula Guiada, mesmo "null" não sendo uma palavra de {a,b}*).
+    // L14 — λ é aceita), a vitória passa pela grade (2ª menor palavra, ex.:
+    // "ab") — digitar o TEXTO "null" ali não deve contar como achar λ por
+    // atalho (achado real, de antes da grade cobrir L14: "null" "aceitava",
+    // abrindo a Aula Guiada, mesmo "null" não sendo uma palavra de {a,b}*).
     const isSpecialNull = target === null && (lower === 'null' || lower === 'vazio');
     const word = isSpecialNull ? '' : newWord;
 

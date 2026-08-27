@@ -791,6 +791,8 @@ export default function CanvasArea({
                   isDrawingUnlocked={isDrawingUnlocked}
                   lessonActive={lessonActive}
                   isError={highlightedError === `transition-${tr.idx}`}
+                  activeSymbol={simHighlight?.tIdx === tr.idx ? simHighlight.symbol : null}
+                  activeSeq={simHighlight?.tIdx === tr.idx ? simHighlight.seq : null}
                   labelSide={tr.labelSide}
                   left={tr.labelPxX}
                   top={tr.labelPxY}
