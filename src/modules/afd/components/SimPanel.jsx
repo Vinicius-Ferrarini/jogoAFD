@@ -2,7 +2,12 @@
 // CSS: classes .sim-panel-* definidas em AFDPart1.css (já importado em ambos).
 import { useState, useMemo, useEffect } from 'react';
 
-export default function SimPanel({ word, nodes, transitions, onClose, onHighlightNode }) {
+// `mismatchNote` (opcional): frase de aviso mostrada como "chip" no cabeçalho
+// (mesmo estilo do selo de resultado) quando a simulação é aberta sozinha por
+// uma validação que reprovou essa palavra — ex.: '"a" foi rejeitada — deveria
+// ser aceita'. O painel sempre começa no passo 1 pro aluno percorrer o rastro
+// do começo. O uso manual (botão "🔬 Simular") não passa o prop.
+export default function SimPanel({ word, mismatchNote = null, nodes, transitions, onClose, onHighlightNode }) {
   const initState = nodes.find(n => n.isInitial)?.id ?? null;
 
   const buildSteps = () => {
@@ -72,9 +77,13 @@ export default function SimPanel({ word, nodes, transitions, onClose, onHighligh
               })
           }
         </div>
-        {isFinished && (
+        {isFinished ? (
           <span className={`sim-result-badge ${accepted ? 'accepted' : 'rejected'}`}>
             {accepted ? '✅ ACEITA' : '❌ REJEITADA'}
+          </span>
+        ) : mismatchNote && (
+          <span className="sim-result-badge rejected sim-mismatch-badge" title={mismatchNote}>
+            ⚠ {mismatchNote}
           </span>
         )}
         <button className="sim-panel-close" onClick={onClose}>✕</button>

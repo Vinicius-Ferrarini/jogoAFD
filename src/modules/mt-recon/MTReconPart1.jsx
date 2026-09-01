@@ -461,8 +461,18 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
       // Erro fica só no toast do topo — o Maurílio não comenta erros, só
       // sucesso/dicas.
       showToast?.(msg, 'error');
+      // Além do toast: abre o MTSimPanel já simulando o contraexemplo contra a
+      // MT do ALUNO, pra ele ver passo a passo onde a máquina errou (mesmo
+      // espírito do trace-on-failure do AFD/AP). Só quando há palavra concreta
+      // — falhas estruturais (no_initial/no_final/nondeterministic) já
+      // retornaram antes, sem chegar aqui.
+      if (res.counterexample != null) {
+        const configs = simulateTMSteps(mtGraph, res.counterexample, SIM_MAX_STEPS, level.startMarker ?? null);
+        openSim({ configs, word: res.counterexample, maxSteps: SIM_MAX_STEPS,
+          title: `Falhou em "${show}"`, message: msg });
+      }
     }
-  }, [level, g, say, updateProgress, showToast, phaseExtras]);
+  }, [level, g, say, updateProgress, showToast, phaseExtras, openSim]);
 
   // Valida a Descrição Formal preenchida — mesmo padrão de 2 etapas do
   // AFD/AP/MT-Trans (ver MTPart1.jsx): 1ª chamada valida os 6 campos da tupla

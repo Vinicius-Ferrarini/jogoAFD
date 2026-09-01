@@ -164,6 +164,13 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
   // Simulação no rodapé (não modal)
   const [showSimPanel, setShowSimPanel] = useState(false);
   const [simWord, setSimWord]           = useState('');
+  // Aviso exibido no topo do painel quando a simulação é aberta automaticamente
+  // por uma validação que falhou numa palavra específica (reason ===
+  // 'word_mismatch'): explica o que deu errado (ex.: "A palavra 'a' foi
+  // rejeitada, mas deveria ser aceita."). O painel abre no passo 1 pra o aluno
+  // percorrer o rastro do começo. String | null — null no uso manual do botão
+  // "🔬 Simular".
+  const [simMismatchNote, setSimMismatchNote] = useState(null);
   const [simHighlight, setSimHighlight] = useState({ nodeId: null, type: null, tIdx: null, seq: 0 });
   // Animação de rastreio de palavra no Modo Aula: { word, frames, idx }
   const [lessonSim, setLessonSim]       = useState(null);
@@ -292,6 +299,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     resetZoom();
     setSelectedNodes([]);
     setShowSimPanel(false);
+    setSimMismatchNote(null);
     setSimHighlight({ nodeId: null, type: null });
     resetHistory([], []);
     resetDraw();
@@ -533,7 +541,8 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
       errorSinceTutorialRef.current = true; // validação falha quebra "sem erro desde a ajuda"
       // Telemetria: reusa validateAFDPure (gêmea pura, mesma ordem de checagens)
       // só para extrair o motivo estruturado — validateAFDSilent não é alterada.
-      const { reason } = validateAFDPure({ nodes, transitions, testWords, currentLevel });
+      const { reason, word: mismatchWord, shouldAccept, counterexample } =
+        validateAFDPure({ nodes, transitions, testWords, currentLevel });
       logEvent({
         tipo_evento: 'tentativa',
         modulo: 'afd-p1',
@@ -542,6 +551,30 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         tipo_erro: reason ?? null,
         numero_tentativas: attemptsRef.current,
       });
+      // Sempre que a falha for sobre uma PALAVRA concreta, abre a simulação já
+      // carregada com ela, no passo 1, com um aviso no topo — pro aluno
+      // percorrer o rastro do começo (mesmo espírito do trace-on-failure do
+      // AP — ver ADR 0010). Duas fontes de palavra:
+      //   • 'word_mismatch'     — palavra que o aluno testou e o grafo errou;
+      //   • 'language_mismatch' — contraexemplo achado pelo fuzzer de
+      //     equivalência (o aluno pode nem ter testado essa palavra).
+      // Motivos estruturais (no_initial, no_final, empty_symbol,
+      // nondeterministic, invalid_symbol) seguem só com o toast de
+      // validateAFDSilent — não há palavra específica pra mostrar.
+      const badWord =
+        reason === 'word_mismatch'      ? { word: mismatchWord, shouldAccept }
+        : reason === 'language_mismatch' ? counterexample
+        : null;
+      if (badWord?.word != null) {
+        const w = badWord.word === '' ? 'λ' : badWord.word;
+        setSimMismatchNote(
+          badWord.shouldAccept
+            ? `"${w}" foi rejeitada — deveria ser aceita`
+            : `"${w}" foi aceita — deveria ser rejeitada`
+        );
+        setSimWord(badWord.word);
+        setShowSimPanel(true);
+      }
       return;
     }
     updateProgress(currentLevel.id, 2, phaseExtras('validacao'));
@@ -561,6 +594,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     if (!nodes.some(n => n.isInitial)) { showToast('Defina o estado inicial antes.', 'error'); return; }
     if (!newWord.trim()) { showToast('Digite uma palavra no campo para simular.', 'info'); return; }
     setSimWord(newWord);
+    setSimMismatchNote(null);
     setShowSimPanel(true);
   }, [isDrawingUnlocked, nodes, newWord, showToast]);
 
@@ -809,9 +843,11 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
         isLessonActive={isNewLessonUI}
         showSimPanel={showSimPanel}
         simWord={simWord}
+        simMismatchNote={simMismatchNote}
         nodes={nodes}
         transitions={transitions}
         setShowSimPanel={setShowSimPanel}
+        setSimMismatchNote={setSimMismatchNote}
         setSimHighlight={setSimHighlight}
         drawnCards={drawnCards}
         drawingStack={drawingStack}

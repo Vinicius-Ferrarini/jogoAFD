@@ -12,7 +12,7 @@ export default function FooterDeck({
   // Modo Aula V2 — colapsa o rodapé por completo
   isLessonActive,
   // Simulação
-  showSimPanel, simWord, nodes, transitions, setShowSimPanel, setSimHighlight,
+  showSimPanel, simWord, simMismatchNote, nodes, transitions, setShowSimPanel, setSimHighlight, setSimMismatchNote,
   // Cartas
   drawnCards, drawingStack, historyIndex, historyLen, drawUndo, undo, redo,
   interactionMode, setInteractionMode, highlightedError, resetMode,
@@ -38,8 +38,9 @@ export default function FooterDeck({
   // animação no frame 0%, nunca chegando ao pico amarelo em 50%).
   const closeSimPanel = useCallback(() => {
     setShowSimPanel(false);
+    setSimMismatchNote?.(null);
     setSimHighlight({ nodeId: null, type: null, tIdx: null, symbol: null });
-  }, [setShowSimPanel, setSimHighlight]);
+  }, [setShowSimPanel, setSimMismatchNote, setSimHighlight]);
   const highlightFromSim = useCallback((nid, type, tIdx, symbol) => {
     setSimHighlight(prev => ({ nodeId: nid, type, tIdx, symbol, seq: (prev?.seq ?? 0) + 1 }));
   }, [setSimHighlight]);
@@ -70,6 +71,7 @@ export default function FooterDeck({
       {showSimPanel ? (
         <SimPanel
           word={simWord}
+          mismatchNote={simMismatchNote}
           nodes={nodes}
           transitions={transitions}
           onClose={closeSimPanel}
