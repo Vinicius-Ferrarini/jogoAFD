@@ -3,7 +3,7 @@
 // rodapé. Fluxo: desenhar o AP → Validar (bateria, ★1) → Descrição Formal
 // (elementos ★2, função δ ★3) → vitória. Diferenças legítimas do AP: transição
 // de 3 campos (lê, desempilha ; empilha) e descrição com Γ/B em vez de F.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import '../afd/AFDPart1.css';
 import '../afd/components/TestPanel.css';
@@ -22,6 +22,8 @@ import useAPGuidedLesson from './hooks/useAPGuidedLesson';
 import useCanvasState, { INNER_W, INNER_H } from '../afd/hooks/useCanvasState.js';
 import { AP_LEVELS, getShortestWord } from '../../levels_data/ap/index.js';
 import { buildNoAttemptHintMessage, buildSizeHintMessage } from '../afd/utils/sizeHint';
+import useWordGuessGame from '../shared/useWordGuessGame';
+import { findSecondShortestWord } from '../shared/wordExercises/findSecondShortestWord';
 import { pdaAccepts, pdaAcceptingRun, pdaRejectingTrace } from './utils/pdaAlgorithms';
 import { DIFF_COLOR } from '../../levels';
 import GameHeader from '../afd/components/GameHeader';
@@ -62,6 +64,35 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
   // Última palavra testada em modo LANGUAGE durante a fase de descoberta
   // (normalizada — 'null'/'vazio' já viram ''), usada só pela Dica de Tamanho.
   const lastAttemptRef = useRef(null);
+  // Grade WordleBoard: segura a linha vencedora (toda verde) visível por um
+  // instante antes de destravar o tabuleiro (mesmo delay do AFD).
+  const unlockDelayRef = useRef(null);
+
+  // Alvo JOGÁVEL da grade "descubra a menor palavra" — igual ao AFD
+  // (effectiveShortestWord): normalmente é a menor palavra aceita; quando a
+  // menor é λ (não cabe na grade), usa a 2ª menor palavra não-vazia. `null`
+  // no nível impossível (sem tabuleiro a destravar). Descobrir a menor palavra
+  // é indiferente do autômato que o aluno vai montar — é só onboarding.
+  const effectiveShortestWord = useMemo(() => {
+    if (!level || level.impossible) return null;
+    const sw = getShortestWord(level);
+    if (sw == null) return null;
+    if (sw !== '') return sw;
+    const check = (w) => {
+      const acc = pdaAccepts(level.solution, w);
+      return level.truth ? level.truth(w, acc) : acc;
+    };
+    return findSecondShortestWord(check, level.alphabet ?? []);
+  }, [level]);
+  // Mecânica de grade/dica compartilhada com o AFD (ver
+  // src/modules/shared/useWordGuessGame.js). 'guess' é o próprio `simWord`
+  // (controlado) — digitar na grade e no campo lateral são a mesma coisa,
+  // exatamente como no AFD (newWord).
+  const wordleGame = useWordGuessGame({
+    shortestWord: effectiveShortestWord,
+    guess: simWord,
+    setGuess: setSimWord,
+  });
 
   const g = usePDAGraph({ showToast, selectedNodes, setSelectedNodes });
   const draw = useAPDrawing(innerCanvasRef);
@@ -211,6 +242,9 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
     setSelectedNodes([]); setSelectionBox(null);
     setTestedWords([]);
     setTestMode('LANGUAGE');
+    clearTimeout(unlockDelayRef.current);
+    lastAttemptRef.current = null;
+    wordleGame.reset();
     // L16 (impossível) não tem tabuleiro a desenhar — não precisa da mecânica
     // de "descubra a menor palavra" pra destravar. Os demais começam travados.
     setIsDrawingUnlocked(!!lv.impossible);
@@ -358,6 +392,17 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
 
     if (!isDrawingUnlocked || testMode === 'LANGUAGE') {
       if (testedWords.some(t => t.word === display && t.mode === 'LANGUAGE')) { setSimWord(''); return; }
+
+      // Grade WordleBoard: alvo jogável da fase de descoberta (2ª menor quando a
+      // menor é λ). Uma tentativa de tamanho errado não cabe na grade e não dá
+      // feedback útil por letra — é rejeitada antes de contar como tentativa
+      // (sem telemetria, sem consumir attemptsRef), igual ao AFD.
+      const gridTarget = effectiveShortestWord ?? getShortestWord(level);
+      if (!isDrawingUnlocked && !isSpecialNull && gridTarget != null && word.length !== gridTarget.length) {
+        showToast?.(`A menor palavra tem ${gridTarget.length} caractere(s) — sua tentativa tem ${word.length}.`, 'info');
+        return;
+      }
+
       // level.truth corrige a verdade quando o gabarito .jff diverge do enunciado
       // só nas bordas (ex.: L1 exige n>0, mas o .jff aceita λ) — sem isso, λ seria
       // classificado "correto" indevidamente.
@@ -370,8 +415,9 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
       // tabuleiro continua permanente).
       const languageListEmpty = !testedWords.some(t => t.mode === 'LANGUAGE');
       if (!isDrawingUnlocked || languageListEmpty) {
-        const shortest = getShortestWord(level);
-        const isShortest = acceptedByTruth && word === shortest;
+        // Igual ao AFD: qualquer palavra aceita do tamanho do alvo conta como
+        // "menor" (linguagens com várias menores do mesmo tamanho).
+        const isShortest = acceptedByTruth && gridTarget != null && word.length === gridTarget.length;
         const status = isShortest ? 'shortest' : acceptedByTruth ? 'correct' : 'wrong';
         lastAttemptRef.current = word;
         attemptsRef.current += 1;
@@ -379,9 +425,14 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
         logEvent({ tipo_evento: 'tentativa', modulo: 'ap', nivel_id: level.id, resultado: status, numero_tentativas: attemptsRef.current });
         setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status }, ...prev]);
         if (isShortest && !isDrawingUnlocked) {
-          setIsDrawingUnlocked(true);
           updateProgress?.(`ap-${level.id}`, 1, phaseExtras('descoberta_palavra'));
-          showToast?.('Sucesso! Tabuleiro liberado.', 'success');
+          // Segura a linha vencedora (toda verde) na grade um instante antes de
+          // trocar o overlay pelo tabuleiro — mesmo delay do AFD.
+          clearTimeout(unlockDelayRef.current);
+          unlockDelayRef.current = setTimeout(() => {
+            setIsDrawingUnlocked(true);
+            showToast?.('Sucesso! Tabuleiro liberado.', 'success');
+          }, 900);
         }
       } else {
         const status = acceptedByTruth ? 'correct' : 'wrong';
@@ -398,9 +449,9 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
     setTestedWords(prev => prev.some(t => t.word === display && t.mode === 'DRAWING')
       ? prev : [{ word: display, mode: 'DRAWING', accepted: pdaAccepts(g.studentPda, word) }, ...prev]);
     setSimWord('');
-  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.studentPda, updateProgress, showToast, phaseExtras]);
+  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, effectiveShortestWord, g.studentPda, updateProgress, showToast, phaseExtras]);
 
-  // ── Dica de Tamanho: mostra num toast, nunca revela a palavra em si ────────
+  // ── Dica de Tamanho (fallback p/ nível sem grade jogável) ──────────────────
   const handleSizeHint = useCallback(() => {
     if (lastAttemptRef.current === null) {
       showToast?.(buildNoAttemptHintMessage(), 'info');
@@ -409,6 +460,16 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
     showToast?.(buildSizeHintMessage(level ? getShortestWord(level) : null, lastAttemptRef.current), 'info');
     logTutorialOpen('dica_tamanho');
   }, [level, showToast, logTutorialOpen]);
+
+  // ── Dica da grade (igual ao AFD): o botão 💡 é um controle de estágio, não
+  // um toast — 1º clique mostra a grade com o TAMANHO (células vazias
+  // clicáveis), 2º clique revela o conjunto de letras (sem posição). Trava em
+  // 2. Não exige chutar nada antes. Mecânica no hook compartilhado wordleGame.
+  const handleWordleHint = useCallback(() => {
+    const before = wordleGame.hintStage;
+    wordleGame.requestHint();
+    if (before < 2) logTutorialOpen(before === 0 ? 'dica_tamanho' : 'dica_letras');
+  }, [wordleGame, logTutorialOpen]);
 
   // ── Simular palavra: abre APSimPanel passo a passo (rodapé) + adiciona à lista ─
   const simulate = useCallback(() => {
@@ -523,8 +584,8 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
         lessonDisabled={!lesson.hasLesson}
         onStartLesson={startLesson}
         onCloseLesson={finishLesson}
-        showSizeHint={!isDrawingUnlocked}
-        onSizeHint={handleSizeHint}
+        showSizeHint={!isDrawingUnlocked && (!effectiveShortestWord || wordleGame.hintStage < 2)}
+        onSizeHint={effectiveShortestWord ? handleWordleHint : handleSizeHint}
       />
 
       <div className="workspace">
@@ -577,6 +638,12 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
           setZoom={setZoom}
           guidedLessonStep={lesson.step}
           isDrawingUnlocked={isDrawingUnlocked}
+          wordleGame={wordleGame}
+          effectiveShortestWord={effectiveShortestWord}
+          rawShortestWord={level.impossible ? null : getShortestWord(level)}
+          languageAttempts={testedWords.filter(t => t.mode === 'LANGUAGE')}
+          simWord={simWord}
+          onTestWord={testWord}
           nodes={viewNodes}
           transitions={viewTransitions}
           mode={mode}

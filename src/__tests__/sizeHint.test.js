@@ -182,9 +182,9 @@ describe('REG — integração da Dica de Tamanho não altera a classificação 
     expect(src).toMatch(/if \(target === null\) \{ if \(isSpecialNull\) isShortest = true; \}/);
   });
 
-  it('APPart1.jsx: isShortest ainda depende de acceptedByTruth && word === shortest', () => {
+  it('APPart1.jsx: isShortest depende de acceptedByTruth && word.length === gridTarget.length (grade estilo AFD)', () => {
     const src = readSrc('../modules/ap/APPart1.jsx');
-    expect(src).toMatch(/const isShortest = acceptedByTruth && word === shortest;/);
+    expect(src).toMatch(/const isShortest = acceptedByTruth && gridTarget != null && word\.length === gridTarget\.length;/);
   });
 
   it('APPart1.jsx: status ainda é shortest/correct/wrong nessa ordem de precedência', () => {
@@ -192,9 +192,9 @@ describe('REG — integração da Dica de Tamanho não altera a classificação 
     expect(src).toMatch(/const status = isShortest \? 'shortest' : acceptedByTruth \? 'correct' : 'wrong';/);
   });
 
-  it('MTReconPart1.jsx: isShortest ainda depende de accepted && word === shortest', () => {
+  it('MTReconPart1.jsx: isShortest depende de accepted && word.length === gridTarget.length (grade estilo AFD)', () => {
     const src = readSrc('../modules/mt-recon/MTReconPart1.jsx');
-    expect(src).toMatch(/const isShortest = accepted && word === shortest;/);
+    expect(src).toMatch(/const isShortest = accepted && gridTarget != null && word\.length === gridTarget\.length;/);
   });
 
   it('MTReconPart1.jsx: resultado ainda é shortest/correct/wrong nessa ordem de precedência', () => {

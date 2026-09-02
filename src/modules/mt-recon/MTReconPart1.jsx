@@ -5,7 +5,7 @@
 // Validação via fuzzTMRecognizer (bateria acceptedWords/rejectedWords) —
 // aceita se para em estado final, o conteúdo final da fita NÃO importa
 // (diferente da transdutora — irmã deste módulo, ver MTPart1.jsx).
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import '../afd/AFDPart1.css';
 import '../afd/components/TestPanel.css';
@@ -27,6 +27,8 @@ import useToast from '../afd/hooks/useToast';
 import usePhaseTelemetry from '../afd/hooks/usePhaseTelemetry';
 import { MT_RECON_LEVEL_ORDER, loadMTReconLevel, getShortestWord, getGabaritoGraph } from '../../levels_data/mt-recon/index.js';
 import { buildNoAttemptHintMessage, buildSizeHintMessage } from '../afd/utils/sizeHint';
+import useWordGuessGame from '../shared/useWordGuessGame';
+import { findSecondShortestWord } from '../shared/wordExercises/findSecondShortestWord';
 import { fuzzTMRecognizer, simulateTM, simulateTMSteps } from '../mt/utils/tmAlgorithms';
 import { validateMTFormalFields, validateMTFormalTransitions } from '../mt/utils/mtFormalValidation';
 import { onBracketKeyDown } from '../afd/utils/bracketAutoClose';
@@ -104,6 +106,31 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
   // Última palavra testada em modo LANGUAGE durante a fase de descoberta
   // (normalizada — 'null'/'vazio' já viram ''), usada só pela Dica de Tamanho.
   const lastAttemptRef = useRef(null);
+  // Grade WordleBoard: segura a linha vencedora (toda verde) visível um
+  // instante antes de destravar o tabuleiro (mesmo delay do AFD/AP).
+  const unlockDelayRef = useRef(null);
+
+  // Alvo JOGÁVEL da grade "descubra a menor palavra" — igual ao AFD/AP: a menor
+  // palavra aceita; quando a menor é λ (não cabe na grade), a 2ª menor
+  // não-vazia. Descobrir a menor palavra independe da MT que o aluno vai
+  // montar — é só onboarding.
+  const effectiveShortestWord = useMemo(() => {
+    if (!level) return null;
+    const sw = getShortestWord(level);
+    if (sw == null) return null;
+    if (sw !== '') return sw;
+    const graph = getGabaritoGraph(level);
+    const check = (w) => simulateTM(graph, w, 2000, level.startMarker ?? null).status === 'ACCEPTED';
+    return findSecondShortestWord(check, level.alphabet ?? []);
+  }, [level]);
+  // Mecânica de grade/dica compartilhada com AFD/AP (ver
+  // src/modules/shared/useWordGuessGame.js). 'guess' é o próprio `simWord`
+  // (controlado) — digitar na grade e no campo lateral são a mesma coisa.
+  const wordleGame = useWordGuessGame({
+    shortestWord: effectiveShortestWord,
+    guess: simWord,
+    setGuess: setSimWord,
+  });
 
   const lesson = useMTGuidedLesson(level);
   const g    = useTMGraph({ showToast, selectedNodes, setSelectedNodes });
@@ -264,6 +291,8 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
     setSimWord(''); setTestedWords([]); setDeckGhost(null); setVictory(false);
     setSelectedNodes([]); setSelectionBox(null);
     setTestMode('LANGUAGE'); setIsDrawingUnlocked(false);
+    clearTimeout(unlockDelayRef.current);
+    wordleGame.reset();
     setFormalAnswers(EMPTY_FORMAL); setFormalMode(false);
     setFormalElementsValid(false); setFieldErrors({}); setCellErrors({});
     draw.resetDrawings();
@@ -325,6 +354,16 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
 
     if (!isDrawingUnlocked || testMode === 'LANGUAGE') {
       if (testedWords.some(t => t.word === display && t.mode === 'LANGUAGE')) { setSimWord(''); return; }
+
+      // Grade WordleBoard: alvo jogável da descoberta (2ª menor quando a menor
+      // é λ). Tentativa de tamanho errado não cabe na grade nem dá feedback
+      // por letra — rejeitada antes de contar como tentativa, igual ao AFD/AP.
+      const gridTarget = effectiveShortestWord ?? getShortestWord(level);
+      if (!isDrawingUnlocked && gridTarget != null && word.length !== gridTarget.length) {
+        showToast?.(`A menor palavra tem ${gridTarget.length} caractere(s) — sua tentativa tem ${word.length}.`, 'info');
+        return;
+      }
+
       const graph = getGabaritoGraph(level);
       const { status } = simulateTM(graph, word, 2000, level.startMarker ?? null);
       const accepted = status === 'ACCEPTED';
@@ -335,8 +374,9 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
       // reexibido se o jogador limpou o histórico e testou de novo).
       const languageListEmpty = !testedWords.some(t => t.mode === 'LANGUAGE');
       if (!isDrawingUnlocked || languageListEmpty) {
-        const shortest = getShortestWord(level);
-        const isShortest = accepted && word === shortest;
+        // Igual ao AFD/AP: qualquer palavra aceita do tamanho do alvo conta
+        // como "menor" (linguagens com várias menores do mesmo tamanho).
+        const isShortest = accepted && gridTarget != null && word.length === gridTarget.length;
         const resultado = isShortest ? 'shortest' : accepted ? 'correct' : 'wrong';
         lastAttemptRef.current = word;
         // Telemetria: teste de palavra em LANGUAGE é resposta avaliada (gabarito).
@@ -345,9 +385,14 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
         logEvent({ tipo_evento: 'tentativa', modulo: 'mt-recon', nivel_id: level.id, resultado, numero_tentativas: attemptsRef.current });
         setTestedWords(prev => [{ word: display, mode: 'LANGUAGE', status: resultado }, ...prev]);
         if (isShortest && !isDrawingUnlocked) {
-          setIsDrawingUnlocked(true);
           updateProgress?.(`mt-recon-${level.id}`, 1, phaseExtras('descoberta_palavra'));
-          showToast?.('Sucesso! Tabuleiro liberado.', 'success');
+          // Segura a linha vencedora (toda verde) na grade um instante antes de
+          // trocar o overlay pelo tabuleiro — mesmo delay do AFD/AP.
+          clearTimeout(unlockDelayRef.current);
+          unlockDelayRef.current = setTimeout(() => {
+            setIsDrawingUnlocked(true);
+            showToast?.('Sucesso! Tabuleiro liberado.', 'success');
+          }, 900);
         }
       } else {
         const resultado = accepted ? 'correct' : 'wrong';
@@ -366,7 +411,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
     setTestedWords(prev => prev.some(t => t.word === display && t.mode === 'DRAWING')
       ? prev : [{ word: display, mode: 'DRAWING', accepted: status === 'ACCEPTED' }, ...prev]);
     setSimWord('');
-  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, g.nodes, g.transitions, updateProgress, showToast, phaseExtras]);
+  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, effectiveShortestWord, g.nodes, g.transitions, updateProgress, showToast, phaseExtras]);
 
   // ── Simular palavra: abre MTSimPanel passo a passo (rodapé) — SEMPRE contra
   // a MT do ALUNO (g.nodes/g.transitions), nunca o gabarito (igual ao
@@ -531,7 +576,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
     if (isOpening) logTutorialOpen('dica');
   }, [prof.message, level, logTutorialOpen]);
 
-  // ── Dica de Tamanho: mostra num toast, nunca revela a palavra em si ────────
+  // ── Dica de Tamanho (fallback p/ nível sem grade jogável) ──────────────────
   const handleSizeHint = useCallback(() => {
     if (lastAttemptRef.current === null) {
       showToast?.(buildNoAttemptHintMessage(), 'info');
@@ -540,6 +585,15 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
     showToast?.(buildSizeHintMessage(level ? getShortestWord(level) : null, lastAttemptRef.current), 'info');
     logTutorialOpen('dica_tamanho');
   }, [level, showToast, logTutorialOpen]);
+
+  // ── Dica da grade (igual ao AFD/AP): o 💡 é um controle de estágio, não um
+  // toast — 1º clique mostra a grade com o TAMANHO, 2º revela o conjunto de
+  // letras (sem posição). Trava em 2. Não exige chutar nada antes.
+  const handleWordleHint = useCallback(() => {
+    const before = wordleGame.hintStage;
+    wordleGame.requestHint();
+    if (before < 2) logTutorialOpen(before === 0 ? 'dica_tamanho' : 'dica_letras');
+  }, [wordleGame, logTutorialOpen]);
 
   const stars = level ? (progress?.[`mt-recon-${level.id}`]?.stars || 0) : 0;
 
@@ -681,8 +735,8 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
         lessonDisabled={!lesson.hasLesson}
         onStartLesson={startLesson}
         onCloseLesson={finishLesson}
-        showSizeHint={!isDrawingUnlocked}
-        onSizeHint={handleSizeHint}
+        showSizeHint={!isDrawingUnlocked && (!effectiveShortestWord || wordleGame.hintStage < 2)}
+        onSizeHint={effectiveShortestWord ? handleWordleHint : handleSizeHint}
       />
 
       <div className="workspace">
@@ -799,6 +853,12 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
           setSelectionBox={setSelectionBox}
           guidedLessonStep={lesson.step}
           isDrawingUnlocked={isDrawingUnlocked}
+          wordleGame={wordleGame}
+          effectiveShortestWord={effectiveShortestWord}
+          rawShortestWord={getShortestWord(level)}
+          languageAttempts={testedWords.filter(t => t.mode === 'LANGUAGE')}
+          simWord={simWord}
+          onTestWord={testWord}
         />
 
         {/* Painel direito: modo aula ou teste */}

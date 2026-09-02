@@ -9,8 +9,23 @@ import StrokeEl from '../../afd/components/StrokeEl';
 import NodeContextMenu from '../../afd/components/NodeContextMenu';
 import { DRAW_COLORS } from '../hooks/useAPDrawing';
 import { INNER_W, INNER_H } from '../../afd/hooks/useCanvasState.js';
+import WordleBoard from '../../afd/components/WordleBoard';
 import imgMaurilioApontando from '../../../assets/maurilio2_apontando_pro_lado.webp';
 import imgBalaoFala         from '../../../assets/balao_fala_redondo.webp';
+
+// Balão de fala PADRÃO do Maurílio — mesmas dimensões/posição do AFD
+// (CanvasArea.jsx), nunca redimensionado por texto específico.
+function MaurilioBalloon({ children, fontSize = 16 }) {
+  return (
+    <div style={{ position: 'relative', width: 210, height: 140, marginLeft: -80, alignSelf: 'flex-start', marginTop: -80 }}>
+      <img src={imgBalaoFala} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '14px 25px 34px 25px', boxSizing: 'border-box', color: '#000', fontWeight: 'bold', fontSize, textAlign: 'center', zIndex: 2 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function pxFromEvent(e, innerRef) {
   const el = innerRef.current;
@@ -52,6 +67,13 @@ export default function APCanvas({
   selectionBox, setSelectionBox,
   guidedLessonStep = null,
   isDrawingUnlocked = true,
+  // Grade "descubra a menor palavra" — mesma mecânica/visual do AFD.
+  wordleGame = null,
+  effectiveShortestWord = null,
+  rawShortestWord = null,
+  languageAttempts = [],
+  simWord = '',
+  onTestWord,
 }) {
   const localInnerRef = useRef(null);
   const innerRef = innerCanvasRef || localInnerRef;
@@ -454,16 +476,39 @@ export default function APCanvas({
 
       {!isDrawingUnlocked && !lessonActive ? (
         <div className="locked-overlay">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 80 }}>
-            <img src={imgMaurilioApontando} alt="Professor" style={{ height: 320, zIndex: 1 }} />
-            <div style={{ position: 'relative', width: 210, height: 140, marginLeft: -80, alignSelf: 'flex-start', marginTop: -80 }}>
-              <img src={imgBalaoFala} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1 }} />
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '14px 25px 34px 25px', boxSizing: 'border-box', color: '#000', fontWeight: 'bold', fontSize: 16, textAlign: 'center', zIndex: 2 }}>
-                1ª Coisa: Descubra a Menor Palavra!
+          {effectiveShortestWord && wordleGame && (wordleGame.hintStage > 0 || languageAttempts.length > 0) ? (
+            // Grade Termo ativa (aluno pediu dica OU já tentou): Maurílio ancorado
+            // à ESQUERDA + grade no centro — mesmo layout/estilo do AFD.
+            <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+              <div style={{ position: 'absolute', left: 40, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'flex-start', zIndex: 1 }}>
+                <img src={imgMaurilioApontando} alt="Professor" style={{ height: 280 }} />
+                <MaurilioBalloon fontSize={13}>
+                  {rawShortestWord === ''
+                    ? `A menor palavra é "Vazia (λ)", encontre a 2ª menor palavra, tem tamanho ${effectiveShortestWord.length}.`
+                    : `A menor palavra tem tamanho ${effectiveShortestWord.length}.`}
+                </MaurilioBalloon>
+              </div>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: 12, padding: '14px 18px' }}>
+                  <WordleBoard
+                    attempts={languageAttempts}
+                    targetLength={effectiveShortestWord.length}
+                    shortestWord={effectiveShortestWord}
+                    hintStage={wordleGame.hintStage}
+                    guess={simWord}
+                    typeAt={wordleGame.typeAt}
+                    backspaceAt={wordleGame.backspaceAt}
+                    onSubmit={onTestWord}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 80 }}>
+              <img src={imgMaurilioApontando} alt="Professor" style={{ height: 320, zIndex: 1 }} />
+              <MaurilioBalloon>1ª Coisa: Descubra a Menor Palavra!</MaurilioBalloon>
+            </div>
+          )}
         </div>
       ) : (
       <>

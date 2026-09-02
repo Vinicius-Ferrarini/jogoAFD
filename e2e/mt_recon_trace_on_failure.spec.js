@@ -19,7 +19,8 @@ const clickCanvasAt = (page, x, y) =>
   page.locator('.canvas-inner').click({ position: { x, y } });
 
 // Abre o 1º nível (MT_RECON_L1 = { aⁿbⁿ }, menor palavra = λ), destrava o
-// tabuleiro (confirma o campo vazio) e devolve o input de palavra.
+// tabuleiro e devolve o input de palavra. L1 = { aⁿbⁿ } aceita λ, então o alvo
+// jogável da grade é a 2ª menor palavra: "ab".
 async function unlockL1(page) {
   await goToMTRecon(page);
   await page.locator('canvas, svg').first().waitFor({ timeout: 8000 });
@@ -27,7 +28,7 @@ async function unlockL1(page) {
 
   const wordInput = page.locator('.word-input');
   await wordInput.waitFor({ timeout: 8000 });
-  await wordInput.fill('');            // menor palavra de aⁿbⁿ é λ
+  await wordInput.fill('ab');          // 2ª menor palavra de aⁿbⁿ
   await page.locator('.add-test-btn').first().click();
   await page.getByRole('button', { name: /Validar MT/i }).waitFor({ timeout: 8000 });
   return { wordInput };
