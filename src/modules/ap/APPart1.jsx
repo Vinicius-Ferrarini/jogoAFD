@@ -400,6 +400,9 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
       const gridTarget = effectiveShortestWord ?? getShortestWord(level);
       if (!isDrawingUnlocked && !isSpecialNull && gridTarget != null && word.length !== gridTarget.length) {
         showToast?.(`A menor palavra tem ${gridTarget.length} caractere(s) — sua tentativa tem ${word.length}.`, 'info');
+        // Errou: abre a grade preenchível no centro (dica de tamanho) pra seguir
+        // tentando ali, sem ter que clicar em 💡 Dica.
+        if (effectiveShortestWord) wordleGame.setHintStage(s => (s === 0 ? 1 : s));
         return;
       }
 
@@ -433,6 +436,10 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
             setIsDrawingUnlocked(true);
             showToast?.('Sucesso! Tabuleiro liberado.', 'success');
           }, 900);
+        } else if (!isDrawingUnlocked && effectiveShortestWord) {
+          // Não destravou: deixa a grade preenchível (hintStage ≥ 1) pro aluno
+          // continuar tentando no centro da tela, sem clicar em 💡 Dica.
+          wordleGame.setHintStage(s => (s === 0 ? 1 : s));
         }
       } else {
         const status = acceptedByTruth ? 'correct' : 'wrong';
@@ -449,7 +456,7 @@ export default function APPart1({ onBack, progress, updateProgress, forceLevelId
     setTestedWords(prev => prev.some(t => t.word === display && t.mode === 'DRAWING')
       ? prev : [{ word: display, mode: 'DRAWING', accepted: pdaAccepts(g.studentPda, word) }, ...prev]);
     setSimWord('');
-  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, effectiveShortestWord, g.studentPda, updateProgress, showToast, phaseExtras]);
+  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, effectiveShortestWord, wordleGame, g.studentPda, updateProgress, showToast, phaseExtras]);
 
   // ── Dica de Tamanho (fallback p/ nível sem grade jogável) ──────────────────
   const handleSizeHint = useCallback(() => {

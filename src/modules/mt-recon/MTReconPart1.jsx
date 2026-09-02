@@ -361,6 +361,9 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
       const gridTarget = effectiveShortestWord ?? getShortestWord(level);
       if (!isDrawingUnlocked && gridTarget != null && word.length !== gridTarget.length) {
         showToast?.(`A menor palavra tem ${gridTarget.length} caractere(s) — sua tentativa tem ${word.length}.`, 'info');
+        // Errou: abre a grade preenchível no centro (dica de tamanho) pra seguir
+        // tentando ali, sem ter que clicar em 💡 Dica.
+        if (effectiveShortestWord) wordleGame.setHintStage(s => (s === 0 ? 1 : s));
         return;
       }
 
@@ -393,6 +396,10 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
             setIsDrawingUnlocked(true);
             showToast?.('Sucesso! Tabuleiro liberado.', 'success');
           }, 900);
+        } else if (!isDrawingUnlocked && effectiveShortestWord) {
+          // Não destravou: deixa a grade preenchível (hintStage ≥ 1) pro aluno
+          // continuar tentando no centro da tela, sem clicar em 💡 Dica.
+          wordleGame.setHintStage(s => (s === 0 ? 1 : s));
         }
       } else {
         const resultado = accepted ? 'correct' : 'wrong';
@@ -411,7 +418,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
     setTestedWords(prev => prev.some(t => t.word === display && t.mode === 'DRAWING')
       ? prev : [{ word: display, mode: 'DRAWING', accepted: status === 'ACCEPTED' }, ...prev]);
     setSimWord('');
-  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, effectiveShortestWord, g.nodes, g.transitions, updateProgress, showToast, phaseExtras]);
+  }, [level, simWord, isDrawingUnlocked, testMode, testedWords, effectiveShortestWord, wordleGame, g.nodes, g.transitions, updateProgress, showToast, phaseExtras]);
 
   // ── Simular palavra: abre MTSimPanel passo a passo (rodapé) — SEMPRE contra
   // a MT do ALUNO (g.nodes/g.transitions), nunca o gabarito (igual ao

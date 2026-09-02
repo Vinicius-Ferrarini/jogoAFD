@@ -394,6 +394,9 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     // 'tentativa', sem consumir attemptsRef).
     if (WORDLE_GRID_LEVEL_IDS.has(currentLevel.id) && !isDrawingUnlocked && gridTarget != null && word.length !== gridTarget.length) {
       showToast(`A menor palavra tem ${gridTarget.length} caracteres — sua tentativa tem ${word.length}.`, 'info');
+      // Errou: abre a grade preenchível no centro (dica de tamanho) pra seguir
+      // tentando ali, sem ter que clicar em 💡 Dica.
+      wordleGame.setHintStage(s => (s === 0 ? 1 : s));
       return;
     }
 
@@ -469,8 +472,14 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     } else {
       setTestWords(prev => [{ word: wordDisplay, status: 'wrong' }, ...prev]);
     }
+    // Tentativa que NÃO destravou: a grade já apareceu mostrando o erro por
+    // letra — deixa ela preenchível (hintStage ≥ 1) pro aluno continuar no
+    // centro da tela, em vez de exigir um clique em 💡 Dica.
+    if (WORDLE_GRID_LEVEL_IDS.has(currentLevel.id) && !isDrawingUnlocked && !isShortest) {
+      wordleGame.setHintStage(s => (s === 0 ? 1 : s));
+    }
     setNewWord('');
-  }, [currentLevel, effectiveShortestWord, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, phaseExtras, nodes, transitions, setGuidedLessonStep, userNodesSnapshot, userTransitionsSnapshot]);
+  }, [currentLevel, effectiveShortestWord, newWord, testWords, isDrawingUnlocked, showToast, updateProgress, phaseExtras, nodes, transitions, setGuidedLessonStep, userNodesSnapshot, userTransitionsSnapshot, wordleGame]);
 
   const clearTests = useCallback(() => {
     setTestWords([]);
