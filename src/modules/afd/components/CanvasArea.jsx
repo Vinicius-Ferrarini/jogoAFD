@@ -74,7 +74,7 @@ export default function CanvasArea({
   selectedSymbolCard,
   transitionRenders, highlightedError,
   handleTransitionLineClick, transitionLabelRefs,
-  handleAddSymbol, handleEditSymbol, handleEraseTransition, handleAppendCardToTransition,
+  handleAddSymbol, handleEditSymbol, handleEraseTransition, handleEraseSymbol, handleAppendCardToTransition,
   displayNodes, simHighlight,
   handleNodeLabelFocus, handleNodeLabelChange, handleNodeLabelBlur,
   setDrawMode, showToast,
@@ -799,6 +799,7 @@ export default function CanvasArea({
                   onAdd={handleAddSymbol}
                   onEdit={handleEditSymbol}
                   onErase={handleEraseTransition}
+                  onEraseSymbol={handleEraseSymbol}
                   onAppendCard={handleAppendCardToTransition}
                 />
               ))}

@@ -310,6 +310,25 @@ export default function useAFDGraph({
     recordHistory(nodes, newTrans);
   }, [transitions, nodes, recordHistory, setTransitions]);
 
+  // Apaga UM símbolo (chip) de uma transição multi-símbolo (ex.: q0 --a,b--> q1
+  // → apagar só "a"). Se era o último símbolo, remove a seta inteira — mesmo
+  // efeito de handleEraseTransition.
+  const handleEraseSymbol = useCallback((idx, chipIdx) => {
+    const tr = transitions[idx];
+    if (!tr) return;
+    const syms = tr.symbol.split(',').map(s => s.trim()).filter(Boolean);
+    if (syms.length <= 1 || chipIdx < 0 || chipIdx >= syms.length) {
+      const newTrans = transitions.filter((_, i) => i !== idx);
+      setTransitions(newTrans);
+      recordHistory(nodes, newTrans);
+      return;
+    }
+    syms.splice(chipIdx, 1);
+    const newTrans = transitions.map((t, i) => i === idx ? { ...t, symbol: syms.join(',') } : t);
+    setTransitions(newTrans);
+    recordHistory(nodes, newTrans);
+  }, [transitions, nodes, recordHistory, setTransitions]);
+
   const handleAppendCardToTransition = useCallback((idx) => {
     if (!selectedSymbolCard) return;
     const newTrans = [...transitions];
@@ -419,7 +438,7 @@ export default function useAFDGraph({
     validateAFDSilent,
     deleteSelected,
     handleNodeLabelFocus, handleNodeLabelChange, handleNodeLabelBlur,
-    handleAddSymbol, handleEditSymbol, handleEraseTransition, handleAppendCardToTransition,
+    handleAddSymbol, handleEditSymbol, handleEraseTransition, handleEraseSymbol, handleAppendCardToTransition,
     transitionLabelRefs, handleTransitionLineClick,
     displayNodes, displayTransitions, transitionRenders,
   };

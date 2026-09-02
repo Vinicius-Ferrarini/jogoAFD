@@ -620,7 +620,10 @@ body { color: var(--text-main); }
   box-shadow: 2px 2px 0 #7c3aed;
 }
 
-.erasable-target:hover .transition-chip { background: #fecaca !important; border-color: #ef4444 !important; cursor: pointer !important; }
+/* ERASE: cada símbolo é apagável individualmente — só o chip sob o cursor
+   acende em vermelho (antes o rótulo inteiro acendia, passando a ideia de que
+   o clique apagaria a seta com TODOS os símbolos). */
+.transition-chip.erasable-chip:hover { background: #fecaca !important; border-color: #ef4444 !important; cursor: pointer !important; }
 .transition-label.action-target:hover .transition-chip { background: var(--accent-green); }
 
 .afd-tl-add {

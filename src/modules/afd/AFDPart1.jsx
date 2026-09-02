@@ -182,7 +182,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
     validateAFDSilent,
     deleteSelected,
     handleNodeLabelFocus, handleNodeLabelChange, handleNodeLabelBlur,
-    handleAddSymbol, handleEditSymbol, handleEraseTransition, handleAppendCardToTransition,
+    handleAddSymbol, handleEditSymbol, handleEraseTransition, handleEraseSymbol, handleAppendCardToTransition,
     transitionLabelRefs, handleTransitionLineClick,
     displayNodes, displayTransitions, transitionRenders,
   } = useAFDGraph({
@@ -780,6 +780,7 @@ export default function AFDPart1({ onBack, progress, updateProgress, forceLevelI
           handleAddSymbol={handleAddSymbol}
           handleEditSymbol={handleEditSymbol}
           handleEraseTransition={handleEraseTransition}
+          handleEraseSymbol={handleEraseSymbol}
           handleAppendCardToTransition={handleAppendCardToTransition}
           displayNodes={displayNodes}
           simHighlight={effectiveSimHighlight}

@@ -5,7 +5,7 @@
 // seria recriado a cada render do pai e invalidaria a comparação do memo).
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle, memo } from 'react';
 
-const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, activeSymbol, activeSeq, labelSide, left, top, className, onAdd, onEdit, onErase, onAppendCard }, ref) {
+const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, interactionMode, selectedSymbolCard, isDrawingUnlocked, lessonActive, isError, activeSymbol, activeSeq, labelSide, left, top, className, onAdd, onEdit, onErase, onEraseSymbol, onAppendCard }, ref) {
   const [mode, setMode] = useState(null); // null | 'adding' | { type:'editing', chipIdx:number }
   const [inputVal, setInputVal] = useState('');
   const inputRef = useRef(null);
@@ -53,7 +53,10 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
   const handleChipClick = (e, chipIdx) => {
     e.stopPropagation();
     if (!isDrawingUnlocked) return;
-    if (interactionMode === 'ERASE') { onErase(idx); return; }
+    // ERASE: apaga só ESTE símbolo (o chip clicado). Se for o último, a
+    // transição inteira some (onEraseSymbol resolve os dois casos). Antes
+    // qualquer clique no rótulo apagava a seta com todos os símbolos.
+    if (interactionMode === 'ERASE') { (onEraseSymbol ?? onErase)(idx, chipIdx); return; }
     if (selectedSymbolCard) { onAppendCard(idx); return; }
     setMode({ type: 'editing', chipIdx });
     setInputVal(symList[chipIdx]);
@@ -94,7 +97,7 @@ const TransitionLabel = forwardRef(function TransitionLabel({ idx, symbol, inter
               autoComplete="off" spellCheck={false} />
           ) : (
             <span key={isActive ? `${i}-${activeSeq}` : i}
-              className={`transition-chip${isActive ? ' active-chip' : ''}`}
+              className={`transition-chip${isActive ? ' active-chip' : ''}${interactionMode === 'ERASE' ? ' erasable-chip' : ''}`}
               onClick={e => handleChipClick(e, i)}>{sym}</span>
           );
         })}

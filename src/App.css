@@ -24,7 +24,14 @@
 @font-face {
   font-family: 'Comic Neue';
   font-style: normal;
-  font-weight: 700;
+  /* Comic Neue só tem 300/400/700 — mas o tema "gibi" pede font-weight: 900 em
+     centenas de lugares. Sem uma face que cubra 900, o Firefox (com
+     font-synthesis: none, ver index.css) NÃO escolhe a 700 mais próxima: ele
+     desiste da família inteira e cai no próximo item do stack (era `cursive`,
+     que no Linux é uma fonte caligráfica INCLINADA — daí "parecia itálico").
+     Declarar a faixa 700→900 nesta mesma face (o arquivo bold real) faz 800/900
+     resolverem pra cá em todo navegador, sem faux-bold e sem fallback. */
+  font-weight: 700 900;
   font-display: swap;
   src: url('/fonts/comic-neue-700.woff2') format('woff2');
 }
@@ -60,7 +67,10 @@
 
 /* --- VARIÁVEIS DO TEMA --- */
 :root {
-  --font-comic:           'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+  /* Último recurso = sans-serif (upright), NÃO `cursive`: o genérico `cursive`
+     no Linux costuma ser uma fonte caligráfica inclinada, que destoa e "parece
+     itálico" se por algum motivo o Comic Neue não carregar. */
+  --font-comic:           'Comic Neue', 'Comic Sans MS', sans-serif;
   --bg-dark:              #fff9c4;
   --panel-bg:             #ffffff;
   --card-bg:              #ffffff;
