@@ -5,13 +5,70 @@
     <link rel="icon" type="image/webp" href="./icone.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google" content="notranslate" />
-    <title>TuringLab</title>
+
+    <title>TuringLab — Jogo para Aprender Teoria da Computação</title>
+    <meta
+      name="description"
+      content="Aprenda Autômatos Finitos, Autômatos com Pilha e Máquinas de Turing jogando. Simulador visual e gratuito de Teoria da Computação."
+    />
+    <link rel="canonical" href="https://teoriadacomputacao.com.br/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://teoriadacomputacao.com.br/" />
+    <meta property="og:title" content="TuringLab — Jogo para Aprender Teoria da Computação" />
+    <meta
+      property="og:description"
+      content="Aprenda Autômatos Finitos, Autômatos com Pilha e Máquinas de Turing jogando. Simulador visual e gratuito de Teoria da Computação."
+    />
+    <!-- TODO: subir public/preview.png (1200x630) — arte final ainda não fornecida -->
+    <meta property="og:image" content="https://teoriadacomputacao.com.br/preview.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- TODO: colar aqui a tag google-site-verification -->
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "TuringLab",
+        "description": "Aprenda Autômatos Finitos, Autômatos com Pilha e Máquinas de Turing jogando. Simulador visual e gratuito de Teoria da Computação.",
+        "url": "https://teoriadacomputacao.com.br/",
+        "applicationCategory": "EducationalApplication",
+        "inLanguage": "pt-BR",
+        "isAccessibleForFree": true
+      }
+    </script>
     <script type="module" crossorigin src="./assets/index-C3KSzDvk.js"></script>
     <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-D9-fqq9M.js">
     <link rel="modulepreload" crossorigin href="./assets/react-vendor-DTQg3ZoS.js">
     <link rel="stylesheet" crossorigin href="./assets/index-Dw0DDl6C.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Conteúdo estático só para leitores/rastreadores e para o carregamento
+           inicial. O React (main.jsx) substitui tudo isto ao montar em #root. -->
+      <main style="max-width: 44rem; margin: 0 auto; padding: 2rem; font-family: system-ui, sans-serif; line-height: 1.6;">
+        <h1>TuringLab — jogo educacional de Teoria da Computação</h1>
+        <p>
+          O TuringLab é um jogo educacional gratuito que ensina Teoria da
+          Computação de forma visual e interativa. Você constrói e testa
+          máquinas abstratas direto no navegador, resolvendo desafios com
+          feedback imediato.
+        </p>
+        <p>
+          São três modelos formais, distribuídos em dezenas de fases: Autômatos
+          Finitos Determinísticos (AFD), Autômatos com Pilha e Máquinas de
+          Turing — incluindo máquinas de Turing reconhecedoras e transdutoras.
+        </p>
+        <p>
+          Cada fase traz um simulador passo a passo e um "Modo Aula" narrado,
+          que mostra como a máquina processa cada símbolo da palavra. Carregando
+          o jogo…
+        </p>
+      </main>
+    </div>
   </body>
 </html>
