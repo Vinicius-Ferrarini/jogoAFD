@@ -1,0 +1,1 @@
+import{t as e}from"./_decimalMult-gG0hZk0T.js";var t=e(6,`MT_L20`,`L20`);export{t as default};
