@@ -1,6 +1,6 @@
 import './FeedbackButton.css';
 
-const REPO_URL = 'https://github.com/Vinicius-Ferrarini/jogoAFD';
+const REPO_URL = 'https://github.com/Vinicius-Ferrarini/turinglab';
 
 // FAB de feedback (Fase 6): abre um MODAL INTERNO (via App) em vez de um link
 // externo pro Google Forms. O jogador pode enviar VÁRIAS avaliações; o ✓ só

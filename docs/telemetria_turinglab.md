@@ -1,4 +1,4 @@
-# Telemetria de Pesquisa do TuringLab (jogoAFD) — Fases 2 → 6
+# Telemetria de Pesquisa do TuringLab — Fases 2 → 6
 
 > **Este documento substitui as versões anteriores** (`telemetria_turinglab.md`
 > original e `PROMPT_fase3-6_consentimento_feedback.md`). Ele é a fonte de verdade

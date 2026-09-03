@@ -1,4 +1,4 @@
-# Progresso de Otimização — jogoAFD
+# Progresso de Otimização — TuringLab
 
 Baseado na auditoria de performance/arquitetura (GitHub Pages, sem servidor).
 Cada item: implementação → `npm run build` (checar warnings/tamanhos) → `npm test` → testes manuais pontuais → marcar feito.

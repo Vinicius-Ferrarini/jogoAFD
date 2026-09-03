@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-**TuringLab** (repo name `jogoAFD`) is a React + Vite educational game that teaches formal automata
+**TuringLab** (repo name `turinglab`; local working dir is still `jogoAFD`) is a React + Vite educational game that teaches formal automata
 theory — Deterministic Finite Automata (AFD), Pushdown Automata (AP), and Turing Machines (MT,
 recognizer + transducer) — through an interactive comic/gibi-styled UI (neo-brutalism, Comic Sans,
 black borders, `#fff9c4`), narrated by the character professor **Maurílio**. It also doubles as a

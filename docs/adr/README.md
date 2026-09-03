@@ -1,4 +1,4 @@
-# Architecture Decision Records — TuringLab (jogoAFD)
+# Architecture Decision Records — TuringLab
 
 Registro das decisões arquiteturais do projeto: o quê foi decidido, por quê, e
 quais alternativas foram descartadas. Formato MADR simplificado — ver

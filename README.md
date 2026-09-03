@@ -14,7 +14,7 @@
 
 https://github.com/user-attachments/assets/27b2bd60-45b8-4abb-b22f-09aefeb0a692
 
-*Se o vídeo não carregar diretamente aqui, [assista no link da release](https://github.com/Vinicius-Ferrarini/jogoAFD/releases/tag/v1.0-demo).*
+*Se o vídeo não carregar diretamente aqui, [assista no link da release](https://github.com/Vinicius-Ferrarini/turinglab/releases/tag/v1.0-demo).*
 
 </div>
 
@@ -216,8 +216,8 @@ totais: `src/services/starTotals.js`):
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/Vinicius-Ferrarini/jogoAFD.git
-cd jogoAFD
+git clone https://github.com/Vinicius-Ferrarini/turinglab.git
+cd turinglab
 
 # 2. Instale as dependências
 npm install

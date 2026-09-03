@@ -38,7 +38,7 @@ function useLastCommitDate() {
     // Cache ainda fresco: não bate na API de novo (economiza o limite de 60 req/h sem auth).
     if (cached?.fetchedAt && Date.now() - cached.fetchedAt < LAST_COMMIT_CACHE_TTL) return;
 
-    fetch('https://api.github.com/repos/Vinicius-Ferrarini/jogoAFD/commits?per_page=1')
+    fetch('https://api.github.com/repos/Vinicius-Ferrarini/turinglab/commits?per_page=1')
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(([commit]) => {
         const raw = commit?.commit?.author?.date;
