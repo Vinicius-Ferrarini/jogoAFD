@@ -1,4 +1,6 @@
 // ── L2: Complemento Bit-a-Bit ─────────────────────────────────────────────────────
+import { buildTransducerSim } from './buildTransducerSim.js';
+
 const L2_Q0   = { uid: 'q0',   id: 'q0',   label: 'q0',   x: 3937, y: 4000, isInitial: true,  isFinal: false };
 const L2_QRW  = { uid: 'q_rw', id: 'q_rw', label: 'q_rw', x: 4000, y: 4000, isInitial: false, isFinal: false };
 const L2_QF   = { uid: 'qf',   id: 'qf',   label: 'qf',   x: 4063, y: 4000, isInitial: false, isFinal: true  };
@@ -107,57 +109,96 @@ const MT_L2 = {
           stateUpdate: { nodes: L2_N0RW, transitions: L2_T_RWL },
           simulateWord: '010', tape: ['□', '1', '0', '1', '□'], head: 3, activeNode: 'q_rw',
         },
-        // 11 — q_rw chegou no □ inicial
+        // 11 — q_rw varre o último '1' à ESQUERDA
         {
-          prof: { message: "q_rw varreu '1', '0', '1' da direita para a esquerda. Cabeçote bateu no branco INICIAL (□) — chegamos ao começo!", mood: 'explicando' },
+          prof: { message: "q_rw leu '1', manteve '1' e moveu à ESQUERDA (laço 1;1,L). O cabeçote recua UMA célula por vez.", mood: 'explicando' },
+          stateUpdate: { nodes: L2_N0RW, transitions: L2_T_RWL },
+          simulateWord: '010', tape: ['□', '1', '0', '1', '□'], head: 2, activeNode: 'q_rw',
+        },
+        // 12 — q_rw varre o '0' à ESQUERDA
+        {
+          prof: { message: "q_rw leu '0', manteve '0' e moveu à ESQUERDA (laço 0;0,L).", mood: 'explicando' },
+          stateUpdate: { nodes: L2_N0RW, transitions: L2_T_RWL },
+          simulateWord: '010', tape: ['□', '1', '0', '1', '□'], head: 1, activeNode: 'q_rw',
+        },
+        // 13 — q_rw varre o 1º '1' e bate no branco INICIAL
+        {
+          prof: { message: "q_rw leu '1', manteve '1' e moveu à ESQUERDA. Cabeçote bateu no branco INICIAL (□) — chegamos ao começo!", mood: 'explicando' },
           stateUpdate: { nodes: L2_N0RW, transitions: L2_T_RWL },
           simulateWord: '010', tape: ['□', '1', '0', '1', '□'], head: 0, activeNode: 'q_rw',
         },
-        // 12 — revela qf + □;□,R
+        // 14 — revela qf + □;□,R
         {
           prof: { message: "Branco inicial encontrado! Criamos qf e a aresta □;□,R: avançamos um passo à direita e ACEITAMOS com o cabeçote na 1ª posição.", mood: 'explicando' },
           stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
           simulateWord: '010', tape: ['□', '1', '0', '1', '□'], head: 0, activeNode: 'q_rw',
         },
-        // 13 — ACEITA '010'
+        // 15 — ACEITA '010'
         {
           prof: { message: "q_rw leu □, foi para qf e parou na 1ª posição. Fita: '101'. ACEITA! ✓ '010' complementado com o cabeçote no início da fita.", mood: 'feliz' },
           stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
           simulateWord: '010', tape: ['□', '1', '0', '1', '□'], head: 1, status: 'ACCEPTED', activeNode: 'qf',
         },
-        // 14 — teste '1100'
+
+        // 16+ — teste '1100' com a máquina completa, transição por transição
+        ...buildTransducerSim('1100', {
+          nodes: L2_NFULL, transitions: L2_TFULL,
+          leadingBlanks: 1, trailingBlanks: 1,
+          introMessage: "A mesma máquina para '1100'. Resultado esperado: '0011'. Vamos rodar transição por transição.",
+          introMood: 'serio',
+        }),
+
+        // formalIntro
         {
-          prof: { message: "A mesma máquina para '1100'. Resultado esperado: '0011'. Começamos em q0 lendo o primeiro bit.", mood: 'serio' },
-          stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
-          simulateWord: '1100', tape: ['□', '1', '1', '0', '0', '□'], head: 1, activeNode: 'q0',
-        },
-        // 15 — ACEITA '1100'
-        {
-          prof: { message: "Fita: '0011'. q_rw voltou ao início e qf aceitou na 1ª posição. ACEITA! ✓ O Padrão Rewind é universal: toda MT deste projeto termina com o cabeçote na 1ª posição.", mood: 'feliz' },
-          stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
-          simulateWord: '1100', tape: ['□', '0', '0', '1', '1', '□'], head: 1, status: 'ACCEPTED', activeNode: 'qf',
-        },
-        // 16 — formalIntro
-        {
-          prof: { message: "Máquina finalizada! 🎉 Agora vamos formalizar a MT passo a passo.", mood: 'feliz' },
+          prof: { message: "Máquina finalizada! 🎉 Agora vamos formalizar a MT, campo por campo.", mood: 'feliz' },
           stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
           formalIntro: true,
         },
-        // 17 — Q e Σ
+        // FORMAL — Q
         {
-          prof: { message: "Q = {q0, q_rw, qf}: 3 estados. q0 complementa, q_rw rebobina, qf aceita. Σ = {0, 1}: os dois dígitos binários.", mood: 'explicando' },
+          prof: { message: "Q é o conjunto de ESTADOS: {q0, q_rw, qf}. q0 complementa, q_rw rebobina, qf aceita.", mood: 'explicando' },
           stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
-          phase: 'FORMAL', formalFill: { states: '{q0, q_rw, qf}', sigma: '{0, 1}' },
+          phase: 'FORMAL', formalFill: { states: '{q0, q_rw, qf}' },
         },
-        // 18 — Γ, q0, □, F
+        // FORMAL — Σ
         {
-          prof: { message: "Γ = {0, 1, □}: não introduzimos símbolo novo — Γ = Σ ∪ {□}. Estado inicial q0, branco □, F = {qf}.", mood: 'explicando' },
+          prof: { message: "Σ é o alfabeto de ENTRADA: {0, 1} — os dois dígitos binários.", mood: 'explicando' },
           stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
-          phase: 'FORMAL', formalFill: { gamma: '{0, 1, □}', initial: 'q0', blank: '□', final: '{qf}' },
+          phase: 'FORMAL', formalFill: { sigma: '{0, 1}' },
         },
-        // 19 — δ completa
+        // FORMAL — Γ
         {
-          prof: { message: "δ tem 6 regras: q0 complementa (0→1,R e 1→0,R) e inicia rewind (□→□,L para q_rw); q_rw recua (0;0,L e 1;1,L) e aceita (□→□,R para qf). δ completa!", mood: 'explicando' },
+          prof: { message: "Γ é o alfabeto da FITA: {0, 1, □}. Não introduzimos símbolo novo — Γ = Σ ∪ {□}.", mood: 'explicando' },
+          stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
+          phase: 'FORMAL', formalFill: { gamma: '{0, 1, □}' },
+        },
+        // FORMAL — q0
+        {
+          prof: { message: "q0 é o estado INICIAL, onde a complementação acontece.", mood: 'explicando' },
+          stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
+          phase: 'FORMAL', formalFill: { initial: 'q0' },
+        },
+        // FORMAL — □
+        {
+          prof: { message: "O símbolo BRANCO (□) marca as células vazias da fita.", mood: 'explicando' },
+          stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
+          phase: 'FORMAL', formalFill: { blank: '□' },
+        },
+        // FORMAL — F
+        {
+          prof: { message: "F é o conjunto de estados de ACEITAÇÃO: {qf}.", mood: 'explicando' },
+          stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
+          phase: 'FORMAL', formalFill: { final: '{qf}' },
+        },
+        // FORMAL — δ parte 1 (q0: complementa + inicia rewind)
+        {
+          prof: { message: "δ, linha por linha. Em q0: 0;1,R e 1;0,R (complementa cada bit) e □;□,L para q_rw (chegou no fim → rebobinar).", mood: 'explicando' },
+          stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
+          phase: 'FORMAL', formalFill: { delta: L2_T_RW },
+        },
+        // FORMAL — δ parte 2 (q_rw: recua e aceita)
+        {
+          prof: { message: "Em q_rw: 0;0,L e 1;1,L (recua sem alterar) e □;□,R para qf (bateu no branco inicial → aceita na 1ª posição). δ completa!", mood: 'feliz' },
           stateUpdate: { nodes: L2_NFULL, transitions: L2_TFULL },
           phase: 'FORMAL', formalFill: { delta: L2_TFULL },
         },

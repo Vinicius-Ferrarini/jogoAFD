@@ -1,4 +1,6 @@
 // ── L10: Intercalar 0/1 entre a's e b's ─────────────────────────────────────────────────
+import { buildTransducerSim } from './buildTransducerSim.js';
+
 // 19 estados extraídos do JFLAP: q0–q18
 // Técnica: Shift de fita — marca símbolo com A/B, insere X como placeholder,
 //          propaga shifts com marcadores R/S, decodifica de volta ao final.
@@ -187,23 +189,76 @@ const MT_L10 = {
           prof: { message: "Técnica de Shift: q1 marca a→A/b→B, q2 insere X no fim, q3 rebobina. Ao achar X, vai p/ q4→q5→q6 decodificar. q7 lê X: q8(A→R) ou q9(B→S). X's viram 0/1. q17 converte R→a, S→b. q18 aceita.", mood: 'explicando' },
           stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
         },
-        // 2 — Fita inicial
+        // 2+ — simulação de 'aba' na máquina completa, transição por transição
+        // (a técnica de Shift tem 107 micro-passos p/ 'aba' → 'a0b1a0';
+        // gerado por buildTransducerSim, um frame por transição, batendo com
+        // o motor real simulateTM).
+        ...buildTransducerSim('aba', {
+          nodes: L10_NFULL, transitions: L10_TFULL, startMarker: '<',
+          leadingBlanks: 2, trailingBlanks: 2,
+          introMessage: "Vamos rodar 'aba' transição por transição (é longo — é a MT mais complexa do módulo). A fita tem o marcador < e a palavra; acompanhe o cabeçote marcar (A/B), inserir placeholders (X) e decodificar até 'a0b1a0'.",
+        }),
+
+        // ═══ Descrição formal (7-tupla), campo por campo ═══
         {
-          prof: { message: "Fita inicial para 'aba': [< a b a □]. q0 lê '<' e vai para q1. A fase de inserção de X's transforma a fita em [< A X b X a X □] — um placeholder após cada símbolo marcado.", mood: 'explicando' },
+          prof: { message: "Máquina finalizada! 🎉 Agora a 7-tupla M = (Q, Σ, Γ, δ, q0, □, F), campo por campo.", mood: 'feliz' },
           stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
-          simulateWord: 'aba', tape: ['<','a','b','a','□','□','□','□'], head: 0, activeNode: 'q0',
+          formalIntro: true,
         },
-        // 3 — Fita final ACEITA
         {
-          prof: { message: "Fita final ACEITA para 'aba': [< a 0 b 1 a 0]. Os placeholders X foram convertidos: X após A→'0', X após B→'1'. q17 restaurou R→a e S→b. q18 aceita!", mood: 'feliz' },
+          prof: { message: "Q é o conjunto de ESTADOS: {q0, q1, ..., q18} — 19 estados, um por sub-fase da técnica de Shift.", mood: 'explicando' },
           stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
-          simulateWord: 'aba', tape: ['<','a','0','b','1','a','0'], head: 0, status: 'ACCEPTED', activeNode: 'q18',
+          phase: 'FORMAL', formalFill: { states: '{q0, q1, ..., q18}' },
         },
-        // 4 — Descrição formal
         {
-          prof: { message: "Q = {q0..q18} (19 estados). Σ = {a,b}. Γ = {a,b,A,B,X,R,S,0,1,<,□}. q0 inicial, q18 final. X é placeholder; A,B marcam originais; R='a' e S='b' codificam temporariamente durante o shift.", mood: 'explicando' },
+          prof: { message: "Σ é o alfabeto de ENTRADA: {a, b}.", mood: 'explicando' },
           stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
-          phase: 'FORMAL', formalFill: { states: '{q0,...,q18}', sigma: '{a, b}', gamma: '{a, b, A, B, X, R, S, 0, 1, <, □}', initial: 'q0', blank: '□', final: '{q18}', delta: L10_TFULL },
+          phase: 'FORMAL', formalFill: { sigma: '{a, b}' },
+        },
+        {
+          prof: { message: "Γ é o alfabeto da FITA: {a, b, A, B, X, R, S, 0, 1, <, □}. A/B marcam originais; X é placeholder; R/S codificam 'a'/'b' temporariamente; < é o marcador de início.", mood: 'explicando' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { gamma: '{a, b, A, B, X, R, S, 0, 1, <, □}' },
+        },
+        {
+          prof: { message: "q0 é o estado INICIAL — só lê o marcador < e entra na fase de marcação.", mood: 'explicando' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { initial: 'q0' },
+        },
+        {
+          prof: { message: "O símbolo BRANCO (□) marca as células vazias da fita.", mood: 'explicando' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { blank: '□' },
+        },
+        {
+          prof: { message: "F é o conjunto de estados de ACEITAÇÃO: {q18}.", mood: 'explicando' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { final: '{q18}' },
+        },
+        {
+          prof: { message: "δ, por fase. Fase 1 (q0→q3): q1 marca a→A / b→B, q2 varre até o □ e deposita X, q3 rebobina até o < e repete.", mood: 'explicando' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { delta: L10_TFULL.slice(0, 16) },
+        },
+        {
+          prof: { message: "Fase 2 (q4→q6): quando q1 só acha X's, vai a q4→q5 rebobinar e q6 começa a decodificação, procurando o 1º X.", mood: 'explicando' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { delta: L10_TFULL.slice(0, 25) },
+        },
+        {
+          prof: { message: "Fase 3 (q7→q9): q7 converte A→R (via q8) ou B→S (via q9); q8/q9 avançam até o □ carregando a codificação.", mood: 'explicando' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { delta: L10_TFULL.slice(0, 43) },
+        },
+        {
+          prof: { message: "Fase 4 (q10→q15): q10/q13 rebobinam convertendo X→0 (após 'a') ou X→1 (após 'b'); q11/q14 depositam R/S; q12/q15 rebobinam até o <.", mood: 'explicando' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { delta: L10_TFULL.slice(0, 63) },
+        },
+        {
+          prof: { message: "Fase 5 (q16→q17): q16 varre os slots (volta a q7 se ainda há X, senão vai a q17); q17 converte R→a e S→b, rebobina até o < e vai a q18. δ completa — MT formalizada! ✓", mood: 'feliz' },
+          stateUpdate: { nodes: L10_NFULL, transitions: L10_TFULL },
+          phase: 'FORMAL', formalFill: { delta: L10_TFULL },
         },
       ],
     },

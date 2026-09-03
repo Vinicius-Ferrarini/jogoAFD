@@ -76,15 +76,13 @@ const KNOWN_DEAD_TRANSITIONS = new Set([
 // simulação que passe por essa transição", não "aceitar que é inalcançável".
 // Remover cada entrada da lista assim que o nível correspondente for corrigido.
 const KNOWN_PENDING_UNDEMONSTRATED = new Set([
-  // L01: aceita λ (n=0 em {aⁿbⁿ/n≥0}) via q0->q5, mas '' nunca é simulada na
-  // aula (só está em testWords). Autômato do exercício mostrado ao usuário —
-  // aguardando ele revisitar esse nível antes de mexer no storyboard.
-  'L01|q0|q5|□|□|R',
-  // L10 (DESAFIO): storyboard fora do padrão dos demais níveis — só 5 passos
-  // no total, 76 transições despejadas de uma vez no passo 1 sem NENHUM
-  // passo-a-passo "Nova regra"/"Executou". Precisa reescrever a aula inteira
-  // nesse padrão antes de conseguir demonstrar as transições por simulação
-  // (não é um fix pontual como os outros níveis).
+  // L10 (DESAFIO): a aula foi reescrita (out/2026) para simular 'aba' transição
+  // por transição via buildTransducerSim — passou de 5 para ~122 passos. 'aba'
+  // sozinha cobre 67/76 transições; as 9 abaixo só disparam com outra ordem de
+  // decodificação (q8/q9 varrendo à direita por cima de S/1/A/B, ou q13/q15
+  // varrendo à esquerda). 'aba'+'abab' cobriria 5 delas, mas 'abab' são ~185
+  // micro-passos — não vale inflar a aula. Em aberto: simular +1 palavra
+  // escolhida, ou provar inalcançabilidade e mover para KNOWN_DEAD_TRANSITIONS.
   'L10|q8|q8|A|A|R', 'L10|q8|q8|B|B|R',
   'L10|q9|q9|S|S|R', 'L10|q9|q9|A|A|R', 'L10|q9|q9|B|B|R', 'L10|q9|q9|1|1|R',
   'L10|q13|q13|S|S|L', 'L10|q13|q13|1|1|L',

@@ -158,27 +158,39 @@ const MT_L1 = {
           stateUpdate: { nodes: N_FULL, transitions: T_AB_6 },
           simulateWord: 'ab', tape: ['□', 'A', 'B', '□'], head: 2, activeNode: 'q4',
         },
-        // 13 — fita: q4 varre B e A, chega no início, aceita
+        // 13 — fita: q4 lê 'B', varre à ESQUERDA (1 célula)
         {
-          prof: { message: "q4 varreu 'B' e 'A' de volta, bateu no branco inicial, foi para q5 e parou na 1ª letra. A fita virou 'AB'. Palavra ACEITA! ✓", mood: 'feliz' },
+          prof: { message: "q4 leu 'B', manteve e voltou à ESQUERDA (B;B,L). O cabeçote anda UMA célula por vez — vamos varrer passo a passo até o começo da fita.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_AB_6 },
+          simulateWord: 'ab', tape: ['□', 'A', 'B', '□'], head: 1, activeNode: 'q4',
+        },
+        // 14 — fita: q4 lê 'A', varre à ESQUERDA e chega no branco INICIAL
+        {
+          prof: { message: "q4 leu 'A', manteve e voltou à ESQUERDA (A;A,L). Agora o cabeçote está sobre o branco INICIAL (□), imediatamente antes da 1ª letra.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_AB_6 },
+          simulateWord: 'ab', tape: ['□', 'A', 'B', '□'], head: 0, activeNode: 'q4',
+        },
+        // 15 — fita: q4 lê o branco inicial → q5, volta o cabeçote pra 1ª letra, ACEITA
+        {
+          prof: { message: "q4 leu o branco inicial: foi para q5 (final) e andou 1 à DIREITA (□;□,R), trazendo o cabeçote de volta para a 1ª letra. A fita virou 'AB'. Palavra ACEITA! ✓", mood: 'feliz' },
           stateUpdate: { nodes: N_FULL, transitions: T_AB_6 },
           simulateWord: 'ab', status: 'ACCEPTED', tape: ['□', 'A', 'B', '□'], head: 1, activeNode: 'q5',
         },
 
         // ═══ Parte 2 — o erro com 'aab' (não pertence a aⁿbⁿ) ═══
-        // 14 — começa 'aab'
+        // 16 — começa 'aab'
         {
           prof: { message: "Próxima palavra: 'aab'. Repare que ela tem 2 'a' mas só 1 'b' — NÃO pertence a aⁿbⁿ. Vamos ver a MESMA máquina rejeitar corretamente.", mood: 'serio' },
           stateUpdate: { nodes: N_FULL, transitions: T_AB_6 },
           simulateWord: 'aab', tape: ['□', 'a', 'a', 'b', '□'], head: 1, activeNode: 'q0',
         },
-        // 15 — q0 marca o 1º 'a' → q1
+        // 17 — q0 marca o 1º 'a' → q1
         {
           prof: { message: "q0 leu o 1º 'a', marcou 'A' e andou à direita. Estamos em q1, lendo o SEGUNDO 'a'...", mood: 'serio' },
           stateUpdate: { nodes: N_FULL, transitions: T_AB_6 },
           simulateWord: 'aab', tape: ['□', 'A', 'a', 'b', '□'], head: 2, activeNode: 'q1',
         },
-        // 16 — TRAVA: q1 não tem transição para pular o 2º 'a' ainda
+        // 18 — TRAVA: q1 não tem transição para pular o 2º 'a' ainda
         {
           prof: { message: "Travou! 😟 Em q1 só sabemos marcar 'b' (b;B,L) — ainda não sabemos PULAR um 'a' não marcado. A máquina PARA e REJEITA.", mood: 'triste' },
           stateUpdate: { nodes: N_FULL, transitions: T_AB_6 },
@@ -186,101 +198,225 @@ const MT_L1 = {
         },
 
         // ═══ Parte 3 — generalizar para palavras com mais de 1 par ═══
-        // 17 — adiciona laços a;a,R e B;B,R em q1 (permite pular letras já vistas ou não-marcadas)
+        // 19 — adiciona laços a;a,R e B;B,R em q1 (permite pular letras já vistas ou não-marcadas)
         {
           prof: { message: "Para aceitar palavras com VÁRIOS pares (ex.: 'aabb'), q1 precisa PULAR 'a' não marcado (a;a,R) e 'B' já marcado (B;B,R), sem alterar nada, até achar o 'b' livre mais próximo.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           simulateWord: 'aab', tape: ['□', 'a', 'a', 'b', '□'], head: 1, activeNode: 'q0',
         },
-        // 18 — reforça que 'aab' continua rejeitada mesmo com a máquina completa
+        // 20 — reforça que 'aab' continua rejeitada mesmo com a máquina completa
         {
           prof: { message: "Mesmo com a máquina completa, 'aab' continua sendo REJEITADA: depois de marcar o par, sobra um 'a' sem 'b' correspondente — exatamente como esperado, já que 'aab' não é aⁿbⁿ.", mood: 'serio' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           simulateWord: 'aab', status: 'REJECTED', tape: ['□', 'A', 'a', 'B', '□'], head: 2, activeNode: 'q1',
         },
-        // 19 — agora testa 'aabb' com a máquina completa (aceita)
+
+        // ═══ Parte 4 — simular 'aabb' (2 pares) passo a passo na máquina completa ═══
+        // 21 — início da simulação de 'aabb'
         {
-          prof: { message: "Agora vamos ver 'aabb' (2 pares) com a máquina completa. Ela marca o par mais externo, volta, marca o próximo, confirma e aceita — sem travar!", mood: 'feliz' },
+          prof: { message: "Agora 'aabb' (2 pares) na máquina COMPLETA, transição por transição. A fita tem □ a a b b □ e começamos em q0, no 1º 'a'.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'a', 'a', 'b', 'b', '□'], head: 1, activeNode: 'q0',
+        },
+        // 22 — q0 marca o 1º 'a'
+        {
+          prof: { message: "q0 leu 'a', escreveu 'A' e foi à DIREITA (a;A,R). Agora em q1, sobre o 2º 'a'.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'a', 'b', 'b', '□'], head: 2, activeNode: 'q1',
+        },
+        // 23 — q1 pula o 2º 'a' sem marcar
+        {
+          prof: { message: "q1 leu 'a' e pulou à DIREITA sem marcar (a;a,R) — o 'b' do par ainda está mais à frente. Em q1, sobre o 1º 'b'.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'a', 'b', 'b', '□'], head: 3, activeNode: 'q1',
+        },
+        // 24 — q1 marca o 'b' do par externo
+        {
+          prof: { message: "q1 achou o 'b' livre: escreveu 'B' e voltou à ESQUERDA (b;B,L). Agora em q2.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'a', 'B', 'b', '□'], head: 2, activeNode: 'q2',
+        },
+        // 25 — q2 varre 'a' de volta
+        {
+          prof: { message: "q2 leu 'a' e recuou à ESQUERDA sem mexer (a;a,L), procurando o 'A' do par recém-marcado. Em q2.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'a', 'B', 'b', '□'], head: 1, activeNode: 'q2',
+        },
+        // 26 — q2 acha o 'A', volta a q0
+        {
+          prof: { message: "q2 achou o 'A': manteve e foi à DIREITA (A;A,R), voltando a q0 para procurar o PRÓXIMO par.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'a', 'B', 'b', '□'], head: 2, activeNode: 'q0',
+        },
+        // 27 — q0 marca o 2º 'a'
+        {
+          prof: { message: "q0 leu o 2º 'a', escreveu 'A' e foi à DIREITA (a;A,R). Agora em q1.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'b', '□'], head: 3, activeNode: 'q1',
+        },
+        // 28 — q1 pula o 'B' já marcado
+        {
+          prof: { message: "q1 leu o 'B' já marcado e pulou à DIREITA (B;B,R), sem alterar nada. Em q1, sobre o 2º 'b'.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'b', '□'], head: 4, activeNode: 'q1',
+        },
+        // 29 — q1 marca o 'b' do par interno
+        {
+          prof: { message: "q1 achou o 'b' livre: escreveu 'B' e voltou à ESQUERDA (b;B,L). Agora em q2.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 3, activeNode: 'q2',
+        },
+        // 30 — q2 varre 'B' de volta
+        {
+          prof: { message: "q2 leu o 'B' já marcado e recuou à ESQUERDA (B;B,L), procurando o 'A'. Em q2.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 2, activeNode: 'q2',
+        },
+        // 31 — q2 acha o 'A', volta a q0
+        {
+          prof: { message: "q2 achou o 'A': manteve e foi à DIREITA (A;A,R), voltando a q0.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 3, activeNode: 'q0',
+        },
+        // 32 — q0 lê 'B': todos os pares marcados, vai para q3
+        {
+          prof: { message: "Agora q0 lê 'B', não 'a': TODOS os pares estão marcados! Foi para q3 à DIREITA (B;B,R) para conferir o resto.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 4, activeNode: 'q3',
+        },
+        // 33 — q3 avança sobre o 2º 'B'
+        {
+          prof: { message: "q3 leu 'B' e avançou à DIREITA (B;B,R), procurando o fim da palavra. Em q3.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 5, activeNode: 'q3',
+        },
+        // 34 — q3 acha o branco do fim → q4
+        {
+          prof: { message: "q3 achou o branco do fim: foi para q4 e recuou à ESQUERDA (□;□,L). Hora de varrer tudo de volta até o começo.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 4, activeNode: 'q4',
+        },
+        // 35 — q4 varre o 2º 'B'
+        {
+          prof: { message: "q4 leu 'B' e voltou à ESQUERDA sem mexer (B;B,L). Em q4.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 3, activeNode: 'q4',
+        },
+        // 36 — q4 varre o 1º 'B'
+        {
+          prof: { message: "q4 leu 'B' e voltou à ESQUERDA (B;B,L). Em q4.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 2, activeNode: 'q4',
+        },
+        // 37 — q4 varre o 2º 'A'
+        {
+          prof: { message: "q4 leu 'A' e voltou à ESQUERDA (A;A,L). Em q4.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 1, activeNode: 'q4',
+        },
+        // 38 — q4 varre o 1º 'A' e chega no branco inicial
+        {
+          prof: { message: "q4 leu 'A' e voltou à ESQUERDA (A;A,L). O cabeçote chegou no branco INICIAL (□).", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: 'aabb', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 0, activeNode: 'q4',
+        },
+        // 39 — q4 lê o branco inicial → q5, volta o cabeçote pra 1ª letra, ACEITA
+        {
+          prof: { message: "q4 leu o branco inicial: foi para q5 (final) e andou 1 à DIREITA (□;□,R), trazendo o cabeçote de volta para a 1ª letra. A fita virou 'AABB'. Palavra ACEITA! ✓", mood: 'feliz' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           simulateWord: 'aabb', status: 'ACCEPTED', tape: ['□', 'A', 'A', 'B', 'B', '□'], head: 1, activeNode: 'q5',
         },
 
+        // ═══ Parte 5 — o caso da palavra vazia (λ, n = 0) ═══
+        // 40 — começa a simulação de λ
+        {
+          prof: { message: "Falta 1 caso: a palavra VAZIA (λ). Como n = 0 também pertence a aⁿbⁿ, ela deve ser ACEITA. A fita só tem brancos e começamos em q0.", mood: 'explicando' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: '', tape: ['□', '□', '□'], head: 1, activeNode: 'q0',
+        },
+        // 41 — q0 lê o branco direto → q5, ACEITA
+        {
+          prof: { message: "q0 já leu um branco (não há nenhum 'a'): foi direto para q5 (final) à DIREITA (□;□,R). Nada a marcar. λ ACEITA! ✓", mood: 'feliz' },
+          stateUpdate: { nodes: N_FULL, transitions: T_FULL },
+          simulateWord: '', status: 'ACCEPTED', tape: ['□', '□', '□'], head: 2, activeNode: 'q5',
+        },
+
         // ═══ Transição grafo → formal ═══
-        // 20 — fork: botão "Iniciar Descrição Formal"
+        // 42 — fork: botão "Iniciar Descrição Formal"
         {
           prof: { message: "Grafo finalizado! 🎉 Agora precisamos formalizar matematicamente a nossa Máquina de Turing. Vamos lá?", mood: 'feliz' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           formalIntro: true,
         },
 
-        // ═══ Parte 4 — descrição formal (7-tupla) auto-preenchida ═══
-        // 21 — Q
+        // ═══ Parte 6 — descrição formal (7-tupla) auto-preenchida ═══
+        // 43 — Q
         {
           prof: { message: "A 7-tupla é M = (Q, Σ, Γ, δ, q0, □, F). Vou preencher campo por campo! Q é o conjunto de ESTADOS: {q0, q1, q2, q3, q4, q5}.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { states: '{q0, q1, q2, q3, q4, q5}' },
         },
-        // 22 — Σ
+        // 44 — Σ
         {
           prof: { message: "Σ é o alfabeto de ENTRADA — só os símbolos que podem chegar na fita: {a, b}.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { sigma: '{a, b}' },
         },
-        // 23 — Γ
+        // 45 — Γ
         {
           prof: { message: "Γ é o alfabeto da FITA: a entrada, as marcações A/B e o branco: {a, b, A, B, □}.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { gamma: '{a, b, A, B, □}' },
         },
-        // 24 — q0
+        // 46 — q0
         {
           prof: { message: "q0 é o estado INICIAL, onde a máquina começa a procurar o próximo par.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { initial: 'q0' },
         },
-        // 25 — □
+        // 47 — □
         {
           prof: { message: "O símbolo BRANCO (□) marca as células vazias da fita.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { blank: '□' },
         },
-        // 26 — F
+        // 48 — F
         {
           prof: { message: "F é o conjunto de estados de ACEITAÇÃO: {q5}.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { final: '{q5}' },
         },
-        // 27 — δ parte 1 (q0 marca, q1 pula)
+        // 49 — δ parte 1 (q0 marca, q1 pula)
         {
           prof: { message: "Agora a função δ, linha por linha. Em q0, ao ler 'a', marcamos A e vamos à DIREITA (R) para q1. Em q1, pulamos 'a' e 'B' sem alterar, também à direita.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { delta: D1 },
         },
-        // 28 — δ parte 2 (q1 marca o par)
+        // 50 — δ parte 2 (q1 marca o par)
         {
           prof: { message: "Quando q1 acha o 'b' livre, marca B e volta à ESQUERDA (L) para q2.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { delta: D2 },
         },
-        // 29 — δ parte 3 (q2 varre de volta)
+        // 51 — δ parte 3 (q2 varre de volta)
         {
           prof: { message: "Em q2, pulamos 'a' à esquerda sem alterar; ao achar o 'A' do par recém-marcado, voltamos para q0 (R) — procurar o próximo par.", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { delta: D3 },
         },
-        // 30 — δ parte 4 (q0 → q3, confirma)
+        // 52 — δ parte 4 (q0 → q3, confirma)
         {
           prof: { message: "Quando q0 encontra 'B' em vez de 'a', é porque todos os pares foram marcados: vamos para q3 e avançamos sobre os B's restantes (R).", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { delta: D4 },
         },
-        // 31 — δ parte 5 (q3 → q4 → q5, aceita)
+        // 53 — δ parte 5 (q3 → q4 → q5, aceita)
         {
           prof: { message: "q3 acha o branco do fim e vai para q4 (L), que varre A e B de volta (L) até o branco inicial — aí vai para q5 (final) e anda 1 à direita (R). δ quase completa!", mood: 'explicando' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },
           phase: 'FORMAL', formalFill: { delta: D5 },
         },
-        // 32 — δ parte 6 (caso especial n=0) + conclusão
+        // 54 — δ parte 6 (caso especial n=0) + conclusão
         {
           prof: { message: "Falta o caso n=0: se q0 já encontra o branco (palavra vazia), vamos direto para q5 (R). δ completa — Máquina formalizada! ✓", mood: 'feliz' },
           stateUpdate: { nodes: N_FULL, transitions: T_FULL },

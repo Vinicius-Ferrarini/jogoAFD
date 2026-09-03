@@ -101,6 +101,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
   const innerCanvasRef = useRef(null);
   const viewportRef    = useRef(null);
   const formalRef      = useRef(null);
+  const currentFormalElRef = useRef(null); // campo/linha δ revelado no passo atual da aula — alvo do auto-scroll
   const formalFieldRefs = useRef({}); // { [campo]: {current: <input>} } — p/ inserir símbolo no cursor
   const noopRef        = useRef(false);
   // Última palavra testada em modo LANGUAGE durante a fase de descoberta
@@ -240,8 +241,15 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
     });
   }, [lesson.step]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Scroll automático: ao revelar um novo campo/linha δ da descrição formal,
+  // rola até ele (mesmo comportamento do AFD/AP — ver FormalDescriptionModal /
+  // APFormalDescription). O ref é fixado no campo que o passo atual preenche
+  // (lesson.cur.formalFill) ou, nos passos de δ, na última linha de estado tocada.
   useEffect(() => {
-    if (lesson.phase === 'FORMAL' && formalRef.current) {
+    if (lesson.phase !== 'FORMAL') return;
+    if (currentFormalElRef.current) {
+      currentFormalElRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } else if (formalRef.current) {
       formalRef.current.scrollTo({ top: formalRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [lesson.step, lesson.phase]);
@@ -650,6 +658,13 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
   const formalCols   = [...sigmaCols, ...((level.tapeAlphabet ?? []).filter(s => !sigmaCols.includes(s)))];
   const formalStateRows = (lesson.active ? (lesson.displayNodes ?? []) : g.nodes).map(n => n.id);
 
+  // Aula: campo (ou linha δ) que o passo atual está revelando — alvo do auto-scroll.
+  const curFormalFill = lesson.cur?.formalFill;
+  const curFormalKey  = curFormalFill ? Object.keys(curFormalFill)[0] : null;
+  const curDeltaRow   = curFormalKey === 'delta' && Array.isArray(curFormalFill.delta)
+    ? [...formalStateRows].reverse().find(stId => curFormalFill.delta.some(t => t.from === stId)) ?? null
+    : null;
+
   const setDeltaCell = (key, value) => setFormalAnswers(prev => ({
     ...prev, deltaCells: { ...prev.deltaCells, [key]: value },
   }));
@@ -678,7 +693,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
       });
     };
     return (
-      <div style={{ marginBottom: 8 }}>
+      <div style={{ marginBottom: 8 }} ref={k === curFormalKey ? currentFormalElRef : null}>
         <label style={{ display: 'block', fontFamily: 'var(--font-comic)', fontSize: 11,
           fontWeight: 900, color: '#065f46', marginBottom: 3 }}>{label}</label>
         <div style={{ display: 'flex', gap: 4 }}>
@@ -792,7 +807,7 @@ export default function MTReconPart1({ onBack, progress, updateProgress,
                       </thead>
                       <tbody>
                         {formalStateRows.map(stId => (
-                          <tr key={stId}>
+                          <tr key={stId} ref={stId === curDeltaRow ? currentFormalElRef : null}>
                             <td className="mt-formal-delta-rowhead">{stId}</td>
                             {formalCols.map(sym => {
                               const key = `${stId}|${sym}`;
